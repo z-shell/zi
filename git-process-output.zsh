@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# shellcheck disable=SC1071
+
 emulate -LR zsh
 
 setopt typesetsilent extendedglob warncreateglobal

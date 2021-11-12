@@ -1,7 +1,8 @@
 # -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
-# shellcheck shell=bash disable=SC1073,1072,1050 # Zsh
+# Adjust the shellcheck fot Zsh compatibility.
+# shellcheck shell=bash disable=SC1073,1072,1050
 
 #
 # Main state variables.

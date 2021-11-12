@@ -2,13 +2,10 @@
   <a href="https://github.com/z-shell/zi">
     <img src="docs/images/logo.svg" alt="Logo" width="100" height="100">
   </a>
-</h1>
+❮  ZI  ❯
+  </h1>
 
 <div align="center">
-
-❮  ZI  ❯
-
-  <br />
   <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">《 Report an issue 》</a>
   · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">《 Request a Feature 》</a>
   · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
@@ -18,9 +15,10 @@
 <br />
 
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](LICENSE) [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+
 </div>
 
-<details open="open">
+<details>
 <summary>Table of Contents</summary>
 
 - [Getting Started](#getting-started)

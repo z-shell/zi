@@ -19,7 +19,7 @@
 
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](LICENSE) [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 </div>
-  
+
 <details open="open">
 <summary>Table of Contents</summary>
 

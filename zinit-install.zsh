@@ -1,6 +1,8 @@
 # -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
+# shellcheck shell=bash disable=SC1009,1073,1027,1036,1072
+
 builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}zinit-side.zsh%f%b."; return 1; }
 
 # FUNCTION: .zinit-parse-json [[[
@@ -17,10 +19,9 @@ builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT
     integer ___nest=${4:-1} ___idx=0 ___pair_idx ___level=0 \
         ___start ___end ___sidx=1 ___had_quoted_value=0
     local -a match mbegin mend ___pair_order
-
     (( ${(P)+___varname} )) || typeset -gA "$___varname"
-
     ___pair_map=( "{" "}" "[" "]" )
+
     while [[ $___workbuf = (#b)[^"{}[]\\\"'":,]#((["{[]}\"'":,])|[\\](*))(*) ]]; do
         if [[ -n ${match[3]} ]] {
             ___idx+=${mbegin[1]}

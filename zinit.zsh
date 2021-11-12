@@ -2738,7 +2738,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
            .zinit-debug-stop
            ;;
        (man)
-           man "${ZINIT[BIN_DIR]}/docs/zinit.1"
+           man "${ZINIT[BIN_DIR]}/docs/man/zi.1"
            ;;
        (env-whitelist)
             shift

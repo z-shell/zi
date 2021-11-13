@@ -16,7 +16,6 @@ txt/
 *.zwc
 *.zini
 .ycm_extra_conf.py
-zmodules/COMPILED_AT
 *deploy*key*
 *.bundle
 site*/
@@ -38,6 +37,7 @@ CVS
 .#*
 
 # Zmodules
+zmodules/COMPILED_AT
 zmodules/Src/*.epro
 zmodules/Src/*.export
 zmodules/Src/*.mdh

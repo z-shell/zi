@@ -2034,8 +2034,7 @@ ZINIT[EXTENDED_GLOB]=""
     }
     # Shouldn't happen
     # (( ${#PUAssocArray} > 0 )) && wait ${(k)PUAssocArray}
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zinit-wait-for-update-jobs [[[
 .zinit-wait-for-update-jobs() {
     local tpe=$1
@@ -2195,8 +2194,7 @@ ZINIT[EXTENDED_GLOB]=""
         (( sum += ZINIT[$entry] ))
     done
     builtin print "Total: $sum sec"
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zinit-list-bindkeys [[[
 .zinit-list-bindkeys() {
     local uspl2 uspl2col sw first=1

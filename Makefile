@@ -15,7 +15,7 @@ all: zinit.zsh.zwc zinit-side.zsh.zwc zinit-install.zsh.zwc zinit-autoload.zsh.z
 #testE:
 #	make VERBOSE=$(VERBOSE) NODIFF=$(NODIFF) DEBUG=$(DEBUG) OPTDUMP=$(OPTDUMP) OPTS="ignoreclosebraces" -C test test
 
-docs: zinit.zsh zinit-side.zsh zinit-install.zsh zinit-autoload.zsh
+doc: zinit.zsh zinit-side.zsh zinit-install.zsh zinit-autoload.zsh
 	rm -rf docs/zsdoc/data docs/zsdoc/*.adoc
 	cd docs && \
 	zsd -v --scomm --cignore \
@@ -23,7 +23,7 @@ docs: zinit.zsh zinit-side.zsh zinit-install.zsh zinit-autoload.zsh
 	../zinit.zsh ../zinit-side.zsh ../zinit-install.zsh ../zinit-autoload.zsh
 	cd ..
 
-html: docs
+html: adoc
 	cd docs/zsdoc && \
 	asciidoctor zinit.zsh.adoc && \
 	asciidoctor zinit-side.zsh.adoc && \
@@ -35,4 +35,4 @@ clean:
 	rm -f zinit.zsh.zwc zinit-side.zsh.zwc zinit-install.zsh.zwc zinit-autoload.zsh.zwc
 	rm -rf docs/zsdoc/data
 
-.PHONY: all clean docs
+.PHONY: all clean doc

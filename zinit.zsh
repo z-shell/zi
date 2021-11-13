@@ -2,7 +2,7 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
-# shellcheck shell=bash disable=SC1073,1072,1050
+# shellcheck shell=sh disable=SC1073,1072,1050
 
 #
 # Main state variables.
@@ -1036,7 +1036,7 @@ builtin setopt noaliases
 # FUNCTION: .zinit-register-plugin. [[[
 # Adds the plugin to ZINIT_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
-# http://z-shell.github.io/Zsh-100-Commits-Club/Zsh-Plugin-Standard.html).
+# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html).
 .zinit-register-plugin() {
     local uspl2="$1" mode="$2" teleid="$3"
     integer ret=0
@@ -1173,7 +1173,7 @@ builtin setopt noaliases
 # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
-# http://z-shell.github.io/Zsh-100-Commits-Club/Zsh-Plugin-Standard.html
+# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html
 @zsh-plugin-run-on-unload() {
     ICE[ps-on-unload]="${(j.; .)@}"
     .zinit-pack-ice "$id_as" ""

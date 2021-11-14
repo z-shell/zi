@@ -1,7 +1,7 @@
 # -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
-builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}zinit-side.zsh%f%b."; return 1; }
+builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
 ZINIT[EXTENDED_GLOB]=""
 
@@ -640,7 +640,7 @@ ZINIT[EXTENDED_GLOB]=""
     symlinked=( ${ZINIT[COMPLETIONS_DIR]}/_[^_.]*~*.zwc )
     backup_comps=( ${ZINIT[COMPLETIONS_DIR]}/[^_.]*~*.zwc )
 
-    (( ${+functions[.zinit-forget-completion]} )) || builtin source ${ZINIT[BIN_DIR]}"/zinit-install.zsh"
+    (( ${+functions[.zinit-forget-completion]} )) || builtin source ${ZINIT[BIN_DIR]}"/lib/zsh/install.zsh"
 
     # Delete completions if they are really there, either
     # as completions (_fname) or backups (fname)
@@ -744,22 +744,23 @@ ZINIT[EXTENDED_GLOB]=""
         +zinit-message "Compiling ZI (zcompile){…}"
     }
     command rm -f $ZINIT[BIN_DIR]/*.zwc(DN)
+	command rm -f $ZINIT[BIN_DIR]/lib/zsh/*.zwc(DN)
     zcompile -U $ZINIT[BIN_DIR]/zinit.zsh
-    zcompile -U $ZINIT[BIN_DIR]/zinit-side.zsh
-    zcompile -U $ZINIT[BIN_DIR]/zinit-install.zsh
-    zcompile -U $ZINIT[BIN_DIR]/zinit-autoload.zsh
-    zcompile -U $ZINIT[BIN_DIR]/zinit-additional.zsh
-    zcompile -U $ZINIT[BIN_DIR]/git-process-output.zsh
+    zcompile -U $ZINIT[BIN_DIR]/lib/zsh/side.zsh
+    zcompile -U $ZINIT[BIN_DIR]/lib/zsh/install.zsh
+    zcompile -U $ZINIT[BIN_DIR]/lib/zsh/autoload.zsh
+    zcompile -U $ZINIT[BIN_DIR]/lib/zsh/additional.zsh
+    zcompile -U $ZINIT[BIN_DIR]/lib/zsh/git-process-output.zsh
     # Load for the current session
     [[ $1 != -q ]] && +zinit-message "Reloading Zinit for the current session{…}"
     source $ZINIT[BIN_DIR]/zinit.zsh
-    source $ZINIT[BIN_DIR]/zinit-side.zsh
-    source $ZINIT[BIN_DIR]/zinit-install.zsh
-    source $ZINIT[BIN_DIR]/zinit-autoload.zsh
+    source $ZINIT[BIN_DIR]/lib/zsh/side.zsh
+    source $ZINIT[BIN_DIR]/lib/zsh/install.zsh
+    source $ZINIT[BIN_DIR]/lib/zsh/autoload.zsh
     # Read and remember the new modification timestamps
     local file
-    for file ( "" -side -install -autoload ) {
-        .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/zinit$file.zsh" "ZINIT[mtime$file]"
+    for file ( "" side install autoload ) {
+        .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/lib/zsh/$file.zsh" "ZINIT[mtime$file]"
     }
 } # ]]]
 # FUNCTION: .zinit-show-registered-plugins [[[
@@ -1522,7 +1523,7 @@ ZINIT[EXTENDED_GLOB]=""
             }
         }
 
-        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source ${ZINIT[BIN_DIR]}"/zinit-install.zsh"
+        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source ${ZINIT[BIN_DIR]}"/lib/zsh/install.zsh"
         if [[ $ice[from] == (gh-r|github-rel) ]] {
             {
                 ICE=( "${(kv)ice[@]}" )
@@ -1780,7 +1781,7 @@ ZINIT[EXTENDED_GLOB]=""
             builtin print
         fi
     else
-        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source ${ZINIT[BIN_DIR]}"/zinit-install.zsh"
+        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source ${ZINIT[BIN_DIR]}"/lib/zsh/install.zsh"
         ICE=( "${(kv)ICE2[@]}" )
         .zinit-update-snippet "${ICE2[teleid]:-$URL}"
         retval=$?
@@ -1814,8 +1815,8 @@ ZINIT[EXTENDED_GLOB]=""
 
     local file
     integer sum el
-    for file ( "" -side -install -autoload ) {
-        .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/zinit$file.zsh" el; sum+=el
+    for file ( "" side install autoload ) {
+        .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/$file.zsh" el; sum+=el
     }
 
     # Reload ZI?
@@ -1825,11 +1826,11 @@ ZINIT[EXTENDED_GLOB]=""
         +zinit-message "{msg2}Detected ZI update in another session -" \
             "{pre}reloading Zinit{msg2}{…}{rst}"
         source $ZINIT[BIN_DIR]/zinit.zsh
-        source $ZINIT[BIN_DIR]/zinit-side.zsh
-        source $ZINIT[BIN_DIR]/zinit-install.zsh
-        source $ZINIT[BIN_DIR]/zinit-autoload.zsh
-        for file ( "" -side -install -autoload ) {
-            .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/zinit$file.zsh" "ZINIT[mtime$file]"
+        source $ZINIT[BIN_DIR]/lib/zsh/side.zsh
+        source $ZINIT[BIN_DIR]/lib/zsh/install.zsh
+        source $ZINIT[BIN_DIR]/lib/zsh/autoload.zsh
+        for file ( "" side install autoload ) {
+            .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/lib/zsh/$file.zsh" "ZINIT[mtime$file]"
         }
         +zinit-message "%B{pname}Done.{rst}"$'\n'
         .zinit-update-or-status-all "$1" restart
@@ -3175,7 +3176,7 @@ EOF
         for i in "${ZINIT_STRESS_TEST_OPTIONS[@]}"; do
             builtin setopt "$i"
             builtin print -n "Stress-testing ${fname:t} for option $i "
-            zcompile -UR "$fname" 2>/dev/null && {
+				zcompile -UR "$fname" 2>/dev/null && {
                 builtin print "[${ZINIT[col-success]}Success${ZINIT[col-rst]}]"
             } || {
                 builtin print "[${ZINIT[col-failure]}Fail${ZINIT[col-rst]}]"

@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
+# Copyright (c) 2021 Salvdas Lukosius and Z-Shell ZI contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
 # shellcheck shell=bash disable=SC1009,1073,1027,1036,1072
@@ -125,7 +126,7 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
     local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 \
         local_path=${ZINIT[PLUGINS_DIR]}/${3//\//---} pkgjson \
         tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123} \
-        URL=https://raw.githubusercontent.com/z-shell/$2/main/package.json
+        URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
 
     local pro_sep="{rst}, {profile}" epro_sep="{error}, {profile}" \
         tool_sep="{rst}, {cmd}" \

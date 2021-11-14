@@ -1,5 +1,5 @@
-# -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
+# Copyright (c) 2021 Salvdas Lukosius and Z-Shell ZI contributors.
 
 builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
@@ -745,7 +745,7 @@ ZINIT[EXTENDED_GLOB]=""
     }
     command rm -f $ZINIT[BIN_DIR]/*.zwc(DN)
 	command rm -f $ZINIT[BIN_DIR]/lib/zsh/*.zwc(DN)
-    zcompile -U $ZINIT[BIN_DIR]/zinit.zsh
+    zcompile -U $ZINIT[BIN_DIR]/zi.zsh
     zcompile -U $ZINIT[BIN_DIR]/lib/zsh/side.zsh
     zcompile -U $ZINIT[BIN_DIR]/lib/zsh/install.zsh
     zcompile -U $ZINIT[BIN_DIR]/lib/zsh/autoload.zsh
@@ -753,7 +753,7 @@ ZINIT[EXTENDED_GLOB]=""
     zcompile -U $ZINIT[BIN_DIR]/lib/zsh/git-process-output.zsh
     # Load for the current session
     [[ $1 != -q ]] && +zinit-message "Reloading Zinit for the current session{…}"
-    source $ZINIT[BIN_DIR]/zinit.zsh
+    source $ZINIT[BIN_DIR]/zi.zsh
     source $ZINIT[BIN_DIR]/lib/zsh/side.zsh
     source $ZINIT[BIN_DIR]/lib/zsh/install.zsh
     source $ZINIT[BIN_DIR]/lib/zsh/autoload.zsh
@@ -1825,7 +1825,7 @@ ZINIT[EXTENDED_GLOB]=""
     )) {
         +zinit-message "{msg2}Detected ZI update in another session -" \
             "{pre}reloading Zinit{msg2}{…}{rst}"
-        source $ZINIT[BIN_DIR]/zinit.zsh
+        source $ZINIT[BIN_DIR]/zi.zsh
         source $ZINIT[BIN_DIR]/lib/zsh/side.zsh
         source $ZINIT[BIN_DIR]/lib/zsh/install.zsh
         source $ZINIT[BIN_DIR]/lib/zsh/autoload.zsh
@@ -3297,7 +3297,7 @@ EOF
 # FUNCTION: .zinit-module [[[
 # Function that has sub-commands passed as long-options (with two dashes, --).
 # It's an attempt to plugin only this one function into `zi' function
-# defined in zinit.zsh, to not make this file longer than it's needed.
+# defined in zi.zsh, to not make this file longer than it's needed.
 .zinit-module() {
     if [[ "$1" = "build" ]]; then
         .zinit-build-module "${@[2,-1]}"

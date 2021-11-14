@@ -2057,9 +2057,9 @@ $match[7]}:-${ZINIT[__last-formatter-code]}}}:+}}}//←→}
         local bcol="{$cmd}" sep="${ZINIT[col-rst]}${ZINIT[col-$cmd]}\`, \`${ZINIT[col-cmd]}"
         +zinit-message "$bcol(it should be one of, e.g.{ehi}:" \
                 "{nb}$bcol\`{cmd}${(pj:$sep:)cmds}$bcol\`," \
-                "{cmd}{…}$bcol, e.g.{ehi}: {nb}$bcol\`{lhi}zinit {b}{cmd}load" \
+                "{cmd}{…}$bcol, e.g.{ehi}: {nb}$bcol\`{lhi}zi {b}{cmd}load" \
                 "{pid}username/reponame$bcol\`) or a {b}{hi}for{nb}$bcol-based" \
-                "command body (i.e.{ehi}:{rst}$bcol e.g.{ehi}: {rst}$bcol\`{lhi}zinit" \
+                "command body (i.e.{ehi}:{rst}$bcol e.g.{ehi}: {rst}$bcol\`{lhi}zi" \
                     "{…}{b}ice-spec{nb}{…} {hi}for{nb}{lhi} {…}({b}plugin" \
                     "{nb}or{b} snippet) {pname}ID-1 ID-2 {-…} {lhi}{…}$bcol\`)." \
                 "See \`{cmd}help$bcol\` for a more detailed usage information and" \

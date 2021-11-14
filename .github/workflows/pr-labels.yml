@@ -16,6 +16,6 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           valid-labels: >-
-             breaking-change :boom:, bug :lady_beetle:, documentation :memo:, enhancement :sparkles:, beginner-friendly :white_check_mark:,
-             refactor :recycle:, performance :rocket:, new-feature :tada:, maintenance :chart_with_upwards_trend:, ci :robot:, in-progress :zap:
+             "breaking-change 💥, bug 🐞, documentation 📝, enhancement ✨, beginner-friendly ✅, refactor ♻️, performance 🚀, new-feature 🎉, maintenance 📈, ci 🤖, in-progress ⚡"
+          pull-request-number: "${{ github.event.pull_request.number }}"
           disable-reviews: true

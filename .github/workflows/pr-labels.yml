@@ -15,7 +15,5 @@ jobs:
         uses: jesusvasquez333/verify-pr-label-action@v1.4.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          valid-labels: >-
-             breaking-change :boom:, bug :lady_beetle:, documentation :memo:, enhancement :sparkles:, beginner-friendly :white_check_mark:,
-             refactor :recycle:, performance :rocket:, new-feature :tada:, maintenance :chart_with_upwards_trend:, ci :robot:, in-progress :zap:
+          valid-labels: "breaking-change 💥, bug 🐞, documentation 📝, enhancement ✨, beginner-friendly ✅, refactor ♻️, performance 🚀, new-feature 🎉, maintenance 📈, ci 🤖, in-progress ⚡"
           disable-reviews: true

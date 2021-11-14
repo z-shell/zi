@@ -1,0 +1,68 @@
+name: Release CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag
+        required: true
+
+jobs:
+  start-release:
+    name: Start Release
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Start Release
+        run: |
+          gh extensions install carlsberg/gh-releaser
+          gh releaser start
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+
+  qa-approval:
+    name: QA Approval
+    runs-on: ubuntu-latest
+    needs: start-release
+    environment: release
+    steps:
+      - name: Add approval label
+        run: |
+          gh extensions install carlsberg/gh-releaser
+          gh pr edit $(gh releaser pr) --add-label "approved:qa"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+
+  stakeholder-approval:
+    name: Stakeholder Approval
+    runs-on: ubuntu-latest
+    needs: qa-approval
+    environment: release
+    steps:
+      - name: Add approval label
+        run: |
+          gh extensions install carlsberg/gh-releaser
+          gh pr edit $(gh releaser pr) --add-label "approved:stkh"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+
+  close-release:
+    name: Close Release
+    runs-on: ubuntu-latest
+    needs: stakeholder-approval
+    environment: release
+    steps:
+      - name: Close Release
+        run: |
+          gh extensions install carlsberg/gh-releaser
+          gh releaser close
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}

@@ -6,10 +6,20 @@ labels: "bug"
 assignees: ""
 ---
 
-# Bug Report
+**Zsh version:**
 
-**Z-Shell Zi version:**
+<!-- Provide your Zsh version. -->
 
+ - command: zsh --version
+
+**System information**
+
+ <!-- Please optionally provide output of commands below. (Exclude any peronal information) -->
+
+ - command: uname -a
+ - command: zi zstatus
+ - command: zi loaded
+ 
 <!-- Please specify commit or tag version. -->
 
 **Current behavior:**

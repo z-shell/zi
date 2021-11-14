@@ -1,5 +1,5 @@
 ---
-name: Stale
+name: Stale BOT
 
 on:
   schedule:

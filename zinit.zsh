@@ -1,6 +1,9 @@
 # -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
+# Adjust the shellcheck fot Zsh compatibility.
+# shellcheck shell=sh disable=SC1073,1072,1050
+
 #
 # Main state variables.
 #
@@ -251,12 +254,12 @@ builtin setopt noaliases
 
     # "Fpath elements" - ie those elements that are inside the plug-in directory.
     # The name comes from the fact that they are the selected fpath elements → so just
-    # "items". 
+    # "items".
     local -a fpath_elements
     fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
 
     # Add a function subdirectory to items, if any (this action is
-    # according to the Plug Standard version 1.07 and later). 
+    # according to the Plug Standard version 1.07 and later).
     [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
 
     if (( ${+opts[(r)-X]} )); then
@@ -1033,7 +1036,7 @@ builtin setopt noaliases
 # FUNCTION: .zinit-register-plugin. [[[
 # Adds the plugin to ZINIT_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
-# http://z-shell.github.io/Zsh-100-Commits-Club/Zsh-Plugin-Standard.html).
+# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html).
 .zinit-register-plugin() {
     local uspl2="$1" mode="$2" teleid="$3"
     integer ret=0
@@ -1170,7 +1173,7 @@ builtin setopt noaliases
 # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
-# http://z-shell.github.io/Zsh-100-Commits-Club/Zsh-Plugin-Standard.html
+# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html
 @zsh-plugin-run-on-unload() {
     ICE[ps-on-unload]="${(j.; .)@}"
     .zinit-pack-ice "$id_as" ""
@@ -1893,22 +1896,22 @@ builtin setopt noaliases
 .zinit-formatter-pid() {
     builtin emulate -L zsh -o extendedglob
 
-    # Remember extreme whitespace. 
+    # Remember extreme whitespace.
     local pbz=${(M)1##(#s)[[:space:]]##}
     local kbz=${(M)1%%[[:space:]]##(#e)}
-    # Remove extreme whitespace. 
+    # Remove extreme whitespace.
     1=${1//((#s)[[:space:]]##|[[:space:]]##(#e))/}
 
     ((${+functions[.zinit-first]})) || source ${ZINIT[BIN_DIR]}/zinit-side.zsh
     .zinit-any-colorify-as-uspl2 "$1";
 
     # Replace at least one character with an unbreakable space,
-    # because extreme whitespace is lost due to implementation problems ... 
+    # because extreme whitespace is lost due to implementation problems ...
     pbz=${pbz/[[:blank:]]/ }
     local kbz_rev="${(j::)${(@Oas::)kbz}}"
     kbz="${(j::)${(@Oas::)${kbz_rev/[[:blank:]]/ }}}"
 
-    # Supply extreme whitespace back. 
+    # Supply extreme whitespace back.
     REPLY=$pbz$REPLY$kbz
 }
 # ]]]
@@ -1970,7 +1973,7 @@ builtin setopt noaliases
     if [[ $2 == (b|u|it|st|nb|nu|nit|nst) ]]; then
         append=$ZINIT[col-$2]
     elif [[ $2 == (…|ndsh|mdsh|mmdsh|-…|lr|) || -z $2 || -z $ZINIT[col-$2] ]]; then
-        # Resume previous escape code, if stored. 
+        # Resume previous escape code, if stored.
         if [[ $ZINIT[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
             in_prepend=$ZINIT[col-$ZINIT[__last-formatter-code]]
             influx=$ZINIT[col-$ZINIT[__last-formatter-code]]
@@ -1984,7 +1987,7 @@ builtin setopt noaliases
 
     # Replace new lines with characters that work the same but are not
     # deleted in the substitution $ (...) - vertical tab 0xB ↔ 13 in the system
-    # octagonal connected back carriage (015). 
+    # octagonal connected back carriage (015).
     local nl=$'\n' vertical=$'\013' carriager=$'\015'
     REPLY=${REPLY//$nl/$vertical$carriager}
 
@@ -2011,7 +2014,7 @@ $(.zinit-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
  )${${ZINIT[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+\
 $match[7]}:-${ZINIT[__last-formatter-code]}}}:+}}}//←→}
 
-    # Restore the default color at the end of the message. 
+    # Restore the default color at the end of the message.
     msg=$msg$ZINIT[col-rst]
     # Output the processed message:
     builtin print -Pr ${opt:#--} -- $msg

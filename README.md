@@ -15,8 +15,9 @@
 <br />
 
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](LICENSE) [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+
 </div>
-  
+
 <details>
 <summary>Table of Contents</summary>
 
@@ -26,12 +27,11 @@
 - [Usage](#usage)
 - [Roadmap](#roadmap)
 - [Support](#support)
-- [Project assistance](#project-assistance)
 - [Contributing](#contributing)
 - [Authors & contributors](#authors--contributors)
+- [Project assistance](#project-assistance)
 - [Security](#security)
 - [About](#about)
-- [License](#license)
 - [Acknowledgements](#acknowledgements)
 
 </details>
@@ -43,18 +43,17 @@
 ### Prerequisites
 
 > **[?]**
-> What are the project requirements/dependencies?
+> Work in progress.
 
 ### Installation
 
 > **[?]**
-> Describe how to install and get started with the project.
+> Work in progress.
 
 ## Usage
 
 > **[?]**
-> How does one go about using it?
-> Provide various use cases and code examples here.
+> Work in progress.
 
 ## Roadmap
 
@@ -74,6 +73,18 @@ Reach out to the maintainer at one of the following places:
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
+## Contributing
+
+First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
+
+Please read [our contribution guidelines](../docs/CONTRIBUTING.md), and thank you for being involved!
+
+## Authors & contributors
+
+The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
+
+For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
+
 ## Project assistance
 
 If you want to say **thank you** or/and support active development of Z-Shell ZI:
@@ -84,36 +95,18 @@ If you want to say **thank you** or/and support active development of Z-Shell ZI
 
 Together, we can make Z-Shell ZI **better**!
 
-## Contributing
-
-First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
-
-Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you for being involved!
-
-## Authors & contributors
-
-The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
-
-For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
-
 ## Security
 
 Z-Shell ZI follows good practices of security, but 100% security cannot be assured.
 Z-Shell ZI is provided **"as is"** without any **warranty**. Use at your own risk.
 
-_For more information and to report security issues, please refer to our [security documentation](docs/SECURITY.md)._
+_For more information and to report security issues, please refer to our [security documentation](../docs/SECURITY.md)._
 
 ## About
 
 > **[?]**
-> ZI is a flexible integration manager for Z shell [(Zsh)](https://zsh.sourceforge.io/) (previously known as Zinit).
-> Z-Shell ZI is an open source community project released under the [MIT License](LICENSE).
-
-## License
-
-This project is licensed under the **MIT license**.
-
-See [LICENSE](LICENSE) for more information.
+> ZI (previously known as Zinit) is a flexible integration manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
+> Z-Shell ZI is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 

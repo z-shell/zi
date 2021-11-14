@@ -11,17 +11,10 @@ jobs:
     name: 🏭 Verify
     runs-on: ubuntu-latest
     steps:
-
-      - name: 🏷 Verify PR has a valid label
-        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          valid-labels: "breaking-change 💥, bug 🐞, documentation 📝, enhancement ✨, beginner-friendly ✅, refactor ♻️, performance 🚀, new-feature 🎉, maintenance 📈, ci 🤖, in-progress ⚡"
-          disable-reviews: true
-
       - name: Get pip cache dir
         id: pip-cache
         run: |
+          sudo apt update && sudo apt-get install python3-pip -yq
           python -m pip install --upgrade pip
           echo "::set-output name=dir::$(pip cache dir)"
 
@@ -32,3 +25,10 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+            
+      - name: 🏷 Verify PR has a valid label
+        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          valid-labels: "breaking-change 💥, bug 🐞, documentation 📝, enhancement ✨, beginner-friendly ✅, refactor ♻️, performance 🚀, new-feature 🎉, maintenance 📈, ci 🤖, in-progress ⚡"
+          disable-reviews: true

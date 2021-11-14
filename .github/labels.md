@@ -1,11 +1,11 @@
 ---
-- name: "breaking-change :boom:"
+- name: "breaking-change 💥"
   color: ee0701
   description: "A change that changes the API or breaks backward compatibility for users."
-- name: "bug :lady_beetle:"
+- name: "bug 🐞"
   color: ee0701
   description: "Inconsistencies or issues which will cause a problem for users or implementors."
-- name: "documentation :memo:"
+- name: "documentation 📝"
   color: 0052cc
   description: "Solely about the documentation of the project."
 - name: "enhancement :sparkles:"

@@ -7,57 +7,57 @@ local -a expl
 
 typeset -a commands
 commands=(
-    zstatus:'overall ZI status'
-    times:'statistics on plugin loading times'
-    self-update:'updates ZI'
-    help:'usage information'
-    man:'manual'
-    env-whitelist:'specify names (also patterns) of parameters to be left unchanged during an unload'
-    load:'load plugin'
-    delete:'delete plugin'
-    unload:'unload plugin'
-    snippet:"source (or add to PATH with --command) local or remote file (-f: force - don't use cache)"
+    zstatus:'Checks ZI status'
+    times:'Statistics on plugin loading times'
+    self-update:'Updates ZI'
+    help:'Usage Information'
+    man:'Manual'
+    env-whitelist:'Specify names (also patterns) of parameters to be left unchanged during an unload'
+    load:'Load plugin'
+    delete:'Delete plugin'
+    unload:'Unload plugin'
+    snippet:"Source (or add to PATH with --command) local or remote file (-f: force - don't use cache)"
     update:'Git update plugin (or all plugins and snippets if --all passed)'
     status:'Git status for plugin (or all plugins if --all passed)'
-    report:'show plugin'"'"'s report (or all plugins'"'"' if --all passed)'
-    loaded:'show what plugins are loaded'
-    list:'show what plugins are loaded'
-    ls:'list snippets in formatted and colorized manner'
-    cd:"go into plugin's directory"
-    create:'create plugin (also together with Github repository)'
-    edit:"edit plugin's file with \$EDITOR"
-    glance:"look at plugin's source (pygmentize, {,source-}highlight)"
-    stress:'test plugin for compatibility with set of options'
-    changes:"view plugin's git log"
-    recently:"show plugins that changed recently, argument is e.g. 1 month 2 days"
-    clist:'list completions in use'
-    cclear:'clear stray and improper completions'
-    completions:'list completions in use'
-    cdisable:'disable completion'
-    cenable:'enable completion'
-    creinstall:'install completions for plugin'
-    cuninstall:'uninstall completions for plugin'
-    csearch:'search for available completions from any plugin'
-    compinit:'refresh installed completions'
-    dtrace:"start tracking what's going on in session"
-    dstart:"start tracking what's going on in session"
-    dstop:"stop tracking what's going on in session"
-    dunload:'revert changes recorded between dstart and dstop'
-    dreport:"report what was going on in session"
-    dclear:'clear report of what was going on in session'
-    compile:'compile plugin (or all plugins if --all passed)'
-    uncompile:'remove compiled version of plugin (or of all plugins if --all passed)'
-    compiled:'show which plugins are compiled'
-    cdlist:'show compdef replay list'
-    cdreplay:'replay compdefs (to be done after compinit)'
-    cdclear:'clear compdef replay list'
-    srv:'control a service, command can be: stop,start,restart,next,quit; `next'' moves the service to another Zshell'
-    recall:'fetch saved ice modifiers and construct `zi ice ...'' command'
-    env-whitelist:'allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose'
-    bindkeys:'lists bindkeys set up by each plugin'
-    module:'manage binary Zsh module shipped with ZI, see `zi module help'''
-    run:"execute code inside plugin's folder"
-    {add-fpath,fpath}:'add plugin folder to $fpath'
+    report:'Show plugin'"'"'s report (or all plugins'"'"' if --all passed)'
+    loaded:'Show what plugins are loaded'
+    list:'Show what plugins are loaded'
+    ls:'List snippets in formatted and colorized manner'
+    cd:"Go into plugin's directory"
+    create:'Create plugin (also together with Github repository)'
+    edit:"Edit plugin's file with \$EDITOR"
+    glance:"Look at plugin's source (pygmentize, {,source-}highlight)"
+    stress:'Test plugin for compatibility with set of options'
+    changes:"View plugin's git log"
+    recently:"Show plugins that changed recently, argument is e.g. 1 month 2 days"
+    clist:'List completions in use'
+    cclear:'Clear stray and improper completions'
+    completions:'List completions in use'
+    cdisable:'Disable completion'
+    cenable:'Enable completion'
+    creinstall:'Install completions for plugin'
+    cuninstall:'Uninstall completions for plugin'
+    csearch:'Search for available completions from any plugin'
+    compinit:'Refresh installed completions'
+    dtrace:"Start tracking what's going on in session"
+    dstart:"Start tracking what's going on in session"
+    dstop:"Stop tracking what's going on in session"
+    dunload:'Revert changes recorded between dstart and dstop'
+    dreport:"Report what was going on in session"
+    dclear:'Clear report of what was going on in session'
+    compile:'Compile plugin (or all plugins if --all passed)'
+    uncompile:'Remove compiled version of plugin (or of all plugins if --all passed)'
+    compiled:'Show which plugins are compiled'
+    cdlist:'Show compdef replay list'
+    cdreplay:'Replay compdefs (to be done after compinit)'
+    cdclear:'Clear compdef replay list'
+    srv:'Control a service, command can be: stop,start,restart,next,quit; `next'' moves the service to another Zshell'
+    recall:'Fetch saved ice modifiers and construct `zi ice ...'' command'
+    env-whitelist:'Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose'
+    bindkeys:'Lists bindkeys set up by each plugin'
+    module:'Manage binary Zsh module shipped with ZI, see `zi module help'''
+    run:"Execute code inside plugin's folder"
+    {add-fpath,fpath}:'Add plugin folder to $fpath'
 )
 
 _arguments -C \

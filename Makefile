@@ -1,4 +1,4 @@
-all: zinit.zsh.zwc zinit-side.zsh.zwc zinit-install.zsh.zwc zinit-autoload.zsh.zwc
+all: zinit.zsh.zwc side.zsh.zwc install.zsh.zwc autoload.zsh.zwc
 
 %.zwc: %
 	lib/zcompile $<
@@ -15,24 +15,24 @@ all: zinit.zsh.zwc zinit-side.zsh.zwc zinit-install.zsh.zwc zinit-autoload.zsh.z
 #testE:
 #	make VERBOSE=$(VERBOSE) NODIFF=$(NODIFF) DEBUG=$(DEBUG) OPTDUMP=$(OPTDUMP) OPTS="ignoreclosebraces" -C test test
 
-doc: zinit.zsh zinit-side.zsh zinit-install.zsh zinit-autoload.zsh
+doc: zinit.zsh side.zsh install.zsh autoload.zsh
 	rm -rf docs/zsdoc/data docs/zsdoc/*.adoc
 	cd docs && \
 	zsd -v --scomm --cignore \
 	'(\#*FUNCTION:*{{{*|\#[[:space:]]#}}}*)' \
-	../zinit.zsh ../zinit-side.zsh ../zinit-install.zsh ../zinit-autoload.zsh
+	../zinit.zsh ../lib/zsh/side.zsh ../lib/zsh/install.zsh ../lib/zsh/autoload.zsh
 	cd ..
 
 html: adoc
 	cd docs/zsdoc && \
 	asciidoctor zinit.zsh.adoc && \
-	asciidoctor zinit-side.zsh.adoc && \
-	asciidoctor zinit-install.zsh.adoc && \
-	asciidoctor zinit-autoload.zsh.adoc
+	asciidoctor side.zsh.adoc && \
+	asciidoctor install.zsh.adoc && \
+	asciidoctor autoload.zsh.adoc
 	cd ..
 
 clean:
-	rm -f zinit.zsh.zwc zinit-side.zsh.zwc zinit-install.zsh.zwc zinit-autoload.zsh.zwc
+	rm -f zinit.zsh.zwc lib/zsh/side.zsh.zwc /lib/zsh/install.zsh.zwc /lib/zsh/autoload.zsh.zwc
 	rm -rf docs/zsdoc/data
 
 .PHONY: all clean doc

@@ -11,14 +11,13 @@ jobs:
     name: 🏭 Verify
     runs-on: ubuntu-latest
     steps:
-      - name: Get pip cache dir
+      - name: Update and get pip cache dir
         id: pip-cache
         run: |
-          sudo apt update && sudo apt-get install python3-pip -yq
           python -m pip install --upgrade pip
           echo "::set-output name=dir::$(pip cache dir)"
 
-      - name: pip cache
+      - name: Restore pip cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.pip-cache.outputs.dir }}

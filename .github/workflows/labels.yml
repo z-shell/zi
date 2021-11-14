@@ -1,5 +1,5 @@
 ---
-name: Sync labels
+name: Sync Labels CI
 
 on:
   push:

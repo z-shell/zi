@@ -1,5 +1,5 @@
 ---
-name: Lock
+name: Lock BOT
 
 on:
   schedule:

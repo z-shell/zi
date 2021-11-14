@@ -91,7 +91,7 @@ case $state in
                 typeset -a plugins
                 plugins=( "${ZINIT[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )
-                plugins=( "${plugins[@]:#_local/zinit}" )
+                plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
 
                 _alternative \
@@ -104,7 +104,7 @@ case $state in
                 typeset -a plugins
                 plugins=( "${ZINIT[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )
-                plugins=( "${plugins[@]:#_local/zinit}" )
+                plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
 
                 local -a opts
@@ -126,14 +126,14 @@ case $state in
                 typeset -a plugins
                 plugins=( "${ZINIT[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )
-                plugins=( "${plugins[@]:#_local/zinit}" )
+                plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
 
                 # Snippets
                 local -a snippets snippets_alreadyld
                 local sni
 
-                snippets=( "${ZINIT[SNIPPETS_DIR]}"/**/._zinit(D/:h) )
+                snippets=( "${ZINIT[SNIPPETS_DIR]}"/**/._zi(D/:h) )
                 snippets=( ${snippets[@]#${ZINIT[SNIPPETS_DIR]}/} )
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )
@@ -153,7 +153,7 @@ case $state in
 
             unload|report)
                 typeset -a plugins absolute normal
-                plugins=( "${ZINIT_REGISTERED_PLUGINS[@]:#_local/zinit}" )
+                plugins=( "${ZINIT_REGISTERED_PLUGINS[@]:#_local/zi}" )
                 normal=( "${plugins[@]:#%*}" )
                 absolute=( "${(M)plugins[@]:#%*}" )
                 absolute=( "${absolute[@]/\%\/\//%/}" )
@@ -257,7 +257,7 @@ case $state in
                 local -a snippets snippets_alreadyld
                 local sni
 
-                snippets=( "${ZINIT[SNIPPETS_DIR]}"/**/._zinit(D/:h) )
+                snippets=( "${ZINIT[SNIPPETS_DIR]}"/**/._zi(D/:h) )
                 snippets=( ${snippets[@]#${ZINIT[SNIPPETS_DIR]}/} )
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )
@@ -308,7 +308,7 @@ case $state in
                     matches=( $p/*.zwc(N) )
                     if [ "$#matches" -ne "0" ]; then
                         p="${p:t}"
-                        [ "$p" = "_local---zinit" ] && continue
+                        [ "$p" = "_local---zi" ] && continue
                         [ "$p" = "custom" ] && continue
                         p="${p//---//}"
                         show_plugins+=( "$p" )

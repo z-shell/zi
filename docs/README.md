@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://github.com/z-shell/zi">
-    <img src="docs/images/logo.svg" alt="Logo" width="100" height="100">
+    <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
 ❮  ZI  ❯
   </h1>
@@ -14,25 +14,25 @@
 <div align="center">
 <br />
 
-[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](LICENSE) [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 
 </div>
 
 <details>
 <summary>Table of Contents</summary>
 
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
-- [Roadmap](#roadmap)
-- [Support](#support)
-- [Contributing](#contributing)
-- [Authors & contributors](#authors--contributors)
-- [Project assistance](#project-assistance)
-- [Security](#security)
-- [About](#about)
-- [Acknowledgements](#acknowledgements)
+-   [Getting Started](#getting-started)
+    -   [Prerequisites](#prerequisites)
+    -   [Installation](#installation)
+-   [Usage](#usage)
+-   [Roadmap](#roadmap)
+-   [Support](#support)
+-   [Contributing](#contributing)
+-   [Authors & contributors](#authors--contributors)
+-   [Project assistance](#project-assistance)
+-   [Security](#security)
+-   [About](#about)
+-   [Acknowledgements](#acknowledgements)
 
 </details>
 
@@ -59,9 +59,9 @@
 
 See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known issues).
 
-- [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
-- [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
-- [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+-   [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+-   [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+-   [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
 
@@ -70,14 +70,14 @@ See the [open issues](https://github.com/z-shell/zi/issues) for a list of propos
 
 Reach out to the maintainer at one of the following places:
 
-- [GitHub Discussions](https://github.com/z-shell/zi/discussions)
-- Contact options listed on [this GitHub profile](https://github.com/z-shell)
+-   [GitHub Discussions](https://github.com/z-shell/zi/discussions)
+-   Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
 ## Contributing
 
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
 
-Please read [our contribution guidelines](../docs/CONTRIBUTING.md), and thank you for being involved!
+Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
 
 ## Authors & contributors
 
@@ -89,9 +89,9 @@ For a full list of all authors and contributors, see [the contributors page](htt
 
 If you want to say **thank you** or/and support active development of Z-Shell ZI:
 
-- Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
-- Tweet about the Z-Shell ZI.
-- Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
+-   Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
+-   Tweet about the Z-Shell ZI.
+-   Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
 Together, we can make Z-Shell ZI **better**!
 
@@ -105,7 +105,7 @@ _For more information and to report security issues, please refer to our [securi
 ## About
 
 > **[?]**
-> ZI (previously known name Zinit) is a flexible plugin & extension manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
+> ZI (New version of previously known as Zinit) is a flexible plugin & extension manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
 > Z-Shell ZI (not directly affiliated with the [Zsh](https://zsh.sourceforge.io/). project) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements

@@ -1,5 +1,5 @@
-# -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI Contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
 # shellcheck shell=sh disable=SC1073,1072,1050
@@ -86,13 +86,11 @@ typeset -g ZPFX
 
 ZINIT[PLUGINS_DIR]=${~ZINIT[PLUGINS_DIR]}   ZINIT[COMPLETIONS_DIR]=${~ZINIT[COMPLETIONS_DIR]}
 ZINIT[SNIPPETS_DIR]=${~ZINIT[SNIPPETS_DIR]} ZINIT[SERVICES_DIR]=${~ZINIT[SERVICES_DIR]}
-export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" \
-    PMSPEC=0uUpiPsf
+export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0uUpiPsf
 [[ -z ${path[(re)$ZPFX/bin]} ]] && [[ -d "$ZPFX/bin" ]] && path=( "$ZPFX/bin" "${path[@]}" )
 [[ -z ${path[(re)$ZPFX/sbin]} ]] && [[ -d "$ZPFX/sbin" ]] && path=( "$ZPFX/sbin" "${path[@]}" )
 # Add completions directory to fpath.
 [[ -z ${fpath[(re)${ZINIT[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZINIT[COMPLETIONS_DIR]}" "${fpath[@]}" )
-
 [[ ! -d $ZSH_CACHE_DIR ]] && command mkdir -p "$ZSH_CACHE_DIR"
 [[ -n ${ZINIT[ZCOMPDUMP_PATH]} ]] && ZINIT[ZCOMPDUMP_PATH]=${~ZINIT[ZCOMPDUMP_PATH]}
 [[ ! -d ${~ZINIT[MAN_DIR]} ]] && command mkdir -p ${~ZINIT[MAN_DIR]}/man{1..9}
@@ -136,7 +134,7 @@ zmodload zsh/terminfo 2>/dev/null
 zmodload zsh/termcap 2>/dev/null
 
 if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || \
-      ( ${+termcap} -eq 1 && -n ${termcap[Co]} )
+    ( ${+termcap} -eq 1 && -n ${termcap[Co]} )
 ]] {
     ZINIT+=(
         col-pname   $'\e[1;4m\e[32m'     col-uname   $'\e[1;4m\e[35m'     col-keyword $'\e[32m'
@@ -169,7 +167,7 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || \
         col-bspc $'\b'        col-b-warn $'\e[1;38;5;214m' col-u-warn $'\e[4;38;5;214m'
     )
     if [[ ( ${+terminfo} -eq 1 && ${terminfo[colors]} -ge 256 ) || \
-          ( ${+termcap} -eq 1 && ${termcap[Co]} -ge 256 )
+        ( ${+termcap} -eq 1 && ${termcap[Co]} -ge 256 )
     ]] {
         ZINIT+=( col-pname $'\e[1;4m\e[38;5;39m' col-uname  $'\e[1;4m\e[38;5;207m' )
     }
@@ -2479,8 +2477,8 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
             1="${1:+@}${1#@}${2:+/$2}"
             (( $# > 1 )) && { shift -p $(( $# - 1 )); }
             [[ -z $1 ]] && {
-               +zinit-message "Argument needed, try: {cmd}help."
-               return 1
+                +zinit-message "Argument needed, try: {cmd}help."
+                return 1
             }
         } else {
             .zinit-ice "$@"
@@ -2707,40 +2705,40 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 +zinit-message "."
             }
             return 2
-       } elif (( ! $# )) {
-           return ___retval
-       }
+        } elif (( ! $# )) {
+            return ___retval
+        }
     }
 
     case "$1" in
-       (ice)
-           shift
-           .zinit-ice "$@"
-           ;;
-       (cdreplay)
-           .zinit-compdef-replay "$2"; ___retval=$?
-           ;;
-       (cdclear)
-           .zinit-compdef-clear "$2"
-           ;;
-       (add-fpath|fpath)
-           .zinit-add-fpath "${@[2-correct,-1]}"
-           ;;
-       (run)
-           .zinit-run "${@[2-correct,-1]}"
-           ;;
-       (dstart|dtrace)
+        (ice)
+            shift
+            .zinit-ice "$@"
+            ;;
+        (cdreplay)
+            .zinit-compdef-replay "$2"; ___retval=$?
+            ;;
+        (cdclear)
+            .zinit-compdef-clear "$2"
+            ;;
+        (add-fpath|fpath)
+            .zinit-add-fpath "${@[2-correct,-1]}"
+            ;;
+        (run)
+            .zinit-run "${@[2-correct,-1]}"
+            ;;
+        (dstart|dtrace)
             (( ${+functions[.zinit-service]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/additional.zsh"
-           .zinit-debug-start
-           ;;
-       (dstop)
+            .zinit-debug-start
+            ;;
+        (dstop)
             (( ${+functions[.zinit-service]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/additional.zsh"
-           .zinit-debug-stop
-           ;;
-       (man)
-           man "${ZINIT[BIN_DIR]}/docs/man/zi.1"
-           ;;
-       (env-whitelist)
+            .zinit-debug-stop
+            ;;
+        (man)
+            man "${ZINIT[BIN_DIR]}/docs/man/zi.1"
+            ;;
+        (env-whitelist)
             shift
             .zinit-parse-opts env-whitelist "$@"
             builtin set -- "${reply[@]}"
@@ -2754,17 +2752,17 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 (( OPTS[opt_-v,--verbose] )) && +zinit-message "{msg2}Extended the parameter whitelist with: {data2}${(pj:$___sep:)@}{msg2}.{rst}"
             }
             ;;
-       (*)
-           # Check if there is a z-annex registered for the subcommand.
-           reply=( ${ZINIT_EXTS[z-annex subcommand:${(q)1}]} )
-           (( ${#reply} )) && {
-               reply=( "${(Q)${(z@)reply[1]}[@]}" )
-               (( ${+functions[${reply[5]}]} )) && \
-                   { "${reply[5]}" "$@"; return $?; } || \
-                   { +zinit-message "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
-           }
-           (( ${+functions[.zinit-confirm]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-           case "$1" in
+        (*)
+            # Check if there is a z-annex registered for the subcommand.
+            reply=( ${ZINIT_EXTS[z-annex subcommand:${(q)1}]} )
+            (( ${#reply} )) && {
+                reply=( "${(Q)${(z@)reply[1]}[@]}" )
+                (( ${+functions[${reply[5]}]} )) && \
+                    { "${reply[5]}" "$@"; return $?; } || \
+                    { +zinit-message "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
+            }
+            (( ${+functions[.zinit-confirm]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+            case "$1" in
                 (zstatus)
                     .zinit-show-zstatus
                     ;;
@@ -2785,17 +2783,16 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                         .zinit-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
                     fi
                     ;;
-                 (bindkeys)
+                (bindkeys)
                     .zinit-list-bindkeys
                     ;;
-                 (update)
+                (update)
                     if (( ${+ICE[if]} )) {
                         eval "${ICE[if]}" || return 1;
                     }
                     for REPLY ( ${(s.;.)ICE[has]} ) {
                         (( ${+commands[$REPLY]} )) || return 1
                     }
-
                     shift
                     .zinit-parse-opts update "$@"
                     builtin set -- "${reply[@]}"
@@ -2820,7 +2817,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 (report)
                     if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
                         [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 4; }
-                     .zinit-show-all-reports
+                    .zinit-show-all-reports
                     else
                         .zinit-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
                     fi
@@ -2965,19 +2962,19 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 (module)
                     .zinit-module "${@[2-correct,-1]}"; ___retval=$?
                     ;;
-                 (*)
-                     if [[ -z $1 ]] {
-                         +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
-                         +zinit-prehelp-usage-message rst
-                     } else {
-                         +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" \
-                                 "{apo}\`{error}$1{apo}\`{rst} "
-                         +zinit-prehelp-usage-message rst
-                     }
-                     ___retval=1
-                     ;;
-             esac
-             ;;
+                (*)
+                    if [[ -z $1 ]] {
+                        +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
+                        +zinit-prehelp-usage-message rst
+                    } else {
+                        +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" \
+                                "{apo}\`{error}$1{apo}\`{rst} "
+                        +zinit-prehelp-usage-message rst
+                    }
+                    ___retval=1
+                    ;;
+            esac
+            ;;
     esac
 
     return ___retval
@@ -3068,7 +3065,6 @@ if [[ -e ${${ZINIT[BIN_DIR]}}/zmodules/Src/zshell/zplugin.so ]] {
         # Don't trust access times and verify hard stored values.
         [[ -e ${${ZINIT[BIN_DIR]}}/module/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZINIT[BIN_DIR]}}/module/COMPILED_AT)"
         [[ -e ${${ZINIT[BIN_DIR]}}/module/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZINIT[BIN_DIR]}}/module/RECOMPILE_REQUEST)"
-
         if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
             +zinit-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
                 "of the ZI module has been requested… {hi}Building{rst}…"
@@ -3079,12 +3075,11 @@ if [[ -e ${${ZINIT[BIN_DIR]}}/zmodules/Src/zshell/zplugin.so ]] {
                 +zinit-message "{ok}Build successful!{rst}"
             else
                 builtin print -r -- "${ZINIT[col-error]}Compilation failed.${ZINIT[col-rst]}" \
-                     "${ZINIT[col-pre]}You can enter the following command:${ZINIT[col-rst]}" \
-                     'make -C "${ZINIT[BIN_DIR]}/zmodules' \
-                     "${ZINIT[col-pre]}to see the error messages and e.g.: report an issue" \
-                     "at GitHub${ZINIT[col-rst]}"
+                    "${ZINIT[col-pre]}You can enter the following command:${ZINIT[col-rst]}" \
+                    'make -C "${ZINIT[BIN_DIR]}/zmodules' \
+                    "${ZINIT[col-pre]}to see the error messages and e.g.: report an issue" \
+                    "at GitHub${ZINIT[col-rst]}"
             fi
-
             command date '+%s' >! "${ZINIT[BIN_DIR]}/zmodules/COMPILED_AT"
         }
     }

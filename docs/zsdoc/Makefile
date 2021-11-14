@@ -8,44 +8,44 @@ all: man pdf
 # MAN
 # Converted with a2x from asciidoc package
 
-man: man/zinit.zsh.1 man/zinit-side.zsh.1 man/zinit-install.zsh.1 man/zinit-autoload.zsh.1
+man: man/zinit.zsh.1 man/side.zsh.1 man/install.zsh.1 man/autoload.zsh.1
 
 man/zinit.zsh.1:
 	@mkdir -p man
 	a2x --verbose -L --doctype manpage --format manpage -D man zinit.zsh.adoc
 
-man/zinit-side.zsh.1:
+man/side.zsh.1:
 	@mkdir -p man
-	a2x --verbose -L --doctype manpage --format manpage -D man zinit-side.zsh.adoc
+	a2x --verbose -L --doctype manpage --format manpage -D man side.zsh.adoc
 
-man/zinit-install.zsh.1:
+man/install.zsh.1:
 	@mkdir -p man
-	a2x --verbose -L --doctype manpage --format manpage -D man zinit-install.zsh.adoc
+	a2x --verbose -L --doctype manpage --format manpage -D man install.zsh.adoc
 
-man/zinit-autoload.zsh.1:
+man/autoload.zsh.1:
 	@mkdir -p man
-	a2x --verbose -L --doctype manpage --format manpage -D man zinit-autoload.zsh.adoc
+	a2x --verbose -L --doctype manpage --format manpage -D man autoload.zsh.adoc
 
 # PDF
 # Uses asciidoctor not a2x (i.e. not asciidoc)
 
-pdf: pdf/zinit.zsh.pdf pdf/zinit-side.zsh.pdf pdf/zinit-install.zsh.pdf pdf/zinit-autoload.zsh.pdf
+pdf: pdf/zinit.zsh.pdf pdf/side.zsh.pdf pdf/install.zsh.pdf pdf/autoload.zsh.pdf
 
 pdf/zinit.zsh.pdf:
 	@mkdir -p pdf
 	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf zinit.zsh.adoc
 
-pdf/zinit-side.zsh.pdf:
+pdf/side.zsh.pdf:
 	@mkdir -p pdf
-	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf zinit-side.zsh.adoc
+	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf side.zsh.adoc
 
-pdf/zinit-install.zsh.pdf:
+pdf/install.zsh.pdf:
 	@mkdir -p pdf
-	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf zinit-install.zsh.adoc
+	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf install.zsh.adoc
 
-pdf/zinit-autoload.zsh.pdf:
+pdf/autoload.zsh.pdf:
 	@mkdir -p pdf
-	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf zinit-autoload.zsh.adoc
+	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf autoload.zsh.adoc
 
 clean:
 	rm -rf man pdf data

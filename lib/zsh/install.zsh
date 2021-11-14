@@ -4,7 +4,7 @@
 # Adjust the shellcheck fot Zsh compatibility.
 # shellcheck shell=bash disable=SC1009,1073,1027,1036,1072
 
-builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}zinit-side.zsh%f%b."; return 1; }
+builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
 # FUNCTION: .zinit-parse-json [[[
 # Retrievies the ice-list from given profile from
@@ -456,7 +456,7 @@ builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT
                             unfunction :zinit-git-clone
                             return $retval
                     }
-                    :zinit-git-clone |& { command ${ZINIT[BIN_DIR]}/git-process-output.zsh || cat; }
+                    :zinit-git-clone |& { command ${ZINIT[BIN_DIR]}/lib/zsh/git-process-output.zsh || cat; }
                     if (( pipestatus[1] == 141 )) {
                         :zinit-git-clone
                         integer retval=$?
@@ -491,7 +491,6 @@ builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT
                 arr=( "${(Q)${(z@)ZINIT_EXTS[$key]:-$ZINIT_EXTS2[$key]}[@]}" )
                 "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_path" "${${key##(zinit|z-annex) hook:}%% <->}" load
             done
-
             # Run annexes' atclone hooks (the after atclone-ice ones)
             reply=(
                 ${(on)ZINIT_EXTS2[(I)zinit hook:atclone-pre <->]}
@@ -676,7 +675,7 @@ builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT
 
         if (( ${+commands[curl]} )); then
             if [[ -n $progress ]]; then
-                command curl --progress-bar -fSL "$url" 2> >($ZINIT[BIN_DIR]/share/single-line.zsh >&2) || return 1
+                command curl --progress-bar -fSL "$url" 2> >($ZINIT[BIN_DIR]/lib/zsh/single-line.zsh >&2) || return 1
             else
                 command curl -fsSL "$url" || return 1
             fi
@@ -695,7 +694,7 @@ builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT
     } else {
         if type curl 2>/dev/null 1>&2; then
             if [[ -n $progress ]]; then
-                command curl --progress-bar -fSL "$url" 2> >($ZINIT[BIN_DIR]/share/single-line.zsh >&2) || return 1
+                command curl --progress-bar -fSL "$url" 2> >($ZINIT[BIN_DIR]/lib/zsh/single-line.zsh >&2) || return 1
             else
                 command curl -fsSL "$url" || return 1
             fi
@@ -965,7 +964,7 @@ builtin source "${ZINIT[BIN_DIR]}/zinit-side.zsh" || { builtin print -P "${ZINIT
     }
 
     command rm -f ${TMPDIR:-/tmp}/zinit-execs.$$.lst ${TMPDIR:-/tmp}/zinit.installed_comps.$$.lst \
-                  ${TMPDIR:-/tmp}/zinit.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zinit.compiled.$$.lst
+                ${TMPDIR:-/tmp}/zinit.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zinit.compiled.$$.lst
 
     if [[ ! -d $local_dir/$dirname ]]; then
         local id_msg_part="{…} (at label{ehi}:{rst} {id-as}$id_as{rst})"
@@ -1533,9 +1532,9 @@ ziextract() {
     zparseopts -D -E -move=opt_move -move2=opt_move2 -norm=opt_norm \
             -auto=opt_auto -nobkp=opt_nobkp || \
         { +zinit-message "{error}ziextract:{msg2} Incorrect options given to" \
-                  "\`{pre}ziextract{msg2}' (available are: {meta}--auto{msg2}," \
-                  "{meta}--move{msg2}, {meta}--move2{msg2}, {meta}--norm{msg2}," \
-                  "{meta}--nobkp{msg2}).{rst}"; return 1; }
+                "\`{pre}ziextract{msg2}' (available are: {meta}--auto{msg2}," \
+                "{meta}--move{msg2}, {meta}--move2{msg2}, {meta}--norm{msg2}," \
+                "{meta}--nobkp{msg2}).{rst}"; return 1; }
 
     local file="$1" ext="$2"
     integer move=${${${(M)${#opt_move}:#0}:+0}:-1} \
@@ -1734,7 +1733,7 @@ ziextract() {
             →zinit-extract() { →zinit-check dpkg-deb "$file" || return 1; command dpkg-deb -R "$file" .; }
             ;;
         ((#i)*.rpm)
-            →zinit-extract() { →zinit-check cpio "$file" || return 1; $ZINIT[BIN_DIR]/share/rpm2cpio.zsh "$file" | command cpio -imd --no-absolute-filenames; }
+            →zinit-extract() { →zinit-check cpio "$file" || return 1; $ZINIT[BIN_DIR]/lib/zsh/rpm2cpio.zsh "$file" | command cpio -imd --no-absolute-filenames; }
             ;;
         ((#i)*.exe|(#i)*.pe32)
             →zinit-extract() {

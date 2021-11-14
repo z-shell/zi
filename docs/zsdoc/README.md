@@ -7,9 +7,9 @@ lists all functions, interactions between them, their comments and features used
 Github allows to directly view `Asciidoc` documents:
 
 - [zinit.zsh](zinit.zsh.adoc) – always loaded, in `.zshrc` ([pdf](https://z-shell.github.io/zi/wiki/zinit.zsh))
-- [zinit-side.zsh](zinit-side.zsh.adoc) – common functions, loaded by `*-install` and `*-autoload` scripts ([pdf](https://z-shell.github.io/zi/wiki/zinit-side.zsh))
-- [zinit-install.zsh](zinit-install.zsh.adoc) – functions used only when installing a plugin or snippet ([pdf](https://z-shell.github.io/zi/wiki/zinit-install.zsh))
-- [zinit-autoload.zsh](zinit-autoload.zsh.adoc) – functions used only in interactive `ZI` invocations ([pdf](https://z-shell.github.io/zi/wiki/zinit-autoload.zsh/))
+- [side.zsh](side.zsh.adoc) – common functions, loaded by `*-install` and `*-autoload` scripts ([pdf](https://z-shell.github.io/zi/wiki/side.zsh))
+- [install.zsh](install.zsh.adoc) – functions used only when installing a plugin or snippet ([pdf](https://z-shell.github.io/zi/wiki/install.zsh))
+- [autoload.zsh](autoload.zsh.adoc) – functions used only in interactive `ZI` invocations ([pdf](https://z-shell.github.io/zi/wiki/autoload.zsh/))
 
 # PDFs, man pages, etc.
 

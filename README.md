@@ -105,11 +105,11 @@ _For more information and to report security issues, please refer to our [securi
 ## About
 
 > **[?]**
-> ZI (previously known as Zinit) is a flexible integration manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
-> Z-Shell ZI is an open source community project released under the [MIT License](../LICENSE).
+> ZI (previously known name Zinit) is a flexible plugin & extension manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
+> Z-Shell ZI (not directly affiliated with the [Zsh](https://zsh.sourceforge.io/). project) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
 > **[?]**
-> Due to the removal of the 'zdharma' organization by the owner, while working alongside and being highly dependent The Z-Shell organization was created by @ss-o to recover the project.
+> Due to the removal of the 'zdharma' organization by the owner, while being highly dependent on those projects The Z-Shell organization was created to recover missing the project.
 > Around the same time for similar reasons 'zdharma-continuum' was created. To prevent confusion between the works, Z-Shell introduced ZI.

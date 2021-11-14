@@ -15,6 +15,7 @@ txt/
 *.txt
 *.zwc
 *.zini
+*lib/zsh/*zwc
 .ycm_extra_conf.py
 *deploy*key*
 *.bundle

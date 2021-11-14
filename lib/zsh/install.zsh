@@ -1,4 +1,3 @@
-# -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
@@ -339,8 +338,8 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
     }
     local_path=$REPLY
 
-    trap "rmdir ${(qqq)local_path}/._zinit ${(qqq)local_path} 2>/dev/null" EXIT
-    trap "rmdir ${(qqq)local_path}/._zinit ${(qqq)local_path} 2>/dev/null; return 1" INT TERM QUIT HUP
+    trap "rmdir ${(qqq)local_path}/._zi ${(qqq)local_path} 2>/dev/null" EXIT
+    trap "rmdir ${(qqq)local_path}/._zi ${(qqq)local_path} 2>/dev/null; return 1" INT TERM QUIT HUP
 
     local -A sites
     sites=(
@@ -401,8 +400,8 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
                 for REPLY ( $reply ) {
                     count+=1
                     url="https://github.com${REPLY}"
-                    if [[ -d $local_path/._zinit ]] {
-                        { local old_version="$(<$local_path/._zinit/is_release${count:#1})"; } 2>/dev/null
+                    if [[ -d $local_path/._zi ]] {
+                        { local old_version="$(<$local_path/._zi/is_release${count:#1})"; } 2>/dev/null
                         old_version=${old_version/(#b)(\/[^\/]##)(#c4,4)\/([^\/]##)*/${match[2]}}
                     }
                     +zinit-message "(Requesting \`${REPLY:t}'${version:+, version $version}{…}${old_version:+ Current version: $old_version.})"
@@ -420,10 +419,10 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
                         command rm -f "${REPLY:t}.sig"
                     fi
 
-                    command mkdir -p ._zinit
-                    [[ -d ._zinit ]] || return 2
-                    builtin print -r -- $url >! ._zinit/url || return 3
-                    builtin print -r -- ${REPLY} >! ._zinit/is_release${count:#1} || return 4
+                    command mkdir -p ._zi
+                    [[ -d ._zi ]] || return 2
+                    builtin print -r -- $url >! ._zi/url || return 3
+                    builtin print -r -- ${REPLY} >! ._zi/is_release${count:#1} || return 4
                     ziextract ${REPLY:t} ${${${#reply}:#1}:+--nobkp}
                 }
                 return $?
@@ -431,13 +430,13 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
                 return 1
             }
         } elif [[ $site = cygwin ]] {
-            command mkdir -p "$local_path/._zinit"
+            command mkdir -p "$local_path/._zi"
             [[ -d "$local_path" ]] || return 1
 
             (
                 () { setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
                 .zinit-get-cygwin-package "$remote_url_path" || return 1
-                builtin print -r -- $REPLY >! ._zinit/is_release
+                builtin print -r -- $REPLY >! ._zi/is_release
                 ziextract "$REPLY"
             ) || return $?
         } elif [[ $tpe = github ]] {
@@ -481,7 +480,7 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
 
         if [[ $update != -u ]] {
             # Store ices at clone of a plugin
-            .zinit-store-ices "$local_path/._zinit" ICE "" "" "" ""
+            .zinit-store-ices "$local_path/._zi" ICE "" "" "" ""
             reply=(
                 ${(on)ZINIT_EXTS2[(I)zinit hook:\\\!atclone-pre <->]}
                 ${(on)ZINIT_EXTS[(I)z-annex hook:\\\!atclone-<-> <->]}
@@ -1195,7 +1194,7 @@ builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZIN
 
         if [[ ${${:-$local_dir/$dirname}%%/##} != ${ZINIT[SNIPPETS_DIR]} ]] {
             # Store ices at "clone" and update of snippet, SVN and single-file
-            local pfx=$local_dir/$dirname/._zinit
+            local pfx=$local_dir/$dirname/._zi
             .zinit-store-ices "$pfx" ICE url_rsvd "" "$save_url" "${+ICE[svn]}"
         } elif [[ -n $id_as ]] {
             +zinit-message "{u-warn}Warning{b-warn}:{rst} the snippet {url}$id_as{rst} isn't" \
@@ -1555,7 +1554,7 @@ ziextract() {
         # Second, try to find the archive via `file' tool
         if (( !${#files} )) {
             local -aU output infiles stage2_processed archives
-            infiles=( **/*~(._zinit*|._backup|.git)(|/*)~*/*/*(-.DN) )
+            infiles=( **/*~(._zi*|._backup|.git)(|/*)~*/*/*(-.DN) )
             output=( ${(@f)"$(command file -- $infiles 2>&1)"} )
             archives=( ${(M)output[@]:#(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) *} )
             for file ( $archives ) {
@@ -1625,7 +1624,7 @@ ziextract() {
     if (( !nobkp )) {
         command mkdir -p ._backup
         command rm -rf ._backup/*(DN)
-        command mv -f *~(._zinit*|._backup|.git|.svn|.hg|$file)(DN) ._backup 2>/dev/null
+        command mv -f *~(._zi*|._backup|.git|.svn|.hg|$file)(DN) ._backup 2>/dev/null
     }
 
     .zinit-extract-wrapper() {
@@ -1635,7 +1634,7 @@ ziextract() {
         $fun; retval=$?
         if (( retval == 0 )) {
             local -a files
-            files=( *~(._zinit*|._backup|.git|.svn|.hg|$file)(DN) )
+            files=( *~(._zi*|._backup|.git|.svn|.hg|$file)(DN) )
             (( ${#files} && !norm )) && command rm -f "$file"
         }
         return $retval
@@ -1764,7 +1763,7 @@ ziextract() {
     unfunction -- .zinit-extract-wrapper
 
     local -a execs
-    execs=( **/*~(._zinit(|/*)|.git(|/*)|.svn(|/*)|.hg(|/*)|._backup(|/*))(DN-.) )
+    execs=( **/*~(._zi(|/*)|.git(|/*)|.svn(|/*)|.hg(|/*)|._backup(|/*))(DN-.) )
     if [[ ${#execs} -gt 0 && -n $execs ]] {
         execs=( ${(@f)"$( file ${execs[@]} )"} )
         execs=( "${(M)execs[@]:#[^:]##:*executable*}" )
@@ -1807,14 +1806,14 @@ ziextract() {
 
     if (( move | move2 )) {
         local -a files
-        files=( *~(._zinit|.git|._backup|.tmp231ABC)(DN/) )
+        files=( *~(._zi|.git|._backup|.tmp231ABC)(DN/) )
         if (( ${#files} )) {
             command mkdir -p .tmp231ABC
-            command mv -f *~(._zinit|.git|._backup|.tmp231ABC)(D) .tmp231ABC
+            command mv -f *~(._zi|.git|._backup|.tmp231ABC)(D) .tmp231ABC
             if (( !move2 )) {
-                command mv -f **/*~(*/*~*/*/*|*/*/*/*|^*/*|._zinit(|/*)|.git(|/*)|._backup(|/*))(DN) .
+                command mv -f **/*~(*/*~*/*/*|*/*/*/*|^*/*|._zi(|/*)|.git(|/*)|._backup(|/*))(DN) .
             } else {
-                command mv -f **/*~(*/*~*/*/*/*|*/*/*/*/*|^*/*|._zinit(|/*)|.git(|/*)|._backup(|/*))(DN) .
+                command mv -f **/*~(*/*~*/*/*/*|*/*/*/*/*|^*/*|._zi(|/*)|.git(|/*)|._backup(|/*))(DN) .
             }
 
             command mv .tmp231ABC/$file . &>/dev/null

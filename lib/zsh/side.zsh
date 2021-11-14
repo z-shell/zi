@@ -1,4 +1,3 @@
-# -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 
 # FUNCTION: .zinit-exists-physically [[[
@@ -251,18 +250,32 @@
         fi
     fi
 
-    local ___zinit_path="$___local_dir/._zinit"
+    local ___zinit_path="$___local_dir/._zi"
 
-    # Rename Zplugin > Zinit
+    # Rename Zplugin > ZI
     if [[ ! -d $___zinit_path && -d $___local_dir/._zplugin ]]; then
         (
             builtin print -Pr -- "${ZINIT[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
                 "FOR THE ZPLUGIN -> ZINIT RENAME…%f"
             builtin cd -q ${ZINIT[PLUGINS_DIR]} || return 1
             autoload -Uz zmv
-            ( zmv -W '**/._zplugin' '**/._zinit' ) &>/dev/null
+            ( zmv -W '**/._zplugin' '**/._zi' ) &>/dev/null
             builtin cd -q ${ZINIT[SNIPPETS_DIR]} || return 1
-            ( zmv -W '**/._zplugin' '**/._zinit' ) &>/dev/null
+            ( zmv -W '**/._zplugin' '**/._zi' ) &>/dev/null
+            builtin print -Pr -- "${ZINIT[col-obj]}THE UPGRADE SUCCEDED!%f"
+        ) || builtin print -Pr -- "${ZINIT[col-error]}THE UPGRADE FAILED!%f"
+    fi
+
+    # Rename Zinit > ZI
+    if [[ ! -d $___zinit_path && -d $___local_dir/._zinit ]]; then
+        (
+            builtin print -Pr -- "${ZINIT[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
+                "FOR THE ZINIT -> ZI RENAME…%f"
+            builtin cd -q ${ZINIT[PLUGINS_DIR]} || return 1
+            autoload -Uz zmv
+            ( zmv -W '**/.zinit' '**/._zi' ) &>/dev/null
+            builtin cd -q ${ZINIT[SNIPPETS_DIR]} || return 1
+            ( zmv -W '**/._zinit' '**/._zi' ) &>/dev/null
             builtin print -Pr -- "${ZINIT[col-obj]}THE UPGRADE SUCCEDED!%f"
         ) || builtin print -Pr -- "${ZINIT[col-error]}THE UPGRADE FAILED!%f"
     fi
@@ -272,8 +285,8 @@
     local ___key
     { for ___key in mode url is_release is_release{2..5} ${ice_order[@]}; do
         [[ -f "$___zinit_path/$___key" ]] && ___mdata[$___key]="$(<$___zinit_path/$___key)"
-      done
-      [[ "${___mdata[mode]}" = "1" ]] && ___mdata[svn]=""
+    done
+        [[ "${___mdata[mode]}" = "1" ]] && ___mdata[svn]=""
     } 2>/dev/null
 
     # Handle flag-Ices; svn must be last
@@ -330,8 +343,8 @@
 # $6 – the mode (1 - svn, 0 - single file), if applicable
 .zinit-store-ices() {
     local ___pfx="$1" ___ice_var="$2" \
-          ___add_ices="$3" ___add_ices2="$4" \
-          url="$5" mode="$6"
+        ___add_ices="$3" ___add_ices2="$4" \
+        url="$5" mode="$6"
 
     # Copy from .zinit-recall
     local -a ice_order nval_ices

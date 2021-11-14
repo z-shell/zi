@@ -966,7 +966,7 @@ builtin setopt noaliases
 .zinit-any-to-pid() {
     emulate -LR zsh
     builtin setopt extendedglob typesetsilent noshortloops rcquotes \
-         ${${${+REPLY}:#0}:+warncreateglobal}
+        ${${${+REPLY}:#0}:+warncreateglobal}
 
     1=${~1} 2=${~2}
 
@@ -1086,10 +1086,10 @@ builtin setopt noaliases
         } else {
             .zinit-any-to-user-plugin "$id_as"
             local_dir=${${${(M)reply[-2]:#%}:+${reply[2]}}:-${ZINIT[PLUGINS_DIR]}/${id_as//\//---}}
-            [[ $id_as == _local/* && -d $local_dir && ! -d $local_dir/._zinit ]] && command mkdir -p "$local_dir"/._zinit
+            [[ $id_as == _local/* && -d $local_dir && ! -d $local_dir/._zi ]] && command mkdir -p "$local_dir"/._zi
             dirname=""
         }
-        [[ -e $local_dir/${dirname:+$dirname/}._zinit || \
+        [[ -e $local_dir/${dirname:+$dirname/}._zi || \
             -e $local_dir/${dirname:+$dirname/}._zplugin ]] && exists=1
 
         (( exists )) && break
@@ -1201,11 +1201,11 @@ builtin setopt noaliases
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
     }
-    [[ ! -d ${ZINIT[PLUGINS_DIR]}/_local---zinit ]] && {
-        command rm -rf "${ZINIT[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zinit"
-        command mkdir -p "${ZINIT[PLUGINS_DIR]}/_local---zinit"
+    [[ ! -d ${ZINIT[PLUGINS_DIR]}/_local---zi ]] && {
+        command rm -rf "${ZINIT[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zi"
+        command mkdir -p "${ZINIT[PLUGINS_DIR]}/_local---zi"
         command chmod go-w "${ZINIT[PLUGINS_DIR]}"
-        command ln -s "${ZINIT[BIN_DIR]}/_zinit" "${ZINIT[PLUGINS_DIR]}/_local---zinit"
+        command ln -s "${ZINIT[BIN_DIR]}/lib/_zi" "${ZINIT[PLUGINS_DIR]}/_local---zi"
 
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
@@ -1220,8 +1220,8 @@ builtin setopt noaliases
         # For compaudit.
         command chmod go-w "${ZINIT[COMPLETIONS_DIR]}"
 
-        # Symlink _zinit completion into _local---zinit directory.
-        command ln -s "${ZINIT[PLUGINS_DIR]}/_local---zinit/_zinit" "${ZINIT[COMPLETIONS_DIR]}"
+        # Symlink _zi completion into _local---zi directory.
+        command ln -s "${ZINIT[PLUGINS_DIR]}/_local---zi/_zi" "${ZINIT[COMPLETIONS_DIR]}"
 
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
@@ -2116,13 +2116,13 @@ $match[7]}:-${ZINIT[__last-formatter-code]}}}:+}}}//←→}
         ${(As:|:)ZINIT[ice-list]}
         ${(@)${(A@kons:|:)${ZINIT_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
     )
-    ___path="${ZINIT[PLUGINS_DIR]}/${id_as//\//---}"/._zinit
+    ___path="${ZINIT[PLUGINS_DIR]}/${id_as//\//---}"/._zi
     # TODO snippet's dir computation…
     if [[ ! -d $___path ]] {
         if ! .zinit-get-object-path snippet "${id_as//\//---}"; then
             return 1
         fi
-        ___path="$REPLY"/._zinit
+        ___path="$REPLY"/._zi
     }
     for ___key ( "${ice_order[@]}" ) {
         (( ${+ICE[$___key]} )) && [[ ${ICE[$___key]} != +* ]] && continue
@@ -2597,9 +2597,9 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                     }
 
                     if [[ -n ${ICE[trigger-load]} || \
-                          ( ${+ICE[wait]} == 1 &&
-                              ${ICE[wait]} = (\!|)(<->(a|b|c|)|) )
-                       ]] && (( !ZINIT[OPTIMIZE_OUT_DISK_ACCESSES]
+                        ( ${+ICE[wait]} == 1 &&
+                        ${ICE[wait]} = (\!|)(<->(a|b|c|)|) )
+                        ]] && (( !ZINIT[OPTIMIZE_OUT_DISK_ACCESSES]
                     )) {
                         if (( ___is_snippet > 0 )) {
                             .zinit-get-object-path snippet $___ehid
@@ -2664,7 +2664,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                         ___retval+=___last_retval
 
                         if (( ___turbo && !___had_cloneonly && ZINIT[HAVE_SCHEDULER] )) {
-                            command rm -f $___object_path/._zinit/cloneonly
+                            command rm -f $___object_path/._zi/cloneonly
                             unset 'ICE[cloneonly]'
                         }
                     }
@@ -3045,10 +3045,10 @@ for ZINIT_TMP ( "" side install autoload ) {
     .zinit-get-mtime-into "${ZINIT[BIN_DIR]}/lib/zsh/$ZINIT_TMP.zsh" "ZINIT[mtime$ZINIT_TMP]"
 }
 
-# Simulate existence of _local/zinit plugin.
+# Simulate existence of _local/zi plugin.
 # This will allow to cuninstall of its completion
-ZINIT_REGISTERED_PLUGINS=( _local/zinit "${(u)ZINIT_REGISTERED_PLUGINS[@]:#_local/zinit}" )
-ZINIT[STATES___local/zinit]=1
+ZINIT_REGISTERED_PLUGINS=( _local/zi "${(u)ZINIT_REGISTERED_PLUGINS[@]:#_local/zi}" )
+ZINIT[STATES___local/zi]=1
 
 # Inform Prezto that the compdef function is available.
 zstyle ':prezto:module:completion' loaded 1

@@ -13,7 +13,7 @@
   description: "Enhancement of the code, not introducing new features."
 - name: "refactor"
   color: 1d76db
-  description: "Updating the code with simpler, easier to understand or more efficient syntax or methods, but not introducing new features."
+  description: "Simplified code that is easier to understand or more efficient syntax or methods."
 - name: "performance"
   color: 1d76db
   description: "Improving performance of the project, not introducing new features."
@@ -76,3 +76,4 @@
 - name: "minor"
   color: 0e8a16
   description: "This PR causes a minor bump in the version number."
+

@@ -2006,8 +2006,8 @@ ${match[4]:+${${match[3]:-$ZINIT[col-${ZINIT[__last-formatter-code]}]}:#%F}}$mat
 ${${functions[.zinit-formatter-$match[7]]:+\
 ${$(.zinit-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-\
 $(.zinit-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
-  builtin print -rn -- "$REPLY"
- )${${ZINIT[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+\
+    builtin print -rn -- "$REPLY"
+)${${ZINIT[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+\
 $match[7]}:-${ZINIT[__last-formatter-code]}}}:+}}}//←→}
 
     # Restore the default color at the end of the message.
@@ -2427,9 +2427,9 @@ zi() {
         --bindkeys opt_-b,--bindkeys
         -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
         --command  opt_-x,--command
+
         env-whitelist "-h|--help|-v|--verbose"
-        update        "-L|--plugins|-s|--snippets|-p|--parallel|-a|--all|\
--q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose|-h|--help"
+        update        "-L|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose|-h|--help"
         delete        "-a|--all|-c|--clean|-y|--yes|-q|--quiet|-h|--help"
         unload        "-h|--help|-q|--quiet"
         cdclear       "-h|--help|-q|--quiet"
@@ -2514,24 +2514,19 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                     ZINIT_ICE=( "${(kv)ICE[@]}" ) ZINIT_ICES=()
                     integer ___msgs=${+ICE[debug]}
                     (( ___msgs )) && +zinit-message "{pre}zinit-main:{faint} Processing {pname}$1{faint}{…}{rst}"
-
                     # Delete up to the final space to get the previously-processed ID.
                     ZINIT[annex-exposed-processed-IDs]+="${___id:+ $___id}"
-
                     # Strip the ID-qualifier (`@') and GitHub domain from the ID.
                     ___id="${${1#@}%%(///|//|/)}"
                     (( ___is_snippet == -1 )) && ___id="${___id#https://github.com/}"
-
                     # Effective handle-ID – the label under which the object
                     # will be identified / referred-to by ZI.
                     ___ehid="${ICE[id-as]:-$___id}"
-
                     # Effective remote-ID (i.e.: URL, GitHub username/repo,
                     # package name, etc.). teleid'' allows "overriding" of $1.
                     # In case of a package using teleid'', the value here
                     # is being took from the given ices, before disk-ices.
                     ___etid="${ICE[teleid]:-$___id}"
-
                     if (( ${+ICE[pack]} )); then
                         ___had_wait=${+ICE[wait]}
                         .zinit-load-ices "$___ehid"
@@ -2539,9 +2534,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                         # packages), only via the command's ice-spec.
                         [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
                     fi
-
                     [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]] && ICE[id-as]="${___etid:t}"
-
                     integer  ___is_snippet=${${(M)___is_snippet:#-1}:-0}
                     () {
                         builtin setopt localoptions extendedglob
@@ -2549,7 +2542,6 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                             ___is_snippet=1
                         }
                     } "$@"
-
                     local ___type=${${${(M)___is_snippet:#1}:+snippet}:-plugin}
                     reply=(
                         ${(on)ZINIT_EXTS2[(I)zinit hook:before-load-pre <->]}
@@ -2573,7 +2565,6 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                                 ___args=( "${(@Q)${(@z)ZINIT[annex-before-load:new-@]}}" )
                                 builtin set -- "${___args[@]}"
                             }
-
                             # Override $___ices?
                             if (( ___retval2 & 4 )) {
                                 local -a ___new_ices
@@ -3009,9 +3000,8 @@ zicompdef() { ZINIT_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
         ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 }
 # ]]]
-
 # Compatibility functions. [[[
-zplugin() { zinit "$@"; }
+zplugin() { zi "$@"; }
 zpcdreplay() { .zinit-compdef-replay -q; }
 zpcdclear() { .zinit-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZINIT[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZINIT[COMPINIT_OPTS]}}"; }
@@ -3054,10 +3044,10 @@ ZINIT[STATES___local/zi]=1
 zstyle ':prezto:module:completion' loaded 1
 
 # Colorize completions for commands unload, report, creinstall, cuninstall.
-zstyle ':completion:*:zinit:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;35=1;33'
-zstyle ':completion:*:zinit:argument-rest:plugins' matcher 'r:|=** l:|=*'
-zstyle ':completion:*:*:zinit:*' group-name ""
-zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;35=1;33'
+#zstyle ':completion:*:zinit:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;35=1;33'
+#zstyle ':completion:*:zinit:argument-rest:plugins' matcher 'r:|=** l:|=*'
+#zstyle ':completion:*:*:zinit:*' group-name ""
+zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;36=4;35'
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]

@@ -785,7 +785,7 @@ ZINIT[EXTENDED_GLOB]=""
 
     local i
     for i in "${filtered[@]}"; do
-        [[ "$i" = "_local/zinit" ]] && continue
+        [[ "$i" = "_local/zi" ]] && continue
         .zinit-any-colorify-as-uspl2 "$i"
         # Mark light loads
         [[ "${ZINIT[STATES__$i]}" = "1" ]] && REPLY="$REPLY ${ZINIT[col-info]}*${ZINIT[col-rst]}"
@@ -1403,7 +1403,7 @@ ZINIT[EXTENDED_GLOB]=""
 .zinit-show-all-reports() {
     local i
     for i in "${ZINIT_REGISTERED_PLUGINS[@]}"; do
-        [[ "$i" = "_local/zinit" ]] && continue
+        [[ "$i" = "_local/zi" ]] && continue
         .zinit-show-report "$i"
     done
 } # ]]]
@@ -1894,7 +1894,7 @@ ZINIT[EXTENDED_GLOB]=""
         pd=${repo:t}
 
         # Two special cases
-        [[ $pd = custom || $pd = _local---zinit ]] && continue
+        [[ $pd = custom || $pd = _local---zi ]] && continue
 
         .zinit-any-colorify-as-uspl2 "$pd"
 
@@ -1987,7 +1987,7 @@ ZINIT[EXTENDED_GLOB]=""
         for repo ( $files ) {
             uspl=${repo:t}
             # Two special cases
-            [[ $uspl = custom || $uspl = _local---zinit ]] && continue
+            [[ $uspl = custom || $uspl = _local---zi ]] && continue
 
             # Check if repository has a remote set
             if [[ -f $repo/.git/config ]] {
@@ -2073,7 +2073,7 @@ ZINIT[EXTENDED_GLOB]=""
     +zinit-message "Plugin directory: {file}${ZINIT[PLUGINS_DIR]}{rst}"
     +zinit-message "Completions directory: {file}${ZINIT[COMPLETIONS_DIR]}{rst}"
 
-    # Without _zlocal/zinit
+    # Without _zlocal/zi
     +zinit-message "Loaded plugins: {num}$(( ${#ZINIT_REGISTERED_PLUGINS[@]} - 1 )){rst}"
 
     # Count light-loaded plugins
@@ -2082,20 +2082,20 @@ ZINIT[EXTENDED_GLOB]=""
     for s in "${(@v)ZINIT[(I)STATES__*]}"; do
         [[ "$s" = 1 ]] && (( light ++ ))
     done
-    # Without _zlocal/zinit
+    # Without _zlocal/zi
     +zinit-message "Light loaded: {num}$(( light - 1 )){rst}"
 
-    # Downloaded plugins, without _zlocal/zinit, custom
+    # Downloaded plugins, without _zlocal/zi, custom
     typeset -a plugins
     plugins=( "${ZINIT[PLUGINS_DIR]}"/*(DN) )
     +zinit-message "Downloaded plugins: {num}$(( ${#plugins} - 1 )){rst}"
 
-    # Number of enabled completions, with _zlocal/zinit
+    # Number of enabled completions, with _zlocal/zi
     typeset -a completions
     completions=( "${ZINIT[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc(DN) )
     +zinit-message "Enabled completions: {num}${#completions[@]}{rst}"
 
-    # Number of disabled completions, with _zlocal/zinit
+    # Number of disabled completions, with _zlocal/zi
     completions=( "${ZINIT[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
     +zinit-message "Disabled completions: {num}${#completions[@]}{rst}"
 
@@ -2296,7 +2296,7 @@ ZINIT[EXTENDED_GLOB]=""
 
     local p user plugin
     for p in "${plugins[@]}"; do
-        [[ "${p:t}" = "custom" || "${p:t}" = "_local---zinit" ]] && continue
+        [[ "${p:t}" = "custom" || "${p:t}" = "_local---zi" ]] && continue
 
         .zinit-any-to-user-plugin "${p:t}"
         user="${reply[-2]}" plugin="${reply[-1]}"
@@ -2904,7 +2904,7 @@ builtin print -Pr \"\$ZINIT[col-obj]Done (with the exit code: \$_retval).%f%b\""
     local p uspl1
     for p in ${plugins[@]}; do
         uspl1=${p:t}
-        [[ $uspl1 = custom || $uspl1 = _local---zinit ]] && continue
+        [[ $uspl1 = custom || $uspl1 = _local---zi ]] && continue
 
         pushd "$p" >/dev/null || continue
         if [[ -d .git ]]; then
@@ -3332,31 +3332,31 @@ EOF
     setopt localoptions localtraps
     trap 'return 1' INT TERM
     ( builtin cd -q "${ZINIT[BIN_DIR]}"/zmodules
-      +zinit-message "{pname}== Building module zshell/zplugin, running: make clean, then ./configure and then make =={rst}"
-      +zinit-message "{pname}== The module sources are located at: "${ZINIT[BIN_DIR]}"/zmodules =={rst}"
-      if [[ -f Makefile ]] {
-          if [[ "$1" = "--clean" ]] {
-              noglob +zinit-message {p}-- make distclean --{rst}
-              make distclean
-              ((1))
-          } else {
-              noglob +zinit-message {p}-- make clean --{rst}
-              make clean
-          }
-      }
-      noglob +zinit-message  {p}-- ./configure --{rst}
-      CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp && {
-          noglob +zinit-message {p}-- make --{rst}
-          if { make } {
-            [[ -f Src/zshell/zplugin.so ]] && cp -vf Src/zshell/zplugin.{so,bundle}
-            noglob +zinit-message "{info}Module has been built correctly.{rst}"
-            .zinit-module info
-          } else {
-              noglob +zinit-message  "{error}Module didn't build.{rst} "
-              .zinit-module info --link
-          }
-      }
-      builtin print $EPOCHSECONDS >! "${ZINIT[BIN_DIR]}"/zmodules/COMPILED_AT
+        +zinit-message "{pname}== Building module zshell/zplugin, running: make clean, then ./configure and then make =={rst}"
+        +zinit-message "{pname}== The module sources are located at: "${ZINIT[BIN_DIR]}"/zmodules =={rst}"
+        if [[ -f Makefile ]] {
+            if [[ "$1" = "--clean" ]] {
+                noglob +zinit-message {p}-- make distclean --{rst}
+                make distclean
+                ((1))
+            } else {
+                noglob +zinit-message {p}-- make clean --{rst}
+                make clean
+            }
+        }
+        noglob +zinit-message  {p}-- ./configure --{rst}
+        CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp && {
+            noglob +zinit-message {p}-- make --{rst}
+            if { make } {
+                [[ -f Src/zshell/zplugin.so ]] && cp -vf Src/zshell/zplugin.{so,bundle}
+                noglob +zinit-message "{info}Module has been built correctly.{rst}"
+                .zinit-module info
+            } else {
+                noglob +zinit-message  "{error}Module didn't build.{rst} "
+                .zinit-module info --link
+            }
+        }
+    builtin print $EPOCHSECONDS >! "${ZINIT[BIN_DIR]}"/zmodules/COMPILED_AT
     )
 }
 # ]]]

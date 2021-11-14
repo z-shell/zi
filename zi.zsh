@@ -2375,7 +2375,7 @@ $match[7]}:-${ZINIT[__last-formatter-code]}}}:+}}}//←→}
 # FUNCTION: zi. [[[
 # Main function directly exposed to user, obtains subcommand and its
 # arguments, has completion.
-zi() {
+zinit() {
     local -A ICE ZINIT_ICE
     ICE=( "${(kv)ZINIT_ICES[@]}" )
     ZINIT_ICE=( "${(kv)ICE[@]}" )
@@ -2427,7 +2427,6 @@ zi() {
         --bindkeys opt_-b,--bindkeys
         -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
         --command  opt_-x,--command
-
         env-whitelist "-h|--help|-v|--verbose"
         update        "-L|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose|-h|--help"
         delete        "-a|--all|-c|--clean|-y|--yes|-q|--quiet|-h|--help"
@@ -3025,8 +3024,7 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZINIT[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zpl=zi zplg=zi zini=zi zinit=zi
-
+builtin alias zi=zinit zpl=zinit zplg=zinit zini=zinit
 .zinit-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.

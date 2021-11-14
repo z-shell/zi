@@ -1,5 +1,5 @@
 ---
-name: PR Labels
+name: PR Labels BOT
 
 on:
   workflow_dispatch:

@@ -1716,7 +1716,7 @@ ZINIT[EXTENDED_GLOB]=""
         }
 
         # Store ices to disk at update of plugin
-        .zinit-store-ices "$local_dir/._zinit" ice "" "" "" ""
+        .zinit-store-ices "$local_dir/._zi" ice "" "" "" ""
     fi
 
     # Run annexes' atpull hooks (the `always' after atpull-ice ones)
@@ -1858,12 +1858,12 @@ ZINIT[EXTENDED_GLOB]=""
 
     if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
         local -a snipps
-        snipps=( ${ZINIT[SNIPPETS_DIR]}/**/(._zinit|._zplugin)(ND) )
+        snipps=( ${ZINIT[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)(ND) )
 
         [[ $st != status && ${OPTS[opt_-q,--quiet]} != 1 && -n $snipps ]] && \
             +zinit-message "{info}Note:{rst} updating also unloaded snippets"
 
-        for snip ( ${ZINIT[SNIPPETS_DIR]}/**/(._zinit|._zplugin)/mode(D) ) {
+        for snip ( ${ZINIT[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(D) ) {
             [[ ! -f ${snip:h}/url ]] && continue
             [[ -f ${snip:h}/id-as ]] && \
                 id_as="$(<${snip:h}/id-as)" || \
@@ -1916,7 +1916,7 @@ ZINIT[EXTENDED_GLOB]=""
         local user=${reply[-2]} plugin=${reply[-1]}
 
         # Must be a git repository or a binary release
-        if [[ ! -d $repo/.git && ! -f $repo/._zinit/is_release ]]; then
+        if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]]; then
             (( !OPTS[opt_-q,--quiet] )) && \
                 builtin print "$REPLY: not a git repository"
             continue
@@ -1949,7 +1949,7 @@ ZINIT[EXTENDED_GLOB]=""
     local -a files
     integer main_counter counter PUPDATE=1
 
-    files=( ${ZINIT[SNIPPETS_DIR]}/**/(._zinit|._zplugin)/mode(ND) )
+    files=( ${ZINIT[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(ND) )
     main_counter=${#files}
     if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
         for snip ( "${files[@]}" ) {
@@ -2002,7 +2002,7 @@ ZINIT[EXTENDED_GLOB]=""
             local user=${reply[-2]} plugin=${reply[-1]}
 
             # Must be a git repository or a binary release
-            if [[ ! -d $repo/.git && ! -f $repo/._zinit/is_release ]] {
+            if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]] {
                 continue
             }
             files2+=( $repo )
@@ -2740,9 +2740,9 @@ local -aU loadedsnips todelete final_todelete
 loadedsnips=( \${\${ZINIT_SNIPPETS[@]% <*>}/(#m)*/\$(.zinit-get-object-path snippet \"\$MATCH\" && builtin print -rn \$REPLY; )} )
 local dir=\${\${ZINIT[SNIPPETS_DIR]%%[/[:space:]]##}:-${TMPDIR:-${TMPDIR:-/tmp}}/xyzcba231}
 todelete=( \$dir/*/*/*(ND/) \$dir/*/*(ND/) \$dir/*(ND/) )
-final_todelete=( \${todelete[@]:#*/(\${(~j:|:)loadedsnips}|*/plugins|._backup|._zinit|.svn|.git)(|/*)} )
+final_todelete=( \${todelete[@]:#*/(\${(~j:|:)loadedsnips}|*/plugins|._backup|._zi|.svn|.git)(|/*)} )
 final_todelete=( \${final_todelete[@]//(#m)*/\$( .zinit-get-object-path snippet \"\${\${\${MATCH##\${dir}[/[:space:]]#}/(#i)(#b)(http(s|)|ftp(s|)|ssh|rsync)--/\${match[1]##--}://}//--//}\" && builtin print -r -- \$REPLY)} )
-final_todelete=( \${final_todelete[@]:#(\${(~j:|:)loadedsnips}|*/plugins|*/._backup|*/._zinit|*/.svn|*/.git)(|/*)} )
+final_todelete=( \${final_todelete[@]:#(\${(~j:|:)loadedsnips}|*/plugins|*/._backup|*/._zi|*/.svn|*/.git)(|/*)} )
 todelete=( \${\${\${(@)\${(@)final_todelete##\$dir/#}//(#i)(#m)(http(s|)|ftp(s|)|ssh|rsync)--/\${MATCH%--}://}//--//}//(#b)(*)\/([^\/]##)(#e)/\$match[1]/\$ZINIT[col-file]\$match[2]\$ZINIT[col-rst]} )
 todelete=( \${todelete[@]//(#m)(#s)[^\/]##(#e)/\$ZINIT[col-file]\$MATCH\$ZINIT[col-rst]} )
 final_todelete=( \${\${\${(@)\${(@)final_todelete##\$dir/#}//(#i)(#m)(http(s|)|ftp(s|)|ssh|rsync)--/\${MATCH%--}://}//--//}//(#b)(*)\/([^\/]##)(#e)/\$match[1]/\$match[2]} )
@@ -2784,7 +2784,7 @@ builtin print -Pr \"\$ZINIT[col-obj]Done (with the exit code: \$_retval).%f%b\""
     local -a files
     files=( "$local_dir"/*.(zsh|sh|bash|ksh)(DN:t)
         "$local_dir"/*(*DN:t) "$local_dir"/*(@DN:t) "$local_dir"/*(.DN:t)
-        "$local_dir"/*~*/.(_zinit|svn|git)(/DN:t) "$local_dir"/*(=DN:t)
+        "$local_dir"/*~*/.(_zi|svn|git)(/DN:t) "$local_dir"/*(=DN:t)
         "$local_dir"/*(pDN:t) "$local_dir"/*(%DN:t)
     )
     (( !${#files} )) && files=( "no files?" )

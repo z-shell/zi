@@ -3000,7 +3000,7 @@ zicompdef() { ZINIT_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 }
 # ]]]
 # Compatibility functions. [[[
-zplugin() { zi "$@"; }
+zi() { zinit "$@"; }
 zpcdreplay() { .zinit-compdef-replay -q; }
 zpcdclear() { .zinit-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZINIT[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZINIT[COMPINIT_OPTS]}}"; }
@@ -3024,7 +3024,7 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZINIT[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zi=zinit zpl=zinit zplg=zinit zini=zinit
+builtin alias zpl=zinit zplg=zinit zini=zinit
 .zinit-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.

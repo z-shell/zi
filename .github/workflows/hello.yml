@@ -1,0 +1,16 @@
+name: Greetings CI
+
+on: [pull_request, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+    - uses: actions/first-interaction@v1.1.0
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: 'Hi, thank you for opening an issue  🚀. We welcome you to the community!"
+        pr-message: 'Hi, thanks for your first Pull Request 👍. Someone will review it soon.'

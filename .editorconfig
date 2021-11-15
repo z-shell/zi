@@ -1,5 +1,5 @@
-# TODO: foldmarker=[[[,]]]:foldmethod=marker
-# top-most EditorConfig file
+# Note: VIM users should use alternate marks [[[ and ]]] as the original ones can confuse nested
+# substitutions, e.g.: ${${${VAR}}}
 root = true
 
 [*]
@@ -8,6 +8,7 @@ indent_size = 4
 end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
+continuation_indent_size = 4
 insert_final_newline = true
 
 [Makefile]
@@ -24,11 +25,6 @@ indent_size = 2
 indent_size = tab
 indent_style = tab
 
-
 [*.{sh,bash,zsh}]
-max_line_length    = 80
-shell_variant      = auto
-binary_next_line   = true  # like -bn
-switch_case_indent = true  # like -ci
-space_redirects    = true  # like -sr
-keep_padding       = false # like -kp
+max_line_length     = 120
+shell_variant       = auto

@@ -105,11 +105,10 @@ _For more information and to report security issues, please refer to our [securi
 ## About
 
 > **[?]**
-> ZI (New version of Zinit) is a flexible interactive plugin & extension manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
-> Z-Shell ZI (not directy related to [Zsh](https://zsh.sourceforge.io/)) is an open source community projects released under the [MIT License](../LICENSE).
+> [**ZI**](https://github.com/z-shell/zi) (New version of Zinit) is a interactive plugin & extension manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directy related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
 > **[?]**
-> Due to the removal of the 'zdharma' organization by the owner, while being highly dependent on those projects The Z-Shell organization was created to recover missing the project.
-> Around the same time for similar reasons 'zdharma-continuum' was created. To prevent confusion between the works, Z-Shell introduced ZI.
+> The [Z-Shell](https://github.com/z-shell) organization was created to recover 'zdharma' organization project which was deleted by the owner.
+> One of reason why Z-Shell [**ZI**](https://github.com/z-shell/zi) was introduced is to prevent confusion with 'zdharma-continuum' projects.

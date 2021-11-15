@@ -1,5 +1,5 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvdas Lukosius and Z-Shell ZI contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
 # shellcheck shell=bash disable=SC1009,1073,1027,1036,1072

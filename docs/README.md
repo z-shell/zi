@@ -111,4 +111,5 @@ _For more information and to report security issues, please refer to our [securi
 
 > **[?]**
 > The [Z-Shell](https://github.com/z-shell) organization was created to recover 'zdharma' organization project which was deleted by the owner.
+> 
 > Reason why [**ZI**](https://github.com/z-shell/zi) was introduced is to prevent confusion with 'zdharma-continuum' projects.

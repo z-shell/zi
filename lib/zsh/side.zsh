@@ -250,10 +250,10 @@
         fi
     fi
 
-    local ___zinit_path="$___local_dir/._zi"
+    local ___zi_path="$___local_dir/._zi"
 
     # Rename Zplugin > ZI
-    if [[ ! -d $___zinit_path && -d $___local_dir/._zplugin ]]; then
+    if [[ ! -d $___zi_path && -d $___local_dir/._zplugin ]]; then
         (
             builtin print -Pr -- "${ZINIT[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
                 "FOR THE ZPLUGIN -> ZINIT RENAME…%f"
@@ -267,7 +267,7 @@
     fi
 
     # Rename Zinit > ZI
-    if [[ ! -d $___zinit_path && -d $___local_dir/._zinit ]]; then
+    if [[ ! -d $___zi_path && -d $___local_dir/._zinit ]]; then
         (
             builtin print -Pr -- "${ZINIT[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
                 "FOR THE ZINIT -> ZI RENAME…%f"
@@ -284,7 +284,7 @@
     local -A ___mdata
     local ___key
     { for ___key in mode url is_release is_release{2..5} ${ice_order[@]}; do
-        [[ -f "$___zinit_path/$___key" ]] && ___mdata[$___key]="$(<$___zinit_path/$___key)"
+        [[ -f "$___zi_path/$___key" ]] && ___mdata[$___key]="$(<$___zi_path/$___key)"
     done
         [[ "${___mdata[mode]}" = "1" ]] && ___mdata[svn]=""
     } 2>/dev/null
@@ -303,10 +303,10 @@
             1 == ${+___sice[no$___key]} )) && continue
 
         if [[ "$___key" = "svn" ]]; then
-            command builtin print -r -- "0" >! "$___zinit_path/mode"
+            command builtin print -r -- "0" >! "$___zi_path/mode"
             ___mdata[mode]=0
         else
-            command rm -f -- "$___zinit_path/$___key"
+            command rm -f -- "$___zi_path/$___key"
         fi
         unset "___mdata[$___key]" "___sice[$___key]" "ICE[$___key]"
     done

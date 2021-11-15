@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
+# Copyright (c) 2021 Salvdas Lukosius and Z-Shell ZI contributors.
 
 # FUNCTION: :zinit-tmp-subst-source [[[
 :zinit-tmp-subst-source() {
@@ -135,7 +136,7 @@ function $f {
 # FUNCTION: .zinit-debug-unload [[[
 # Reverts changes detected by dtrace run.
 .zinit-debug-unload() {
-    (( ${+functions[.zinit-unload]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/zinit-autoload.zsh" || return 1
+    (( ${+functions[.zinit-unload]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     if [[ ${ZINIT[DTRACE]} = 1 ]]; then
         +zinit-message "{error}Dtrace is still active, stop it first with \`dstop'{rst}"
     else

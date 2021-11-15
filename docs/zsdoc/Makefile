@@ -8,11 +8,11 @@ all: man pdf
 # MAN
 # Converted with a2x from asciidoc package
 
-man: man/zinit.zsh.1 man/side.zsh.1 man/install.zsh.1 man/autoload.zsh.1
+man: man/zi.zsh.1 man/side.zsh.1 man/install.zsh.1 man/autoload.zsh.1
 
-man/zinit.zsh.1:
+man/zi.zsh.1:
 	@mkdir -p man
-	a2x --verbose -L --doctype manpage --format manpage -D man zinit.zsh.adoc
+	a2x --verbose -L --doctype manpage --format manpage -D man zi.zsh.adoc
 
 man/side.zsh.1:
 	@mkdir -p man
@@ -29,11 +29,11 @@ man/autoload.zsh.1:
 # PDF
 # Uses asciidoctor not a2x (i.e. not asciidoc)
 
-pdf: pdf/zinit.zsh.pdf pdf/side.zsh.pdf pdf/install.zsh.pdf pdf/autoload.zsh.pdf
+pdf: pdf/zi.zsh.pdf pdf/side.zsh.pdf pdf/install.zsh.pdf pdf/autoload.zsh.pdf
 
-pdf/zinit.zsh.pdf:
+pdf/zi.zsh.pdf:
 	@mkdir -p pdf
-	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf zinit.zsh.adoc
+	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf zi.zsh.adoc
 
 pdf/side.zsh.pdf:
 	@mkdir -p pdf

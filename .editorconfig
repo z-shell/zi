@@ -25,6 +25,6 @@ indent_size = 2
 indent_size = tab
 indent_style = tab
 
-[*.{sh,bash,zsh}]
-max_line_length     = 120
-shell_variant       = auto
+[*.{sh,zsh}]
+shell_variant   = sh
+max_line_length = 120

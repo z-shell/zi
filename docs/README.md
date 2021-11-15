@@ -105,8 +105,8 @@ _For more information and to report security issues, please refer to our [securi
 ## About
 
 > **[?]**
-> ZI (New version of previously known as Zinit) is a flexible plugin & extension manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
-> Z-Shell ZI (not directly affiliated with the [Zsh](https://zsh.sourceforge.io/). project) is an open source community project released under the [MIT License](../LICENSE).
+> ZI (New version of Zinit) is a flexible interactive plugin & extension manager for Z shell [(Zsh)](https://zsh.sourceforge.io/).
+> Z-Shell ZI (not directy related to [Zsh](https://zsh.sourceforge.io/)) is an open source community projects released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 

@@ -1,5 +1,5 @@
 ---
-name: PR Labels BOT
+name: Verify PR Labels
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   pr_labels:
-    name: 🏭 Verify
+    name: 🏭 Verify PR Labels
     runs-on: ubuntu-latest
     steps:
       - name: Update and get pip cache dir

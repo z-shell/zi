@@ -1,4 +1,4 @@
-name: Greetings CI
+name: Greetings
 
 on: [pull_request, issues]
 

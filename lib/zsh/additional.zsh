@@ -1,5 +1,5 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvdas Lukosius and Z-Shell ZI contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
 # FUNCTION: :zinit-tmp-subst-source [[[
 :zinit-tmp-subst-source() {

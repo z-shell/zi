@@ -1,5 +1,5 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI Contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
 # shellcheck shell=sh disable=SC1073,1072,1050
@@ -1677,7 +1677,6 @@ builtin setopt noaliases
             .zinit-add-report "${ZINIT[CUR_USPL2]}" "$ZINIT[col-info2]$___pdir_path$ZINIT[col-rst] added to \$PATH"
         }
         [[ -n ${reply[1-correct]} && ! -x ${reply[1-correct]} ]] && command chmod a+x ${reply[@]}
-
         [[ ${ICE[atinit]} = '!'* || -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
             if [[ ${ZINIT[TMP_SUBST]} = inactive ]]; then
                 (( ${+functions[compdef]} )) && ZINIT[bkp-compdef]="${functions[compdef]}" || builtin unset "ZINIT[bkp-compdef]"

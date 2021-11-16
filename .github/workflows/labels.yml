@@ -1,6 +1,5 @@
 ---
-name: Sync Labels CI
-
+name: Sync Labels
 on:
   push:
     branches:

@@ -1,10 +1,10 @@
 # VSCODE workspace
-.vscode/*
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-.vscode/extensions.json
-*.code-workspace
+#.vscode/*
+#.vscode/settings.json
+#.vscode/tasks.json
+#.vscode/launch.json
+#.vscode/extensions.json
+##*.code-workspace
 
 # Exclude for security reasons
 .history/

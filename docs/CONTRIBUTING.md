@@ -4,11 +4,20 @@ When contributing to this repository, please first discuss the change you wish t
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## Knowledge Base
+> **[?]**
+> Useful information about Zsh.
 
-Here is some general information about Zsh, which might help to fill some knowledge gaps.
-
--   [Zsh FAQ](https://zsh.sourceforge.io/FAQ/zshfaq01.html)
+-   [Zsh Site](http://zsh.sourceforge.net/) 
+-   [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
+-   [Zsh Doc](https://zsh.sourceforge.io/Doc/)
+>
+-   [Bash 2 Zsh](http://www.bash2zsh.com/)
+-   [Zsh tips](http://www.zzapper.co.uk/zshtips.html)
+-   [101 Powerful & Practical ZSH GLOBS](http://www.zzapper.co.uk/101ZshGlobs.php)
 -   [Practical differences between Bash ans Zsh](https://apple.stackexchange.com/questions/361870/what-are-the-practical-differences-between-bash-and-zsh/361957#361957)
+>   
+-   [zshdb - a gdb-like debugger for zsh](https://zshdb.readthedocs.io/en/latest/index.html)
+-   [Debian Bug report logs: Bugs in package zsh](https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=zsh)   
 
 ## Development environment setup
 

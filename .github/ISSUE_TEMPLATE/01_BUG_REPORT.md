@@ -8,18 +8,18 @@ assignees: ""
 
 **Zsh version:**
 
-<!-- Provide your Zsh version: 'zsh --version' -->
+<!-- Provide your Zsh version below: zsh --version -->
 
 **Additional information**
 
- <!-- See commands: 
- 'zi report'
- 'zi times'
- 'zi help'          – To view all commands.
+ <!-- See commands which might help to privde additional information: 
+ zi report
+ zi times
+ zi help          – To view all commands.
  Detailed session tracking: 
- 'zi dtrace|dstart' – to start tracking and see what's going on in session.
- 'zi dstop'         – stop tracking what's going on in session.
- 'zi report'        – view session activity.
+ zi dtrace|dstart – to start tracking and see what's going on in session.
+ zi dstop         – stop tracking what's going on in session.
+ zi report        – view session activity.
  -->
  
 **Current behavior:**

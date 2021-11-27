@@ -3294,11 +3294,11 @@ EOF
     } || builtin print -r -- "No such plugin or snippet"
 }
 # ]]]
-# FUNCTION: .zinit-module [[[
+# FUNCTION: .zi-module [[[
 # Function that has sub-commands passed as long-options (with two dashes, --).
 # It's an attempt to plugin only this one function into `zi' function
 # defined in zi.zsh, to not make this file longer than it's needed.
-.zinit-module() {
+.zi-module() {
     if [[ "$1" = "build" ]]; then
         .zinit-build-module "${@[2,-1]}"
     elif [[ "$1" = "info" ]]; then
@@ -3331,6 +3331,12 @@ EOF
 .zinit-build-module() {
     setopt localoptions localtraps
     trap 'return 1' INT TERM
+if ! test -d "${${ZI[ZMODULES_DIR]}}/zi"; then
+	mkdir -p "${${ZI[ZMODULES_DIR]}}/zi"
+	chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zi"
+	builtin cd "${${ZI[ZMODULES_DIR]}}" || return 1
+	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zi"
+fi
     ( builtin cd -q "${ZI[ZMODULES_DIR]}/zi"
         +zinit-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
         +zinit-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zi" =={rst}"
@@ -3350,10 +3356,10 @@ EOF
             if { make } {
                 [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
                 noglob +zinit-message "{info}Module has been built correctly.{rst}"
-                .zinit-module info
+                .zi-module info
             } else {
                 noglob +zinit-message  "{error}Module didn't build.{rst} "
-                .zinit-module info --link
+                .zi-module info --link
             }
         }
     builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zi/COMPILED_AT"

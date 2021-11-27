@@ -2953,7 +2953,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     } "$@"
                     ;;
                 (module)
-                    .zinit-module "${@[2-correct,-1]}"; ___retval=$?
+                    .zi-module "${@[2-correct,-1]}"; ___retval=$?
                     ;;
                 (*)
                     if [[ -z $1 ]] {
@@ -3067,7 +3067,7 @@ fi
                 "of the ZI module has been requested… {hi}Building{rst}…"
             (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
             command make -C "${${ZI[ZMODULES_DIR]}}/zi" distclean &>/dev/null
-            .zinit-module build &>/dev/null
+            .zi-module build &>/dev/null
             if command make -C "${${ZI[ZMODULES_DIR]}}/zi" &>/dev/null; then
                 +zinit-message "{ok}Build successful!{rst}"
             else

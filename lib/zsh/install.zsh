@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
 # Adjust the shellcheck fot Zsh compatibility.
-# shellcheck shell=bash disable=SC1009,1073,1027,1036,1072
+# shellcheck shell=sh disable=SC1009,1073,1027,1036,1072
 
 builtin source "${ZINIT[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZINIT[col-error]}ERROR:%f%b Couldn't find ${ZINIT[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 

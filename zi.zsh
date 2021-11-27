@@ -193,13 +193,13 @@ builtin setopt noaliases
 # Temporary substituting of functions-related functions.
 #
 
-# FUNCTION: :zinit-reload-and-run. [[[
+# FUNCTION: :zi-reload-and-run. [[[
 # Marks given function ($3) for autoloading, and executes it triggering the
 # load. $1 is the fpath dedicated to the function, $2 are autoload options.
 # This function replaces "autoload -X", because using that on older Zsh
 # versions causes problems with traps.
 #
-# So basically one creates function stub that calls :zinit-reload-and-run()
+# So basically one creates function stub that calls :zi-reload-and-run()
 # instead of "autoload -X".
 #
 # $1 - FPATH dedicated to function
@@ -207,7 +207,7 @@ builtin setopt noaliases
 # $3 - function name (one that needs autoloading)
 #
 # Author: Bart Schaefer
-:zinit-reload-and-run () {
+:zi-reload-and-run () {
     local fpath_prefix="$1" autoload_opts="$2" func="$3"
     shift 3
 
@@ -226,12 +226,12 @@ builtin setopt noaliases
     # User wanted to call the function, not only load it.
     "$func" "$@"
 } # ]]]
-# FUNCTION: :zinit-tmp-subst-autoload. [[[
+# FUNCTION: :zi-tmp-subst-autoload. [[[
 # Function defined to hijack plugin's calls to the `autoload' builtin.
 #
 # The hijacking is not only to gather report data, but also to.
 # run custom `autoload' function, that doesn't need FPATH.
-:zinit-tmp-subst-autoload () {
+:zi-tmp-subst-autoload () {
     emulate -LR zsh
     builtin setopt extendedglob warncreateglobal typesetsilent rcquotes
     local -a opts opts2 custom reply
@@ -242,7 +242,7 @@ builtin setopt noaliases
     builtin set -- ${@:#--}
 
     # Process the id-as''/teleid'' to get the plugin dir.
-    .zinit-any-to-user-plugin $ZI[CUR_USPL2]
+    .zi-any-to-user-plugin $ZI[CUR_USPL2]
     [[ $reply[1] = % ]] && \
         local PLUGIN_DIR="$reply[2]" || \
         local PLUGIN_DIR="$ZI[PLUGINS_DIR]/${reply[1]:+$reply[1]---}${reply[2]//\//---}"
@@ -259,18 +259,18 @@ builtin setopt noaliases
     [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
 
     if (( ${+opts[(r)-X]} )); then
-        .zinit-add-report "${ZI[CUR_USPL2]}" "Warning: Failed autoload ${(j: :)opts[@]} $*"
-        +zinit-message -u2 "{error}builtin autoload required for {obj}${(j: :)opts[@]}{error} option(s)"
+        .zi-add-report "${ZI[CUR_USPL2]}" "Warning: Failed autoload ${(j: :)opts[@]} $*"
+        +zi-message -u2 "{error}builtin autoload required for {obj}${(j: :)opts[@]}{error} option(s)"
         return 1
     fi
     if (( ${+opts[(r)-w]} )); then
-        .zinit-add-report "${ZI[CUR_USPL2]}" "-w-Autoload ${(j: :)opts[@]} ${(j: :)@}"
+        .zi-add-report "${ZI[CUR_USPL2]}" "-w-Autoload ${(j: :)opts[@]} ${(j: :)@}"
         fpath+=( $PLUGIN_DIR )
         builtin autoload ${opts[@]} "$@"
         return $?
     fi
     if [[ -n ${(M)@:#+X} ]]; then
-        .zinit-add-report "${ZI[CUR_USPL2]}" "Autoload +X ${opts:+${(j: :)opts[@]} }${(j: :)${@:#+X}}"
+        .zi-add-report "${ZI[CUR_USPL2]}" "Autoload +X ${opts:+${(j: :)opts[@]} }${(j: :)${@:#+X}}"
         local +h FPATH=$PLUGINS_DIR${fpath_elements:+:${(j.:.)fpath_elements[@]}}:$FPATH
         local +h -a fpath
         fpath=( $PLUGIN_DIR $fpath_elements $fpath )
@@ -279,7 +279,7 @@ builtin setopt noaliases
     fi
 
     for func; do
-        .zinit-add-report "${ZI[CUR_USPL2]}" "Autoload $func${opts:+ with options ${(j: :)opts[@]}}"
+        .zi-add-report "${ZI[CUR_USPL2]}" "Autoload $func${opts:+ with options ${(j: :)opts[@]}}"
     done
 
     integer count retval
@@ -294,7 +294,7 @@ builtin setopt noaliases
             elif [[ $func == /* ]]; then
                 if [[ $ZI[MUTE_WARNINGS] != (1|true|on|yes) && \
                         -z $ZI[WARN_SHOWN_FOR_$ZI[CUR_USPL2]] ]]; then
-                    +zinit-message "{u-warn}Warning{b-warn}: {rst}the plugin {pid}$ZI[CUR_USPL2]" \
+                    +zi-message "{u-warn}Warning{b-warn}: {rst}the plugin {pid}$ZI[CUR_USPL2]" \
                         "{rst}is using autoload functions specified by their absolute path," \
                         "which is not supported by this Zsh version ({↔} {version}$ZSH_VERSION{rst}," \
                         "required is Zsh >= {version}5.4{rst})." \
@@ -318,7 +318,7 @@ builtin setopt noaliases
                         [[ -f $pth/$func ]] && { sel=$pth; break; }
                     }
                     if [[ -z $sel ]] {
-                        +zinit-message '{u-warn}zi{b-warn}:{error} Couldn''t find autoload function{ehi}:' \
+                        +zi-message '{u-warn}zi{b-warn}:{error} Couldn''t find autoload function{ehi}:' \
                             "{apo}\`{file}${func}{apo}\`{error} anywhere in {var}\$fpath{error}."
                             retval=1
                     } else {
@@ -345,7 +345,7 @@ builtin setopt noaliases
                 }
             else
                 eval "function ${(q)func} {
-                    :zinit-reload-and-run ${(qqq)PLUGIN_DIR}"$'\0'"${(pj,\0,)${(qqq)fpath_elements[@]}} ${(qq)opts[*]} ${(q)func} "'"$@"
+                    :zi-reload-and-run ${(qqq)PLUGIN_DIR}"$'\0'"${(pj,\0,)${(qqq)fpath_elements[@]}} ${(qq)opts[*]} ${(q)func} "'"$@"
                 }'
                 retval=$?
             fi
@@ -359,17 +359,17 @@ builtin setopt noaliases
 
     return $retval
 } # ]]]
-# FUNCTION: :zinit-tmp-subst-bindkey. [[[
+# FUNCTION: :zi-tmp-subst-bindkey. [[[
 # Function defined to hijack plugin's calls to the `bindkey' builtin.
 #
 # The hijacking is to gather report data (which is used in unload).
-:zinit-tmp-subst-bindkey() {
+:zi-tmp-subst-bindkey() {
     emulate -LR zsh
     builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
 
     is-at-least 5.3 && \
-        .zinit-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q+)@}}" || \
-        .zinit-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q)@}}"
+        .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q+)@}}" || \
+        .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q)@}}"
 
     # Remember to perform the actual bindkey call.
     typeset -a pos
@@ -417,7 +417,7 @@ builtin setopt noaliases
             } else {
                 [[ ${pos[1]} = "-M" ]] && pos[3]="${(Q)bmap_val}" || pos[1]="${(Q)bmap_val}"
             }
-            .zinit-add-report "${ZI[CUR_USPL2]}" ":::Bindkey: combination <$1> changed to <$bmap_val>${${(M)bmap_val:#hold}:+, i.e. ${ZI[col-error]}unmapped${ZI[col-rst]}}"
+            .zi-add-report "${ZI[CUR_USPL2]}" ":::Bindkey: combination <$1> changed to <$bmap_val>${${(M)bmap_val:#hold}:+, i.e. ${ZI[col-error]}unmapped${ZI[col-rst]}}"
             ((1))
         elif [[ ( -n ${bmap_val::=${ZI_CUR_BIND_MAP[UPAR]}} && -n ${${ZI[UPAR]}[(r);:${(q)1};:]} ) || \
                 ( -n ${bmap_val::=${ZI_CUR_BIND_MAP[DOWNAR]}} && -n ${${ZI[DOWNAR]}[(r);:${(q)1};:]} ) || \
@@ -430,7 +430,7 @@ builtin setopt noaliases
             } else {
                 [[ ${pos[1]} = "-M" ]] && pos[3]="${(Q)bmap_val}" || pos[1]="${(Q)bmap_val}"
             }
-            .zinit-add-report "${ZI[CUR_USPL2]}" ":::Bindkey: combination <$1> recognized as cursor-key and changed to <${bmap_val}>${${(M)bmap_val:#hold}:+, i.e. ${ZI[col-error]}unmapped${ZI[col-rst]}}"
+            .zi-add-report "${ZI[CUR_USPL2]}" ":::Bindkey: combination <$1> recognized as cursor-key and changed to <${bmap_val}>${${(M)bmap_val:#hold}:+, i.e. ${ZI[col-error]}unmapped${ZI[col-rst]}}"
         fi
         [[ $bmap_val = hold ]] && return 0
 
@@ -489,7 +489,7 @@ builtin setopt noaliases
             [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
             [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
 
-            .zinit-add-report "${ZI[CUR_USPL2]}" "Warning: keymap \`main' copied to \`${name}' because of \`${pos[-2]}' substitution"
+            .zi-add-report "${ZI[CUR_USPL2]}" "Warning: keymap \`main' copied to \`${name}' because of \`${pos[-2]}' substitution"
         # bindkey -N newkeymap [other].
         elif [[ ${#opts} -eq 1 && ${+opts[-N]} = 1 ]]; then
             local Nopt=-N
@@ -503,7 +503,7 @@ builtin setopt noaliases
             [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
             [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
         else
-            .zinit-add-report "${ZI[CUR_USPL2]}" "Warning: last bindkey used non-typical options: ${(kv)opts[*]}"
+            .zi-add-report "${ZI[CUR_USPL2]}" "Warning: last bindkey used non-typical options: ${(kv)opts[*]}"
         fi
     fi
 
@@ -511,14 +511,14 @@ builtin setopt noaliases
     builtin bindkey "${pos[@]}"
     return $? # testable
 } # ]]]
-# FUNCTION: :zinit-tmp-subst-zstyle. [[[
+# FUNCTION: :zi-tmp-subst-zstyle. [[[
 # Function defined to hijack plugin's calls to the `zstyle' builtin.
 #
 # The hijacking is to gather report data (which is used in unload).
-:zinit-tmp-subst-zstyle() {
+:zi-tmp-subst-zstyle() {
     builtin setopt localoptions noerrreturn noerrexit extendedglob nowarncreateglobal \
         typesetsilent noshortloops unset
-    .zinit-add-report "${ZI[CUR_USPL2]}" "Zstyle $*"
+    .zi-add-report "${ZI[CUR_USPL2]}" "Zstyle $*"
 
     # Remember in order to perform the actual zstyle call.
     typeset -a pos
@@ -541,7 +541,7 @@ builtin setopt noaliases
         [[ ${ZI[DTRACE]} = 1 ]] && ZI[ZSTYLES___dtrace/_dtrace]+=$ps
     else
         if [[ ! ${#opts[@]} = 1 && ( ${+opts[(r)-s]} = 1 || ${+opts[(r)-b]} = 1 || ${+opts[(r)-a]} = 1 || ${+opts[(r)-t]} = 1 || ${+opts[(r)-T]} = 1 || ${+opts[(r)-m]} = 1 ) ]]; then
-            .zinit-add-report "${ZI[CUR_USPL2]}" "Warning: last zstyle used non-typical options: ${opts[*]}"
+            .zi-add-report "${ZI[CUR_USPL2]}" "Warning: last zstyle used non-typical options: ${opts[*]}"
         fi
     fi
 
@@ -549,14 +549,14 @@ builtin setopt noaliases
     builtin zstyle "${pos[@]}"
     return $? # testable
 } # ]]]
-# FUNCTION: :zinit-tmp-subst-alias. [[[
+# FUNCTION: :zi-tmp-subst-alias. [[[
 # Function defined to hijack plugin's calls to the `alias' builtin.
 #
 # The hijacking is to gather report data (which is used in unload).
-:zinit-tmp-subst-alias() {
+:zi-tmp-subst-alias() {
     builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
         typesetsilent noshortloops unset
-    .zinit-add-report "${ZI[CUR_USPL2]}" "Alias $*"
+    .zi-add-report "${ZI[CUR_USPL2]}" "Alias $*"
 
     # Remember to perform the actual alias call.
     typeset -a pos
@@ -571,7 +571,7 @@ builtin setopt noaliases
         local avalue="${a#*=}"
 
         # Check if alias is to be redefined.
-        (( ${+aliases[$aname]} )) && .zinit-add-report "${ZI[CUR_USPL2]}" "Warning: redefining alias \`${aname}', previous value: ${aliases[$aname]}"
+        (( ${+aliases[$aname]} )) && .zi-add-report "${ZI[CUR_USPL2]}" "Warning: redefining alias \`${aname}', previous value: ${aliases[$aname]}"
 
         local bname=${(q)aliases[$aname]}
         aname="${(q)aname}"
@@ -600,14 +600,14 @@ builtin setopt noaliases
     builtin alias "${pos[@]}"
     return $? # testable
 } # ]]]
-# FUNCTION: :zinit-tmp-subst-zle. [[[.
+# FUNCTION: :zi-tmp-subst-zle. [[[.
 # Function defined to hijack plugin's calls to the `zle' builtin.
 #
 # The hijacking is to gather report data (which is used in unload).
-:zinit-tmp-subst-zle() {
+:zi-tmp-subst-zle() {
     builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
         typesetsilent noshortloops unset
-    .zinit-add-report "${ZI[CUR_USPL2]}" "Zle $*"
+    .zi-add-report "${ZI[CUR_USPL2]}" "Zle $*"
 
     # Remember to perform the actual zle call.
     typeset -a pos
@@ -645,7 +645,7 @@ builtin setopt noaliases
                 [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_SAVED___dtrace/_dtrace]+="$quoted "
             # These will be deleted.
             else
-                .zinit-add-report "${ZI[CUR_USPL2]}" "Note: a new widget created via zle -N: \`$2'"
+                .zi-add-report "${ZI[CUR_USPL2]}" "Note: a new widget created via zle -N: \`$2'"
                 local quoted="$2"
                 quoted="${(q)quoted}"
                 # Remember only when load is in progress (it can be dstart that leads execution here).
@@ -659,24 +659,24 @@ builtin setopt noaliases
     builtin zle "${pos[@]}"
     return $? # testable
 } # ]]]
-# FUNCTION: :zinit-tmp-subst-compdef. [[[
+# FUNCTION: :zi-tmp-subst-compdef. [[[
 # Function defined to hijack plugin's calls to the `compdef' function.
 # The hijacking is not only for reporting, but also to save compdef
 # calls so that `compinit' can be called after loading plugins.
-:zinit-tmp-subst-compdef() {
+:zi-tmp-subst-compdef() {
     builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
         typesetsilent noshortloops unset
-    .zinit-add-report "${ZI[CUR_USPL2]}" "Saving \`compdef $*' for replay"
+    .zi-add-report "${ZI[CUR_USPL2]}" "Saving \`compdef $*' for replay"
     ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" )
 
     return 0 # testable
 } # ]]]
-# FUNCTION: .zinit-tmp-subst-on. [[[
+# FUNCTION: .zi-tmp-subst-on. [[[
 # Turn on temporary substituting of functions of builtins and functions according to passed
 # mode ("load", "light", "light-b" or "compdef"). The temporary substituting of functions is
 # to gather report data, and to hijack `autoload', `bindkey' and
 # `compdef' calls.
-.zinit-tmp-subst-on() {
+.zi-tmp-subst-on() {
     local mode="$1"
 
     # Enable temporary substituting of functions only once.
@@ -700,20 +700,20 @@ builtin setopt noaliases
     if [[ $mode != compdef ]]; then
         # 0. Used, but not in temporary restoration, which doesn't happen for autoload.
         (( ${+functions[autoload]} )) && ZI[bkp-autoload]="${functions[autoload]}"
-        functions[autoload]=':zinit-tmp-subst-autoload "$@";'
+        functions[autoload]=':zi-tmp-subst-autoload "$@";'
     fi
 
     # E. Always shade compdef.
     (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}"
-    functions[compdef]=':zinit-tmp-subst-compdef "$@";'
+    functions[compdef]=':zi-tmp-subst-compdef "$@";'
 
     # Temporarily replace `source' if subst'' given.
     if [[ -n ${ICE[subst]} ]] {
         (( ${+functions[source]} )) && ZI[bkp-source]="${functions[source]}"
         (( ${+functions[.]} )) && ZI[bkp-.]="${functions[.]}"
-        (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-        functions[source]=':zinit-tmp-subst-source "$@";'
-        functions[.]=':zinit-tmp-subst-source "$@";'
+        (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+        functions[source]=':zi-tmp-subst-source "$@";'
+        functions[.]=':zi-tmp-subst-source "$@";'
     }
 
     # Light and compdef temporary substituting of functions stops here. Dtrace and load go on.
@@ -724,29 +724,29 @@ builtin setopt noaliases
 
     # A.
     (( ${+functions[bindkey]} )) && ZI[bkp-bindkey]="${functions[bindkey]}"
-    functions[bindkey]=':zinit-tmp-subst-bindkey "$@";'
+    functions[bindkey]=':zi-tmp-subst-bindkey "$@";'
 
     # B, when `zi light -b ...' or when `zi ice trackbinds ...; zi light ...'.
     [[ $mode = light-b || ( $mode = light && ${+ICE[trackbinds]} -eq 1 ) ]] && return 0
 
     # B.
     (( ${+functions[zstyle]} )) && ZI[bkp-zstyle]="${functions[zstyle]}"
-    functions[zstyle]=':zinit-tmp-subst-zstyle "$@";'
+    functions[zstyle]=':zi-tmp-subst-zstyle "$@";'
 
     # C.
     (( ${+functions[alias]} )) && ZI[bkp-alias]="${functions[alias]}"
-    functions[alias]=':zinit-tmp-subst-alias "$@";'
+    functions[alias]=':zi-tmp-subst-alias "$@";'
 
     # D.
     (( ${+functions[zle]} )) && ZI[bkp-zle]="${functions[zle]}"
-    functions[zle]=':zinit-tmp-subst-zle "$@";'
+    functions[zle]=':zi-tmp-subst-zle "$@";'
 
     builtin return 0
 } # ]]]
-# FUNCTION: .zinit-tmp-subst-off. [[[
+# FUNCTION: .zi-tmp-subst-off. [[[
 # Turn off temporary substituting of functions completely for a given mode ("load", "light",
 # "light-b" (i.e. the `trackbinds' mode) or "compdef").
-.zinit-tmp-subst-off() {
+.zi-tmp-subst-off() {
     builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
         typesetsilent noshortloops unset noaliases
     local mode="$1"
@@ -803,7 +803,7 @@ builtin setopt noaliases
             shift
             continue
         else
-            [[ -z ${ZI_SNIPPETS[PZT::modules/$1${ICE[svn]-/init.zsh}]} && -z ${ZI_SNIPPETS[https://github.com/sorin-ionescu/prezto/trunk/modules/$1${ICE[svn]-/init.zsh}]} ]] && .zinit-load-snippet PZT::modules/"$1${ICE[svn]-/init.zsh}"
+            [[ -z ${ZI_SNIPPETS[PZT::modules/$1${ICE[svn]-/init.zsh}]} && -z ${ZI_SNIPPETS[https://github.com/sorin-ionescu/prezto/trunk/modules/$1${ICE[svn]-/init.zsh}]} ]] && .zi-load-snippet PZT::modules/"$1${ICE[svn]-/init.zsh}"
             shift
         fi
     done
@@ -814,13 +814,13 @@ builtin setopt noaliases
 # Diff functions.
 #
 
-# FUNCTION: .zinit-diff-functions. [[[
+# FUNCTION: .zi-diff-functions. [[[
 # Implements detection of newly created functions. Performs
 # data gathering, computation is done in *-compute().
 #
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
-.zinit-diff-functions() {
+.zi-diff-functions() {
     local uspl2="$1"
     local cmd="$2"
 
@@ -830,13 +830,13 @@ builtin setopt noaliases
         } || \
             ZI[FUNCTIONS_AFTER__$uspl2]+=" ${(j: :)${(qk)functions[@]}}"
 } # ]]]
-# FUNCTION: .zinit-diff-options. [[[
+# FUNCTION: .zi-diff-options. [[[
 # Implements detection of change in option state. Performs
 # data gathering, computation is done in *-compute().
 #
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
-.zinit-diff-options() {
+.zi-diff-options() {
     local IFS=" "
 
     [[ $2 = begin ]] && \
@@ -845,12 +845,12 @@ builtin setopt noaliases
         } || \
         ZI[OPTIONS_AFTER__$1]+=" ${(kv)options[@]}"
 } # ]]]
-# FUNCTION: .zinit-diff-env. [[[
+# FUNCTION: .zi-diff-env. [[[
 # Implements detection of change in PATH and FPATH.
 #
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
-.zinit-diff-env() {
+.zi-diff-env() {
     typeset -a tmp
     local IFS=" "
 
@@ -870,13 +870,13 @@ builtin setopt noaliases
             ZI[FPATH_AFTER__$1]+=" ${tmp[*]}"
     }
 } # ]]]
-# FUNCTION: .zinit-diff-parameter. [[[
+# FUNCTION: .zi-diff-parameter. [[[
 # Implements detection of change in any parameter's existence and type.
 # Performs data gathering, computation is done in *-compute().
 #
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
-.zinit-diff-parameter() {
+.zi-diff-parameter() {
     typeset -a tmp
 
     [[ $2 = begin ]] && {
@@ -887,13 +887,13 @@ builtin setopt noaliases
         ZI[PARAMETERS_AFTER__$1]+=" ${(j: :)${(qkv)parameters[@]}}"
     }
 } # ]]]
-# FUNCTION: .zinit-diff. [[[
+# FUNCTION: .zi-diff. [[[
 # Performs diff actions of all types
-.zinit-diff() {
-    .zinit-diff-functions "$1" "$2"
-    .zinit-diff-options "$1" "$2"
-    .zinit-diff-env "$1" "$2"
-    .zinit-diff-parameter "$1" "$2"
+.zi-diff() {
+    .zi-diff-functions "$1" "$2"
+    .zi-diff-options "$1" "$2"
+    .zi-diff-env "$1" "$2"
+    .zi-diff-parameter "$1" "$2"
 }
 # ]]]
 
@@ -901,8 +901,8 @@ builtin setopt noaliases
 # Utility functions.
 #
 
-# FUNCTION: .zinit-get-mtime-into. [[[
-.zinit-get-mtime-into() {
+# FUNCTION: .zi-get-mtime-into. [[[
+.zi-get-mtime-into() {
     if (( ZI[HAVE_ZSTAT] )) {
         local -a arr
         { zstat +mtime -A arr "$1"; } 2>/dev/null
@@ -911,7 +911,7 @@ builtin setopt noaliases
         { : ${(P)2::="$(stat -c %Y "$1")"}; } 2>/dev/null
     }
 } # ]]]
-# FUNCTION: .zinit-any-to-user-plugin. [[[
+# FUNCTION: .zi-any-to-user-plugin. [[[
 # Allows elastic plugin-spec across the code.
 #
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
@@ -919,7 +919,7 @@ builtin setopt noaliases
 #
 # Returns user and plugin in $reply.
 #
-.zinit-any-to-user-plugin() {
+.zi-any-to-user-plugin() {
     emulate -LR zsh
     builtin setopt extendedglob typesetsilent noshortloops rcquotes \
         ${${${+reply}:#0}:+warncreateglobal}
@@ -960,8 +960,8 @@ builtin setopt noaliases
 
     return 0
 } # ]]]
-# FUNCTION: .zinit-any-to-pid. [[[
-.zinit-any-to-pid() {
+# FUNCTION: .zi-any-to-pid. [[[
+.zi-any-to-pid() {
     emulate -LR zsh
     builtin setopt extendedglob typesetsilent noshortloops rcquotes \
         ${${${+REPLY}:#0}:+warncreateglobal}
@@ -971,7 +971,7 @@ builtin setopt noaliases
     # Two components given?
     if [[ -n $2 ]] {
         if [[ $1 == (%|/)* || ( -z $1 && $2 == /* ) ]] {
-            .zinit-util-shands-path $1${${(M)1#(%/?|%[^/]|/?)}:+/}$2
+            .zi-util-shands-path $1${${(M)1#(%/?|%[^/]|/?)}:+/}$2
             REPLY=${${REPLY:#%*}:+%}$REPLY
         } else {
             REPLY=$1${1:+/}$2
@@ -981,7 +981,7 @@ builtin setopt noaliases
 
     # Is it absolute path?
     if [[ $1 = (%|/|\~)* ]] {
-        .zinit-util-shands-path $1
+        .zi-util-shands-path $1
         REPLY=${${REPLY:#%*}:+%}$REPLY
         return 0
     }
@@ -991,9 +991,9 @@ builtin setopt noaliases
 
     return 0
 } # ]]]
-# FUNCTION: .zinit-util-shands-path. [[[
+# FUNCTION: .zi-util-shands-path. [[[
 # Replaces parts of path with %HOME, etc.
-.zinit-util-shands-path() {
+.zi-util-shands-path() {
     emulate -LR zsh
     builtin setopt extendedglob typesetsilent noshortloops rcquotes \
         ${${${+REPLY}:#0}:+warncreateglobal}
@@ -1004,11 +1004,11 @@ builtin setopt noaliases
     REPLY=${${1/(#b)(#s)(%|)(${(~j:|:)${(@k)map:#$HOME}}|$HOME|)/$map[$match[2]]}}
     return 0
 } # ]]]
-# FUNCTION: .zinit-find-other-matches. [[[
+# FUNCTION: .zi-find-other-matches. [[[
 # Plugin's main source file is in general `name.plugin.zsh'. However,
 # there can be different conventions, if that file is not found, then
 # this functions examines other conventions in the most sane order.
-.zinit-find-other-matches() {
+.zi-find-other-matches() {
     local pdir_path="$1" pbase="$2"
 
     if [[ -e $pdir_path/init.zsh ]] {
@@ -1027,11 +1027,11 @@ builtin setopt noaliases
 
     return $(( ${#reply} > 0 ? 0 : 1 ))
 } # ]]]
-# FUNCTION: .zinit-register-plugin. [[[
+# FUNCTION: .zi-register-plugin. [[[
 # Adds the plugin to ZI_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
 # http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html).
-.zinit-register-plugin() {
+.zi-register-plugin() {
     local uspl2="$1" mode="$2" teleid="$3"
     integer ret=0
 
@@ -1039,7 +1039,7 @@ builtin setopt noaliases
         ZI_REGISTERED_PLUGINS+=( "$uspl2" )
     else
         # Allow overwrite-load, however warn about it.
-        [[ -z ${ZI[TEST]}${${+ICE[wait]}:#0}${ICE[load]}${ICE[subscribe]} && ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] && +zinit-message "{u-warn}Warning{b-warn}:{rst} plugin {apo}\`{pid}${uspl2}{apo}\`{rst} already registered, will overwrite-load."
+        [[ -z ${ZI[TEST]}${${+ICE[wait]}:#0}${ICE[load]}${ICE[subscribe]} && ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] && +zi-message "{u-warn}Warning{b-warn}:{rst} plugin {apo}\`{pid}${uspl2}{apo}\`{rst} already registered, will overwrite-load."
         ret=1
     fi
 
@@ -1065,8 +1065,8 @@ builtin setopt noaliases
 
     return ret
 } # ]]]
-# FUNCTION: .zinit-get-object-path. [[[
-.zinit-get-object-path() {
+# FUNCTION: .zi-get-object-path. [[[
+.zi-get-object-path() {
     local type="$1" id_as="$2" local_dir dirname
     integer exists
 
@@ -1082,7 +1082,7 @@ builtin setopt noaliases
             [[ $local_dir = . ]] && local_dir= || local_dir="${${${${${local_dir#/}//\//--}//=/-EQ-}//\?/-QM-}//\&/-AMP-}"
             local_dir="${ZI[SNIPPETS_DIR]}${local_dir:+/$local_dir}"
         } else {
-            .zinit-any-to-user-plugin "$id_as"
+            .zi-any-to-user-plugin "$id_as"
             local_dir=${${${(M)reply[-2]:#%}:+${reply[2]}}:-${ZI[PLUGINS_DIR]}/${id_as//\//---}}
             [[ $id_as == _local/* && -d $local_dir && ! -d $local_dir/._zi ]] && command mkdir -p "$local_dir"/._zi
             dirname=""
@@ -1099,8 +1099,8 @@ builtin setopt noaliases
     return $(( 1 - exists ))
 }
 # ]]]
-# FUNCTION: @zinit-substitute. [[[
-@zinit-substitute() {
+# FUNCTION: @zi-substitute. [[[
+@zi-substitute() {
     emulate -LR zsh
     builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
 
@@ -1143,9 +1143,9 @@ builtin setopt noaliases
     done
 }
 # ]]]
-# FUNCTION: @zinit-register-annex. [[[
+# FUNCTION: @zi-register-annex. [[[
 # Registers the z-annex inside ZI – i.e. an ZI extension
-@zinit-register-annex() {
+@zi-register-annex() {
     local name="$1" type="$2" handler="$3" helphandler="$4" icemods="$5" key="z-annex ${(q)2}"
     ZI_EXTS[seqno]=$(( ${ZI_EXTS[seqno]:-0} + 1 ))
     ZI_EXTS[$key${${(M)type#hook:}:+ ${ZI_EXTS[seqno]}}]="${ZI_EXTS[seqno]} z-annex-data: ${(q)name} ${(q)type} ${(q)handler} ${(q)helphandler} ${(q)icemods}"
@@ -1156,10 +1156,10 @@ builtin setopt noaliases
     }
 }
 # ]]]
-# FUNCTION: @zinit-register-hook. [[[
+# FUNCTION: @zi-register-hook. [[[
 # Registers the z-annex inside ZI – i.e. an ZI extension
-@zinit-register-hook() {
-    local name="$1" type="$2" handler="$3" icemods="$4" key="zinit ${(q)2}"
+@zi-register-hook() {
+    local name="$1" type="$2" handler="$3" icemods="$4" key="zi ${(q)2}"
     ZI_EXTS2[seqno]=$(( ${ZI_EXTS2[seqno]:-0} + 1 ))
     ZI_EXTS2[$key${${(M)type#hook:}:+ ${ZI_EXTS2[seqno]}}]="${ZI_EXTS2[seqno]} z-annex-data: ${(q)name} ${(q)type} ${(q)handler} '' ${(q)icemods}"
     ZI_EXTS2[ice-mods]="${ZI_EXTS2[ice-mods]}${icemods:+|}$icemods"
@@ -1170,14 +1170,14 @@ builtin setopt noaliases
 # http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html
 @zsh-plugin-run-on-unload() {
     ICE[ps-on-unload]="${(j.; .)@}"
-    .zinit-pack-ice "$id_as" ""
+    .zi-pack-ice "$id_as" ""
 }
 # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism
 @zsh-plugin-run-on-update() {
     ICE[ps-on-update]="${(j.; .)@}"
-    .zinit-pack-ice "$id_as" ""
+    .zi-pack-ice "$id_as" ""
 }
 # ]]]
 
@@ -1185,10 +1185,10 @@ builtin setopt noaliases
 # Remaining functions.
 #
 
-# FUNCTION: .zinit-prepare-home. [[[
+# FUNCTION: .zi-prepare-home. [[[
 # Creates all directories needed by ZI, first checks if they
 # already exist.
-.zinit-prepare-home() {
+.zi-prepare-home() {
     [[ -n ${ZI[HOME_READY]} ]] && return
     ZI[HOME_READY]=1
 
@@ -1214,10 +1214,10 @@ builtin setopt noaliases
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
 
-        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-        (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-        .zinit-clear-completions &>/dev/null
-        .zinit-compinit &>/dev/null
+        (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+        (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+        .zi-clear-completions &>/dev/null
+        .zi-compinit &>/dev/null
     }
     [[ ! -d ${ZI[COMPLETIONS_DIR]} ]] && {
         command mkdir "${ZI[COMPLETIONS_DIR]}"
@@ -1230,8 +1230,8 @@ builtin setopt noaliases
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
 
-        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-        .zinit-compinit &>/dev/null
+        (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+        .zi-compinit &>/dev/null
     }
     [[ ! -d ${ZI[SNIPPETS_DIR]} ]] && {
         command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
@@ -1246,29 +1246,29 @@ builtin setopt noaliases
         command mkdir 2>/dev/null -p $ZPFX/bin
     }
 } # ]]]
-# FUNCTION: .zinit-load-object. [[[
-.zinit-load-object() {
+# FUNCTION: .zi-load-object. [[[
+.zi-load-object() {
     local ___type="$1" ___id=$2
     local -a ___opt
     ___opt=( ${@[3,-1]} )
 
     if [[ $___type == snippet ]] {
-        .zinit-load-snippet $___opt "$___id"
+        .zi-load-snippet $___opt "$___id"
     } elif [[ $___type == plugin ]] {
-        .zinit-load "$___id" "" $___opt
+        .zi-load "$___id" "" $___opt
     }
     ___retval+=$?
 
     return __retval
 }
 # ]]]
-# FUNCTION:.zinit-set-m-func() [[[
+# FUNCTION:.zi-set-m-func() [[[
 # Sets and withdraws the temporary, atclone/atpull time function `m`.
-.zinit-set-m-func() {
+.zi-set-m-func() {
     if [[ $1 == set ]]; then
         ZI[___m_bkp]="${functions[m]}"
         setopt noaliases
-        functions[m]="${functions[+zinit-message]}"
+        functions[m]="${functions[+zi-message]}"
         setopt aliases
     elif [[ $1 == unset ]]; then
         if [[ -n ${ZI[___m_bkp]} ]]; then
@@ -1279,19 +1279,19 @@ builtin setopt noaliases
             noglob unset functions[m]
         fi
     else
-        +zinit-message "{error}ERROR #1"
+        +zi-message "{error}ERROR #1"
         return 1
     fi
 }
 # ]]]
-# FUNCTION: .zinit-load-snippet. [[[
+# FUNCTION: .zi-load-snippet. [[[
 # Implements the exposed-to-user action of loading a snippet.
 #
 # $1 - url (can be local, absolute path).
-.zinit-load-snippet() {
+.zi-load-snippet() {
     typeset -F 3 SECONDS=0
     local -a opts
-    zparseopts -E -D -a opts f -command || { +zinit-message "{u-warn}Error{b-warn}:{rst} Incorrect options (accepted ones: {opt}-f{rst}, {opt}--command{rst})."; return 1; }
+    zparseopts -E -D -a opts f -command || { +zi-message "{u-warn}Error{b-warn}:{rst} Incorrect options (accepted ones: {opt}-f{rst}, {opt}--command{rst})."; return 1; }
     local url="$1"
     [[ -n ${ICE[teleid]} ]] && url="${ICE[teleid]}"
     # Hide arguments from sourced scripts. Without this calls our "$@" are visible as "$@"
@@ -1324,41 +1324,41 @@ builtin setopt noaliases
 
     local id_as="${ICE[id-as]:-$url}"
 
-    .zinit-set-m-func set
+    .zi-set-m-func set
 
     # Set up param'' objects (parameters).
     if [[ -n ${ICE[param]} ]] {
-        .zinit-setup-params && local ${(Q)reply[@]}
+        .zi-setup-params && local ${(Q)reply[@]}
     }
 
-    .zinit-pack-ice "$id_as" ""
+    .zi-pack-ice "$id_as" ""
 
     # Oh-My-Zsh, Prezto and manual shorthands.
     [[ $url = *(${(~kj.|.)${(Mk)ZI_1MAP:#OMZ*}}|robbyrussell*oh-my-zsh|ohmyzsh/ohmyzsh)* ]] && local ZSH="${ZI[SNIPPETS_DIR]}"
 
     # Construct containing directory, extract final directory
     # into handy-variable $dirname.
-    .zinit-get-object-path snippet "$id_as"
+    .zi-get-object-path snippet "$id_as"
     filename="${reply[-2]}" dirname="${reply[-2]}"
     local_dir="${reply[-3]}" exists=${reply[-1]}
 
     local -a arr
     local key
     reply=(
-        ${(on)ZI_EXTS2[(I)zinit hook:preinit-pre <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:preinit-pre <->]}
         ${(on)ZI_EXTS[(I)z-annex hook:preinit-<-> <->]}
-        ${(on)ZI_EXTS2[(I)zinit hook:preinit-post <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:preinit-post <->]}
     )
     for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-        "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zinit|z-annex) hook:}%% <->}" load || \
+        "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" load || \
             return $(( 10 - $? ))
     done
 
     # Download or copy the file.
     if [[ -n ${opts[(r)-f]} || $exists -eq 0 ]] {
-        (( ${+functions[.zinit-download-snippet]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-        .zinit-download-snippet "$save_url" "$url" "$id_as" "$local_dir" "$dirname" "$filename"
+        (( ${+functions[.zi-download-snippet]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+        .zi-download-snippet "$save_url" "$url" "$id_as" "$local_dir" "$dirname" "$filename"
         retval=$?
     }
 
@@ -1390,9 +1390,9 @@ builtin setopt noaliases
     if [[ -z ${opts[(r)--command]} && ( -z ${ICE[as]} || ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ) ]]; then
         # Source the file with compdef temporary substituting of functions.
         if [[ ${ZI[TMP_SUBST]} = inactive ]]; then
-            # Temporary substituting of functions code is inlined from .zinit-tmp-subst-on.
+            # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
             (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
-            functions[compdef]=':zinit-tmp-subst-compdef "$@";'
+            functions[compdef]=':zi-tmp-subst-compdef "$@";'
             ZI[TMP_SUBST]=1
         else
             (( ++ ZI[TMP_SUBST] ))
@@ -1415,7 +1415,7 @@ builtin setopt noaliases
             if [[ -n ${ICE[pick]} ]]; then
                 list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )
             elif (( ${+ICE[pick]} == 0 )); then
-                .zinit-find-other-matches "$local_dir/$dirname" "$filename"
+                .zi-find-other-matches "$local_dir/$dirname" "$filename"
                 list=( ${reply[@]} )
             fi
         }
@@ -1424,7 +1424,7 @@ builtin setopt noaliases
             ZERO="${list[1-correct]}"
             (( ${+ICE[silent]} )) && { { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( retval += $? )); ((1)); } || { ((1)); { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; }; (( retval += $? )); }
             (( 0 == retval )) && [[ $url = PZT::* || $url = https://github.com/sorin-ionescu/prezto/* ]] && zstyle ":prezto:module:${${id_as%/init.zsh}:t}" loaded 'yes'
-        } else { [[ ${+ICE[silent]} -eq 1 || ${+ICE[pick]} -eq 1 && -z ${ICE[pick]} || ${ICE[pick]} = /dev/null ]] || { +zinit-message "Snippet not loaded ({url}${id_as}{rst})"; retval=1; } }
+        } else { [[ ${+ICE[silent]} -eq 1 || ${+ICE[pick]} -eq 1 && -z ${ICE[pick]} || ${ICE[pick]} = /dev/null ]] || { +zi-message "Snippet not loaded ({url}${id_as}{rst})"; retval=1; } }
 
         [[ -n ${ICE[src]} ]] && { ZERO="${${(M)ICE[src]##/*}:-$local_dir/$dirname/${ICE[src]}}"; (( ${+ICE[silent]} )) && { { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( retval += $? )); ((1)); } || { ((1)); { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; }; (( retval += $? )); }; }
         [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; }; eval "reply=(${ICE[multisrc]})"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; local fname; for fname in "${reply[@]}"; do ZERO="${${(M)fname:#/*}:-$local_dir/$dirname/$fname}"; (( ${+ICE[silent]} )) && { { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( retval += $? )); ((1)); } || { ((1)); { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; }; (( retval += $? )); }; done; }
@@ -1438,11 +1438,11 @@ builtin setopt noaliases
 
         # Run the functions' wrapping & tracking requests.
         if [[ -n ${ICE[wrap]} ]] {
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            .zinit-wrap-functions "$save_url" "" "$id_as"
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            .zi-wrap-functions "$save_url" "" "$id_as"
         }
 
-        [[ ${ICE[atload][1]} = "!" ]] && { .zinit-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
+        [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
 
         (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt noaliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
     elif [[ -n ${opts[(r)--command]} || ${ICE[as]} = command ]]; then
@@ -1468,9 +1468,9 @@ builtin setopt noaliases
         [[ -n $xfilepath && -f $xfilepath && ! -x "$xfilepath" ]] && command chmod a+x "$xfilepath" ${list[@]:#$xfilepath}
         [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
             if [[ ${ZI[TMP_SUBST]} = inactive ]]; then
-                # Temporary substituting of functions code is inlined from .zinit-tmp-subst-on.
+                # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
                 (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
-                functions[compdef]=':zinit-tmp-subst-compdef "$@";'
+                functions[compdef]=':zi-tmp-subst-compdef "$@";'
                 ZI[TMP_SUBST]=1
             else
                 (( ++ ZI[TMP_SUBST] ))
@@ -1492,11 +1492,11 @@ builtin setopt noaliases
 
         # Run the functions' wrapping & tracking requests.
         if [[ -n ${ICE[wrap]} ]] {
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            .zinit-wrap-functions "$save_url" "" "$id_as"
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            .zi-wrap-functions "$save_url" "" "$id_as"
         }
 
-        [[ ${ICE[atload][1]} = "!" ]] && { .zinit-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
+        [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
 
         [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
             (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt noaliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
@@ -1513,56 +1513,56 @@ builtin setopt noaliases
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" atload
     done
 
-    (( ${+ICE[notify]} == 1 )) && { [[ $retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zinit-deploy-message @msg "$msg" } || +zinit-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $retval"; }
-    (( ${+ICE[reset-prompt]} == 1 )) && +zinit-deploy-message @rst
+    (( ${+ICE[notify]} == 1 )) && { [[ $retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zi-deploy-message @msg "$msg" } || +zi-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $retval"; }
+    (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @rst
 
     ZI[CUR_USPL2]=
     ZI[TIME_INDEX]=$(( ${ZI[TIME_INDEX]:-0} + 1 ))
     ZI[TIME_${ZI[TIME_INDEX]}_${id_as}]=$SECONDS
     ZI[AT_TIME_${ZI[TIME_INDEX]}_${id_as}]=$EPOCHREALTIME
 
-    .zinit-set-m-func unset
+    .zi-set-m-func unset
     return retval
 } # ]]]
-# FUNCTION: .zinit-load. [[[
+# FUNCTION: .zi-load. [[[
 # Implements the exposed-to-user action of loading a plugin.
 #
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin name, if the third format is used
-.zinit-load () {
+.zi-load () {
     typeset -F 3 SECONDS=0
     local ___mode="$3" ___rst=0 ___retval=0 ___key
-    .zinit-any-to-user-plugin "$1" "$2"
+    .zi-any-to-user-plugin "$1" "$2"
     local ___user="${reply[-2]}" ___plugin="${reply[-1]}" ___id_as="${ICE[id-as]:-${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}}"
     local ___pdir_path="${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"
     local ___pdir_orig="$___pdir_path"
     ZI[CUR_USR]="$___user" ZI[CUR_PLUGIN]="$___plugin" ZI[CUR_USPL2]="$___id_as"
     if [[ -n ${ICE[teleid]} ]] {
-        .zinit-any-to-user-plugin "${ICE[teleid]}"
+        .zi-any-to-user-plugin "${ICE[teleid]}"
         ___user="${reply[-2]}" ___plugin="${reply[-1]}"
     } else {
         ICE[teleid]="$___user${${___user:#%}:+/}$___plugin"
     }
 
-    .zinit-set-m-func set
+    .zi-set-m-func set
 
     local -a ___arr
     reply=(
-        ${(on)ZI_EXTS2[(I)zinit hook:preinit-pre <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:preinit-pre <->]}
         ${(on)ZI_EXTS[(I)z-annex hook:preinit-<-> <->]}
-        ${(on)ZI_EXTS2[(I)zinit hook:preinit-post <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:preinit-post <->]}
     )
     for ___key in "${reply[@]}"; do
         ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]:-$ZI_EXTS2[$___key]}[@]}" )
-        "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" "${${___key##(zinit|z-annex) hook:}%% <->}" load || \
+        "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" "${${___key##(zi|z-annex) hook:}%% <->}" load || \
             return $(( 10 - $? ))
     done
 
     if [[ $___user != % && ! -d ${ZI[PLUGINS_DIR]}/${___id_as//\//---} ]] {
-        (( ${+functions[.zinit-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+        (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
         reply=( "$___user" "$___plugin" ) REPLY=github
         if (( ${+ICE[pack]} )) {
-            if ! .zinit-get-package "$___user" "$___plugin" "$___id_as" \
+            if ! .zi-get-package "$___user" "$___plugin" "$___id_as" \
                 "${ZI[PLUGINS_DIR]}/${___id_as//\//---}" \
                 "${ICE[pack]:-default}"
             then
@@ -1575,11 +1575,11 @@ builtin setopt noaliases
         ICE[teleid]="$___user${${___user:#(%|/)*}:+/}$___plugin"
         [[ $REPLY = snippet ]] && {
             ICE[id-as]="${ICE[id-as]:-$___id_as}"
-            .zinit-load-snippet $___plugin && return
+            .zi-load-snippet $___plugin && return
             zle && { builtin print; zle .reset-prompt; }
             return 1
         }
-        if ! .zinit-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"; then
+        if ! .zi-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"; then
             zle && { builtin print; zle .reset-prompt; }
             return 1
         fi
@@ -1587,15 +1587,15 @@ builtin setopt noaliases
     }
 
     ZI_SICE[$___id_as]=
-    .zinit-pack-ice "$___id_as"
+    .zi-pack-ice "$___id_as"
 
     (( ${+ICE[cloneonly]} )) && return 0
 
-    .zinit-register-plugin "$___id_as" "$___mode" "${ICE[teleid]}"
+    .zi-register-plugin "$___id_as" "$___mode" "${ICE[teleid]}"
 
     # Set up param'' objects (parameters).
     if [[ -n ${ICE[param]} ]] {
-        .zinit-setup-params && local ${(Q)reply[@]}
+        .zi-setup-params && local ${(Q)reply[@]}
     }
 
     reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atinit-<-> <->]} )
@@ -1614,12 +1614,12 @@ builtin setopt noaliases
             return $(( 10 - $? ))
     done
 
-    .zinit-load-plugin "$___user" "$___plugin" "$___id_as" "$___mode" "$___rst"; ___retval=$?
-    (( ${+ICE[notify]} == 1 )) && { [[ $___retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zinit-deploy-message @msg "$msg" } || +zinit-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $___retval"; }
-    (( ${+ICE[reset-prompt]} == 1 )) && +zinit-deploy-message @___rst
+    .zi-load-plugin "$___user" "$___plugin" "$___id_as" "$___mode" "$___rst"; ___retval=$?
+    (( ${+ICE[notify]} == 1 )) && { [[ $___retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zi-deploy-message @msg "$msg" } || +zi-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $___retval"; }
+    (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @___rst
 
     # Retire feature `m`.
-    .zinit-set-m-func unset
+    .zi-set-m-func unset
 
     # Mark no load is in progress.
     ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
@@ -1629,13 +1629,13 @@ builtin setopt noaliases
     ZI[AT_TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$EPOCHREALTIME
     return ___retval
 } # ]]]
-# FUNCTION: .zinit-load-plugin. [[[
+# FUNCTION: .zi-load-plugin. [[[
 # Lower-level function for loading a plugin.
 #
 # $1 - user
 # $2 - plugin
 # $3 - mode (light or load)
-.zinit-load-plugin() {
+.zi-load-plugin() {
     local ___user="$1" ___plugin="$2" ___id_as="$3" ___mode="$4" ___rst="$5" ___correct=0 ___retval=0
     local ___pbase="${${___plugin:t}%(.plugin.zsh|.zsh|.git)}" ___key
     # Hide arguments from sourced scripts. Without this calls our "$@" are visible as "$@"
@@ -1661,7 +1661,7 @@ builtin setopt noaliases
         ICE[pick]="${ICE[pick]:-/dev/null}"
 
     if [[ -n ${ICE[autoload]} ]] {
-        :zinit-tmp-subst-autoload -Uz \
+        :zi-tmp-subst-autoload -Uz \
             ${(s: :)${${${(s.;.)ICE[autoload]#[\!\#]}#[\!\#]}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
             ${${(M)ICE[autoload]:#*(->|=>|→)*}:+-C} ${${(M)ICE[autoload]#(?\!|\!)}:+-C} ${${(M)ICE[autoload]#(?\#|\#)}:+-I}
     }
@@ -1675,16 +1675,16 @@ builtin setopt noaliases
             [[ -n ${reply[1-correct]} ]] && ___pdir_path="${reply[1-correct]:h}"
         fi
         [[ -z ${path[(er)$___pdir_path]} ]] && {
-            [[ $___mode != light ]] && .zinit-diff-env "${ZI[CUR_USPL2]}" begin
+            [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
             path=( "${___pdir_path%/}" ${path[@]} )
-            [[ $___mode != light ]] && .zinit-diff-env "${ZI[CUR_USPL2]}" end
-            .zinit-add-report "${ZI[CUR_USPL2]}" "$ZI[col-info2]$___pdir_path$ZI[col-rst] added to \$PATH"
+            [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
+            .zi-add-report "${ZI[CUR_USPL2]}" "$ZI[col-info2]$___pdir_path$ZI[col-rst] added to \$PATH"
         }
         [[ -n ${reply[1-correct]} && ! -x ${reply[1-correct]} ]] && command chmod a+x ${reply[@]}
         [[ ${ICE[atinit]} = '!'* || -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
             if [[ ${ZI[TMP_SUBST]} = inactive ]]; then
                 (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
-                functions[compdef]=':zinit-tmp-subst-compdef "$@";'
+                functions[compdef]=':zi-tmp-subst-compdef "$@";'
                 ZI[TMP_SUBST]=1
             else
                 (( ++ ZI[TMP_SUBST] ))
@@ -1705,11 +1705,11 @@ builtin setopt noaliases
 
         # Run the functions' wrapping & tracking requests.
         if [[ -n ${ICE[wrap]} ]] {
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            .zinit-wrap-functions "$___user" "$___plugin" "$___id_as"
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            .zi-wrap-functions "$___user" "$___plugin" "$___id_as"
         }
 
-        [[ ${ICE[atload][1]} = "!" ]] && { .zinit-add-report "$___id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]#\!}"; } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
+        [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$___id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]#\!}"; } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
 
         [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
             (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt noaliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
@@ -1722,7 +1722,7 @@ builtin setopt noaliases
         elif [[ -e $___pdir_path/$___pbase.plugin.zsh ]]; then
             reply=( "$___pdir_path/$___pbase".plugin.zsh )
         else
-            .zinit-find-other-matches "$___pdir_path" "$___pbase"
+            .zi-find-other-matches "$___pdir_path" "$___pbase"
         fi
 
         #[[ ${#reply} -eq 0 ]] && return 1
@@ -1731,12 +1731,12 @@ builtin setopt noaliases
         local ___fname="${reply[1-correct]:t}"
         ___pdir_path="${reply[1-correct]:h}"
 
-        .zinit-add-report "${ZI[CUR_USPL2]}" "Source $___fname ${${${(M)___mode:#light}:+(no reporting)}:-$ZI[col-info2](reporting enabled)$ZI[col-rst]}"
+        .zi-add-report "${ZI[CUR_USPL2]}" "Source $___fname ${${${(M)___mode:#light}:+(no reporting)}:-$ZI[col-info2](reporting enabled)$ZI[col-rst]}"
 
         # Light and compdef ___mode doesn't do diffs and temporary substituting of functions.
-        [[ $___mode != light(|-b) ]] && .zinit-diff "${ZI[CUR_USPL2]}" begin
+        [[ $___mode != light(|-b) ]] && .zi-diff "${ZI[CUR_USPL2]}" begin
 
-        .zinit-tmp-subst-on "${___mode:-load}"
+        .zi-tmp-subst-on "${___mode:-load}"
 
         # We need some state, but ___user wants his for his plugins.
         (( ${+ICE[blockf]} )) && { local -a fpath_bkp; fpath_bkp=( "${fpath[@]}" ); }
@@ -1756,17 +1756,17 @@ builtin setopt noaliases
 
         # Run the functions' wrapping & tracking requests.
         if [[ -n ${ICE[wrap]} ]] {
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            .zinit-wrap-functions "$___user" "$___plugin" "$___id_as"
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            .zi-wrap-functions "$___user" "$___plugin" "$___id_as"
         }
 
-        [[ ${ICE[atload][1]} = "!" ]] && { .zinit-add-report "$___id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
+        [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$___id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
         (( ZI[ALIASES_OPT] )) && builtin setopt aliases
         (( ${+ICE[blockf]} )) && { fpath=( "${fpath_bkp[@]}" ); }
 
-        .zinit-tmp-subst-off "${___mode:-load}"
+        .zi-tmp-subst-off "${___mode:-load}"
 
-        [[ $___mode != light(|-b) ]] && .zinit-diff "${ZI[CUR_USPL2]}" end
+        [[ $___mode != light(|-b) ]] && .zi-diff "${ZI[CUR_USPL2]}" end
     fi
 
     [[ ${+ICE[atload]} = 1 && ${ICE[atload][1]} != "!" ]] && { ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]}"; ((1)); } || eval "${ICE[atload]}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
@@ -1781,16 +1781,16 @@ builtin setopt noaliases
 
     return ___retval
 } # ]]]
-# FUNCTION: .zinit-compdef-replay. [[[
+# FUNCTION: .zi-compdef-replay. [[[
 # Runs gathered compdef calls. This allows to run `compinit'
 # after loading plugins.
-.zinit-compdef-replay() {
+.zi-compdef-replay() {
     local quiet="$1"
     typeset -a pos
 
     # Check if compinit was loaded.
     if [[ ${+functions[compdef]} = 0 ]]; then
-        +zinit-message "{u-warn}Error{b-warn}:{rst} The {func}compinit{rst}" \
+        +zi-message "{u-warn}Error{b-warn}:{rst} The {func}compinit{rst}" \
             "function hasn't been loaded, cannot do {it}{cmd}compdef replay{rst}."
         return 1
     fi
@@ -1802,34 +1802,34 @@ builtin setopt noaliases
         # When ZI_COMPDEF_REPLAY empty (also when only white spaces).
         [[ ${#pos[@]} = 1 && -z ${pos[-1]} ]] && continue
         pos=( "${(Q)pos[@]}" )
-        [[ $quiet = -q ]] || +zinit-message "Running compdef: {cmd}${pos[*]}{rst}"
+        [[ $quiet = -q ]] || +zi-message "Running compdef: {cmd}${pos[*]}{rst}"
         compdef "${pos[@]}"
     done
 
     return 0
 } # ]]]
-# FUNCTION: .zinit-compdef-clear. [[[
+# FUNCTION: .zi-compdef-clear. [[[
 # Implements user-exposed functionality to clear gathered compdefs.
-.zinit-compdef-clear() {
+.zi-compdef-clear() {
     local quiet="$1" count="${#ZI_COMPDEF_REPLAY}"
     ZI_COMPDEF_REPLAY=( )
-    [[ $quiet = -q ]] || +zinit-message "Compdef-replay cleared (it had {num}${count}{rst} entries)."
+    [[ $quiet = -q ]] || +zi-message "Compdef-replay cleared (it had {num}${count}{rst} entries)."
 } # ]]]
-# FUNCTION: .zinit-add-report. [[[
+# FUNCTION: .zi-add-report. [[[
 # Adds a report line for given plugin.
 #
 # $1 - uspl2, i.e. user/plugin
 # $2, ... - the text
-.zinit-add-report() {
+.zi-add-report() {
     # Use zi binary module if available.
     [[ -n $1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append "$1" "$2"$'\n' || ZI_REPORTS[$1]+="$2"$'\n'; }
     [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
     return 0
 } # ]]]
-# FUNCTION: .zinit-add-fpath. [[[
-.zinit-add-fpath() {
+# FUNCTION: .zi-add-fpath. [[[
+.zi-add-fpath() {
     [[ $1 = (-f|--front) ]] && { shift; integer front=1; }
-    .zinit-any-to-user-plugin "$1" ""
+    .zi-any-to-user-plugin "$1" ""
     local id_as="$1" add_dir="$2" user="${reply[-2]}" plugin="${reply[-1]}"
     if (( front )) {
         fpath[1,0]=${${${(M)user:#%}:+$plugin}:-${ZI[PLUGINS_DIR]}/${id_as//\//---}}${add_dir:+/$add_dir}
@@ -1840,23 +1840,23 @@ builtin setopt noaliases
     }
 }
 # ]]]
-# FUNCTION: .zinit-run. [[[
+# FUNCTION: .zi-run. [[[
 # Run code inside plugin's folder
 # It uses the `correct' parameter from upper's scope zi().
-.zinit-run() {
+.zi-run() {
     if [[ $1 = (-l|--last) ]]; then
         { set -- "${ZI[last-run-plugin]:-$(<${ZI[BIN_DIR]}/last-run-object.txt)}" "${@[2-correct,-1]}"; } &>/dev/null
-        [[ -z $1 ]] && { +zinit-message "{u-warn}Error{b-warn}:{rst} No recent plugin-ID saved on the disk yet, please specify" \
+        [[ -z $1 ]] && { +zi-message "{u-warn}Error{b-warn}:{rst} No recent plugin-ID saved on the disk yet, please specify" \
                             "it as the first argument, i.e.{ehi}: {cmd}zi run {pid}usr/plg{slight} {…}the code to run{…} "; return 1; }
     else
         integer ___nolast=1
     fi
-    .zinit-any-to-user-plugin "$1" ""
+    .zi-any-to-user-plugin "$1" ""
     local ___id_as="$1" ___user="${reply[-2]}" ___plugin="${reply[-1]}" ___oldpwd="$PWD"
     () {
         emulate -LR zsh
         builtin cd &>/dev/null -q ${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}} || {
-            .zinit-get-object-path snippet "$___id_as"
+            .zi-get-object-path snippet "$___id_as"
             builtin cd &>/dev/null -q $REPLY
         }
     }
@@ -1866,14 +1866,14 @@ builtin setopt noaliases
         eval "${@[2-correct,-1]}"
         () { setopt localoptions noautopushd; builtin cd -q "$___oldpwd"; }
     else
-        +zinit-message "{u-warn}Error{b-warn}:{rst} no such plugin or snippet."
+        +zi-message "{u-warn}Error{b-warn}:{rst} no such plugin or snippet."
     fi
 }
 # ]]]
-# FUNCTION: +zinit-deploy-message. [[[
+# FUNCTION: +zi-deploy-message. [[[
 # Deploys a sub-prompt message to be displayed OR a `zle
 # .reset-prompt' call to be invoked
-+zinit-deploy-message() {
++zi-deploy-message() {
     [[ $1 = <-> && ( ${#} = 1 || ( $2 = (hup|nval|err) && ${#} = 2 ) ) ]] && { zle && {
             local alltext text IFS=$'\n' nl=$'\n'
             repeat 25; do read -r -u"$1" text; alltext+="${text:+$text$nl}"; done
@@ -1888,11 +1888,11 @@ builtin setopt noaliases
     # it, otherwise substitute 0
     exec {THEFD} < <(LANG=C sleep $(( 0.01 + ${${${(M)1#@sleep:}:+${1#@sleep:}}:-0} )); builtin print -r -- ${1:#(@msg|@sleep:*)} "${@[2,-1]}"; )
     command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
-    builtin zle -F "$THEFD" +zinit-deploy-message
+    builtin zle -F "$THEFD" +zi-deploy-message
 }
 # ]]]
-# FUNCTION: .zinit-formatter-pid. [[[
-.zinit-formatter-pid() {
+# FUNCTION: .zi-formatter-pid. [[[
+.zi-formatter-pid() {
     builtin emulate -L zsh -o extendedglob
 
     # Remember extreme whitespace.
@@ -1901,8 +1901,8 @@ builtin setopt noaliases
     # Remove extreme whitespace.
     1=${1//((#s)[[:space:]]##|[[:space:]]##(#e))/}
 
-    ((${+functions[.zinit-first]})) || source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
-    .zinit-any-colorify-as-uspl2 "$1";
+    ((${+functions[.zi-first]})) || source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
+    .zi-any-colorify-as-uspl2 "$1";
 
     # Replace at least one character with an unbreakable space,
     # because extreme whitespace is lost due to implementation problems ...
@@ -1914,17 +1914,17 @@ builtin setopt noaliases
     REPLY=$pbz$REPLY$kbz
 }
 # ]]]
-# FUNCTION: .zinit-formatter-bar. [[[
-.zinit-formatter-bar() {
-    .zinit-formatter-bar-util ─ bar
+# FUNCTION: .zi-formatter-bar. [[[
+.zi-formatter-bar() {
+    .zi-formatter-bar-util ─ bar
 }
 # ]]]
-# FUNCTION: .zinit-formatter-th-bar. [[[
-.zinit-formatter-th-bar() {
-    .zinit-formatter-bar-util ━ th-bar
+# FUNCTION: .zi-formatter-th-bar. [[[
+.zi-formatter-th-bar() {
+    .zi-formatter-bar-util ━ th-bar
 }
-# FUNCTION: .zinit-formatter-bar-util. [[[
-.zinit-formatter-bar-util() {
+# FUNCTION: .zi-formatter-bar-util. [[[
+.zi-formatter-bar-util() {
     if [[ $LANG == (#i)*utf-8* ]]; then
         ch=$1
     else
@@ -1934,8 +1934,8 @@ builtin setopt noaliases
     REPLY=$ZI[col-$2]${(pl:COLUMNS-1::$ch:):-}$ZI[col-rst]
 }
 # ]]]
-# FUNCTION: .zinit-formatter-url. [[[
-.zinit-formatter-url() {
+# FUNCTION: .zi-formatter-url. [[[
+.zi-formatter-url() {
     builtin emulate -LR zsh -o extendedglob
     #              1:proto        3:domain/5:start      6:end-of-it         7:no-dot-domain        9:file-path
     if [[ $1 = (#b)([^:]#)(://|::)((([[:alnum:]._+-]##).([[:alnum:]_+-]##))|([[:alnum:].+_-]##))(|/(*)) ]] {
@@ -1962,8 +1962,8 @@ builtin setopt noaliases
     }
 }
 # ]]]
-# FUNCTION: +zinit-message-formatter [[[
-.zinit-main-message-formatter() {
+# FUNCTION: +zi-message-formatter [[[
+.zi-main-message-formatter() {
     if [[ -z $1 && -z $2 && -z $3 ]]; then
         REPLY=""
         return
@@ -1993,8 +1993,8 @@ builtin setopt noaliases
 #    REPLY+="x(${3}…)"
 }
 # ]]]
-# FUNCTION: +zinit-message. [[[
-+zinit-message() {
+# FUNCTION: +zi-message. [[[
++zi-message() {
     builtin emulate -LR zsh -o extendedglob
     local opt msg
     [[ $1 = -* ]] && { local opt=$1; shift; }
@@ -2006,9 +2006,9 @@ builtin setopt noaliases
     # the general formatter and in the end filter-out the ←→ from the message.
     msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/\
 ${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]\
-${${functions[.zinit-formatter-$match[7]]:+\
-${$(.zinit-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-\
-$(.zinit-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
+${${functions[.zi-formatter-$match[7]]:+\
+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-\
+$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
     builtin print -rn -- "$REPLY"
 )${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+\
 $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
@@ -2024,8 +2024,8 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     fi
 }
 # ]]]
-# FUNCTION: +zinit-prehelp-usage-message. [[[
-+zinit-prehelp-usage-message() {
+# FUNCTION: +zi-prehelp-usage-message. [[[
++zi-prehelp-usage-message() {
     builtin emulate -LR zsh -o extendedglob
     local cmd=$1 allowed=$2 sep="$ZI[col-msg2], $ZI[col-ehi]" \
         sep2="$ZI[col-msg2], $ZI[col-opt]" bcol
@@ -2033,7 +2033,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     # -h/--help given?
     if (( OPTS[opt_-h,--help] )) {
         # Yes – a help message:
-        +zinit-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" \
+        +zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" \
                 "the available {b-lhi}options{ehi}:{rst}"
         local opt
         for opt ( ${(kos:|:)allowed} ) {
@@ -2043,13 +2043,13 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
                 msg=${${(MS)msg##$cmd:\[[^]]##}:-${(MS)msg##\*:\[[^]]##}}
                 msg=${msg#($cmd|\*):\[}
             }
-            local pre_msg=`+zinit-message -n {opt}${(r:14:)${txt#opt_}}`
-            +zinit-message ${(r:35:: :)pre_msg}{rst}{ehi}→{rst}"  $msg"
+            local pre_msg=`+zi-message -n {opt}${(r:14:)${txt#opt_}}`
+            +zi-message ${(r:35:: :)pre_msg}{rst}{ehi}→{rst}"  $msg"
         }
     } elif [[ -n $allowed ]] {
         shift 2
         # No – an error message:
-        +zinit-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" \
+        +zi-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" \
                 "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
                 "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" \
                 "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." \
@@ -2058,7 +2058,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
         local -a cmds
         cmds=( load snippet update delete )
         local bcol="{$cmd}" sep="${ZI[col-rst]}${ZI[col-$cmd]}\`, \`${ZI[col-cmd]}"
-        +zinit-message "$bcol(it should be one of, e.g.{ehi}:" \
+        +zi-message "$bcol(it should be one of, e.g.{ehi}:" \
                 "{nb}$bcol\`{cmd}${(pj:$sep:)cmds}$bcol\`," \
                 "{cmd}{…}$bcol, e.g.{ehi}: {nb}$bcol\`{lhi}zi {b}{cmd}load" \
                 "{pid}username/reponame$bcol\`) or a {b}{hi}for{nb}$bcol-based" \
@@ -2070,8 +2070,8 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     }
 }
 # ]]]
-# FUNCTION: +zinit-parse-opts. [[[
-.zinit-parse-opts() {
+# FUNCTION: +zi-parse-opts. [[[
+.zi-parse-opts() {
     builtin emulate -LR zsh -o extendedglob
     reply=( "${(@)${@[2,-1]//([  $'\t']##|(#s))(#b)(${(~j.|.)${(@s.|.)___opt_map[$1]}})(#B)([  $'\t']##|(#e))/${OPTS[${___opt_map[${match[1]}]%%:*}]::=1}ß←↓→}:#1ß←↓→}" )
 }
@@ -2081,11 +2081,11 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 # Ice support.
 #
 
-# FUNCTION: .zinit-ice. [[[
+# FUNCTION: .zi-ice. [[[
 # Parses ICE specification, puts the result into ICE global hash.
 # The ice-spec is valid for next command only (i.e. it "melts"), but
 # it can then stick to plugin and activate e.g. at update.
-.zinit-ice() {
+.zi-ice() {
     builtin setopt localoptions noksharrays extendedglob warncreateglobal typesetsilent noshortloops
     integer retval
     local bit exts="${(j:|:)${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}"
@@ -2100,19 +2100,19 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     [[ -n ${ZI_ICES[pick]} ]] && ZI_ICES[pick]="${ZI_ICES[pick]//\$ZPFX/${ZPFX%/}}"
     return retval
 } # ]]]
-# FUNCTION: .zinit-pack-ice. [[[
+# FUNCTION: .zi-pack-ice. [[[
 # Remembers all ice-mods, assigns them to concrete plugin. Ice spec
 # is in general forgotten for second-next command (that's why it's
 # called "ice" - it melts), however they glue to the object (plugin
 # or snippet) mentioned in the next command – for later use with e.g.
 # `zi update ...'.
-.zinit-pack-ice() {
+.zi-pack-ice() {
     ZI_SICE[$1${1:+${2:+/}}$2]+="${(j: :)${(qkv)ICE[@]}} "
     ZI_SICE[$1${1:+${2:+/}}$2]="${ZI_SICE[$1${1:+${2:+/}}$2]# }"
     return 0
 } # ]]]
-# FUNCTION: .zinit-load-ices. [[[
-.zinit-load-ices() {
+# FUNCTION: .zi-load-ices. [[[
+.zi-load-ices() {
     local id_as="$1" ___key ___path
     local -a ice_order
     ice_order=(
@@ -2122,7 +2122,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
     # TODO snippet's dir computation…
     if [[ ! -d $___path ]] {
-        if ! .zinit-get-object-path snippet "${id_as//\//---}"; then
+        if ! .zi-get-object-path snippet "${id_as//\//---}"; then
             return 1
         fi
         ___path="$REPLY"/._zi
@@ -2138,8 +2138,8 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     return 0
 }
 # ]]]
-# FUNCTION: .zinit-setup-params. [[[
-.zinit-setup-params() {
+# FUNCTION: .zi-setup-params. [[[
+.zi-setup-params() {
     emulate -LR zsh -o extendedglob
     reply=( ${(@)${(@s.;.)ICE[param]}/(#m)*/${${MATCH%%(-\>|→|=\>)*}//((#s)[[:space:]]##|[[:space:]]##(#e))}${${(M)MATCH#*(-\>|→|=\>)}:+\=${${MATCH#*(-\>|→|=\>)}//((#s)[[:space:]]##|[[:space:]]##(#e))}}} )
     (( ${#reply} )) && return 0 || return 1
@@ -2150,8 +2150,8 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 # Turbo.
 #
 
-# FUNCTION: .zinit-run-task. [[[
-# A backend, worker function of .zinit-scheduler. It obtains the tasks
+# FUNCTION: .zi-run-task. [[[
+# A backend, worker function of .zi-scheduler. It obtains the tasks
 # index and a few of its properties (like the type: plugin, snippet,
 # service plugin, service snippet) and executes it first checking for
 # additional conditions (like non-numeric wait'' ice).
@@ -2162,7 +2162,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 # $4 - task's index in the ZI[WAIT_ICE_...] fields
 # $5 - mode: load or light
 # $6 - the plugin-spec or snippet URL or alias name (from id-as'')
-.zinit-run-task() {
+.zi-run-task() {
     local ___pass="$1" ___t="$2" ___tpe="$3" ___idx="$4" ___mode="$5" ___id="${(Q)6}" ___opt="${(Q)7}" ___action ___s=1 ___retval=0
 
     local -A ICE ZI_ICE
@@ -2191,17 +2191,17 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 
     if [[ $___action = *load ]]; then
         if [[ $___tpe = p ]]; then
-            .zinit-load "${(@)=___id}" "" "$___mode"; (( ___retval += $? ))
+            .zi-load "${(@)=___id}" "" "$___mode"; (( ___retval += $? ))
         elif [[ $___tpe = s ]]; then
-            .zinit-load-snippet $___opt "$___id"; (( ___retval += $? ))
+            .zi-load-snippet $___opt "$___id"; (( ___retval += $? ))
         elif [[ $___tpe = p1 || $___tpe = s1 ]]; then
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            zpty -b "${___id//\//:} / ${ICE[service]}" '.zinit-service '"${(M)___tpe#?}"' "$___mode" "$___id"'
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            zpty -b "${___id//\//:} / ${ICE[service]}" '.zi-service '"${(M)___tpe#?}"' "$___mode" "$___id"'
         fi
         (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )) && zle && zle -M "Loaded $___id"
     elif [[ $___action = *remove ]]; then
-        (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-        [[ $___tpe = p ]] && .zinit-unload "$___id_as" "" -q
+        (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+        [[ $___tpe = p ]] && .zi-unload "$___id_as" "" -q
         (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )) && zle && zle -M "Unloaded $___id_as"
     fi
 
@@ -2211,13 +2211,13 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 }
 # ]]]
 
-# FUNCTION: .zinit-submit-turbo. [[[
+# FUNCTION: .zi-submit-turbo. [[[
 # If `zi load`, `zi light` or `zi snippet`  will be
 # preceded with `wait', `load', `unload' or `on-update-of`/`subscribe'
 # ice-mods then the plugin or snipped is to be loaded in turbo-mode,
 # and this function adds it to internal data structures, so that
-# @zinit-scheduler can run (load, unload) this as a task.
-.zinit-submit-turbo() {
+# @zi-scheduler can run (load, unload) this as a task.
+.zi-submit-turbo() {
     local tpe="$1" mode="$2" opt_uspl2="$3" opt_plugin="$4"
 
     ICE[wait]="${ICE[wait]%%.[0-9]##}"
@@ -2236,11 +2236,11 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     fi
 }
 # ]]]
-# FUNCTION: -zinit_scheduler_add_sh. [[[
+# FUNCTION: -zi_scheduler_add_sh. [[[
 # Copies task into ZI_RUN array, called when a task timeouts.
 # A small function ran from pattern in /-substitution as a math
 # function.
--zinit_scheduler_add_sh() {
+-zi_scheduler_add_sh() {
     local idx="$1" in_wait="$___ar2" in_abc="$___ar3" ver_wait="$___ar4" ver_abc="$___ar5"
     if [[ ( $in_wait = $ver_wait || $in_wait -ge 4 ) && $in_abc = $ver_abc ]]; then
         ZI_RUN+=( "${ZI_TASKS[$idx]}" )
@@ -2250,7 +2250,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     fi
 }
 # ]]]
-# FUNCTION: @zinit-scheduler. [[[
+# FUNCTION: @zi-scheduler. [[[
 # Searches for timeout tasks, executes them. There's an array of tasks
 # waiting for execution, this scheduler manages them, detects which ones
 # should be run at current moment, decides to remove (or not) them from
@@ -2258,7 +2258,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 #
 # $1 - if "following", then it is non-first (second and more)
 #      invocation of the scheduler; this results in chain of `sched'
-#      invocations that results in repetitive @zinit-scheduler activity.
+#      invocations that results in repetitive @zi-scheduler activity.
 #
 #      if "burst", then all tasks are marked timeout and executed one
 #      by one; this is handy if e.g. a docker image starts up and
@@ -2267,10 +2267,10 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
 #      script, not from prompt.
 #
 
-@zinit-scheduler() {
+@zi-scheduler() {
     integer ___ret="${${ZI[lro-data]%:*}##*:}"
     # lro stands for lastarg-retval-option.
-    [[ $1 = following ]] && sched +1 'ZI[lro-data]="$_:$?:${options[printexitvalue]}"; @zinit-scheduler following "${ZI[lro-data]%:*:*}"'
+    [[ $1 = following ]] && sched +1 'ZI[lro-data]="$_:$?:${options[printexitvalue]}"; @zi-scheduler following "${ZI[lro-data]%:*:*}"'
     [[ -n $1 && $1 != (following*|burst) ]] && { local THEFD="$1"; zle -F "$THEFD"; exec {THEFD}<&-; }
     [[ $1 = burst ]] && local -h EPOCHSECONDS=$(( EPOCHSECONDS+10000 ))
     ZI[START_TIME]="${ZI[START_TIME]:-$EPOCHREALTIME}"
@@ -2300,7 +2300,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
                         #
                         # ZI_TASKS=( ${ZI_TASKS[@]/(#b)([0-9]##)+([0-9]##)+([1-3])(*)/
                         # ${ZI_TASKS[$(( (${match[1]}+${match[2]}) <= $___t ?
-                        # zinit_scheduler_add(___i++, ${match[2]},
+                        # zi_scheduler_add(___i++, ${match[2]},
                         # ${(M)match[3]%[1-3]}, ___idx1, ___idx2) : ___i++ ))]}} )
                         #
                         # However, there's a severe bug in Zsh <= 5.3.1 - use of the period
@@ -2313,7 +2313,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
                             (___ar4=___idx1+1) ? (
                             (___ar5=___idx2) ? (
                 (${match[1]}+${match[2]}) <= $___t ?
-                zinit_scheduler_add(___i++) : ___i++ )
+                zi_scheduler_add(___i++) : ___i++ )
                             : 1 )
                             : 1 )
                             : 1 )
@@ -2324,8 +2324,8 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
             }
         }
     } else {
-        add-zsh-hook -d -- precmd @zinit-scheduler
-        add-zsh-hook -- chpwd @zinit-scheduler
+        add-zsh-hook -d -- precmd @zi-scheduler
+        add-zsh-hook -- chpwd @zi-scheduler
         () {
             builtin emulate -L zsh
             builtin setopt extendedglob
@@ -2336,34 +2336,34 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
         # There's a bug in Zsh: first sched call would not be issued
         # until a key-press, if "sched +1 ..." would be called inside
         # zle -F handler. So it's done here, in precmd-handle code.
-        sched +1 'ZI[lro-data]="$_:$?:${options[printexitvalue]}"; @zinit-scheduler following ${ZI[lro-data]%:*:*}'
+        sched +1 'ZI[lro-data]="$_:$?:${options[printexitvalue]}"; @zi-scheduler following ${ZI[lro-data]%:*:*}'
 
         AFD=13371337 # for older Zsh + noclobber option
         exec {AFD}< <(LANG=C command sleep 0.002; builtin print run;)
 	command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
-        zle -F "$AFD" @zinit-scheduler
+        zle -F "$AFD" @zi-scheduler
     }
 
     local ___task ___idx=0 ___count=0 ___idx2
     # All wait'' objects.
     for ___task ( "${ZI_RUN[@]}" ) {
-        .zinit-run-task 1 "${(@z)___task}" && ZI_TASKS+=( "$___task" )
+        .zi-run-task 1 "${(@z)___task}" && ZI_TASKS+=( "$___task" )
         if [[ $(( ++___idx, ___count += ${${REPLY:+1}:-0} )) -gt 0 && $1 != burst ]] {
             AFD=13371337 # for older Zsh + noclobber option
             exec {AFD}< <(LANG=C command sleep 0.0002; builtin print run;)
             command true
             # The $? and $_ will be left unchanged automatically by Zsh.
-            zle -F "$AFD" @zinit-scheduler
+            zle -F "$AFD" @zi-scheduler
             break
         }
     }
     # All unload'' objects.
     for (( ___idx2=1; ___idx2 <= ___idx; ++ ___idx2 )) {
-        .zinit-run-task 2 "${(@z)ZI_RUN[___idx2-correct]}"
+        .zi-run-task 2 "${(@z)ZI_RUN[___idx2-correct]}"
     }
     # All load'' & subscribe'' objects.
     for (( ___idx2=1; ___idx2 <= ___idx; ++ ___idx2 )) {
-        .zinit-run-task 3 "${(@z)ZI_RUN[___idx2-correct]}"
+        .zi-run-task 3 "${(@z)ZI_RUN[___idx2-correct]}"
     }
     ZI_RUN[1-correct,___idx-correct]=()
 
@@ -2445,9 +2445,9 @@ zi() {
     if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|\
 cdclear|delete) ]]; then
         if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
-            .zinit-parse-opts "$cmd" "$@"
+            .zi-parse-opts "$cmd" "$@"
             if (( OPTS[opt_-h,--help] )); then
-                +zinit-prehelp-usage-message $cmd $___opt_map[$cmd] $@
+                +zi-prehelp-usage-message $cmd $___opt_map[$cmd] $@
                 return 1;
             fi
         fi
@@ -2479,18 +2479,18 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
             1="${1:+@}${1#@}${2:+/$2}"
             (( $# > 1 )) && { shift -p $(( $# - 1 )); }
             [[ -z $1 ]] && {
-                +zinit-message "Argument needed, try: {cmd}help."
+                +zi-message "Argument needed, try: {cmd}help."
                 return 1
             }
         } else {
-            .zinit-ice "$@"
+            .zi-ice "$@"
             ___retval2=$?
             local ___last_ice=${@[___retval2]}
             shift ___retval2
             if [[ $# -gt 0 && $1 != for ]] {
-                +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" \
+                +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" \
                         "{apo}\`{cmd}$1{apo}\`{rst} "
-                +zinit-prehelp-usage-message rst
+                +zi-prehelp-usage-message rst
                 return 1
             } elif (( $# == 0 )) {
                 ___error=1
@@ -2507,7 +2507,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
             ___ices=( "${(kv)ZI_ICES[@]}" )
             ZI_ICES=()
             while (( $# )) {
-                .zinit-ice "$@"
+                .zi-ice "$@"
                 ___retval2=$?
                 local ___last_ice=${@[___retval2]}
                 shift ___retval2
@@ -2515,7 +2515,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                     ICE=( "${___ices[@]}" "${(kv)ZI_ICES[@]}" )
                     ZI_ICE=( "${(kv)ICE[@]}" ) ZI_ICES=()
                     integer ___msgs=${+ICE[debug]}
-                    (( ___msgs )) && +zinit-message "{pre}zi-main:{faint} Processing {pname}$1{faint}{…}{rst}"
+                    (( ___msgs )) && +zi-message "{pre}zi-main:{faint} Processing {pname}$1{faint}{…}{rst}"
                     # Delete up to the final space to get the previously-processed ID.
                     ZI[annex-exposed-processed-IDs]+="${___id:+ $___id}"
                     # Strip the ID-qualifier (`@') and GitHub domain from the ID.
@@ -2531,7 +2531,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                     ___etid="${ICE[teleid]:-$___id}"
                     if (( ${+ICE[pack]} )); then
                         ___had_wait=${+ICE[wait]}
-                        .zinit-load-ices "$___ehid"
+                        .zi-load-ices "$___ehid"
                         # wait'' isn't possible via the disk-ices (for
                         # packages), only via the command's ice-spec.
                         [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
@@ -2546,15 +2546,15 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                     } "$@"
                     local ___type=${${${(M)___is_snippet:#1}:+snippet}:-plugin}
                     reply=(
-                        ${(on)ZI_EXTS2[(I)zinit hook:before-load-pre <->]}
+                        ${(on)ZI_EXTS2[(I)zi hook:before-load-pre <->]}
                         ${(on)ZI_EXTS[(I)z-annex hook:before-load-<-> <->]}
-                        ${(on)ZI_EXTS2[(I)zinit hook:before-load-post <->]}
+                        ${(on)ZI_EXTS2[(I)zi hook:before-load-post <->]}
                     )
                     for ___key in "${reply[@]}"; do
                         ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]:-$ZI_EXTS2[$___key]}[@]}" )
                         "${___arr[5]}" "$___type" "$___id" "${ICE[id_as]}" \
                             "${(j: :)${(q)@[2,-1]}}" "${(j: :)${(qkv)___ices[@]}}" \
-                            "${${___key##(zinit|z-annex) hook:}%% <->}" load
+                            "${${___key##(zi|z-annex) hook:}%% <->}" load
                         ___retval2=$?
                         if (( ___retval2 )) {
                             # An error is actually only an odd return code.
@@ -2574,7 +2574,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                                 (( 0 == ${#___new_ices} % 2 )) && \
                                     ___ices=( "${___new_ices[@]}" ) || \
                                         { [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] && \
-                                            +zinit-message "{u-warn}Warning{b-warn}:{msg} Bad new-ices returned" \
+                                            +zi-message "{u-warn}Warning{b-warn}:{msg} Bad new-ices returned" \
                                                 "from the annex{ehi}:{rst} {annex}${___arr[3]}{msg}," \
                                                 "please file an issue report at:{url}" \
                                     "https://github.com/z-shell/${___arr[3]}/issues/new{msg}.{rst}"
@@ -2595,9 +2595,9 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                         ]] && (( !ZI[OPTIMIZE_OUT_DISK_ACCESSES]
                     )) {
                         if (( ___is_snippet > 0 )) {
-                            .zinit-get-object-path snippet $___ehid
+                            .zi-get-object-path snippet $___ehid
                         } else {
-                            .zinit-get-object-path plugin $___ehid
+                            .zi-get-object-path plugin $___ehid
                         }
                         (( $? )) && [[ ${zsh_eval_context[1]} = file ]] && { ___action_load=1; }
                         local ___object_path="$REPLY"
@@ -2621,7 +2621,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                                     for a b ( ${(qqkv@)${(kv@)ICE[(I)^(trigger-load|wait|light-mode)]}} ) {
                                         ices+=( \"\$a\$b\" )
                                     }
-                                    zinit ice \${ices[@]}; zinit $___mode ${(qqq)___id}
+                                    zi ice \${ices[@]}; zi $___mode ${(qqq)___id}
                                     ${${(M)MATCH#!}:+# Forward the call
                                     eval ${MATCH#!} \$@}
                                 }"
@@ -2652,7 +2652,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                             local ___opt="${(k)OPTS[*]}" || \
                             local ___opt="${${ICE[light-mode]+light}:-${OPTS[(I)-b]:+light-b}}"
 
-                        .zinit-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
+                        .zi-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
                         integer ___last_retval=$?
                         ___retval+=___last_retval
 
@@ -2665,11 +2665,11 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                         ICE[wait]="${ICE[wait]:-${ICE[service]:+0}}"
                         if (( ___is_snippet > 0 )); then
                             ZI_SICE[$___ehid]=
-                            .zinit-submit-turbo s${ICE[service]:+1} "" \
+                            .zi-submit-turbo s${ICE[service]:+1} "" \
                                 "$___id" "${(k)OPTS[*]}"
                         else
                             ZI_SICE[$___ehid]=
-                            .zinit-submit-turbo p${ICE[service]:+1} \
+                            .zi-submit-turbo p${ICE[service]:+1} \
                                 "${${${ICE[light-mode]+light}}:-load}" \
                                 "$___id" ""
                         fi
@@ -2688,14 +2688,14 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
         if (( ___error )) {
             () {
                 emulate -LR zsh -o extendedglob
-                +zinit-message -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
+                +zi-message -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
                 if [[ -n $___last_ice ]] {
-                    +zinit-message -n " (the last recognized ice was: {ice}"\
+                    +zi-message -n " (the last recognized ice was: {ice}"\
 "${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
 You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice is in fact a plugin.{rst}
 {note}Note:{rst} The {apo}\`{ice}ice{apo}\`{rst} subcommand is now again required if not using the for-syntax"
                 }
-                +zinit-message "."
+                +zi-message "."
             }
             return 2
         } elif (( ! $# )) {
@@ -2706,43 +2706,43 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
     case "$1" in
         (ice)
             shift
-            .zinit-ice "$@"
+            .zi-ice "$@"
             ;;
         (cdreplay)
-            .zinit-compdef-replay "$2"; ___retval=$?
+            .zi-compdef-replay "$2"; ___retval=$?
             ;;
         (cdclear)
-            .zinit-compdef-clear "$2"
+            .zi-compdef-clear "$2"
             ;;
         (add-fpath|fpath)
-            .zinit-add-fpath "${@[2-correct,-1]}"
+            .zi-add-fpath "${@[2-correct,-1]}"
             ;;
         (run)
-            .zinit-run "${@[2-correct,-1]}"
+            .zi-run "${@[2-correct,-1]}"
             ;;
         (dstart|dtrace)
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            .zinit-debug-start
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            .zi-debug-start
             ;;
         (dstop)
-            (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-            .zinit-debug-stop
+            (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+            .zi-debug-stop
             ;;
         (man)
             man "${ZI[BIN_DIR]}/docs/man/zi.1"
             ;;
         (env-whitelist)
             shift
-            .zinit-parse-opts env-whitelist "$@"
+            .zi-parse-opts env-whitelist "$@"
             builtin set -- "${reply[@]}"
 
             if (( $# == 0 )) {
                 ZI[ENV-WHITELIST]=
-                (( OPTS[opt_-v,--verbose] )) && +zinit-message "{msg2}Cleared the parameter whitelist.{rst}"
+                (( OPTS[opt_-v,--verbose] )) && +zi-message "{msg2}Cleared the parameter whitelist.{rst}"
             } else {
                 ZI[ENV-WHITELIST]+="${(j: :)${(q-kv)@}} "
                 local ___sep="$ZI[col-msg2], $ZI[col-data2]"
-                (( OPTS[opt_-v,--verbose] )) && +zinit-message "{msg2}Extended the parameter whitelist with: {data2}${(pj:$___sep:)@}{msg2}.{rst}"
+                (( OPTS[opt_-v,--verbose] )) && +zi-message "{msg2}Extended the parameter whitelist with: {data2}${(pj:$___sep:)@}{msg2}.{rst}"
             }
             ;;
         (*)
@@ -2752,32 +2752,32 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 reply=( "${(Q)${(z@)reply[1]}[@]}" )
                 (( ${+functions[${reply[5]}]} )) && \
                     { "${reply[5]}" "$@"; return $?; } || \
-                    { +zinit-message "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
+                    { +zi-message "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
             }
-            (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+            (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
             case "$1" in
                 (zstatus)
-                    .zinit-show-zstatus
+                    .zi-show-zstatus
                     ;;
                 (times)
-                    .zinit-show-times "${@[2-correct,-1]}"
+                    .zi-show-times "${@[2-correct,-1]}"
                     ;;
                 (self-update)
                     .zi-self-update
                     ;;
                 (unload)
-                    (( ${+functions[.zinit-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+                    (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
                     if [[ -z $2 && -z $3 ]]; then
                         builtin print "Argument needed, try: help"; ___retval=1
                     else
                         [[ $2 = -q ]] && { 5=-q; shift; }
                         # Unload given plugin. Cloned directory remains intact
                         # so as are completions.
-                        .zinit-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
+                        .zi-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
                     fi
                     ;;
                 (bindkeys)
-                    .zinit-list-bindkeys
+                    .zi-list-bindkeys
                     ;;
                 (update)
                     if (( ${+ICE[if]} )) {
@@ -2787,46 +2787,46 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                         (( ${+commands[$REPLY]} )) || return 1
                     }
                     shift
-                    .zinit-parse-opts update "$@"
+                    .zi-parse-opts update "$@"
                     builtin set -- "${reply[@]}"
                     if [[ ${OPTS[opt_-a,--all]} -eq 1 || ${OPTS[opt_-p,--parallel]} -eq 1 || ${OPTS[opt_-s,--snippets]} -eq 1 || ${OPTS[opt_-l,--plugins]} -eq 1 || -z $1$2${ICE[teleid]}${ICE[id-as]} ]]; then
                         [[ -z $1$2 && $(( OPTS[opt_-a,--all] + OPTS[opt_-p,--parallel] + OPTS[opt_-s,--snippets] + OPTS[opt_-l,--plugins] )) -eq 0 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
                         (( OPTS[opt_-p,--parallel] )) && OPTS[value]=${1:-15}
-                        .zinit-update-or-status-all update; ___retval=$?
+                        .zi-update-or-status-all update; ___retval=$?
                     else
                         local ___key ___id="${1%%(///|//|/)}${2:+/}${2%%(///|//|/)}"
                         [[ -z ${___id//[[:space:]]/} ]] && ___id="${ICE[id-as]:-$ICE[teleid]}"
-                        .zinit-update-or-status update "$___id" ""; ___retval=$?
+                        .zi-update-or-status update "$___id" ""; ___retval=$?
                     fi
                     ;;
                 (status)
                     if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
                         [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
-                        .zinit-update-or-status-all status; ___retval=$?
+                        .zi-update-or-status-all status; ___retval=$?
                     else
-                        .zinit-update-or-status status "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+                        .zi-update-or-status status "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
                     fi
                     ;;
                 (report)
                     if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
                         [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 4; }
-                    .zinit-show-all-reports
+                    .zi-show-all-reports
                     else
-                        .zinit-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+                        .zi-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
                     fi
                     ;;
                 (loaded|list)
                     # Show list of loaded plugins.
-                    .zinit-show-registered-plugins "$2"
+                    .zi-show-registered-plugins "$2"
                     ;;
                 (clist|completions)
                     # Show installed, enabled or disabled, completions.
                     # Detect stray and improper ones.
-                    .zinit-show-completions "$2"
+                    .zi-show-completions "$2"
                     ;;
                 (cclear)
                     # Delete stray and improper completions.
-                    .zinit-clear-completions
+                    .zi-clear-completions
                     ;;
                 (cdisable)
                     if [[ -z $2 ]]; then
@@ -2835,10 +2835,10 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                         local ___f="_${2#_}"
                         # Disable completion given by completion function name
                         # with or without leading _, e.g. cp, _cp.
-                        if .zinit-cdisable "$___f"; then
-                            (( ${+functions[.zinit-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-                            .zinit-forget-completion "$___f"
-                            +zinit-message "Initializing completion system ({func}compinit{rst}){…}"
+                        if .zi-cdisable "$___f"; then
+                            (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+                            .zi-forget-completion "$___f"
+                            +zi-message "Initializing completion system ({func}compinit{rst}){…}"
                             builtin autoload -Uz compinit
                             compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
                         else
@@ -2853,10 +2853,10 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                         local ___f="_${2#_}"
                         # Enable completion given by completion function name
                         # with or without leading _, e.g. cp, _cp.
-                        if .zinit-cenable "$___f"; then
-                            (( ${+functions[.zinit-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-                            .zinit-forget-completion "$___f"
-                            +zinit-message "Initializing completion system ({func}compinit{rst}){…}"
+                        if .zi-cenable "$___f"; then
+                            (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+                            .zi-forget-completion "$___f"
+                            +zi-message "Initializing completion system ({func}compinit{rst}){…}"
                             builtin autoload -Uz compinit
                             compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
                         else
@@ -2865,12 +2865,12 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     fi
                     ;;
                 (creinstall)
-                    (( ${+functions[.zinit-install-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+                    (( ${+functions[.zi-install-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
                     # Installs completions for plugin. Enables them all. It's a
                     # reinstallation, thus every obstacle gets overwritten or removed.
                     [[ $2 = -[qQ] ]] && { 5=$2; shift; }
-                    .zinit-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
-                    [[ -z ${(M)4:#-[qQ]} ]] && +zinit-message "Initializing completion ({func}compinit{rst}){…}"
+                    .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
+                    [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "Initializing completion ({func}compinit{rst}){…}"
                     builtin autoload -Uz compinit
                     compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
                     ;;
@@ -2878,61 +2878,61 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     if [[ -z $2 && -z $3 ]]; then
                         builtin print "Argument needed, try: help"; ___retval=1
                     else
-                        (( ${+functions[.zinit-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+                        (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
                         # Uninstalls completions for plugin.
-                        .zinit-uninstall-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
-                        +zinit-message "Initializing completion ({func}compinit{rst}){…}"
+                        .zi-uninstall-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+                        +zi-message "Initializing completion ({func}compinit{rst}){…}"
                         builtin autoload -Uz compinit
                         compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
                     fi
                     ;;
                 (csearch)
-                    .zinit-search-completions
+                    .zi-search-completions
                     ;;
                 (compinit)
-                    (( ${+functions[.zinit-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-                    .zinit-compinit; ___retval=$?
+                    (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+                    .zi-compinit; ___retval=$?
                     ;;
                 (dreport)
-                    .zinit-show-debug-report
+                    .zi-show-debug-report
                     ;;
                 (dclear)
-                    (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-                    .zinit-clear-debug-report
+                    (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+                    .zi-clear-debug-report
                     ;;
                 (dunload)
-                    (( ${+functions[.zinit-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
-                    .zinit-debug-unload
+                    (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+                    .zi-debug-unload
                     ;;
                 (compile)
-                    (( ${+functions[.zinit-compile-plugin]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+                    (( ${+functions[.zi-compile-plugin]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
                     if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
                         [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
-                        .zinit-compile-uncompile-all 1; ___retval=$?
+                        .zi-compile-uncompile-all 1; ___retval=$?
                     else
-                        .zinit-compile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+                        .zi-compile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
                     fi
                     ;;
                 (uncompile)
                     if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
                         [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
-                        .zinit-compile-uncompile-all 0; ___retval=$?
+                        .zi-compile-uncompile-all 0; ___retval=$?
                     else
-                        .zinit-uncompile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+                        .zi-uncompile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
                     fi
                     ;;
                 (compiled)
-                    .zinit-compiled
+                    .zi-compiled
                     ;;
                 (cdlist)
-                    .zinit-list-compdef-replay
+                    .zi-list-compdef-replay
                     ;;
                 (cd|delete|recall|edit|glance|changes|create|stress)
-                    .zinit-"$1" "${@[2-correct,-1]%%(///|//|/)}"; ___retval=$?
+                    .zi-"$1" "${@[2-correct,-1]%%(///|//|/)}"; ___retval=$?
                     ;;
                 (recently)
                     shift
-                    .zinit-recently "$@"; ___retval=$?
+                    .zi-recently "$@"; ___retval=$?
                     ;;
                 (-h|--help|help)
                     .zi-help
@@ -2957,12 +2957,12 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     ;;
                 (*)
                     if [[ -z $1 ]] {
-                        +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
-                        +zinit-prehelp-usage-message rst
+                        +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
+                        +zi-prehelp-usage-message rst
                     } else {
-                        +zinit-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" \
+                        +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" \
                                 "{apo}\`{error}$1{apo}\`{rst} "
-                        +zinit-prehelp-usage-message rst
+                        +zi-prehelp-usage-message rst
                     }
                     ___retval=1
                     ;;
@@ -2976,12 +2976,12 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
 # A function that can be invoked from within `atinit', `atload', etc.
 # ice-mod.  It works like `zi cdreplay', which cannot be invoked
 # from such hook ices.
-zicdreplay() { .zinit-compdef-replay -q; }
+zicdreplay() { .zi-compdef-replay -q; }
 # ]]]
 # FUNCTION: zicdclear. [[[
 # A wrapper for `zi cdclear -q' which can be called from hook
 # ices like the atinit'', atload'', etc. ices.
-zicdclear() { .zinit-compdef-clear -q; }
+zicdclear() { .zi-compdef-clear -q; }
 # ]]]
 # FUNCTION: zicompinit. [[[
 # A function that can be invoked from within `atinit', `atload', etc.
@@ -2997,15 +2997,15 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {
-    :zinit-tmp-subst-autoload -Uz \
+    :zi-tmp-subst-autoload -Uz \
         ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
         ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 }
 # ]]]
 # Compatibility functions. [[[
 zinit() { zi "$@"; }
-zpcdreplay() { .zinit-compdef-replay -q; }
-zpcdclear() { .zinit-compdef-clear -q; }
+zpcdreplay() { .zi-compdef-replay -q; }
+zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # ]]]
@@ -3019,21 +3019,21 @@ zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 
 autoload add-zsh-hook
 if { zmodload zsh/datetime } {
-    add-zsh-hook -- precmd @zinit-scheduler  # zsh/datetime required for wait/load/unload ice-mods
+    add-zsh-hook -- precmd @zi-scheduler  # zsh/datetime required for wait/load/unload ice-mods
     ZI[HAVE_SCHEDULER]=1
 }
-functions -M -- zinit_scheduler_add 1 1 -zinit_scheduler_add_sh 2>/dev/null
+functions -M -- zi_scheduler_add 1 1 -zi_scheduler_add_sh 2>/dev/null
 zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
 builtin alias zpl=zi zplg=zi zini=zi
-.zinit-prepare-home
+.zi-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.
 typeset -g ZI_TMP
 for ZI_TMP ( "" side install autoload ) {
-    .zinit-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/$ZI_TMP.zsh" "ZI[mtime$ZI_TMP]"
+    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/$ZI_TMP.zsh" "ZI[mtime$ZI_TMP]"
 }
 
 # Simulate existence of _local/zi plugin.
@@ -3057,13 +3057,13 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
         [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT)"
         [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST)"
         if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
-            +zinit-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
+            +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
                 "of the ZI module has been requested… {hi}Building{rst}…"
-            (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+            (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
             command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" distclean &>/dev/null
             .zi-module build &>/dev/null
             if command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" &>/dev/null; then
-                +zinit-message "{ok}Build successful!{rst}"
+                +zi-message "{ok}Build successful!{rst}"
             else
                 builtin print -r -- "${ZI[col-error]}Compilation failed.${ZI[col-rst]}" \
                     "${ZI[col-pre]}You can enter the following command:${ZI[col-rst]}" \
@@ -3078,34 +3078,34 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
 # ]]]
 
 # !atpull-pre.
-@zinit-register-hook "-r/--reset" hook:e-\!atpull-pre ∞zinit-reset-hook
+@zi-register-hook "-r/--reset" hook:e-\!atpull-pre ∞zi-reset-hook
 # !atpull-post.
-@zinit-register-hook "ICE[reset]" hook:e-\!atpull-post ∞zinit-reset-hook
-@zinit-register-hook "atpull'!'" hook:e-\!atpull-post ∞zinit-atpull-e-hook
+@zi-register-hook "ICE[reset]" hook:e-\!atpull-post ∞zi-reset-hook
+@zi-register-hook "atpull'!'" hook:e-\!atpull-post ∞zi-atpull-e-hook
 
 # e-!atpull-pre.
-@zinit-register-hook "make'!!'" hook:no-e-\!atpull-pre ∞zinit-make-ee-hook
-@zinit-register-hook "mv''" hook:no-e-\!atpull-pre ∞zinit-mv-hook
-@zinit-register-hook "cp''" hook:no-e-\!atpull-pre ∞zinit-cp-hook
-@zinit-register-hook "compile-plugin" hook:no-e-\!atpull-pre ∞zinit-compile-plugin-hook
+@zi-register-hook "make'!!'" hook:no-e-\!atpull-pre ∞zi-make-ee-hook
+@zi-register-hook "mv''" hook:no-e-\!atpull-pre ∞zi-mv-hook
+@zi-register-hook "cp''" hook:no-e-\!atpull-pre ∞zi-cp-hook
+@zi-register-hook "compile-plugin" hook:no-e-\!atpull-pre ∞zi-compile-plugin-hook
 # no-e-!atpull-post.
-@zinit-register-hook "make'!'" hook:no-e-\!atpull-post ∞zinit-make-e-hook
-@zinit-register-hook "atpull" hook:no-e-\!atpull-post ∞zinit-atpull-hook
-@zinit-register-hook "make''" hook:no-e-\!atpull-post ∞zinit-make-hook
-@zinit-register-hook "extract" hook:atpull-post ∞zinit-extract-hook
+@zi-register-hook "make'!'" hook:no-e-\!atpull-post ∞zi-make-e-hook
+@zi-register-hook "atpull" hook:no-e-\!atpull-post ∞zi-atpull-hook
+@zi-register-hook "make''" hook:no-e-\!atpull-post ∞zi-make-hook
+@zi-register-hook "extract" hook:atpull-post ∞zi-extract-hook
 # atpull-post.
-@zinit-register-hook "compile-plugin" hook:atpull-post ∞zinit-compile-plugin-hook
-@zinit-register-hook "ps-on-update" hook:%atpull-post ∞zinit-ps-on-update-hook
+@zi-register-hook "compile-plugin" hook:atpull-post ∞zi-compile-plugin-hook
+@zi-register-hook "ps-on-update" hook:%atpull-post ∞zi-ps-on-update-hook
 
 # !atclone-pre.
-@zinit-register-hook "make'!!'" hook:\!atclone-pre ∞zinit-make-ee-hook
-@zinit-register-hook "mv''" hook:\!atclone-pre ∞zinit-mv-hook
-@zinit-register-hook "cp''" hook:\!atclone-pre ∞zinit-cp-hook
-@zinit-register-hook "compile-plugin" hook:\!atclone-pre ∞zinit-compile-plugin-hook
+@zi-register-hook "make'!!'" hook:\!atclone-pre ∞zi-make-ee-hook
+@zi-register-hook "mv''" hook:\!atclone-pre ∞zi-mv-hook
+@zi-register-hook "cp''" hook:\!atclone-pre ∞zi-cp-hook
+@zi-register-hook "compile-plugin" hook:\!atclone-pre ∞zi-compile-plugin-hook
 # !atclone-post.
-@zinit-register-hook "make'!'" hook:\!atclone-post ∞zinit-make-e-hook
-@zinit-register-hook "atclone" hook:\!atclone-post ∞zinit-atclone-hook
-@zinit-register-hook "make''" hook:\!atclone-post ∞zinit-make-hook
-@zinit-register-hook "extract" hook:\!atclone-post ∞zinit-extract-hook
+@zi-register-hook "make'!'" hook:\!atclone-post ∞zi-make-e-hook
+@zi-register-hook "atclone" hook:\!atclone-post ∞zi-atclone-hook
+@zi-register-hook "make''" hook:\!atclone-post ∞zi-make-hook
+@zi-register-hook "extract" hook:\!atclone-post ∞zi-extract-hook
 # atclone-post.
-@zinit-register-hook "compile-plugin" hook:atclone-post ∞zinit-compile-plugin-hook
+@zi-register-hook "compile-plugin" hook:atclone-post ∞zi-compile-plugin-hook

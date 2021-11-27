@@ -3046,27 +3046,27 @@ zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]
 
 # module recompilation for the project rename. [[[
-if [[ -e ${${ZI[BIN_DIR]}}/zmodules/Src/zshell/zplugin.so ]] {
-    if [[ ! -f ${${ZI[BIN_DIR]}}/zmodules/COMPILED_AT || ( ${${ZI[BIN_DIR]}}/zmodules/COMPILED_AT -ot ${${ZI[BIN_DIR]}}/zmodules/RECOMPILE_REQUEST ) ]] {
+if [[ -e ${${ZI[HOME_DIR]}}/zmodules/zi/Src/zi/zpmod.so ]] {
+    if [[ ! -f ${${ZI[HOME_DIR]}}/zmodules/COMPILED_AT || ( ${${ZI[HOME_DIR]}}/zmodules/zi/COMPILED_AT -ot ${${ZI[HOME_DIR]}}/zmodules/zi/RECOMPILE_REQUEST ) ]] {
         # Don't trust access times and verify hard stored values.
-        [[ -e ${${ZI[BIN_DIR]}}/module/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[BIN_DIR]}}/module/COMPILED_AT)"
-        [[ -e ${${ZI[BIN_DIR]}}/module/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[BIN_DIR]}}/module/RECOMPILE_REQUEST)"
+        [[ -e ${${ZI[HOME_DIR]}}/zmodules/zi/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[HOME_DIR]}}/zmodules/zi/COMPILED_AT)"
+        [[ -e ${${ZI[HOME_DIR]}}/zmodules/zi/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[HOME_DIR]}}/zmodules/zi/RECOMPILE_REQUEST)"
         if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
             +zinit-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
                 "of the ZI module has been requested… {hi}Building{rst}…"
             (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-            command make -C "${ZI[BIN_DIR]}/zmodules" distclean &>/dev/null
+            command make -C "${ZI[HOME_DIR]}/zmodules/zi" distclean &>/dev/null
             .zinit-module build &>/dev/null
-            if command make -C "${ZI[BIN_DIR]}/zmodules" &>/dev/null; then
+            if command make -C "${ZI[HOME_DIR]}/zmodules/zi" &>/dev/null; then
                 +zinit-message "{ok}Build successful!{rst}"
             else
                 builtin print -r -- "${ZI[col-error]}Compilation failed.${ZI[col-rst]}" \
                     "${ZI[col-pre]}You can enter the following command:${ZI[col-rst]}" \
-                    'make -C "${ZI[BIN_DIR]}/zmodules' \
+                    'make -C "${ZI[HOME_DIR]}/zmodules/zi' \
                     "${ZI[col-pre]}to see the error messages and e.g.: report an issue" \
                     "at GitHub${ZI[col-rst]}"
             fi
-            command date '+%s' >! "${ZI[BIN_DIR]}/zmodules/COMPILED_AT"
+            command date '+%s' >! "${ZI[HOME_DIR]}/zmodules/zi/COMPILED_AT"
         }
     }
 }

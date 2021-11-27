@@ -544,7 +544,7 @@ ZI[EXTENDED_GLOB]=""
     reply=( "${ZI[PLUGINS_DIR]}/$uspl"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN) )
 } # ]]]
 # FUNCTION: .zinit-check-comp-consistency [[[
-# Zinit creates symlink for each installed completion.
+# ZI creates symlink for each installed completion.
 # This function checks whether given completion (i.e.
 # file like "_mkdir") is indeed a symlink. Backup file
 # is a completion that is disabled - has the leading "_"
@@ -704,7 +704,7 @@ ZI[EXTENDED_GLOB]=""
 # ]]]
 
 # FUNCTION: .zinit-self-update [[[
-# Updates Zinit code (does a git pull).
+# Updates ZI code (does a git pull).
 #
 # User-action entry point.
 .zinit-self-update() {
@@ -752,7 +752,7 @@ ZI[EXTENDED_GLOB]=""
     zcompile -U $ZI[BIN_DIR]/lib/zsh/additional.zsh
     zcompile -U $ZI[BIN_DIR]/lib/zsh/git-process-output.zsh
     # Load for the current session
-    [[ $1 != -q ]] && +zinit-message "Reloading Zinit for the current session{…}"
+    [[ $1 != -q ]] && +zinit-message "Reloading ZI for the current session{…}"
     source $ZI[BIN_DIR]/zi.zsh
     source $ZI[BIN_DIR]/lib/zsh/side.zsh
     source $ZI[BIN_DIR]/lib/zsh/install.zsh
@@ -1824,7 +1824,7 @@ ZI[EXTENDED_GLOB]=""
         ZI[mtime-install] + ZI[mtime-autoload] != sum
     )) {
         +zinit-message "{msg2}Detected ZI update in another session -" \
-            "{pre}reloading Zinit{msg2}{…}{rst}"
+            "{pre}reloading ZI{msg2}{…}{rst}"
         source $ZI[BIN_DIR]/zi.zsh
         source $ZI[BIN_DIR]/lib/zsh/side.zsh
         source $ZI[BIN_DIR]/lib/zsh/install.zsh
@@ -2654,7 +2654,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 
 # FUNCTION: .zinit-cd [[[
-# Jumps to plugin's directory (in Zinit's home directory).
+# Jumps to plugin's directory (in ZI's home directory).
 #
 # User-action entry point.
 #
@@ -2701,7 +2701,7 @@ ZI[EXTENDED_GLOB]=""
 }
 # ]]]
 # FUNCTION: .zinit-delete [[[
-# Deletes plugin's or snippet's directory (in Zinit's home directory).
+# Deletes plugin's or snippet's directory (in ZI's home directory).
 #
 # User-action entry point.
 #
@@ -3191,7 +3191,7 @@ EOF
 # FUNCTION: .zinit-list-compdef-replay [[[
 # Shows recorded compdefs (called by plugins loaded earlier).
 # Plugins often call `compdef' hoping for `compinit' being
-# already ran. Zinit solves this by recording compdefs.
+# already ran. ZI solves this by recording compdefs.
 #
 # User-action entry point.
 .zinit-list-compdef-replay() {

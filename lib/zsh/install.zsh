@@ -1684,6 +1684,11 @@ ziextract() {
             }
             ;;
         ((#i)*.bz2|(#i)*.bzip2)
+            # Rename file if its extension does not match "bz2". bunzip2 refuses to operate on files that are not named correctly.
+            if [[ $file != (#i)*.bz2 ]] {
+                command mv $file $file.bz2
+                file=$file.bz2
+            }
             →zinit-extract() { →zinit-check bunzip2 "$file" || return 1
                 .zinit-get-mtime-into "$file" 'ZINIT[tmp]'
                 command bunzip2 "$file" |& command egrep -v '.out$'

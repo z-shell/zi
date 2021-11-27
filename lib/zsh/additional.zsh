@@ -42,12 +42,12 @@
     emulate -LR zsh
     setopt extendedglob warncreateglobal typesetsilent noshortloops
 
-    local ___tpe="$1" ___mode="$2" ___id="$3" ___fle="${ZINIT[SERVICES_DIR]}/${ICE[service]}.lock" ___fd ___cmd ___tmp ___lckd ___strd=0
+    local ___tpe="$1" ___mode="$2" ___id="$3" ___fle="${ZI[SERVICES_DIR]}/${ICE[service]}.lock" ___fd ___cmd ___tmp ___lckd ___strd=0
     { builtin print -n >! "$___fle"; } 2>/dev/null 1>&2
     [[ ! -e ${___fle:r}.fifo ]] && command mkfifo "${___fle:r}.fifo" 2>/dev/null 1>&2
     [[ ! -e ${___fle:r}.fifo2 ]] && command mkfifo "${___fle:r}.fifo2" 2>/dev/null 1>&2
 
-    typeset -g ZSRV_WORK_DIR="${ZINIT[SERVICES_DIR]}" ZSRV_ID="${ICE[service]}"  # should be also set by other p-m
+    typeset -g ZSRV_WORK_DIR="${ZI[SERVICES_DIR]}" ZSRV_ID="${ICE[service]}"  # should be also set by other p-m
 
     while (( 1 )); do
         (
@@ -83,16 +83,16 @@
         functions[${f}-zinit-bkp]="${functions[$f]}"
         eval "
 function $f {
-    ZINIT[CUR_USR]=\"$user\" ZINIT[CUR_PLUGIN]=\"$plugin\" ZINIT[CUR_USPL2]=\"$id_as\"
-    .zinit-add-report \"\${ZINIT[CUR_USPL2]}\" \"Note: === Starting to track function: $f ===\"
-    .zinit-diff \"\${ZINIT[CUR_USPL2]}\" begin
+    ZI[CUR_USR]=\"$user\" ZI[CUR_PLUGIN]=\"$plugin\" ZI[CUR_USPL2]=\"$id_as\"
+    .zinit-add-report \"\${ZI[CUR_USPL2]}\" \"Note: === Starting to track function: $f ===\"
+    .zinit-diff \"\${ZI[CUR_USPL2]}\" begin
     .zinit-tmp-subst-on load
     functions[${f}]=\${functions[${f}-zinit-bkp]}
     ${f} \"\$@\"
     .zinit-tmp-subst-off load
-    .zinit-diff \"\${ZINIT[CUR_USPL2]}\" end
-    .zinit-add-report \"\${ZINIT[CUR_USPL2]}\" \"Note: === Ended tracking function: $f ===\"
-    ZINIT[CUR_USR]= ZINIT[CUR_PLUGIN]= ZINIT[CUR_USPL2]=
+    .zinit-diff \"\${ZI[CUR_USPL2]}\" end
+    .zinit-add-report \"\${ZI[CUR_USPL2]}\" \"Note: === Ended tracking function: $f ===\"
+    ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
 }"
     done
 }
@@ -105,12 +105,12 @@ function $f {
 # FUNCTION: .zinit-debug-start [[[
 # Starts Dtrace, i.e. session tracking for changes in Zsh state.
 .zinit-debug-start() {
-    if [[ ${ZINIT[DTRACE]} = 1 ]]; then
+    if [[ ${ZI[DTRACE]} = 1 ]]; then
         +zinit-message "{error}Dtrace is already active, stop it first with \`dstop'{rst}"
         return 1
     fi
 
-    ZINIT[DTRACE]=1
+    ZI[DTRACE]=1
 
     .zinit-diff _dtrace/_dtrace begin
 
@@ -120,7 +120,7 @@ function $f {
 # FUNCTION: .zinit-debug-stop [[[
 # Stops Dtrace, i.e. session tracking for changes in Zsh state.
 .zinit-debug-stop() {
-    ZINIT[DTRACE]=0
+    ZI[DTRACE]=0
 
     # Shadowing fully off
     .zinit-tmp-subst-off dtrace
@@ -136,8 +136,8 @@ function $f {
 # FUNCTION: .zinit-debug-unload [[[
 # Reverts changes detected by dtrace run.
 .zinit-debug-unload() {
-    (( ${+functions[.zinit-unload]} )) || builtin source "${ZINIT[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-    if [[ ${ZINIT[DTRACE]} = 1 ]]; then
+    (( ${+functions[.zinit-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+    if [[ ${ZI[DTRACE]} = 1 ]]; then
         +zinit-message "{error}Dtrace is still active, stop it first with \`dstop'{rst}"
     else
         .zinit-unload _dtrace _dtrace

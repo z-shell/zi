@@ -3039,8 +3039,8 @@ EOF
     builtin print -r -- "*.md   diff=markdown" >! .gitattributes
     builtin print -r -- "# $plugin" >! "README.md"
     command cp -vf "${ZI[BIN_DIR]}/LICENSE" LICENSE
-    command cp -vf "${ZI[BIN_DIR]}/lib/Zsh.gitignore" .gitignore
-    command cp -vf "${ZI[BIN_DIR]}/lib/example-script" .
+    command cp -vf "${ZI[BIN_DIR]}/lib/templates/zsh.gitignore" .gitignore
+    command cp -vf "${ZI[BIN_DIR]}/lib/templates/example-script" .
 
     command sed -i -e "s/MY_PLUGIN_DIR/${${(U)plugin:t}//-/_}_DIR/g" example-script
     command sed -i -e "s/USER_NAME/$user_name/g" example-script
@@ -3201,8 +3201,8 @@ EOF
         builtin print "compdef ${(Q)cdf}"
     done
 } # ]]]
-# FUNCTION: .zinit-ls [[[
-.zinit-ls() {
+# FUNCTION: .zi-ls [[[
+.zi-ls() {
     (( ${+commands[tree]} )) || {
         builtin print "${ZI[col-error]}No \`tree' program, it is required by the subcommand \`ls\'${ZI[col-rst]}"
         builtin print "Download from: http://mama.indstate.edu/users/ice/tree/"
@@ -3300,14 +3300,14 @@ EOF
 # defined in zi.zsh, to not make this file longer than it's needed.
 .zi-module() {
     if [[ "$1" = "build" ]]; then
-        .zinit-build-module "${@[2,-1]}"
+        .zi-build-module "${@[2,-1]}"
     elif [[ "$1" = "info" ]]; then
         if [[ "$2" = "--link" ]]; then
             builtin print -r "You can copy the error messages and submit"
             builtin print -r "error-report at: https://github.com/z-shell/zi/issues"
         else
             builtin print -r "To load the module, add following 2 lines to .zshrc, at top:"
-            builtin print -r "    module_path+=( ${ZI[ZMODULES_DIR]}/zi/Src )"
+            builtin print -r "    module_path+=( ${ZI[ZMODULES_DIR]}/zpmod/Src )"
             builtin print -r "    zmodload zi/zpmod"
             builtin print -r ""
             builtin print -r "After loading, use command \`zpmod' to communicate with the module."
@@ -3325,21 +3325,21 @@ EOF
     fi
 }
 # ]]]
-# FUNCTION: .zinit-build-module [[[
+# FUNCTION: .zi-build-module [[[
 # Performs ./configure && make on the module and displays information
 # how to load the module in .zshrc.
-.zinit-build-module() {
+.zi-build-module() {
     setopt localoptions localtraps
     trap 'return 1' INT TERM
-if ! test -d "${${ZI[ZMODULES_DIR]}}/zi"; then
-	mkdir -p "${${ZI[ZMODULES_DIR]}}/zi"
-	chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zi"
+if ! test -d "${${ZI[ZMODULES_DIR]}}"; then
+	mkdir -p "${${ZI[ZMODULES_DIR]}}"
+	chmod g-rwX "${${ZI[ZMODULES_DIR]}}"
 	builtin cd "${${ZI[ZMODULES_DIR]}}" || return 1
-	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zi"
+	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zpmod"
 fi
-    ( builtin cd -q "${ZI[ZMODULES_DIR]}/zi"
+    ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
         +zinit-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
-        +zinit-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zi" =={rst}"
+        +zinit-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
         if [[ -f Makefile ]] {
             if [[ "$1" = "--clean" ]] {
                 noglob +zinit-message {p}-- make distclean --{rst}
@@ -3371,11 +3371,11 @@ fi
 # Help function
 #
 
-# FUNCTION: .zinit-help [[[
+# FUNCTION: .zi-help [[[
 # Shows usage information.
 #
 # User-action entry point.
-.zinit-help() {
+.zi-help() {
         builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
 —— -h|--help|help                – usage information
 —— man                           – manual
@@ -3391,7 +3391,7 @@ fi
 —— update [-q] ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL      – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 —— status ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL           – Git status for plugin or svn status for snippet; – accepts --all
 —— report ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – show plugin's report; – accepts --all
-—— delete [--all|--clean] ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL – remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
+—— delete ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL           – remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
 —— loaded|list {keyword}         – show what plugins are loaded (filter with \'keyword')
 —— cd ${ZI[col-pname]}plg-spec${ZI[col-rst]}                   – cd into plugin's directory; also support snippets, if feed with URL
 —— create ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – create plugin (also together with Github repository)
@@ -3399,10 +3399,10 @@ fi
 —— glance ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – look at plugin's source (pygmentize, {,source-}highlight)
 —— stress ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – test plugin for compatibility with set of options
 —— changes ${ZI[col-pname]}plg-spec${ZI[col-rst]}              – view plugin's git log
-—— recently ${ZI[col-info]}[time-spec]${ZI[col-rst]}          – show plugins that changed recently, argument is e.g. 1 month 2 days
+—— recently ${ZI[col-info]}[time-spec]${ZI[col-rst]}           – show plugins that changed recently, argument is e.g. 1 month 2 days
 —— clist|completions             – list completions in use
-—— cdisable ${ZI[col-info]}cname${ZI[col-rst]}                – disable completion \`cname'
-—— cenable ${ZI[col-info]}cname${ZI[col-rst]}                 – enable completion \`cname'
+—— cdisable ${ZI[col-info]}cname${ZI[col-rst]}                 – disable completion \`cname'
+—— cenable ${ZI[col-info]}cname${ZI[col-rst]}                  – enable completion \`cname'
 —— creinstall ${ZI[col-pname]}plg-spec${ZI[col-rst]}           – install completions for plugin, can also receive absolute local path; -q – quiet
 —— cuninstall ${ZI[col-pname]}plg-spec${ZI[col-rst]}           – uninstall completions for plugin
 —— csearch                       – search for available completions from any plugin

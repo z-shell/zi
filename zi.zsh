@@ -2935,11 +2935,11 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     .zinit-recently "$@"; ___retval=$?
                     ;;
                 (-h|--help|help)
-                    .zinit-help
+                    .zi-help
                     ;;
                 (ls)
                     shift
-                    .zinit-ls "$@"
+                    .zi-ls "$@"
                     ;;
                 (srv)
                     () { setopt localoptions extendedglob warncreateglobal
@@ -3051,33 +3051,27 @@ zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]
 
 # module recompilation for the project rename. [[[
-if [[ -e "${${ZI[ZMODULES_DIR]}}/zi/Src/zi/zpmod.so" ]] {
-if ! test -d "${${ZI[ZMODULES_DIR]}}/zi"; then
-	mkdir -p "${${ZI[ZMODULES_DIR]}}/zi"
-	chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zi"
-	builtin cd "${${ZI[ZMODULES_DIR]}}" || return 1
-	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zi"
-fi
-    if [[ ! -f ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT || ( ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT -ot ${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST ) ]] {
+if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
+    if [[ ! -f ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT || ( ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT -ot ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ) ]] {
         # Don't trust access times and verify hard stored values.
-        [[ -e ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT)"
-        [[ -e ${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST)"
+        [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT)"
+        [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST)"
         if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
             +zinit-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
                 "of the ZI module has been requested… {hi}Building{rst}…"
             (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-            command make -C "${${ZI[ZMODULES_DIR]}}/zi" distclean &>/dev/null
+            command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" distclean &>/dev/null
             .zi-module build &>/dev/null
-            if command make -C "${${ZI[ZMODULES_DIR]}}/zi" &>/dev/null; then
+            if command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" &>/dev/null; then
                 +zinit-message "{ok}Build successful!{rst}"
             else
                 builtin print -r -- "${ZI[col-error]}Compilation failed.${ZI[col-rst]}" \
                     "${ZI[col-pre]}You can enter the following command:${ZI[col-rst]}" \
-                    'make -C ${${ZI[ZMODULES_DIR]}}/zi' \
+                    'make -C ${${ZI[ZMODULES_DIR]}}/zpmod' \
                     "${ZI[col-pre]}to see the error messages and e.g.: report an issue" \
                     "at GitHub${ZI[col-rst]}"
             fi
-            command date '+%s' >! "${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT"
+            command date '+%s' >! "${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT"
         }
     }
 }

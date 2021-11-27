@@ -1,5 +1,5 @@
 ---
-name: Lock BOT
+name: Lock closed issues and PRs
 
 on:
   schedule:

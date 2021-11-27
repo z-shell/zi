@@ -2374,7 +2374,7 @@ $match[7]}:-${ZINIT[__last-formatter-code]}}}:+}}}//←→}
 # FUNCTION: zi. [[[
 # Main function directly exposed to user, obtains subcommand and its
 # arguments, has completion.
-zinit() {
+zi() {
     local -A ICE ZINIT_ICE
     ICE=( "${(kv)ZINIT_ICES[@]}" )
     ZINIT_ICE=( "${(kv)ICE[@]}" )
@@ -2999,7 +2999,7 @@ zicompdef() { ZINIT_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 }
 # ]]]
 # Compatibility functions. [[[
-zi() { zinit "$@"; }
+zinit() { zi "$@"; }
 zpcdreplay() { .zinit-compdef-replay -q; }
 zpcdclear() { .zinit-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZINIT[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZINIT[COMPINIT_OPTS]}}"; }
@@ -3023,7 +3023,7 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZINIT[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zpl=zinit zplg=zinit zini=zinit
+builtin alias zpl=zi zplg=zi zini=zi
 .zinit-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.

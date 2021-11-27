@@ -102,7 +102,7 @@ ZINIT[LEFTAR]=";:^[[D;:^[OD;:\\e[D;:\\eOD;:${termcap[kl]/$'\e'/^\[};:${terminfo[
 
 builtin autoload -Uz is-at-least
 is-at-least 5.1 && ZINIT[NEW_AUTOLOAD]=1 || ZINIT[NEW_AUTOLOAD]=0
-#is-at-least 5.4 && ZINIT[NEW_AUTOLOAD]=2
+is-at-least 5.4 && ZINIT[NEW_AUTOLOAD]=2
 
 # Parameters - temporary substituting of functions. [[[
 ZINIT[TMP_SUBST]=inactive   ZINIT[DTRACE]=0    ZINIT[CUR_PLUGIN]=
@@ -2511,7 +2511,7 @@ env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#
                     ICE=( "${___ices[@]}" "${(kv)ZINIT_ICES[@]}" )
                     ZINIT_ICE=( "${(kv)ICE[@]}" ) ZINIT_ICES=()
                     integer ___msgs=${+ICE[debug]}
-                    (( ___msgs )) && +zinit-message "{pre}zinit-main:{faint} Processing {pname}$1{faint}{…}{rst}"
+                    (( ___msgs )) && +zinit-message "{pre}zi-main:{faint} Processing {pname}$1{faint}{…}{rst}"
                     # Delete up to the final space to get the previously-processed ID.
                     ZINIT[annex-exposed-processed-IDs]+="${___id:+ $___id}"
                     # Strip the ID-qualifier (`@') and GitHub domain from the ID.
@@ -3041,6 +3041,9 @@ ZINIT[STATES___local/zi]=1
 zstyle ':prezto:module:completion' loaded 1
 
 # Colorize completions for commands unload, report, creinstall, cuninstall.
+zstyle ':completion:*:zinit:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;35=1;33'
+zstyle ':completion:*:zinit:argument-rest:plugins' matcher 'r:|=** l:|=*'
+zstyle ':completion:*:*:zinit:*' group-name ""
 zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;36=4;35'
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""

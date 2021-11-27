@@ -2,26 +2,26 @@
 name: Bug Report
 about: Create a report to help Z-Shell Zi to improve
 title: "bug: "
-labels: "bug"
+labels: "bug 🐞"
 assignees: ""
 ---
 
 **Zsh version:**
 
-<!-- Provide your Zsh version. -->
+<!-- Provide your Zsh version below: zsh --version -->
 
- - command: zsh --version
+**Additional information**
 
-**System information**
-
- <!-- Please optionally provide output of commands below. (Exclude any peronal information) -->
-
- - command: uname -a
- - command: zi zstatus
- - command: zi loaded
+ <!-- See commands which might help to privde additional information: 
+ zi report
+ zi times
+ zi help          – To view all commands.
+ Detailed session tracking: 
+ zi dtrace|dstart – to start tracking and see what's going on in session.
+ zi dstop         – stop tracking what's going on in session.
+ zi report        – view session activity.
+ -->
  
-<!-- Please specify commit or tag version. -->
-
 **Current behavior:**
 
 <!-- Describe how the bug manifests. -->
@@ -39,7 +39,7 @@ assignees: ""
 <!-- If you are able to illustrate the bug or feature request with an example, please provide it here. -->
 
 ```
-insert short code snippets here
+<insert shortcode snippets here>
 ```
 
 **Other information:**

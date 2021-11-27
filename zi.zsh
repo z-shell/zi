@@ -3041,9 +3041,6 @@ ZINIT[STATES___local/zi]=1
 zstyle ':prezto:module:completion' loaded 1
 
 # Colorize completions for commands unload, report, creinstall, cuninstall.
-#zstyle ':completion:*:zinit:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;35=1;33'
-#zstyle ':completion:*:zinit:argument-rest:plugins' matcher 'r:|=** l:|=*'
-#zstyle ':completion:*:*:zinit:*' group-name ""
 zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;36=4;35'
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""

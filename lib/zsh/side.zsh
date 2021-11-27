@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
 # FUNCTION: .zinit-exists-physically [[[
 # Checks if directory of given plugin exists in PLUGIN_DIR.

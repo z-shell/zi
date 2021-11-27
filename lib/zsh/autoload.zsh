@@ -3387,29 +3387,29 @@ EOF
 —— self-update                   – updates and compiles ZI
 —— times [-s] [-m]               – statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – show plugin loading moments
 —— zstatus                       – overall ZI status
-—— load           ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – load plugin, can also receive absolute local path
-—— light [-b]     ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
-—— unload         ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – unload plugin loaded with \`zi load ...', -q – quiet
-—— snippet [-f]   ${ZI[col-pname]}{url}${ZI[col-rst]}           – source local or remote file (by direct URL), -f: force – don't use cache
+—— load           ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – load plugin, can also receive absolute local path
+—— light [-b]     ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
+—— unload         ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – unload plugin loaded with \`zi load ...', -q – quiet
+—— snippet [-f]   ${ZI[col-pname]}{url}${ZI[col-rst]}          – source local or remote file (by direct URL), -f: force – don't use cache
 —— ls                            – list snippets in formatted and colorized manner
 —— ice <ice specification>       – add ICE to next command, argument is e.g. from\"gitlab\"
-—— update [-q]    ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL    – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
-—— status         ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL    – Git status for plugin or svn status for snippet; – accepts --all
-—— report         ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – show plugin's report; – accepts --all
-—— delete         ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL    – remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
+—— update [-q]    ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
+—— status         ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL   – Git status for plugin or svn status for snippet; – accepts --all
+—— report         ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – show plugin's report; – accepts --all
+—— delete         ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL   – remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
 —— loaded|list {keyword}         – show what plugins are loaded (filter with \'keyword')
-—— cd             ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – cd into plugin's directory; also support snippets, if feed with URL
-—— create         ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – create plugin (also together with Github repository)
-—— edit           ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – edit plugin's file with \$EDITOR
-—— glance         ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – look at plugin's source (pygmentize, {,source-}highlight)
-—— stress         ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – test plugin for compatibility with set of options
-—— changes        ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – view plugin's git log
-—— recently       ${ZI[col-info]}[time-spec]${ZI[col-rst]}     – show plugins that changed recently, argument is e.g. 1 month 2 days
+—— cd             ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – cd into plugin's directory; also support snippets, if feed with URL
+—— create         ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – create plugin (also together with Github repository)
+—— edit           ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – edit plugin's file with \$EDITOR
+—— glance         ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – look at plugin's source (pygmentize, {,source-}highlight)
+—— stress         ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – test plugin for compatibility with set of options
+—— changes        ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – view plugin's git log
+—— recently       ${ZI[col-info]}[time-spec]${ZI[col-rst]}    – show plugins that changed recently, argument is e.g. 1 month 2 days
 —— clist|completions             – list completions in use
-—— cdisable       ${ZI[col-info]}cname${ZI[col-rst]}           – disable completion \`cname'
-—— cenable        ${ZI[col-info]}cname${ZI[col-rst]}           – enable completion \`cname'
-—— creinstall     ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – install completions for plugin, can also receive absolute local path; -q – quiet
-—— cuninstall     ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – uninstall completions for plugin
+—— cdisable       ${ZI[col-info]}cname${ZI[col-rst]}          – disable completion \`cname'
+—— cenable        ${ZI[col-info]}cname${ZI[col-rst]}          – enable completion \`cname'
+—— creinstall     ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – install completions for plugin, can also receive absolute local path; -q – quiet
+—— cuninstall     ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – uninstall completions for plugin
 —— csearch                       – search for available completions from any plugin
 —— compinit                      – refresh installed completions
 —— dtrace|dstart                 – start tracking what's going on in session
@@ -3417,18 +3417,18 @@ EOF
 —— dunload                       – revert changes recorded between dstart and dstop
 —— dreport                       – report what was going on in session
 —— dclear                        – clear report of what was going on in session
-—— compile        ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – compile plugin (or all plugins if ——all passed)
-—— uncompile      ${ZI[col-pname]}plg-spec${ZI[col-rst]}        – remove compiled version of plugin (or of all plugins if ——all passed)
+—— compile        ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – compile plugin (or all plugins if ——all passed)
+—— uncompile      ${ZI[col-pname]}plg-spec${ZI[col-rst]}       – remove compiled version of plugin (or of all plugins if ——all passed)
 —— compiled                      – list plugins that are compiled
 —— cdlist                        – show compdef replay list
 —— cdreplay [-q]                 – replay compdefs (to be done after compinit), -q – quiet
 —— cdclear [-q]                  – clear compdef replay list, -q – quiet
 —— srv {service-id} [cmd]        – control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Zshell
-—— recall         ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL    – fetch saved ice modifiers and construct \`zi ice ...' command
+—— recall         ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL   – fetch saved ice modifiers and construct \`zi ice ...' command
 —— env-whitelist [-v|-h] {env..} – allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose
 —— bindkeys                      – lists bindkeys set up by each plugin
 —— module                        – manage binary Zsh module shipped with ZI, see \`zi module help'
-—— add-fpath|fpath ${ZINIT[col-info]}[-f|--front]${ZINIT[col-rst]} ${ZINIT[col-pname]}plg-spec ${ZINIT[col-info]}[subdirectory]${ZINIT[col-rst]} – adds given plugin directory to \$fpath; if the second argument is given, it is appended to the directory path; if the option -f/--front is given, the directory path is prepended instead of appended to \$fpath.
+—— add-fpath|fpath ${ZINIT[col-pname]}plg-spec${ZINIT[col-rst]} ${ZINIT[col-info]}[subdirectory]${ZINIT[col-rst]} – adds given plugin directory to \$fpath; second argument is appended to the directory path; if -f/--front is given, then is prepended instead of appended to \$fpath.
 —— run [-l] [plugin] {command}   – runs the given command in the given plugin's directory; if the option -l will be given then the plugin should be skipped – the option will cause the previous plugin to be reused"
 
     integer idx

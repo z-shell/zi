@@ -3331,7 +3331,7 @@ EOF
 .zi-build-module() {
     setopt localoptions localtraps
     trap 'return 1' INT TERM
-if ! test -d "${${ZI[ZMODULES_DIR]}}"; then
+if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
 	mkdir -p "${${ZI[ZMODULES_DIR]}}"
 	chmod g-rwX "${${ZI[ZMODULES_DIR]}}"
 	builtin cd "${${ZI[ZMODULES_DIR]}}" || return 1

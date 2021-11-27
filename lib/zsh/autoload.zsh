@@ -3307,8 +3307,8 @@ EOF
             builtin print -r "error-report at: https://github.com/z-shell/zi/issues"
         else
             builtin print -r "To load the module, add following 2 lines to .zshrc, at top:"
-            builtin print -r "    module_path+=( \"${ZI[BIN_DIR]}/zmodules/Src\" )"
-            builtin print -r "    zmodload zshell/zplugin"
+            builtin print -r "    module_path+=( ${ZI[ZMODULES_DIR]}/zi/Src )"
+            builtin print -r "    zmodload zi/zpmod"
             builtin print -r ""
             builtin print -r "After loading, use command \`zpmod' to communicate with the module."
             builtin print -r "See \`zpmod -h' for more information."

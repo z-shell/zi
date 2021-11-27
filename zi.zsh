@@ -42,8 +42,7 @@ if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
 fi
 
 # Allow to override ZI[HOME_DIR].
-if [[ -z ${ZI[HOME_DIR]} ]]; then
-    if [[ -d $HOME/.zi ]]; then
+if [[ -d $HOME/.zi ]]; then
         ZI[HOME_DIR]="$HOME/.zi"
     elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
@@ -79,13 +78,14 @@ pullopts|debug|null|binary|make|nocompile|notify|reset"
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}
+: ${ZI[ZMODULES_DIR]:=${ZI[HOME_DIR]}/zmodules}
 typeset -g ZPFX
 : ${ZPFX:=${ZI[HOME_DIR]}/polaris}
 : ${ZI[ALIASES_OPT]::=${${options[aliases]:#off}:+1}}
 : ${ZI[MAN_DIR]:=${ZPFX}/man}
 
-ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}   ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]}
-ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]} ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]}
+ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}   ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
+ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0uUpiPsf
 [[ -z ${path[(re)$ZPFX/bin]} ]] && [[ -d "$ZPFX/bin" ]] && path=( "$ZPFX/bin" "${path[@]}" )
 [[ -z ${path[(re)$ZPFX/sbin]} ]] && [[ -d "$ZPFX/sbin" ]] && path=( "$ZPFX/sbin" "${path[@]}" )
@@ -1199,6 +1199,12 @@ builtin setopt noaliases
         command chmod go-w "${ZI[HOME_DIR]}"
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
+    }
+    [[ ! -d ${ZI[ZMODULES_DIR]} ]] && {
+        command mkdir -p "${ZI[ZMODULES_DIR]}"
+        # For compaudit.
+        command chmod go-w "${ZI[ZMODULES_DIR]}"
+
     }
     [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]] && {
         command rm -rf "${ZI[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zi"
@@ -3046,27 +3052,33 @@ zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]
 
 # module recompilation for the project rename. [[[
-if [[ -e ${${ZI[HOME_DIR]}}/zmodules/zi/Src/zi/zpmod.so ]] {
-    if [[ ! -f ${${ZI[HOME_DIR]}}/zmodules/COMPILED_AT || ( ${${ZI[HOME_DIR]}}/zmodules/zi/COMPILED_AT -ot ${${ZI[HOME_DIR]}}/zmodules/zi/RECOMPILE_REQUEST ) ]] {
+if [[ -e "${${ZI[ZMODULES_DIR]}}/zi/Src/zi/zpmod.so" ]] {
+if ! test -d "${${ZI[ZMODULES_DIR]}}/zi"; then
+	mkdir -p "${${ZI[ZMODULES_DIR]}}/zi"
+	chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zi"
+	builtin cd "${${ZI[ZMODULES_DIR]}}" || return
+	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zi"
+fi
+    if [[ ! -f ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT || ( ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT -ot ${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST ) ]] {
         # Don't trust access times and verify hard stored values.
-        [[ -e ${${ZI[HOME_DIR]}}/zmodules/zi/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[HOME_DIR]}}/zmodules/zi/COMPILED_AT)"
-        [[ -e ${${ZI[HOME_DIR]}}/zmodules/zi/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[HOME_DIR]}}/zmodules/zi/RECOMPILE_REQUEST)"
+        [[ -e ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT)"
+        [[ -e ${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST)"
         if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
             +zinit-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
                 "of the ZI module has been requested… {hi}Building{rst}…"
             (( ${+functions[.zinit-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-            command make -C "${ZI[HOME_DIR]}/zmodules/zi" distclean &>/dev/null
+            command make -C "${${ZI[ZMODULES_DIR]}}/zi" distclean &>/dev/null
             .zinit-module build &>/dev/null
-            if command make -C "${ZI[HOME_DIR]}/zmodules/zi" &>/dev/null; then
+            if command make -C "${${ZI[ZMODULES_DIR]}}/zi" &>/dev/null; then
                 +zinit-message "{ok}Build successful!{rst}"
             else
                 builtin print -r -- "${ZI[col-error]}Compilation failed.${ZI[col-rst]}" \
                     "${ZI[col-pre]}You can enter the following command:${ZI[col-rst]}" \
-                    'make -C "${ZI[HOME_DIR]}/zmodules/zi' \
+                    'make -C ${${ZI[ZMODULES_DIR]}}/zi' \
                     "${ZI[col-pre]}to see the error messages and e.g.: report an issue" \
                     "at GitHub${ZI[col-rst]}"
             fi
-            command date '+%s' >! "${ZI[HOME_DIR]}/zmodules/zi/COMPILED_AT"
+            command date '+%s' >! "${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT"
         }
     }
 }

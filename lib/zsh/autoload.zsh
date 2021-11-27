@@ -3362,7 +3362,7 @@ fi
                 .zi-module info --link
             }
         }
-    builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zi/COMPILED_AT"
+    builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
     )
 }
 # ]]]

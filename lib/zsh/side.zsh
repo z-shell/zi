@@ -15,7 +15,7 @@
             return 0 || \
             return 1
     else
-        [[ -d ${ZINIT[PLUGINS_DIR]}/${reply[-2]:+${reply[-2]}---}${reply[-1]//\//---} ]] && \
+        [[ -d ${ZI[PLUGINS_DIR]}/${reply[-2]:+${reply[-2]}---}${reply[-1]//\//---} ]] && \
             return 0 || \
             return 1
     fi
@@ -114,11 +114,11 @@
         REPLY="${REPLY/https--github.com--sorin-ionescu--prezto--trunk--modules/PZTM}"
         REPLY="${REPLY/https--github.com--sorin-ionescu--prezto--trunk--/PZT::}"
         REPLY="${REPLY/https--github.com--sorin-ionescu--prezto--trunk/PZT}"
-        REPLY="${REPLY/(#b)%([A-Z]##)(#c0,1)(*)/%$ZINIT[col-uname]$match[1]$ZINIT[col-pname]$match[2]$ZINIT[col-rst]}"
+        REPLY="${REPLY/(#b)%([A-Z]##)(#c0,1)(*)/%$ZI[col-uname]$match[1]$ZI[col-pname]$match[2]$ZI[col-rst]}"
     } elif [[ $user == http(|s): ]] {
-        REPLY="${ZINIT[col-ice]}${user}/${plugin}${ZINIT[col-rst]}"
+        REPLY="${ZI[col-ice]}${user}/${plugin}${ZI[col-rst]}"
     } else {
-        REPLY="${user:+${ZINIT[col-uname]}${user}${ZINIT[col-rst]}/}${ZINIT[col-pname]}${plugin}${ZINIT[col-rst]}"
+        REPLY="${user:+${ZI[col-uname]}${user}${ZI[col-rst]}/}${ZI[col-pname]}${plugin}${ZI[col-rst]}"
     }
 } # ]]]
 # FUNCTION: .zinit-two-paths [[[
@@ -160,7 +160,7 @@
 # returns path to snippet directory and optional name of snippet file (only
 # valid if ICE[svn] is not set).
 #
-# Can also pack resulting ices into ZINIT_SICE (see $2).
+# Can also pack resulting ices into ZI_SICE (see $2).
 #
 # $1 - URL (also plugin-spec)
 # $2 - "pack" or "nopack" or "pack-nf" - packing means ICE
@@ -175,25 +175,25 @@
     setopt extendedglob typesetsilent warncreateglobal noshortloops
 
     local ___URL="${1%/}" ___pack="$2" ___is_snippet=0
-    local ___var_name1="${3:-ZINIT_ICE}" ___var_name2="${4:-local_dir}" \
+    local ___var_name1="${3:-ZI_ICE}" ___var_name2="${4:-local_dir}" \
         ___var_name3="${5:-filename}" ___var_name4="${6:-is_snippet}"
 
     # Copy from .zinit-recall
     local -a ice_order nval_ices
     ice_order=(
-        ${(s.|.)ZINIT[ice-list]}
+        ${(s.|.)ZI[ice-list]}
 
         # Include all additional ices – after
         # stripping them from the possible: ''
-        ${(@)${(@Akons:|:)${ZINIT_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
+        ${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
     )
     nval_ices=(
-            ${(s.|.)ZINIT[nval-ice-list]}
+            ${(s.|.)ZI[nval-ice-list]}
 
             # Include only those additional ices,
             # don't have the '' in their name, i.e.
             # aren't designed to hold value
-            ${(@)${(@)${(@Akons:|:)ZINIT_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
+            ${(@)${(@)${(@Akons:|:)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
 
             # Must be last
             svn
@@ -212,7 +212,7 @@
         .zinit-any-to-user-plugin "$___URL" ""
         local ___user="${reply[-2]}" ___plugin="${reply[-1]}"
         ___s_path="" ___filename=""
-        [[ "$___user" = "%" ]] && ___path="$___plugin" || ___path="${ZINIT[PLUGINS_DIR]}/${___user:+${___user}---}${___plugin//\//---}"
+        [[ "$___user" = "%" ]] && ___path="$___plugin" || ___path="${ZI[PLUGINS_DIR]}/${___user:+${___user}---}${___plugin//\//---}"
         .zinit-exists-physically-message "$___user" "$___plugin" || return 1
     fi
 
@@ -221,7 +221,7 @@
 
     local -A ___sice
     local -a ___tmp
-    ___tmp=( "${(z@)ZINIT_SICE[${___user-$___URL}${${___user:#(%|/)*}:+/}$___plugin]}" )
+    ___tmp=( "${(z@)ZI_SICE[${___user-$___URL}${${___user:#(%|/)*}:+/}$___plugin]}" )
     (( ${#___tmp[@]} > 1 && ${#___tmp[@]} % 2 == 0 )) && ___sice=( "${(Q)___tmp[@]}" )
 
     if [[ "${+___sice[svn]}" = "1" || -n "$___s_svn" ]]; then
@@ -256,29 +256,29 @@
     # Rename Zplugin > ZI
     if [[ ! -d $___zi_path && -d $___local_dir/._zplugin ]]; then
         (
-            builtin print -Pr -- "${ZINIT[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
-                "FOR THE ZPLUGIN -> ZINIT RENAME…%f"
-            builtin cd -q ${ZINIT[PLUGINS_DIR]} || return 1
+            builtin print -Pr -- "${ZI[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
+                "FOR THE ZPLUGIN -> ZI RENAME…%f"
+            builtin cd -q ${ZI[PLUGINS_DIR]} || return 1
             autoload -Uz zmv
             ( zmv -W '**/._zplugin' '**/._zi' ) &>/dev/null
-            builtin cd -q ${ZINIT[SNIPPETS_DIR]} || return 1
+            builtin cd -q ${ZI[SNIPPETS_DIR]} || return 1
             ( zmv -W '**/._zplugin' '**/._zi' ) &>/dev/null
-            builtin print -Pr -- "${ZINIT[col-obj]}THE UPGRADE SUCCEDED!%f"
-        ) || builtin print -Pr -- "${ZINIT[col-error]}THE UPGRADE FAILED!%f"
+            builtin print -Pr -- "${ZI[col-obj]}THE UPGRADE SUCCEDED!%f"
+        ) || builtin print -Pr -- "${ZI[col-error]}THE UPGRADE FAILED!%f"
     fi
 
     # Rename Zinit > ZI
     if [[ ! -d $___zi_path && -d $___local_dir/._zinit ]]; then
         (
-            builtin print -Pr -- "${ZINIT[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
-                "FOR THE ZINIT -> ZI RENAME…%f"
-            builtin cd -q ${ZINIT[PLUGINS_DIR]} || return 1
+            builtin print -Pr -- "${ZI[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" \
+                "FOR THE ZI -> ZI RENAME…%f"
+            builtin cd -q ${ZI[PLUGINS_DIR]} || return 1
             autoload -Uz zmv
             ( zmv -W '**/.zinit' '**/._zi' ) &>/dev/null
-            builtin cd -q ${ZINIT[SNIPPETS_DIR]} || return 1
+            builtin cd -q ${ZI[SNIPPETS_DIR]} || return 1
             ( zmv -W '**/._zinit' '**/._zi' ) &>/dev/null
-            builtin print -Pr -- "${ZINIT[col-obj]}THE UPGRADE SUCCEDED!%f"
-        ) || builtin print -Pr -- "${ZINIT[col-error]}THE UPGRADE FAILED!%f"
+            builtin print -Pr -- "${ZI[col-obj]}THE UPGRADE SUCCEDED!%f"
+        ) || builtin print -Pr -- "${ZI[col-error]}THE UPGRADE FAILED!%f"
     fi
 
     # Read disk-Ice
@@ -350,19 +350,19 @@
     # Copy from .zinit-recall
     local -a ice_order nval_ices
     ice_order=(
-        ${(s.|.)ZINIT[ice-list]}
+        ${(s.|.)ZI[ice-list]}
 
         # Include all additional ices – after
         # stripping them from the possible: ''
-        ${(@)${(@Akons:|:)${ZINIT_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
+        ${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
     )
     nval_ices=(
-            ${(s.|.)ZINIT[nval-ice-list]}
+            ${(s.|.)ZI[nval-ice-list]}
 
             # Include only those additional ices,
             # don't have the '' in their name, i.e.
             # aren't designed to hold value
-            ${(@)${(@)${(@Akons:|:)ZINIT_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
+            ${(@)${(@)${(@Akons:|:)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
 
             # Must be last
             svn

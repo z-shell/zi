@@ -3331,9 +3331,9 @@ EOF
 .zinit-build-module() {
     setopt localoptions localtraps
     trap 'return 1' INT TERM
-    ( builtin cd -q "${ZI[BIN_DIR]}"/zmodules
-        +zinit-message "{pname}== Building module zshell/zplugin, running: make clean, then ./configure and then make =={rst}"
-        +zinit-message "{pname}== The module sources are located at: "${ZI[BIN_DIR]}"/zmodules =={rst}"
+    ( builtin cd -q "${ZI[ZMODULES_DIR]}/zi"
+        +zinit-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
+        +zinit-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zi" =={rst}"
         if [[ -f Makefile ]] {
             if [[ "$1" = "--clean" ]] {
                 noglob +zinit-message {p}-- make distclean --{rst}
@@ -3348,7 +3348,7 @@ EOF
         CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp && {
             noglob +zinit-message {p}-- make --{rst}
             if { make } {
-                [[ -f Src/zshell/zplugin.so ]] && cp -vf Src/zshell/zplugin.{so,bundle}
+                [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
                 noglob +zinit-message "{info}Module has been built correctly.{rst}"
                 .zinit-module info
             } else {
@@ -3356,7 +3356,7 @@ EOF
                 .zinit-module info --link
             }
         }
-    builtin print $EPOCHSECONDS >! "${ZI[BIN_DIR]}"/zmodules/COMPILED_AT
+    builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zi/COMPILED_AT"
     )
 }
 # ]]]
@@ -3382,9 +3382,9 @@ EOF
 —— snippet [-f] ${ZI[col-pname]}{url}${ZI[col-rst]}            – source local or remote file (by direct URL), -f: force – don't use cache
 —— ls                            – list snippets in formatted and colorized manner
 —— ice <ice specification>       – add ICE to next command, argument is e.g. from\"gitlab\"
-—— update [-q] ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL      – Git update plugin or snippet (or all plugins and snippets if ——all passed); besides -q accepts also ——quiet, and also -r/--reset – this option causes to run git reset --hard / svn revert before pulling changes
-—— status ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL           – Git status for plugin or svn status for snippet (or for all those if ——all passed)
-—— report ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – show plugin's report (or all plugins' if ——all passed)
+—— update [-q] ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL      – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
+—— status ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL           – Git status for plugin or svn status for snippet; – accepts --all
+—— report ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – show plugin's report; – accepts --all
 —— delete [--all|--clean] ${ZI[col-pname]}plg-spec${ZI[col-rst]}|URL – remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
 —— loaded|list {keyword}         – show what plugins are loaded (filter with \'keyword')
 —— cd ${ZI[col-pname]}plg-spec${ZI[col-rst]}                   – cd into plugin's directory; also support snippets, if feed with URL

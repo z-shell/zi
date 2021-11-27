@@ -44,19 +44,18 @@ fi
 # Allow to override ZI[HOME_DIR].
 if [[ -d $HOME/.zi ]]; then
         ZI[HOME_DIR]="$HOME/.zi"
-    elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
+elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
-    elif [[ -d $HOME/.zinit ]]; then
+elif [[ -d $HOME/.zinit ]]; then
         ZI[HOME_DIR]="$HOME/.zinit"
-    elif [[ -d ${ZDOTDIR:-$HOME}/.zinit ]]; then
+elif [[ -d ${ZDOTDIR:-$HOME}/.zinit ]]; then
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zinit"
-    elif [[ -d $HOME/.zplugin ]]; then
+elif [[ -d $HOME/.zplugin ]]; then
         ZI[HOME_DIR]="$HOME/.zplugin"
-    elif [[ -d ${ZDOTDIR:-$HOME}/.zplugin ]]; then
+elif [[ -d ${ZDOTDIR:-$HOME}/.zplugin ]]; then
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zplugin"
     else
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
-    fi
 fi
 
 ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|\
@@ -2764,7 +2763,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     .zinit-show-times "${@[2-correct,-1]}"
                     ;;
                 (self-update)
-                    .zinit-self-update
+                    .zi-self-update
                     ;;
                 (unload)
                     (( ${+functions[.zinit-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
@@ -3056,7 +3055,7 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zi/Src/zi/zpmod.so" ]] {
 if ! test -d "${${ZI[ZMODULES_DIR]}}/zi"; then
 	mkdir -p "${${ZI[ZMODULES_DIR]}}/zi"
 	chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zi"
-	builtin cd "${${ZI[ZMODULES_DIR]}}" || return
+	builtin cd "${${ZI[ZMODULES_DIR]}}" || return 1
 	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zi"
 fi
     if [[ ! -f ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT || ( ${${ZI[ZMODULES_DIR]}}/zi/COMPILED_AT -ot ${${ZI[ZMODULES_DIR]}}/zi/RECOMPILE_REQUEST ) ]] {

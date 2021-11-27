@@ -3052,6 +3052,7 @@ zstyle ':completion:*:*:zi:*' group-name ""
 
 # module recompilation for the project rename. [[[
 if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
+    .zi-module build &>/dev/null
     if [[ ! -f ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT || ( ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT -ot ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ) ]] {
         # Don't trust access times and verify hard stored values.
         [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT)"

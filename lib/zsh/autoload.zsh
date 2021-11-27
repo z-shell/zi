@@ -3304,7 +3304,7 @@ EOF
     elif [[ "$1" = "info" ]]; then
         if [[ "$2" = "--link" ]]; then
             builtin print -r "You can copy the error messages and submit"
-            builtin print -r "error-report at: https://github.com/z-shell/zi/issues"
+            builtin print -r "error-report at: https://github.com/z-shell/zpmod/issues"
         else
             builtin print -r "To load the module, add following 2 lines to .zshrc, at top:"
             builtin print -r "    module_path+=( ${ZI[ZMODULES_DIR]}/zpmod/Src )"
@@ -3329,14 +3329,20 @@ EOF
 # Performs ./configure && make on the module and displays information
 # how to load the module in .zshrc.
 .zi-build-module() {
-    setopt localoptions localtraps
-    trap 'return 1' INT TERM
-if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
-	mkdir -p "${${ZI[ZMODULES_DIR]}}"
-	chmod g-rwX "${${ZI[ZMODULES_DIR]}}"
-	builtin cd "${${ZI[ZMODULES_DIR]}}" || return 1
-	git clone https://github.com/z-shell/zpmod.git "${${ZI[ZMODULES_DIR]}}/zpmod"
-fi
+    if command git -C "${${ZI[ZMODULE_DIR]}}/zpmod" rev-parse 2>/dev/null; then
+        command git -C "${${ZI[ZMODULE_DIR]}}/zpmod" clean -d -f -f
+        command git -C "${${ZI[ZMODULE_DIR]}}/zpmod" reset --hard HEAD
+        command git -C "${${ZI[ZMODULE_DIR]}}/zpmod" pull
+    else
+        if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
+            mkdir -p "${${ZI[ZMODULES_DIR]}}"
+            chmod g-rwX "${${ZI[ZMODULES_DIR]}}"
+        fi
+        command git clone "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULE_DIR]}}/zpmod" || {
+            builtin print "${ZI[col-error]}Failed to clone module repo${ZI[col-rst]}"
+            return 1
+        }
+    fi
     ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
         +zinit-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
         +zinit-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
@@ -3362,10 +3368,9 @@ fi
                 .zi-module info --link
             }
         }
-    builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+        builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
     )
-}
-# ]]]
+} # ]]]
 
 #
 # Help function
@@ -3399,10 +3404,10 @@ fi
 —— glance ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – look at plugin's source (pygmentize, {,source-}highlight)
 —— stress ${ZI[col-pname]}plg-spec${ZI[col-rst]}               – test plugin for compatibility with set of options
 —— changes ${ZI[col-pname]}plg-spec${ZI[col-rst]}              – view plugin's git log
-—— recently ${ZI[col-info]}[time-spec]${ZI[col-rst]}           – show plugins that changed recently, argument is e.g. 1 month 2 days
+—— recently ${ZI[col-info]}[time-spec]${ZI[col-rst]}          – show plugins that changed recently, argument is e.g. 1 month 2 days
 —— clist|completions             – list completions in use
-—— cdisable ${ZI[col-info]}cname${ZI[col-rst]}                 – disable completion \`cname'
-—— cenable ${ZI[col-info]}cname${ZI[col-rst]}                  – enable completion \`cname'
+—— cdisable ${ZI[col-info]}cname${ZI[col-rst]}                – disable completion \`cname'
+—— cenable ${ZI[col-info]}cname${ZI[col-rst]}                 – enable completion \`cname'
 —— creinstall ${ZI[col-pname]}plg-spec${ZI[col-rst]}           – install completions for plugin, can also receive absolute local path; -q – quiet
 —— cuninstall ${ZI[col-pname]}plg-spec${ZI[col-rst]}           – uninstall completions for plugin
 —— csearch                       – search for available completions from any plugin
@@ -3423,8 +3428,7 @@ fi
 —— env-whitelist [-v|-h] {env..} – allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose
 —— bindkeys                      – lists bindkeys set up by each plugin
 —— module                        – manage binary Zsh module shipped with ZI, see \`zi module help'
-—— add-fpath|fpath ${ZI[col-info]}[-f|--front]${ZI[col-rst]} \\
-    ${ZI[col-pname]}plg-spec ${ZI[col-info]}[subdirectory]${ZI[col-rst]}      – adds given plugin directory to \$fpath; if the second argument is given, it is appended to the directory path; if the option -f/--front is given, the directory path is prepended instead of appended to \$fpath. The ${ZI[col-pname]}plg-spec${ZI[col-rst]} can be absolute path
+—— add-fpath|fpath ${ZI[col-info]}[-f|--front]${ZI[col-rst]} ${ZI[col-pname]}plg-spec ${ZI[col-info]}[subdirectory]${ZI[col-rst]}      – adds given plugin directory to \$fpath; if the second argument is given, it is appended to the directory path; if the option -f/--front is given, the directory path is prepended instead of appended to \$fpath.
 —— run [-l] [plugin] {command}   – runs the given command in the given plugin's directory; if the option -l will be given then the plugin should be skipped – the option will cause the previous plugin to be reused"
 
     integer idx

@@ -703,11 +703,11 @@ ZI[EXTENDED_GLOB]=""
 }
 # ]]]
 
-# FUNCTION: .zinit-self-update [[[
+# FUNCTION: .zi-self-update [[[
 # Updates ZI code (does a git pull).
 #
 # User-action entry point.
-.zinit-self-update() {
+.zi-self-update() {
     emulate -LR zsh
     setopt extendedglob typesetsilent warncreateglobal
 
@@ -1808,7 +1808,7 @@ ZI[EXTENDED_GLOB]=""
 
     local -F2 SECONDS=0
 
-    .zinit-self-update -q
+    .zi-self-update -q
 
     [[ $2 = restart ]] && \
         +zinit-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'

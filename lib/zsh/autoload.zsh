@@ -3334,8 +3334,8 @@ EOF
         command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" reset --hard HEAD
         command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" pull
     else
-        if ! test -d "${${ZI[ZMODULESS_DIR]}}/zpmod"; then
-            mkdir -p "${${ZI[ZMODULESS_DIR]}}/zpmod"
+        if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
+            mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"
             chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
         fi
         command git clone "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {

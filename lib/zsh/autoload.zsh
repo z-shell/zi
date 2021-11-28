@@ -3382,7 +3382,8 @@ EOF
 #»»»
 # User-action entry point.
 .zi-help() {
-        builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
+    builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
+»»»
 ❯ control                     – ZI Control commands
 ❯ analytics                   – ZI Analytics
 ❯ self-update                 – ZI Update and Compile
@@ -3394,8 +3395,8 @@ EOF
 ❯ help                        – ZI usage
 ❯ man                         – ZI manual
 ❯ cd ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Enter plugin's directory; also support snippets, if feed with URL
-❯ env-whitelist [-v|-h] {env..} – Allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose"
-»»»
+❯ env-whitelist [-v|-h] {env..} – Allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose
+»»»"
     integer idx
     local type key
     local -a arr

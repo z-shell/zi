@@ -3384,17 +3384,16 @@ EOF
 .zi-help() {
     builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
 »»»
-❯ control                     – ZI Control commands
 ❯ analytics                   – ZI Analytics
-❯ self-update                 – ZI Update and Compile
-❯ compinit                    – Refresh installed completions
+❯ control                     – ZI Control options 
+❯ self-update                 – ZI Self update and compile
+❯ compinit                    – Refresh completions
 ❯ cdreplay [-q]               – Replay compdefs (to be done after compinit), -q – quiet
 ❯ cdclear  [-q]               – Clear compdef replay list, -q – quiet
 ❯ bindkeys                    – Lists bindkeys
-❯ module                      – Manage binary Zsh module shipped with ZI, see \`zi module help'
+❯ module                      – Manage zpmod (binary Zsh module), see \`zi module help'
 ❯ help                        – ZI usage
 ❯ man                         – ZI manual
-❯ cd ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Enter plugin's directory; also support snippets, if feed with URL
 ❯ env-whitelist [-v|-h] {env..} – Allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose
 »»»"
     integer idx
@@ -3426,6 +3425,7 @@ print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
 .zi-analytics-menu() {
     builtin print -r -- "${ZI[col-p]}ZI Analytics${ZI[col-rst]}:
 »»»
+❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
 ❯ glance         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Look at plugin's source (pygmentize, {,source-}highlight)

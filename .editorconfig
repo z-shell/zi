@@ -10,7 +10,7 @@ charset = utf-8
 end_of_line = lf
 trim_trailing_whitespace = true
 insert_final_newline = true
-#continuation_indent_size = 4
+continuation_indent_size = 4
 
 [Makefile]
 indent_style = tab
@@ -27,6 +27,4 @@ indent_size = tab
 indent_style = tab
 
 [*.{sh,zsh}]
-indent_style = space  
-shell_variant   = sh
-#max_line_length = 120
+indent_style = space

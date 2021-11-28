@@ -109,7 +109,13 @@ ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
 # Parameters - ICE. [[[
 declare -gA ZI_1MAP ZI_2MAP
 ZI_1MAP=(
+    ZZI:: https://github.com/z-shell/zzi/trunk/
+    ZZIL:: https://github.com/z-shell/zzi/trunk/lib/
+    ZZIP:: https://github.com/z-shell/zzi/trunk/plugins/
+    ZZIT:: https://github.com/z-shell/zzi/trunk/themes/
     OMZ:: https://github.com/ohmyzsh/ohmyzsh/trunk/
+    ZZI:: https://github.com/z-shell/zzi/trunk/
+    ZZIP:: https://github.com/z-shell/zzi/trunk/plugins/
     OMZP:: https://github.com/ohmyzsh/ohmyzsh/trunk/plugins/
     OMZT:: https://github.com/ohmyzsh/ohmyzsh/trunk/themes/
     OMZL:: https://github.com/ohmyzsh/ohmyzsh/trunk/lib/
@@ -117,6 +123,10 @@ ZI_1MAP=(
     PZTM:: https://github.com/sorin-ionescu/prezto/trunk/modules/
 )
 ZI_2MAP=(
+    ZZI:: https://github.com/z-shell/zzi/main/
+    ZZIL:: https://github.com/z-shell/zzi/main/lib/
+    ZZIP:: https://github.com/z-shell/zzi/main/plugins/
+    ZZIT:: https://github.com/z-shell/zzi/main/themes/
     OMZ:: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/
     OMZP:: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/
     OMZT:: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/themes/
@@ -125,7 +135,6 @@ ZI_2MAP=(
     PZTM:: https://raw.githubusercontent.com/sorin-ionescu/prezto/master/modules/
 )
 # ]]]
-
 # Init. [[[
 zmodload zsh/zutil || { builtin print -P "%F{196}zsh/zutil module is required, aborting ZI set up.%f"; return 1; }
 zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is required, aborting ZI set up.%f"; return 1; }
@@ -137,11 +146,11 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || \
 ]] {
     ZI+=(
         col-pname   $'\e[1;4m\e[32m'     col-uname   $'\e[1;4m\e[35m'     col-keyword $'\e[32m'
-        col-note    $'\e[38;5;148m'       col-error   $'\e[1m\e[38;5;204m' col-p       $'\e[38;5;81m'
+        col-note    $'\e[38;5;148m'      col-error   $'\e[1m\e[38;5;204m' col-p       $'\e[38;5;81m'
         col-info    $'\e[38;5;82m'       col-info2   $'\e[38;5;227m'      col-profile $'\e[38;5;148m'
         col-uninst  $'\e[38;5;118m'      col-info3   $'\e[1m\e[38;5;227m' col-slight  $'\e[38;5;230m'
-        col-failure $'\e[38;5;204m'      col-happy   $'\e[1m\e[38;5;82m'  col-annex   $'\e[38;5;153m'
-        col-id-as   $'\e[4;38;5;220m'    col-version $'\e[3;38;5;87m'
+        col-failure $'\e[38;5;204m'      col-happy   $'\e[1m\e[38;5;82m'  col-annex   $'\e[38;5;165m'
+        col-id-as   $'\e[4;38;5;220m'    col-version $'\e[3;38;5;46m'
         # The more recent, fresh ones:
         col-pre  $'\e[38;5;135m'  col-msg   $'\e[0m'        col-msg2  $'\e[38;5;172m'
         col-obj  $'\e[38;5;218m'  col-obj2  $'\e[38;5;118m' col-file  $'\e[3;38;5;117m'
@@ -2936,6 +2945,9 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     ;;
                 (analytics)
                     .zi-analytics-menu
+                    ;;
+                (control)
+                    .zi-control
                     ;;
                 (-h|--help|help)
                     .zi-help

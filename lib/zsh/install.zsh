@@ -1996,8 +1996,8 @@ zicp() {
         return $retval
     )
     return
-}
-
+} # ]]]
+# FUNCTION zimv [[[
 zimv() {
     local dir
     if [[ $1 = (-d|--dir) ]] { dir=$2; shift 2; }
@@ -2088,8 +2088,7 @@ zimv() {
         # If there's no -r/--reset, pretend that it already has been served.
         ZI[-r/--reset-opt-hook-has-been-run]=1
     }
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-make-ee-hook [[[
 ∞zi-make-ee-hook() {
     [[ "$1" = plugin ]] && \
@@ -2103,8 +2102,7 @@ zimv() {
     [[ $make = "!!"* ]] && \
         .zi-countdown make && \
             command make -C "$dir" ${(@s; ;)${make#\!\!}}
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-make-e-hook [[[
 ∞zi-make-e-hook() {
     [[ "$1" = plugin ]] && \
@@ -2134,8 +2132,7 @@ zimv() {
         [[ $make != "!"* ]] && \
             .zi-countdown make && \
                 command make -C "$dir" ${(@s; ;)make}
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-atclone-hook [[[
 ∞zi-atclone-hook() {
     [[ "$1" = plugin ]] && \
@@ -2146,8 +2143,7 @@ zimv() {
     @zi-substitute atclone
 
     [[ -n $atclone ]] && .zi-countdown atclone && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && eval "$atclone"; ((1)); } || eval "$atclone"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-extract-hook [[[
 ∞zi-extract-hook() {
     [[ "$1" = plugin ]] && \
@@ -2158,8 +2154,7 @@ zimv() {
     @zi-substitute extract
 
     (( ${+ICE[extract]} )) && .zi-extract plugin "$extract" "$dir"
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-mv-hook [[[
 ∞zi-mv-hook() {
     [[ -z $ICE[mv] ]] && return
@@ -2189,8 +2184,7 @@ zimv() {
           }
       }
     )
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-cp-hook [[[
 ∞zi-cp-hook() {
     [[ -z $ICE[cp] ]] && return
@@ -2220,8 +2214,7 @@ zimv() {
           }
       }
     )
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-compile-plugin-hook [[[
 ∞zi-compile-plugin-hook() {
     [[ "$1" = plugin ]] && \
@@ -2244,8 +2237,7 @@ zimv() {
             }
         }
     }
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-atpull-e-hook [[[
 ∞zi-atpull-e-hook() {
     [[ "$1" = plugin ]] && \
@@ -2253,8 +2245,7 @@ zimv() {
         local dir="${4#%}" hook="$5" subtype="$6"
 
     [[ $ICE[atpull] = "!"* ]] && .zi-countdown atpull && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && .zi-at-eval "${ICE[atpull]#\!}" "$ICE[atclone]"; ((1)); } || .zi-at-eval "${ICE[atpull]#\!}" "$ICE[atclone]"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };}
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-atpull-hook [[[
 ∞zi-atpull-hook() {
     [[ "$1" = plugin ]] && \
@@ -2262,8 +2253,7 @@ zimv() {
         local dir="${4#%}" hook="$5" subtype="$6"
 
     [[ -n $ICE[atpull] && $ICE[atpull] != "!"* ]] && .zi-countdown atpull && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && .zi-at-eval "$ICE[atpull]" "$ICE[atclone]"; ((1)); } || .zi-at-eval "${ICE[atpull]#!}" $ICE[atclone]; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };}
-}
-# ]]]
+} # ]]]
 # FUNCTION: ∞zi-ps-on-update-hook [[[
 ∞zi-ps-on-update-hook() {
     if [[ -z $ICE[ps-on-update] ]] { return 1; }
@@ -2284,5 +2274,4 @@ zimv() {
             eval "$ICE[ps-on-update]" &> /dev/null
         )
     }
-}
-# ]]]
+} # ]]]

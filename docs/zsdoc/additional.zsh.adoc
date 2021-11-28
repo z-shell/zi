@@ -1,0 +1,166 @@
+additional.zsh(1)
+=================
+:compat-mode!:
+
+NAME
+----
+additional.zsh - a shell script
+
+SYNOPSIS
+--------
+Documentation automatically generated with `zshelldoc'
+
+FUNCTIONS
+---------
+
+ .zi-clear-debug-report
+ .zi-debug-start
+ .zi-debug-stop
+ .zi-debug-unload
+ .zi-service
+ :zi-tmp-subst-source
+ .zi-wrap-track-functions
+
+DETAILS
+-------
+
+Script Body
+~~~~~~~~~~~
+
+Has 1 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+
+.zi-clear-debug-report
+~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: .zi-clear-debug-report [[[
+ Forgets dtrace repport gathered up to this moment.
+____
+
+Has 1 line(s). Calls functions:
+
+ .zi-clear-debug-report
+ `-- autoload.zsh/.zi-clear-report-for
+
+Called by:
+
+ autoload.zsh/.zi-unload
+ zi.zsh/zi
+
+.zi-debug-start
+~~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: .zi-debug-start [[[
+ Starts Dtrace, i.e. session tracking for changes in Zsh state.
+____
+
+Has 9 line(s). Calls functions:
+
+ .zi-debug-start
+ |-- zi.zsh/.zi-diff
+ |-- zi.zsh/+zi-message
+ `-- zi.zsh/.zi-tmp-subst-on
+
+Called by:
+
+ zi.zsh/zi
+
+.zi-debug-stop
+~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: .zi-debug-stop [[[
+ Stops Dtrace, i.e. session tracking for changes in Zsh state.
+____
+
+Has 3 line(s). Calls functions:
+
+ .zi-debug-stop
+ |-- zi.zsh/.zi-diff
+ `-- zi.zsh/.zi-tmp-subst-off
+
+Called by:
+
+ zi.zsh/zi
+
+.zi-debug-unload
+~~~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: .zi-debug-unload [[[
+ Reverts changes detected by dtrace run.
+____
+
+Has 6 line(s). Calls functions:
+
+ .zi-debug-unload
+ |-- autoload.zsh/.zi-unload
+ `-- zi.zsh/+zi-message
+
+Uses feature(s): _source_
+
+Called by:
+
+ zi.zsh/zi
+
+.zi-service
+~~~~~~~~~~~
+
+____
+ 
+ ]]]
+ FUNCTION: .zi-service [[[
+ Handles given service, i.e. obtains lock, runs it, or waits if no lock
+ 
+ $1 - type "p" or "s" (plugin or snippet)
+ $2 - mode - for plugin (light or load)
+ $3 - id - URL or plugin ID or alias name (from id-as'')
+____
+
+Has 33 line(s). Calls functions:
+
+ .zi-service
+ |-- zi.zsh/.zi-load
+ `-- zi.zsh/.zi-load-snippet
+
+Uses feature(s): _kill_, _read_, _setopt_
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+:zi-tmp-subst-source
+~~~~~~~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: :zi-tmp-subst-source [[[
+____
+
+Has 25 line(s). Calls functions:
+
+ :zi-tmp-subst-source
+ `-- zi.zsh/+zi-message
+
+Uses feature(s): _eval_
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+.zi-wrap-track-functions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+____
+ 
+ ]]]
+ FUNCTION: .zi-wrap-track-functions [[[
+____
+
+Has 19 line(s). Doesn't call other functions.
+
+Uses feature(s): _eval_
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+

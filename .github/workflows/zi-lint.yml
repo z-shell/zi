@@ -8,12 +8,12 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout
+      - name: 🏷 Checkout
         uses: actions/checkout@v2
       - name: "🚀 Set matrix output"
         id: set-matrix
         run: |
-          MATRIX="$(find . -type d -name 'docs' -prune -o -type f -iname '*.zsh' -print | jq -ncR '{"include": [{"file": inputs}]}')"
+          MATRIX="$(find . -type d -name 'doc' -prune -o -type f -iname '*.zsh' -print | jq -ncR '{"include": [{"file": inputs}]}')"
           echo "MATRIX=${MATRIX}" >&2
           echo "::set-output name=matrix::${MATRIX}"
   lint:
@@ -24,7 +24,7 @@ jobs:
       matrix: ${{ fromJSON(needs.build-matrix.outputs.matrix) }}
 
     steps:
-      - name: Checkout
+      - name: 🏷 Checkout
         uses: actions/checkout@v2
       - name: "📦 Install dependencies"
         run: |

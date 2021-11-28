@@ -2455,11 +2455,11 @@ cdclear|delete) ]]; then
 
     reply=( ${ZI_EXTS[(I)z-annex subcommand:*]} )
 
-    [[ -n $1 && $1 != (-h|--help|help|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
+    [[ -n $1 && $1 != (-h|--help|help|analytics|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
 update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|\
 completions|cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|\
 dunload|dreport|dclear|compile|uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|\
-env-whitelist|bindkeys|module|add-fpath|fpath|run${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snippet) ]] && \
+env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snippet) ]] && \
     {
         integer ___error
         if [[ $1 = (load|light|snippet) ]] {
@@ -2714,7 +2714,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
         (cdclear)
             .zi-compdef-clear "$2"
             ;;
-        (add-fpath|fpath)
+        (add-fpath)
             .zi-add-fpath "${@[2-correct,-1]}"
             ;;
         (run)

@@ -59,24 +59,6 @@ Beta release
 > **[?]**
 > Work in progress.
 
-## Roadmap
-
-See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known issues).
-
--   [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
--   [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
--   [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
-
-## Support
-
-> **[?]**
-> Provide additional ways to contact the project maintainer/maintainers.
-
-Reach out to the maintainer at one of the following places:
-
--   [GitHub Discussions](https://github.com/z-shell/zi/discussions)
--   Contact options listed on [this GitHub profile](https://github.com/z-shell)
-
 ## Contributing
 
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
@@ -109,14 +91,31 @@ _For more information and to report security issues, please refer to our [securi
 ## About
 
 > **[?]**
-> [**ZI**](https://github.com/z-shell/zi) (New version of Zinit) is a interactive plugin & extension manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directy related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
+> [**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directy related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
 > **[?]**
-> The [Z-Shell](https://github.com/z-shell) organization was created to recover 'zdharma' organization project which was deleted by the owner.
-> 
-> Reason why [**ZI**](https://github.com/z-shell/zi) was introduced is to prevent confusion with 'zdharma-continuum' projects.
+> The [Z-Shell](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
+> I don't want to depend on an unreliable source. For these reasons, I started maintaining these tools for myself everyone interested is welcome.
+
+## Roadmap
+
+See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known issues).
+
+-   [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+-   [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+-   [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+
+## Support
+
+> **[?]**
+> Provide additional ways to contact the project maintainer/maintainers.
+
+Reach out to the maintainer at one of the following places:
+
+-   [GitHub Discussions](https://github.com/z-shell/zi/discussions)
+-   Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases

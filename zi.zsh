@@ -2935,7 +2935,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     .zi-recently "$@"; ___retval=$?
                     ;;
                 (analytics)
-                    .zi-completions-menu
+                    .zi-analytics-menu
                     ;;
                 (-h|--help|help)
                     .zi-help

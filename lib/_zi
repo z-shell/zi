@@ -11,6 +11,7 @@ commands=(
     times:'Statistics on plugin loading times'
     self-update:'Updates ZI'
     help:'Usage Information'
+    analytics:'ZI Analytics'
     man:'Manual'
     env-whitelist:'Specify names (also patterns) of parameters to be left unchanged during an unload'
     load:'Load plugin'
@@ -57,7 +58,7 @@ commands=(
     bindkeys:'Lists bindkeys set up by each plugin'
     module:'Manage binary Zsh module shipped with ZI, see `zi module help'''
     run:"Execute code inside plugin's folder"
-    {add-fpath,fpath}:'Add plugin folder to $fpath'
+    {add-fpath}:'Add plugin folder to $fpath'
 )
 
 _arguments -C \
@@ -89,7 +90,7 @@ case $state in
 
             load|light)
                 typeset -a plugins
-                plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
+                plugins=( "${ZI[PLUGINS_DIR]}/*(N:t)" )
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
@@ -102,7 +103,7 @@ case $state in
 
             run|fpath|add-fpath)
                 typeset -a plugins
-                plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
+                plugins=( "${ZI[PLUGINS_DIR]}/*(N:t)" )
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
@@ -124,7 +125,7 @@ case $state in
             compile|stress|edit|glance|recall|update|status|cd|changes|delete)
                 # Plugins
                 typeset -a plugins
-                plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
+                plugins=( "${ZI[PLUGINS_DIR]}/*(N:t)" )
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
@@ -133,7 +134,7 @@ case $state in
                 local -a snippets snippets_alreadyld
                 local sni
 
-                snippets=( "${ZI[SNIPPETS_DIR]}"/**/._zi(D/:h) )
+                snippets=( "${ZI[SNIPPETS_DIR]}/**/._zi(D/:h)" )
                 snippets=( ${snippets[@]#${ZI[SNIPPETS_DIR]}/} )
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )
@@ -207,7 +208,7 @@ case $state in
                 # for completions that can be installed
                 typeset -a plugins completions
                 local p c user plugin
-                for p in "${ZI[PLUGINS_DIR]}"/*; do
+                for p in "${ZI[PLUGINS_DIR]}/*"; do
                     completions=( "$p"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|_zsh_highlight*|/zsdoc/*)(DN) )
                     for c in "${completions[@]}"; do
                         p="${p:t}"
@@ -228,7 +229,7 @@ case $state in
                 # it has completions that are installed
                 typeset -a plugins completions
                 local p c user plugin cfile bkpfile
-                for p in "${ZI[PLUGINS_DIR]}"/*; do
+                for p in "${ZI[PLUGINS_DIR]}/*"; do
                     completions=( "$p"/**/_[^_.][^.]#(N) )
                     for c in "${completions[@]}"; do
                         cfile="${c:t}"
@@ -257,7 +258,7 @@ case $state in
                 local -a snippets snippets_alreadyld
                 local sni
 
-                snippets=( "${ZI[SNIPPETS_DIR]}"/**/._zi(D/:h) )
+                snippets=( "${ZI[SNIPPETS_DIR]}/**/._zi(D/:h)" )
                 snippets=( ${snippets[@]#${ZI[SNIPPETS_DIR]}/} )
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )

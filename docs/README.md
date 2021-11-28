@@ -5,6 +5,10 @@
 ❮  ZI  ❯
   </h1>
 
+<h4 align="center">
+Beta release
+</h4>
+
 <div align="center">
   <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">《 Report an issue 》</a>
   · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">《 Request a Feature 》</a>

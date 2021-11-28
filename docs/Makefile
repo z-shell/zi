@@ -1,4 +1,4 @@
-all: ../lib/zi.zsh.zwc ../lib/zsh/side.zsh.zwc ../lib/zsh/install.zsh.zwc ../lib/zsh/autoload.zsh.zwc
+all: ../zi.zsh.zwc ../lib/zsh/side.zsh.zwc ../lib/zsh/install.zsh.zwc ../lib/zsh/autoload.zsh.zwc ../lib/zsh/additional.zsh.zwc
 
 %.zwc: %
 	../lib/zcompile $<
@@ -15,20 +15,21 @@ all: ../lib/zi.zsh.zwc ../lib/zsh/side.zsh.zwc ../lib/zsh/install.zsh.zwc ../lib
 #testE:
 #	make VERBOSE=$(VERBOSE) NODIFF=$(NODIFF) DEBUG=$(DEBUG) OPTDUMP=$(OPTDUMP) OPTS="ignoreclosebraces" -C test test
 
-doc: ../zi.zsh ../lib/zsh/side.zsh ../lib/zsh/install.zsh ../lib/zsh/autoload.zsh
+doc: ../zi.zsh ../lib/zsh/side.zsh ../lib/zsh/install.zsh ../lib/zsh/autoload.zsh ../lib/zsh/additional.zsh
 	rm -rf zsdoc/data zsdoc/*.adoc
 	zsd -v --scomm --cignore '(\#*FUNCTION:*{{{*|\#[[:space:]]#}}}*)' \
-	../zi.zsh ../lib/zsh/side.zsh ../lib/zsh/install.zsh ../lib/zsh/autoload.zsh
+	../zi.zsh ../lib/zsh/side.zsh ../lib/zsh/install.zsh ../lib/zsh/autoload.zsh ../lib/zsh/additional.zsh
 
 html: doc
 	cd zsdoc && \
 	asciidoctor zi.zsh.adoc && \
 	asciidoctor side.zsh.adoc && \
 	asciidoctor install.zsh.adoc && \
-	asciidoctor autoload.zsh.adoc
+	asciidoctor autoload.zsh.adoc && \
+	asciidoctor additional.zsh.adoc
 
 clean:
-	rm -f ../zi.zsh.zwc ../lib/zsh/side.zsh.zwc ../lib/zsh/install.zsh.zwc ../lib/zsh/autoload.zsh.zwc
+	rm -f ../zi.zsh.zwc ../lib/zsh/side.zsh.zwc ../lib/zsh/install.zsh.zwc ../lib/zsh/autoload.zsh.zwc ../lib/zsh/additional.zsh.zwc
 	rm -rf zsdoc/data
 
 .PHONY: all clean doc html

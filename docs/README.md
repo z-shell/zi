@@ -14,8 +14,8 @@
 <div align="center">
 <br />
 
-[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-
+[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Tweet][twitter-badge]][twitter-link]
 </div>
 
 <details>
@@ -113,3 +113,9 @@ _For more information and to report security issues, please refer to our [securi
 > The [Z-Shell](https://github.com/z-shell) organization was created to recover 'zdharma' organization project which was deleted by the owner.
 > 
 > Reason why [**ZI**](https://github.com/z-shell/zi) was introduced is to prevent confusion with 'zdharma-continuum' projects.
+
+[ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
+[ver-link]: https://github.com/z-shell/zi/releases
+
+[twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
+[twitter-link]: https://twitter.com/intent/tweet?text=Z-shell%20-%20ZI%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,plugin,z-shell

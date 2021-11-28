@@ -1996,7 +1996,8 @@ zicp() {
         return $retval
     )
     return
-} # ]]]
+}
+# ]]]
 # FUNCTION zimv [[[
 zimv() {
     local dir

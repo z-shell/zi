@@ -2934,6 +2934,9 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     shift
                     .zi-recently "$@"; ___retval=$?
                     ;;
+                (analytics)
+                    .zi-completions-menu
+                    ;;
                 (-h|--help|help)
                     .zi-help
                     ;;
@@ -3003,7 +3006,7 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 }
 # ]]]
 # Compatibility functions. [[[
-zinit() { zi "$@"; }
+#zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
@@ -3027,7 +3030,7 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zpl=zi zplg=zi zini=zi
+builtin alias zpl=zi zplg=zi zini=zi zinit=zi
 .zi-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.

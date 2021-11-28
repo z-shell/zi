@@ -2774,6 +2774,12 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 (self-update)
                     .zi-self-update
                     ;;
+                (analytics)
+                    .zi-analytics-menu
+                    ;;
+                (control)
+                    .zi-control-menu
+                    ;;
                 (unload)
                     (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
                     if [[ -z $2 && -z $3 ]]; then
@@ -2942,12 +2948,6 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 (recently)
                     shift
                     .zi-recently "$@"; ___retval=$?
-                    ;;
-                (analytics)
-                    .zi-analytics-menu
-                    ;;
-                (control)
-                    .zi-control-menu
                     ;;
                 (-h|help)
                     .zi-help

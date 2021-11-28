@@ -3379,7 +3379,7 @@ EOF
 
 # FUNCTION: .zi-help [[[
 # Shows usage information.
-#»»»
+#
 # User-action entry point.
 .zi-help() {
     builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
@@ -3447,12 +3447,15 @@ print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
 ❯ ls                          – List snippets in formatted and colorized manner
 »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
 } # ]]]
+
 #
 # Shows control commands
 #
 
 # FUNCTION: .zi-control-menu [[[
 # Shows control options.
+#
+# User-action entry point.
 .zi-control-menu() {
     builtin print -r -- "${ZI[col-p]}ZI Control${ZI[col-rst]}:
 »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»

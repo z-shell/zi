@@ -6,13 +6,13 @@ local curcontext="$curcontext" state state_descr line ret=1
 local -a expl
 
 typeset -a commands
-commands=(
-    zstatus:'Checks ZI status'
+commands=(   
+    analytics:'Show ZI Analytics'
+    control:'ZI Control commands'
+    zstatus:'Checks ZI Status'
     times:'Statistics on plugin loading times'
-    self-update:'Updates ZI'
+    self-update:'Updates and Compile ZI'
     help:'Usage Information'
-    control:'ZI Control'
-    analytics:'ZI Analytics'
     man:'Manpage'
     load:'Load plugin'
     delete:'Delete plugin'
@@ -76,6 +76,14 @@ case $state in
                 _message "Hit enter to get usage information" && ret=0
                 ;;
 
+            control)
+                _message "Hit enter to get commands list" && ret=0
+                ;;
+
+            analytics)
+                _message "Hit enter to show commands for stats" && ret=0
+                ;;
+
             man)
                 _message "Hit enter to view manual" && ret=0
                 ;;
@@ -101,7 +109,7 @@ case $state in
                         ret=0
                 ;;
 
-            run|fpath|add-fpath)
+            run|add-fpath)
                 typeset -a plugins
                 plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )

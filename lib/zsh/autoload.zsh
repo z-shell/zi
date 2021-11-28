@@ -3383,7 +3383,7 @@ EOF
 # User-action entry point.
 .zi-help() {
     builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
-»»»
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»
 ❯ analytics                   – ZI Analytics
 ❯ control                     – ZI Control options 
 ❯ self-update                 – ZI Self update and compile
@@ -3391,11 +3391,11 @@ EOF
 ❯ cdreplay [-q]               – Replay compdefs (to be done after compinit), -q – quiet
 ❯ cdclear  [-q]               – Clear compdef replay list, -q – quiet
 ❯ bindkeys                    – Lists bindkeys
-❯ module                      – Manage zpmod (binary Zsh module), see \`zi module help'
 ❯ help                        – ZI usage
 ❯ man                         – ZI manual
-❯ env-whitelist [-v|-h] {env..} – Allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose
-»»»"
+❯ module                      – Manage zpmod (binary Zsh module), see \`zi module help'
+❯ env-whitelist [-v|-h] {env..} – Specify names or paterns of variables left unchanged during an unload. -v – verbose
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
     integer idx
     local type key
     local -a arr
@@ -3424,7 +3424,7 @@ print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
 # User-action entry point.
 .zi-analytics-menu() {
     builtin print -r -- "${ZI[col-p]}ZI Analytics${ZI[col-rst]}:
-»»»
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»
 ❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
@@ -3445,19 +3445,17 @@ print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
 ❯ cdlist                      – Show compdef replay list
 ❯ csearch                     – Search for available completions from any plugin
 ❯ ls                          – List snippets in formatted and colorized manner
-»»»"
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
 } # ]]]
 #
-# Plugins control function
+# Shows control commands
 #
 
-# FUNCTION: .zi-control [[[
+# FUNCTION: .zi-control-menu [[[
 # Shows control options.
-#
-# User-action entry point.
-.zi-control() {
+.zi-control-menu() {
     builtin print -r -- "${ZI[col-p]}ZI Control${ZI[col-rst]}:
-»»»
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»
 ❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 ❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
 ❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
@@ -3477,5 +3475,5 @@ print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
 ❯ run     [-l]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
 ❯ ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, e.g. from\"gitlab\"
 ❯ srv        ${ZI[col-pname]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z-Shell
-»»»"
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
 } # ]]]

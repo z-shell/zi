@@ -2947,9 +2947,9 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     .zi-analytics-menu
                     ;;
                 (control)
-                    .zi-control
+                    .zi-control-menu
                     ;;
-                (-h|--help|help)
+                (-h|help)
                     .zi-help
                     ;;
                 (ls)

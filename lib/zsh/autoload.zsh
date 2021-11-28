@@ -3383,10 +3383,10 @@ EOF
 # User-action entry point.
 .zi-help() {
         builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
-—— -h|--help|help                – Usage information
+—— -h|--help|help                – ZI usage
 —— analytics                     – ZI analytics
-—— man                           – Manual
-—— self-update                   – Updates and compiles ZI
+—— man                           – ZI manual
+—— self-update                   – ZI update and compile
 —— update [-q]    ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 —— load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
 —— light [-b]     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)

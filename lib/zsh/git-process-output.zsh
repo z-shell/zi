@@ -27,19 +27,19 @@ typeset -F SECONDS=0 last_time=0
 if whence tput &> /dev/null; then
   if [[ $OSTYPE == freebsd* ]] || [[ $OSTYPE == dragonfly* ]]; then
     # termcap commands
-    ZINIT_CNORM='tput ve'
-    ZINIT_CIVIS='tput vi'
+    ZI_CNORM='tput ve'
+    ZI_CIVIS='tput vi'
   else
     # terminfo is more common
-    ZINIT_CNORM='tput cnorm'
-    ZINIT_CIVIS='tput civis'
+    ZI_CNORM='tput cnorm'
+    ZI_CIVIS='tput civis'
   fi
 fi
 
-if (( $+ZINIT_CNORM )); then
-  trap $ZINIT_CNORM EXIT
-  trap $ZINIT_CNORM INT
-  trap $ZINIT_CNORM TERM
+if (( $+ZI_CNORM )); then
+  trap $ZI_CNORM EXIT
+  trap $ZI_CNORM INT
+  trap $ZI_CNORM TERM
 fi
 
 local first=1
@@ -103,7 +103,7 @@ integer loop_count=0
 
 IFS=''
 
-[[ $+ZINIT_CIVIS == 1 && -n $TERM ]] && eval $ZINIT_CIVIS
+[[ $+ZI_CIVIS == 1 && -n $TERM ]] && eval $ZI_CIVIS
 
 if [[ -n $TERM ]] {
 
@@ -180,6 +180,6 @@ done
 
 print
 
-[[ $+ZINIT_CNORM == 1 && -n $TERM ]] && eval $ZINIT_CNORM
+[[ $+ZI_CNORM == 1 && -n $TERM ]] && eval $ZI_CNORM
 
-unset ZINIT_CNORM ZINIT_CIVIS
+unset ZI_CNORM ZI_CIVIS

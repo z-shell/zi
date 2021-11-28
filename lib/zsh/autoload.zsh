@@ -3404,9 +3404,9 @@ EOF
 —— create         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Create plugin (also together with Github repository)
 —— add-fpath ${ZI[col-pname]}[plugin]${ZI[col-rst]} ${ZI[col-info]}[subdir]${ZI[col-rst]}   – Adds given plugin directory to \$fpath; second argument is appended to the directory path; if -f/--front is given, then is prepended instead of appended to \$fpath.
 —— run [-l]  ${ZI[col-pname]}[plugin]${ZI[col-rst]} ${ZI[col-info]}[command]${ZI[col-rst]}  – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
+—— srv   ${ZI[col-pname]}{service-id}${ZI[col-rst]} ${ZI[col-info]}[command]${ZI[col-rst]}  – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Zshell
 —— cdisable       ${ZI[col-info]}[cname]${ZI[col-rst]}        – Disable completion \`cname'
 —— cenable        ${ZI[col-info]}[cname]${ZI[col-rst]}        – Enable completion \`cname'
-—— srv            ${ZI[col-pname]}{service-id}${ZI[col-rst]} ${ZI[col-info]}[command]${ZI[col-rst]}        – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Zshell
 —— compinit                      – Refresh installed completions
 —— cdreplay [-q]                 – Replay compdefs (to be done after compinit), -q – quiet
 —— cdclear [-q]                  – Clear compdef replay list, -q – quiet

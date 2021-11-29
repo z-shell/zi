@@ -2464,7 +2464,7 @@ cdclear|delete) ]]; then
 
     reply=( ${ZI_EXTS[(I)z-annex subcommand:*]} )
 
-    [[ -n $1 && $1 != (-h|--help|help|analytics|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
+    [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
 update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|\
 completions|cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|\
 dunload|dreport|dclear|compile|uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|\
@@ -2774,12 +2774,6 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                 (self-update)
                     .zi-self-update
                     ;;
-                (analytics)
-                    .zi-analytics-menu
-                    ;;
-                (control)
-                    .zi-control-menu
-                    ;;
                 (unload)
                     (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
                     if [[ -z $2 && -z $3 ]]; then
@@ -2949,6 +2943,12 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
                     shift
                     .zi-recently "$@"; ___retval=$?
                     ;;
+                (control)
+                    .zi-control-menu
+                    ;;
+                (analytics)
+                    .zi-analytics-menu
+                    ;;
                 (-h|help)
                     .zi-help
                     ;;
@@ -3018,11 +3018,15 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 }
 # ]]]
 # Compatibility functions. [[[
-#zinit() { zi "$@"; }
+zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
+# ]]]
+# FUNCTION: zt. [[[
+# Common ICE modifier to simplify Turbo mode.
+zt()       { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 # ]]]
 
 #
@@ -3042,7 +3046,8 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zpl=zi zplg=zi zini=zi zinit=zi
+builtin alias zpl=zi zplg=zi zini=zi
+
 .zi-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.

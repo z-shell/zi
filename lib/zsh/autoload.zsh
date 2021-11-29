@@ -3382,38 +3382,20 @@ EOF
 #
 # User-action entry point.
 .zi-help() {
-        builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
-—— -h|--help|help                – ZI usage
-—— analytics                     – ZI analytics
-—— man                           – ZI manual
-—— self-update                   – ZI update and compile
-—— update [-q]    ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
-—— load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
-—— light [-b]     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
-—— unload         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Unload plugin loaded with \`zi load ...', -q – quiet
-—— snippet [-f]   ${ZI[col-pname]}{url}${ZI[col-rst]}          – Source local or remote file (by direct URL), -f: force – don't use cache
-—— ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, argument is e.g. from\"gitlab\"
-—— delete         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
-—— cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Enter plugin's directory; also support snippets, if feed with URL
-—— edit           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Edit plugin's file with \$EDITOR
-—— compile        ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Compile plugin (or all plugins if ——all passed)
-—— uncompile      ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Cemove compiled version of plugin (or of all plugins if ——all passed)
-—— creinstall     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Install completions for plugin, can also receive absolute local path; -q – quiet
-—— cuninstall     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Uninstall completions for plugin
-—— recall         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Fetch saved ice modifiers and construct \`zi ice ...' command
-—— create         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Create plugin (also together with Github repository)
-—— add-fpath ${ZI[col-pname]}[plugin]${ZI[col-rst]} ${ZI[col-info]}[subdir]${ZI[col-rst]}   – Adds given plugin directory to \$fpath; second argument is appended to the directory path; if -f/--front is given, then is prepended instead of appended to \$fpath.
-—— run [-l]  ${ZI[col-pname]}[plugin]${ZI[col-rst]} ${ZI[col-info]}[command]${ZI[col-rst]}  – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
-—— srv   ${ZI[col-pname]}{service-id}${ZI[col-rst]} ${ZI[col-info]}[command]${ZI[col-rst]}  – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Zshell
-—— cdisable       ${ZI[col-info]}[cname]${ZI[col-rst]}        – Disable completion \`cname'
-—— cenable        ${ZI[col-info]}[cname]${ZI[col-rst]}        – Enable completion \`cname'
-—— compinit                      – Refresh installed completions
-—— cdreplay [-q]                 – Replay compdefs (to be done after compinit), -q – quiet
-—— cdclear [-q]                  – Clear compdef replay list, -q – quiet
-—— module                        – Manage binary Zsh module shipped with ZI, see \`zi module help'
-—— bindkeys                      – Lists bindkeys set up by each plugin
-—— env-whitelist [-v|-h] {env..} – Allows to specify names (also patterns) of variables left unchanged during an unload. -v – verbose"
-
+    builtin print -r -- "${ZI[col-p]}Usage${ZI[col-rst]}:
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»
+❯ analytics                   – ZI Analytics
+❯ control                     – ZI Control options 
+❯ self-update                 – ZI Self update and compile
+❯ compinit                    – Refresh completions
+❯ cdreplay [-q]               – Replay compdefs (to be done after compinit), -q – quiet
+❯ cdclear  [-q]               – Clear compdef replay list, -q – quiet
+❯ bindkeys                    – Lists bindkeys
+❯ help                        – ZI usage
+❯ man                         – ZI manual
+❯ module                      – Manage zpmod (binary Zsh module), see \`zi module help'
+❯ env-whitelist [-v|-h] {env..} – Specify names or paterns of variables left unchanged during an unload. -v – verbose
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
     integer idx
     local type key
     local -a arr
@@ -3441,24 +3423,60 @@ print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
 #
 # User-action entry point.
 .zi-analytics-menu() {
-        builtin print -r -- "${ZI[col-p]}ZI Analytics${ZI[col-rst]}:
-—— status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git status for plugin or svn status for snippet; – accepts --all
-—— report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Show plugin's report; – accepts --all
-—— glance         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Look at plugin's source (pygmentize, {,source-}highlight)
-—— stress         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Test plugin for compatibility with set of options
-—— changes        ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – View plugin's git log
-—— recently       ${ZI[col-info]}[time-spec]${ZI[col-rst]}    – Show plugins that changed recently, argument is e.g. 1 month 2 days
-—— times [-s] [-m]               – Statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – show plugin loading moments
-—— zstatus                       – Overall ZI status
-—— dtrace|dstart                 – Start tracking what's going on in session
-—— dstop                         – Stop tracking what's going on in session
-—— dreport                       – Report what was going on in session
-—— dunload                       – Revert changes recorded between dstart and dstop
-—— dclear                        – Clear report of what was going on in session
-—— loaded|list {keyword}         – Show what plugins are loaded (filter with \'keyword')
-—— compiled                      – List plugins that are compiled
-—— clist|completions             – List completions in use
-—— cdlist                        – Show compdef replay list
-—— csearch                       – Search for available completions from any plugin
-—— ls                            – List snippets in formatted and colorized manner"
+    builtin print -r -- "${ZI[col-p]}ZI Analytics${ZI[col-rst]}:
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»
+❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
+❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
+❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
+❯ glance         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Look at plugin's source (pygmentize, {,source-}highlight)
+❯ stress         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Test plugin for compatibility with set of options
+❯ changes        ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – View plugin's git log
+❯ recently       ${ZI[col-info]}[time]${ZI[col-rst]}       – Show plugins that changed recently, argument is e.g. 1 month 2 days
+❯ times [-s] [-m]             – Statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – show plugin loading moments
+❯ zstatus                     – Overall ZI status
+❯ dtrace|dstart               – Start tracking what's going on in session
+❯ dstop                       – Stop tracking what's going on in session
+❯ dreport                     – Report what was going on in session
+❯ dunload                     – Revert changes recorded between dstart and dstop
+❯ dclear                      – Clear report of what was going on in session
+❯ loaded|list {keyword}       – Show what plugins are loaded (filter with \'keyword')
+❯ compiled                    – List plugins that are compiled
+❯ clist|completions           – List completions in use
+❯ cdlist                      – Show compdef replay list
+❯ csearch                     – Search for available completions from any plugin
+❯ ls                          – List snippets in formatted and colorized manner
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
+} # ]]]
+
+#
+# Shows control commands
+#
+
+# FUNCTION: .zi-control-menu [[[
+# Shows control options.
+#
+# User-action entry point.
+.zi-control-menu() {
+    builtin print -r -- "${ZI[col-p]}ZI Control${ZI[col-rst]}:
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»
+❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
+❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
+❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
+❯ unload         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Unload plugin; -q – quiet
+❯ snippet [-f]   ${ZI[col-pname]}{url}${ZI[col-rst]}          – Source local or remote file (by direct URL), -f: force – don't use cache
+❯ cdisable       ${ZI[col-info]}[cname]${ZI[col-rst]}        – Disable completion \`cname'
+❯ cenable        ${ZI[col-info]}[cname]${ZI[col-rst]}        – Enable completion \`cname'
+❯ delete         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
+❯ create         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Create plugin (also together with Github repository)
+❯ edit           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Edit plugin's file with \$EDITOR
+❯ recall         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Fetch saved ice modifiers and construct \`zi ice ...' command
+❯ add-fpath      ${ZI[col-pname]}[plugin]${ZI[col-rst]}|DIR   – Adds given plugin directory to \$fpath; second argument is appended to the directory path; use -f/--front to prepend instead.
+❯ compile        ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Compile plugin (or all plugins if --all passed)
+❯ uncompile      ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Remove compiled version of plugin (or of all plugins if --all passed)
+❯ creinstall     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Install completions for plugin, can also receive absolute local path; -q – quiet
+❯ cuninstall     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Uninstall completions for plugin
+❯ run     [-l]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
+❯ ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, e.g. from\"gitlab\"
+❯ srv        ${ZI[col-pname]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z-Shell
+»»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»» »»»"
 } # ]]]

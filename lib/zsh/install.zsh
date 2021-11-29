@@ -316,8 +316,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     }
 
     return $?
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-setup-plugin-dir [[[
 # Clones given plugin into PLUGIN_DIR. Supports multiple
 # sites (respecting `from' and `proto' ice modifiers).

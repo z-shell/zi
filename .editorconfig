@@ -27,4 +27,4 @@ indent_size = tab
 indent_style = tab
 
 [*.{sh,zsh}]
-indent_style = space  
+indent_style = space

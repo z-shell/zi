@@ -6,14 +6,14 @@ local curcontext="$curcontext" state state_descr line ret=1
 local -a expl
 
 typeset -a commands
-commands=(
-    zstatus:'Checks ZI status'
+commands=(   
+    analytics:'Show ZI Analytics'
+    control:'ZI Control commands'
+    zstatus:'Checks ZI Status'
     times:'Statistics on plugin loading times'
-    self-update:'Updates ZI'
+    self-update:'Updates and Compile ZI'
     help:'Usage Information'
-    analytics:'ZI Analytics'
-    man:'Manual'
-    env-whitelist:'Specify names (also patterns) of parameters to be left unchanged during an unload'
+    man:'Manpage'
     load:'Load plugin'
     delete:'Delete plugin'
     unload:'Unload plugin'
@@ -76,6 +76,14 @@ case $state in
                 _message "Hit enter to get usage information" && ret=0
                 ;;
 
+            control)
+                _message "Hit enter to get commands list" && ret=0
+                ;;
+
+            analytics)
+                _message "Hit enter to show commands for stats" && ret=0
+                ;;
+
             man)
                 _message "Hit enter to view manual" && ret=0
                 ;;
@@ -90,7 +98,7 @@ case $state in
 
             load|light)
                 typeset -a plugins
-                plugins=( "${ZI[PLUGINS_DIR]}/*(N:t)" )
+                plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
@@ -101,9 +109,9 @@ case $state in
                         ret=0
                 ;;
 
-            run|fpath|add-fpath)
+            run|add-fpath)
                 typeset -a plugins
-                plugins=( "${ZI[PLUGINS_DIR]}/*(N:t)" )
+                plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
@@ -125,7 +133,7 @@ case $state in
             compile|stress|edit|glance|recall|update|status|cd|changes|delete)
                 # Plugins
                 typeset -a plugins
-                plugins=( "${ZI[PLUGINS_DIR]}/*(N:t)" )
+                plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
@@ -134,7 +142,7 @@ case $state in
                 local -a snippets snippets_alreadyld
                 local sni
 
-                snippets=( "${ZI[SNIPPETS_DIR]}/**/._zi(D/:h)" )
+                snippets=( "${ZI[SNIPPETS_DIR]}"/**/._zi(D/:h) )
                 snippets=( ${snippets[@]#${ZI[SNIPPETS_DIR]}/} )
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )
@@ -208,7 +216,7 @@ case $state in
                 # for completions that can be installed
                 typeset -a plugins completions
                 local p c user plugin
-                for p in "${ZI[PLUGINS_DIR]}/*"; do
+                for p in "${ZI[PLUGINS_DIR]}"/*; do
                     completions=( "$p"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|_zsh_highlight*|/zsdoc/*)(DN) )
                     for c in "${completions[@]}"; do
                         p="${p:t}"
@@ -229,7 +237,7 @@ case $state in
                 # it has completions that are installed
                 typeset -a plugins completions
                 local p c user plugin cfile bkpfile
-                for p in "${ZI[PLUGINS_DIR]}/*"; do
+                for p in "${ZI[PLUGINS_DIR]}"/*; do
                     completions=( "$p"/**/_[^_.][^.]#(N) )
                     for c in "${completions[@]}"; do
                         cfile="${c:t}"
@@ -258,7 +266,7 @@ case $state in
                 local -a snippets snippets_alreadyld
                 local sni
 
-                snippets=( "${ZI[SNIPPETS_DIR]}/**/._zi(D/:h)" )
+                snippets=( "${ZI[SNIPPETS_DIR]}"/**/._zi(D/:h) )
                 snippets=( ${snippets[@]#${ZI[SNIPPETS_DIR]}/} )
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )

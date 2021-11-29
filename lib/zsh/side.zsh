@@ -412,5 +412,4 @@
     }
     +zi-message -r -- "{b}{error}0 <running now>{rst}{…}"
     return 0
-}
-# ]]]
+} # ]]]

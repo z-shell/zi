@@ -711,7 +711,7 @@ ZI[EXTENDED_GLOB]=""
     emulate -LR zsh
     setopt extendedglob typesetsilent warncreateglobal
 
-    [[ $1 = -q ]] && +zi-message "{info2}Updating ZI{…}{rst}"
+    [[ $1 = -q ]] && +zi-message "{info2}Updating ❮ ZI ❯ {…}{rst}"
 
     local nl=$'\n' escape=$'\x1b['
     local -a lines
@@ -741,7 +741,7 @@ ZI[EXTENDED_GLOB]=""
         }
     )
     if [[ $1 != -q ]] {
-        +zi-message "Compiling ZI (zcompile){…}"
+        +zi-message "Compiling ❮ ZI ❯ (zcompile){…}"
     }
     command rm -f $ZI[BIN_DIR]/*.zwc(DN)
 	command rm -f $ZI[BIN_DIR]/lib/zsh/*.zwc(DN)
@@ -770,10 +770,8 @@ ZI[EXTENDED_GLOB]=""
 .zi-show-registered-plugins() {
     emulate -LR zsh
     setopt extendedglob warncreateglobal typesetsilent noshortloops
-
     typeset -a filtered
     local keyword="$1"
-
     keyword="${keyword## ##}"
     keyword="${keyword%% ##}"
     if [[ -n "$keyword" ]]; then
@@ -782,7 +780,6 @@ ZI[EXTENDED_GLOB]=""
     else
         filtered=( "${ZI_REGISTERED_PLUGINS[@]}" )
     fi
-
     local i
     for i in "${filtered[@]}"; do
         [[ "$i" = "_local/zi" ]] && continue
@@ -813,29 +810,23 @@ ZI[EXTENDED_GLOB]=""
     .zi-any-to-user-plugin "$1" "$2"
     local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" user="${reply[-2]}" plugin="${reply[-1]}" quiet="${${3:+1}:-0}"
     local k
-
     .zi-any-colorify-as-uspl2 "$uspl2"
     (( quiet )) || builtin print -r -- "${ZI[col-bar]}---${ZI[col-rst]} Unloading plugin: $REPLY ${ZI[col-bar]}---${ZI[col-rst]}"
-
     local ___dir
     [[ "$user" = "%" ]] && ___dir="$plugin" || ___dir="${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}"
-
     # KSH_ARRAYS immunity
     integer correct=0
     [[ -o "KSH_ARRAYS" ]] && correct=1
-
     # Allow unload for debug user
     if [[ "$uspl2" != "_dtrace/_dtrace" ]]; then
         .zi-exists-message "$1" "$2" || return 1
     fi
-
     .zi-any-colorify-as-uspl2 "$1" "$2"
     local uspl2col="$REPLY"
-
     # Store report of the plugin in variable LASTREPORT
     typeset -g LASTREPORT
     LASTREPORT=`.zi-show-report "$1" "$2"`
-
+    
     #
     # Call the Zsh Plugin's Standard *_plugin_unload function
     #
@@ -1094,8 +1085,8 @@ ZI[EXTENDED_GLOB]=""
                         oth_orig_saved=( "${(z)${(Q)entry_splitted[found_idx]}}" )
                         local oth_fun="${oth_orig_saved[4]}"
                         # oth_orig_saved[2]="${(q)orig_saved2}" # not do this, because
-                                                        # we don't want to call other
-                                                        # plugin's function at any moment
+                        # we don't want to call other
+                        # plugin's function at any moment
                         oth_orig_saved[5]="${(q)orig_saved3}" # chain up the widget
                         entry_splitted[found_idx]="${(q)${(j: :)oth_orig_saved}}"
                         ZI[WIDGETS_SAVED__$oth_uspl2]="${(j: :)entry_splitted}"
@@ -1124,10 +1115,9 @@ ZI[EXTENDED_GLOB]=""
                                 zle -N "$oth_prefix_uspl2_X" "${widgets[$prefix_X]#user:}"
                             fi
                         fi
-
                         # The alternate method
-                        #skip_delete+=( "${match[1]}" )
-                        #functions[$oth_fun]="${functions[$oth_fun]//[^\{[:space:]]#$orig_saved1/${match[1]}}"
+                        # skip_delete+=( "${match[1]}" )
+                        # functions[$oth_fun]="${functions[$oth_fun]//[^\{[:space:]]#$orig_saved1/${match[1]}}"
                     fi
                 else
                     (( quiet )) || builtin print "Restoring Zle widget $orig_saved1"
@@ -1226,12 +1216,10 @@ ZI[EXTENDED_GLOB]=""
     .zi-save-set-extendedglob
     [[ "${ZI[PARAMETERS_POST__$uspl2]}" != *[$'! \t']* ]] && empty=1
     .zi-restore-extendedglob
-
     if (( empty != 1 )); then
         typeset -A elem_pre elem_post
         elem_pre=( "${(z)ZI[PARAMETERS_PRE__$uspl2]}" )
         elem_post=( "${(z)ZI[PARAMETERS_POST__$uspl2]}" )
-
         # Find variables created or modified
         local wl found
         local -a whitelist
@@ -1240,12 +1228,10 @@ ZI[EXTENDED_GLOB]=""
             k="${(Q)k}"
             local v1="${(Q)elem_pre[$k]}"
             local v2="${(Q)elem_post[$k]}"
-
             # "" means a variable was deleted, not created/changed
             if [[ $v2 != '""' ]]; then
                 # Don't unset readonly variables
                 [[ ${(tP)k} == *-readonly(|-*) ]] && continue
-
                 # Don't unset arrays managed by add-zsh-hook,
                 # also ignore a few special parameters
                 # TODO: remember and remove hooks
@@ -1256,7 +1242,6 @@ ZI[EXTENDED_GLOB]=""
                         continue;
                         ;;
                 esac
-
                 # Don't unset redefined variables, only newly defined
                 # "" means variable didn't exist before plugin load
                 # (didn't have a type).
@@ -1310,21 +1295,17 @@ ZI[EXTENDED_GLOB]=""
     setopt localoptions extendedglob warncreateglobal typesetsilent noksharrays
     .zi-any-to-user-plugin "$1" "$2"
     local user="${reply[-2]}" plugin="${reply[-1]}" uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}"
-
     # Allow debug report
     if [[ "$user/$plugin" != "_dtrace/_dtrace" ]]; then
         .zi-exists-message "$user" "$plugin" || return 1
     fi
-
     # Print title
     builtin printf "${ZI[col-title]}Report for${ZI[col-rst]} %s%s plugin\n"\
             "${user:+${ZI[col-uname]}$user${ZI[col-rst]}}${${user:#(%|/)*}:+/}"\
             "${ZI[col-pname]}$plugin${ZI[col-rst]}"
-
     # Print "----------"
     local msg="Report for $user${${user:#(%|/)*}:+/}$plugin plugin"
     builtin print -- "${ZI[col-bar]}${(r:${#msg}::-:)tmp__}${ZI[col-rst]}"
-
     local -A map
     map=(
         Error:  "${ZI[col-error]}"
@@ -1336,49 +1317,40 @@ ZI[EXTENDED_GLOB]=""
         setopt localoptions extendedglob
         builtin print -rl -- "${(@)${(f@)ZI_REPORTS[$uspl2]}/(#b)(#s)([^[:space:]]##)([[:space:]]##)/${map[${match[1]}]:-${ZI[col-keyword]}}${match[1]}${ZI[col-rst]}${match[2]}}"
     }
-
     # Print report gathered via $functions-diffing
     REPLY=""
     .zi-diff-functions-compute "$uspl2"
     .zi-format-functions "$uspl2"
     [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}Functions created:${ZI[col-rst]}"$'\n'"$REPLY"
-
     # Print report gathered via $options-diffing
     REPLY=""
     .zi-diff-options-compute "$uspl2"
     .zi-format-options "$uspl2"
     [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}Options changed:${ZI[col-rst]}"$'\n'"$REPLY"
-
     # Print report gathered via environment diffing
     REPLY=""
     .zi-diff-env-compute "$uspl2"
     .zi-format-env "$uspl2" "1"
     [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}PATH elements added:${ZI[col-rst]}"$'\n'"$REPLY"
-
     REPLY=""
     .zi-format-env "$uspl2" "2"
     [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}FPATH elements added:${ZI[col-rst]}"$'\n'"$REPLY"
-
     # Print report gathered via parameter diffing
     .zi-diff-parameter-compute "$uspl2"
     .zi-format-parameter "$uspl2"
     [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}Variables added or redefined:${ZI[col-rst]}"$'\n'"$REPLY"
-
     # Print what completions plugin has
     .zi-find-completions-of-plugin "$user" "$plugin"
     typeset -a completions
     completions=( "${reply[@]}" )
-
     if [[ "${#completions[@]}" -ge "1" ]]; then
         builtin print "${ZI[col-p]}Completions:${ZI[col-rst]}"
         .zi-check-which-completions-are-installed "${completions[@]}"
         typeset -a installed
         installed=( "${reply[@]}" )
-
         .zi-check-which-completions-are-enabled "${completions[@]}"
         typeset -a enabled
         enabled=( "${reply[@]}" )
-
         integer count="${#completions[@]}" idx
         for (( idx=1; idx <= count; idx ++ )); do
             builtin print -n "${completions[idx]:t}"
@@ -1426,15 +1398,12 @@ ZI[EXTENDED_GLOB]=""
     # Set the localtraps option.
     emulate -LR zsh
     setopt extendedglob nullglob warncreateglobal typesetsilent noshortloops
-
     local -a arr
     ZI[first-plugin-mark]=${${ZI[first-plugin-mark]:#init}:-1}
     ZI[-r/--reset-opt-hook-has-been-run]=0
-
     # Deliver and withdraw the `m` function when finished.
     .zi-set-m-func set
     trap ".zi-set-m-func unset" EXIT
-
     integer retval was_snippet
     .zi-two-paths "$2${${2:#(%|/)*}:+${3:+/}}$3"
     if [[ -d ${reply[-4]} || -d ${reply[-2]} ]]; then
@@ -1442,13 +1411,11 @@ ZI[EXTENDED_GLOB]=""
         retval=$?
         was_snippet=1
     fi
-
     .zi-any-to-user-plugin "$2" "$3"
     local user=${reply[-2]} plugin=${reply[-1]} st=$1 \
         local_dir filename is_snippet key \
         id_as="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}"
     local -A ice
-
     if (( was_snippet )) {
         .zi-exists-physically "$user" "$plugin" || return $retval
         .zi-any-colorify-as-uspl2 "$2" "$3"
@@ -1458,30 +1425,22 @@ ZI[EXTENDED_GLOB]=""
     } else {
         .zi-exists-physically-message "$user" "$plugin" || return 1
     }
-
     if [[ $st = status ]]; then
         ( builtin cd -q ${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}; command git status; )
         return $retval
     fi
-
     command rm -f ${TMPDIR:-${TMPDIR:-/tmp}}/zi-execs.$$.lst ${TMPDIR:-${TMPDIR:-/tmp}}/zi.installed_comps.$$.lst \
                     ${TMPDIR:-${TMPDIR:-/tmp}}/zi.skipped_comps.$$.lst ${TMPDIR:-${TMPDIR:-/tmp}}/zi.compiled.$$.lst
-
     # A flag for the annexes. 0 – no new commits, 1 - run-atpull mode,
     # 2 – full update/there are new commits to download, 3 - full but
     # a forced download (i.e.: the medium doesn't allow to peek update)
     ZI[annex-multi-flag:pull-active]=0
-
     (( ${#ICE[@]} > 0 )) && { ZI_SICE[$user${${user:#(%|/)*}:+/}$plugin]=""; local nf="-nftid"; }
-
     .zi-compute-ice "$user${${user:#(%|/)*}:+/}$plugin" "pack$nf" \
         ice local_dir filename is_snippet || return 1
-
     .zi-any-to-user-plugin ${ice[teleid]:-$id_as}
     user=${reply[1]} plugin=${reply[2]}
-
     local repo="${${${(M)id_as#%}:+${id_as#%}}:-${ZI[PLUGINS_DIR]}/${id_as//\//---}}"
-
     # Run annexes' preinit hooks
     local -a arr
     reply=(
@@ -1494,7 +1453,6 @@ ZI[EXTENDED_GLOB]=""
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" ${${key##(zi|z-annex) hook:}%% <->} update || \
             return $(( 10 - $? ))
     done
-
     # Check if repository has a remote set, if it is _local
     if [[ -f $local_dir/.git/config ]]; then
         local -a config
@@ -1508,21 +1466,17 @@ ZI[EXTENDED_GLOB]=""
             return 1
         fi
     fi
-
     command rm -f $local_dir/.zi_lastupd
-
     if (( 1 )); then
         if [[ -z ${ice[is_release]} && ${ice[from]} = (gh-r|github-rel|cygwin) ]] {
             ice[is_release]=true
         }
-
         integer count is_release=0
         for (( count = 1; count <= 5; ++ count )) {
             if (( ${+ice[is_release${count:#1}]} )) {
                 is_release=1
             }
         }
-
         (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source ${ZI[BIN_DIR]}"/lib/zsh/install.zsh"
         if [[ $ice[from] == (gh-r|github-rel) ]] {
             {
@@ -1534,7 +1488,6 @@ ZI[EXTENDED_GLOB]=""
         } else {
             REPLY=""
         }
-
         if (( is_release )) {
             count=0
             for REPLY ( $reply ) {
@@ -1553,7 +1506,6 @@ ZI[EXTENDED_GLOB]=""
                 builtin print -- "\rBinary release already up to date (version: $version)"
             }
         }
-
         if (( 1 )) {
             if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
                 if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
@@ -1563,7 +1515,6 @@ ZI[EXTENDED_GLOB]=""
                     } || builtin print
                     builtin print "\rUpdating $REPLY"
                 }
-
                 ICE=( "${(kv)ice[@]}" )
                 # Run annexes' atpull hooks (the before atpull-ice ones).
                 # The gh-r / GitHub releases block.
@@ -1576,7 +1527,6 @@ ZI[EXTENDED_GLOB]=""
                     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
                     "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:bin
                 done
-
                 if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
                     if ! .zi-setup-plugin-dir "$user" "$plugin" "$id_as" release -u $version; then
                         ZI[annex-multi-flag:pull-active]=0
@@ -1588,85 +1538,78 @@ ZI[EXTENDED_GLOB]=""
                 ICE=()
             }
         }
-
         if [[ -d $local_dir/.git ]] && ( builtin cd -q $local_dir ; git show-ref --verify --quiet refs/heads/main ); then
             local main_branch=main
         else
             local main_branch=master
         fi
-
         if (( ! is_release )) {
             ( builtin cd -q "$local_dir" || return 1
-              integer had_output=0
-              local IFS=$'\n'
-              command git fetch --quiet && \
+            integer had_output=0
+            local IFS=$'\n'
+            command git fetch --quiet && \
                 command git log --color --date=short --pretty=format:'%Cgreen%cd %h %Creset%s%n' ..FETCH_HEAD | \
                 while read line; do
-                  [[ -n ${line%%[[:space:]]##} ]] && {
-                      [[ $had_output -eq 0 ]] && {
-                          had_output=1
-                          if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-                              .zi-any-colorify-as-uspl2 "$id_as"
-                              (( ZI[first-plugin-mark] )) && {
-                                  ZI[first-plugin-mark]=0
-                              } || builtin print
-                              builtin print "Updating $REPLY"
-                          }
-                      }
-                      builtin print $line
-                  }
+                    [[ -n ${line%%[[:space:]]##} ]] && {
+                        [[ $had_output -eq 0 ]] && {
+                            had_output=1
+                            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+                                .zi-any-colorify-as-uspl2 "$id_as"
+                                (( ZI[first-plugin-mark] )) && {
+                                ZI[first-plugin-mark]=0
+                            } || builtin print
+                            builtin print "Updating $REPLY"
+                        }
+                    }
+                    builtin print $line
+                }
                 done | \
                 command tee .zi_lastupd | \
                 .zi-pager &
+            integer pager_pid=$!
+            { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
+            { wait $pager_pid; } > /dev/null 2>&1
+            local -a log
+            { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
+            command rm -f $local_dir/.zi_lastupd
+            if [[ ${#log} -gt 0 ]] {
+                ZI[annex-multi-flag:pull-active]=2
+            } else {
+                if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )) {
+                    ZI[annex-multi-flag:pull-active]=1
+                    # Handle the snippet/plugin boundary in the messages
+                    if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+                        .zi-any-colorify-as-uspl2 "$id_as"
+                        (( ZI[first-plugin-mark] )) && {
+                            ZI[first-plugin-mark]=0
+                        } || builtin print
+                        builtin print "\rUpdating $REPLY"
+                    }
+                } else {
+                    ZI[annex-multi-flag:pull-active]=0
+                }
+            }
 
-              integer pager_pid=$!
-              { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
-              { wait $pager_pid; } > /dev/null 2>&1
-
-              local -a log
-              { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
-              command rm -f $local_dir/.zi_lastupd
-
-              if [[ ${#log} -gt 0 ]] {
-                  ZI[annex-multi-flag:pull-active]=2
-              } else {
-                  if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )) {
-                      ZI[annex-multi-flag:pull-active]=1
-
-                      # Handle the snippet/plugin boundary in the messages
-                      if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-                          .zi-any-colorify-as-uspl2 "$id_as"
-                          (( ZI[first-plugin-mark] )) && {
-                              ZI[first-plugin-mark]=0
-                          } || builtin print
-                          builtin print "\rUpdating $REPLY"
-                      }
-                  } else {
-                      ZI[annex-multi-flag:pull-active]=0
-                  }
-              }
-
-              if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
-                  ICE=( "${(kv)ice[@]}" )
-                  # Run annexes' atpull hooks (the before atpull-ice ones).
-                  # The regular Git-plugins block.
-                  reply=(
-                      ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-                      ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-                      ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
-                  )
-                  for key in "${reply[@]}"; do
-                      arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-                      "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
-                  done
-                  ICE=()
-                  (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command egrep -v '(FETCH_HEAD|up.to.date\.|From.*://)'
-              }
-              return ${ZI[annex-multi-flag:pull-active]}
+            if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
+                ICE=( "${(kv)ice[@]}" )
+                    # Run annexes' atpull hooks (the before atpull-ice ones).
+                    # The regular Git-plugins block.
+                    reply=(
+                        ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
+                        ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
+                        ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+                    )
+                for key in "${reply[@]}"; do
+                    arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+                    "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
+                done
+                ICE=()
+                (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command egrep -v '(FETCH_HEAD|up.to.date\.|From.*://)'
+            }
+                return ${ZI[annex-multi-flag:pull-active]}
             )
             ZI[annex-multi-flag:pull-active]=$?
         }
-
         if [[ -d $local_dir/.git ]]; then
             (
                 builtin cd -q "$local_dir" # || return 1 - don't return, maybe it's some hook's logic
@@ -1685,7 +1628,6 @@ ZI[EXTENDED_GLOB]=""
                     +zi-message "{opt}-u{msg3}/{opt}--urge{msg3} given.{rst}"
             }
         }
-
         # Any new commits?
         if (( ZI[annex-multi-flag:pull-active] >= 1  )) {
             ICE=( "${(kv)ice[@]}" )
@@ -1700,7 +1642,6 @@ ZI[EXTENDED_GLOB]=""
                 arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
                 "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update
             done
-
             # Run annexes' atpull hooks (the after atpull-ice ones).
             # Block common for Git and gh-r plugins.
             reply=(
@@ -1714,11 +1655,9 @@ ZI[EXTENDED_GLOB]=""
             done
             ICE=()
         }
-
         # Store ices to disk at update of plugin
         .zi-store-ices "$local_dir/._zi" ice "" "" "" ""
     fi
-
     # Run annexes' atpull hooks (the `always' after atpull-ice ones)
     # Block common for Git and gh-r plugins.
     ICE=( "${(kv)ice[@]}" )
@@ -1732,25 +1671,20 @@ ZI[EXTENDED_GLOB]=""
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:$ZI[annex-multi-flag:pull-active]
     done
     ICE=()
-
     typeset -ga INSTALLED_EXECS
     { INSTALLED_EXECS=( "${(@f)$(<${TMPDIR:-${TMPDIR:-/tmp}}/zi-execs.$$.lst)}" ) } 2>/dev/null
-
     if [[ -e ${TMPDIR:-${TMPDIR:-/tmp}}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-${TMPDIR:-/tmp}}/zi.installed_comps.$$.lst ]] {
         typeset -ga INSTALLED_COMPS SKIPPED_COMPS
         { INSTALLED_COMPS=( "${(@f)$(<${TMPDIR:-${TMPDIR:-/tmp}}/zi.installed_comps.$$.lst)}" ) } 2>/dev/null
         { SKIPPED_COMPS=( "${(@f)$(<${TMPDIR:-${TMPDIR:-/tmp}}/zi.skipped_comps.$$.lst)}" ) } 2>/dev/null
     }
-
     if [[ -e ${TMPDIR:-${TMPDIR:-/tmp}}/zi.compiled.$$.lst ]] {
         typeset -ga ADD_COMPILED
         { ADD_COMPILED=( "${(@f)$(<${TMPDIR:-${TMPDIR:-/tmp}}/zi.compiled.$$.lst)}" ) } 2>/dev/null
     }
-
     if (( PUPDATE && ZI[annex-multi-flag:pull-active] > 0 )) {
         builtin print ${ZI[annex-multi-flag:pull-active]} >! $PUFILE.ind
     }
-
     return $retval
 } # ]]]
 # FUNCTION: .zi-update-or-status-snippet [[[
@@ -1765,9 +1699,7 @@ ZI[EXTENDED_GLOB]=""
     local -A ICE2
     .zi-compute-ice "$URL" "pack$nf" \
         ICE2 local_dir filename is_snippet || return 1
-
     integer retval
-
     if [[ "$st" = "status" ]]; then
         if (( ${+ICE2[svn]} )); then
             builtin print -r -- "${ZI[col-info]}Status for ${${${local_dir:h}:t}##*--}/${local_dir:t}${ZI[col-rst]}"
@@ -1786,13 +1718,10 @@ ZI[EXTENDED_GLOB]=""
         .zi-update-snippet "${ICE2[teleid]:-$URL}"
         retval=$?
     fi
-
     ICE=()
-
     if (( PUPDATE && ZI[annex-multi-flag:pull-active] > 0 )) {
         builtin print ${ZI[annex-multi-flag:pull-active]} >! $PUFILE.ind
     }
-
     return $retval
 }
 # ]]]
@@ -1805,20 +1734,15 @@ ZI[EXTENDED_GLOB]=""
 .zi-update-or-status-all() {
     emulate -LR zsh
     setopt extendedglob nullglob warncreateglobal typesetsilent noshortloops
-
     local -F2 SECONDS=0
-
     .zi-self-update -q
-
     [[ $2 = restart ]] && \
         +zi-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'
-
     local file
     integer sum el
     for file ( "" side install autoload ) {
         .zi-get-mtime-into "${ZI[BIN_DIR]}/$file.zsh" el; sum+=el
     }
-
     # Reload ZI?
     if [[ $2 != restart ]] && (( ZI[mtime] + ZI[mtime-side] +
         ZI[mtime-install] + ZI[mtime-autoload] != sum
@@ -1836,7 +1760,6 @@ ZI[EXTENDED_GLOB]=""
         .zi-update-or-status-all "$1" restart
         return $?
     }
-
     if (( OPTS[opt_-p,--parallel] )) && [[ $1 = update ]] {
         (( !OPTS[opt_-q,--quiet] )) && \
             +zi-message '{info2}Parallel Update Starts Now{…}{rst}'
@@ -1849,20 +1772,14 @@ ZI[EXTENDED_GLOB]=""
         }
         return $retval
     }
-
     local st=$1 id_as repo snip pd user plugin
-    integer PUPDATE=0
-
+        integer PUPDATE=0
     local -A ICE
-
-
     if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
         local -a snipps
         snipps=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zi|._zplugin)(ND) )
-
         [[ $st != status && ${OPTS[opt_-q,--quiet]} != 1 && -n $snipps ]] && \
             +zi-message "{info}Note:{rst} updating also unloaded snippets"
-
         for snip ( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zi|._zplugin)/mode(D) ) {
             [[ ! -f ${snip:h}/url ]] && continue
             [[ -f ${snip:h}/id-as ]] && \
@@ -1873,13 +1790,10 @@ ZI[EXTENDED_GLOB]=""
         }
         [[ -n $snipps ]] && builtin print
     }
-
     ICE=()
-
     if (( OPTS[opt_-s,--snippets] && !OPTS[opt_-l,--plugins] )) {
         return
     }
-
     if [[ $st = status ]]; then
         (( !OPTS[opt_-q,--quiet] )) && \
             +zi-message "{info}Note:{rst} status done also for unloaded plugins"
@@ -1887,17 +1801,12 @@ ZI[EXTENDED_GLOB]=""
         (( !OPTS[opt_-q,--quiet] )) && \
             +zi-message "{info}Note:{rst} updating also unloaded plugins"
     fi
-
     ZI[first-plugin-mark]=init
-
     for repo in ${ZI[PLUGINS_DIR]}/*; do
         pd=${repo:t}
-
         # Two special cases
         [[ $pd = custom || $pd = _local---zi ]] && continue
-
         .zi-any-colorify-as-uspl2 "$pd"
-
         # Check if repository has a remote set
         if [[ -f $repo/.git/config ]]; then
             local -a config
@@ -1911,10 +1820,8 @@ ZI[EXTENDED_GLOB]=""
                 continue
             fi
         fi
-
         .zi-any-to-user-plugin "$pd"
         local user=${reply[-2]} plugin=${reply[-1]}
-
         # Must be a git repository or a binary release
         if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]]; then
             (( !OPTS[opt_-q,--quiet] )) && \

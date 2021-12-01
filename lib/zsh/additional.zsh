@@ -72,16 +72,15 @@
         ) || break
         builtin read -t 1 ___tmp <>"${___fle:r}.fifo2"
     done >>! "$ZSRV_WORK_DIR/$ZSRV_ID".log 2>&1
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-wrap-track-functions [[[
 .zi-wrap-track-functions() {
-    local user="$1" plugin="$2" id_as="$3" f
-    local -a wt
-    wt=( ${(@s.;.)ICE[wrap-track]} )
-    for f in ${wt[@]}; do
-        functions[${f}-zi-bkp]="${functions[$f]}"
-        eval "
+  local user="$1" plugin="$2" id_as="$3" f
+  local -a wt
+  wt=( ${(@s.;.)ICE[wrap-track]} )
+  for f in ${wt[@]}; do
+      functions[${f}-zi-bkp]="${functions[$f]}"
+      eval "
 function $f {
     ZI[CUR_USR]=\"$user\" ZI[CUR_PLUGIN]=\"$plugin\" ZI[CUR_USPL2]=\"$id_as\"
     .zi-add-report \"\${ZI[CUR_USPL2]}\" \"Note: === Starting to track function: $f ===\"
@@ -95,8 +94,7 @@ function $f {
     ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
 }"
     done
-}
-# ]]]
+} # ]]]
 
 #
 # Dtrace
@@ -121,10 +119,8 @@ function $f {
 # Stops Dtrace, i.e. session tracking for changes in Zsh state.
 .zi-debug-stop() {
     ZI[DTRACE]=0
-
     # Shadowing fully off
     .zi-tmp-subst-off dtrace
-
     # Gather end data now, for diffing later
     .zi-diff _dtrace/_dtrace end
 } # ]]]

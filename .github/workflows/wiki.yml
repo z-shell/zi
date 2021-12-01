@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'docs/wiki/**'
-    branches: [ 'main', 'wiki' ]
-
+  workflow_dispatch:
+  
 jobs:
   deploy-wiki:
     runs-on: ubuntu-latest

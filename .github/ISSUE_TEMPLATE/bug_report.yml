@@ -33,7 +33,7 @@ body:
   - type: textarea
     id: code-snippet
     attributes:
-      label: code-snippet
+      label: Code snippet
       description: "Please insert your zshrc or just a short code snippet in concern"
     validations:
       required: true

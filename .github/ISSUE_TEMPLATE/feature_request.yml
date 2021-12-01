@@ -1,6 +1,6 @@
 name: "Feature request 💡"
 description: Suggest an idea for this project
-labels: ["feature-request 💡",]
+labels: ["feature-request 💡"]
 title: "feat: "
 body:
 

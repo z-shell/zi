@@ -20,17 +20,17 @@
 - name: "new-feature 🎉"
   color: 0e8a16
   description: "Introduces new feature"
-- name: "feature-reaquest 💡"
+- name: "feature-request 💡"
   color: 0e8a16
   description: "Suggests new feature"
 - name: "annex 💠"
-  color: 0e8a16
+  color: 3e16f3
   description: "Related with annex"
 - name: "plugin 🧿"
-  color: 0e8a16
+  color: 3e16f3
   description: "Related with plugin"
 - name: "package 📦"
-  color: 0e8a16
+  color: 3e16f3
   description: "Related with package"
   
 - name: "maintenance 📈"

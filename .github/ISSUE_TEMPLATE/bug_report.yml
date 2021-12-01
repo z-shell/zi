@@ -9,7 +9,7 @@ body:
     attributes:
       label: Environment
       description: >
-        'Your environment details with: echo "${OSTYPE}|$(uname -m)|${ZSH_VERSION}"'
+        Your environment details with: echo "${OSTYPE}|$(uname -m)|${ZSH_VERSION}"
       placeholder: "linux-gnu|x86_64|5.8"
     validations:
       required: true

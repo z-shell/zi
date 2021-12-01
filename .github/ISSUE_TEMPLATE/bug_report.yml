@@ -1,0 +1,46 @@
+name: "🐞 Bug report"
+description: File a bug report
+labels: ["bug 🐞"]
+title: "bug: "
+body:
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Your environment details with: '`echo "${OSTYPE}|$(uname -m)|${ZSH_VERSION}"`'
+      placeholder: "5.8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Current behavior
+      description: Describe how the bug manifests
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Steps to reproduce
+      description: Explain the steps required to duplicate the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: code-snippet
+    attributes:
+      label: code-snippet
+      description: Please insert your zshrc or just a short code snippet in concern
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Aditional information
+      description: List any other information that is relevant to your issue. For reports and stats run '`zi analytics`'
+    validations:
+      required: true

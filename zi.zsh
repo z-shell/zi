@@ -1584,7 +1584,7 @@ builtin setopt noaliases
             zle && { builtin print; zle .reset-prompt; }
             return 1
         }
-        .zinit-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"
+        .zi-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"
         local rc="$?"
         if [[ "$rc" -ne 0 ]]; then
             zle && { builtin print; zle .reset-prompt; }

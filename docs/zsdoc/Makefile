@@ -8,7 +8,7 @@ all: man pdf
 # MAN
 # Converted with a2x from asciidoc package
 
-man: man/zi.zsh.1 man/side.zsh.1 man/install.zsh.1 man/autoload.zsh.1 man/additional.zsh.1
+man: man/zi.zsh.1 man/side.zsh.1 man/install.zsh.1 man/autoload.zsh.1
 
 man/zi.zsh.1:
 	@mkdir -p man
@@ -24,16 +24,12 @@ man/install.zsh.1:
 
 man/autoload.zsh.1:
 	@mkdir -p man
-	a2x --verbose -L --doctype manpage --format manpage -D man autoload.zsh.adoc
-
-man/additional.zsh.1:
-	@mkdir -p man
-	a2x --verbose -L --doctype manpage --format manpage -D man additional.zsh.adoc
+	a2x --verbose -L --doctype manpage --format manpage -D man autoload.zsh.doc
 
 # PDF
 # Uses asciidoctor not a2x (i.e. not asciidoc)
 
-pdf: pdf/zi.zsh.pdf pdf/side.zsh.pdf pdf/install.zsh.pdf pdf/autoload.zsh.pdf pdf/additional.zsh.pdf
+pdf: pdf/zi.zsh.pdf pdf/side.zsh.pdf pdf/install.zsh.pdf pdf/autoload.zsh.pdf
 
 pdf/zi.zsh.pdf:
 	@mkdir -p pdf
@@ -50,10 +46,6 @@ pdf/install.zsh.pdf:
 pdf/autoload.zsh.pdf:
 	@mkdir -p pdf
 	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf autoload.zsh.adoc
-
-pdf/additional.zsh.pdf:
-	@mkdir -p pdf
-	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf additional.zsh.adoc
 
 clean:
 	rm -rf man pdf data

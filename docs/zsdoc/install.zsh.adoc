@@ -65,9 +65,9 @@ ____
  FUNCTION: ∞zi-atclone-hook [[[
 ____
 
-Has 8 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
- ∞zi-atclone-hook
+ \342\210\236zi-atclone-hook
  |-- side.zsh/.zi-countdown
  `-- zi.zsh/@zi-substitute
 
@@ -84,7 +84,7 @@ ____
  FUNCTION: .zi-at-eval [[[
 ____
 
-Has 5 line(s). Calls functions:
+Has 7 line(s). Calls functions:
 
  .zi-at-eval
  `-- zi.zsh/@zi-substitute
@@ -104,9 +104,9 @@ ____
  FUNCTION: ∞zi-atpull-e-hook [[[
 ____
 
-Has 5 line(s). Calls functions:
+Has 18 line(s). Calls functions:
 
- ∞zi-atpull-e-hook
+ \342\210\236zi-atpull-e-hook
  `-- side.zsh/.zi-countdown
 
 Uses feature(s): _setopt_
@@ -121,9 +121,9 @@ ____
  FUNCTION: ∞zi-atpull-hook [[[
 ____
 
-Has 5 line(s). Calls functions:
+Has 18 line(s). Calls functions:
 
- ∞zi-atpull-hook
+ \342\210\236zi-atpull-hook
  `-- side.zsh/.zi-countdown
 
 Uses feature(s): _setopt_
@@ -166,9 +166,9 @@ ____
  FUNCTION: ∞zi-compile-plugin-hook [[[
 ____
 
-Has 19 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
- ∞zi-compile-plugin-hook
+ \342\210\236zi-compile-plugin-hook
 
 Uses feature(s): _setopt_
 
@@ -233,7 +233,7 @@ ____
 
 Has 27 line(s). Calls functions:
 
- ∞zi-cp-hook
+ \342\210\236zi-cp-hook
  `-- zi.zsh/@zi-substitute
 
 Uses feature(s): _setopt_
@@ -276,7 +276,7 @@ ____
  This is used to provide a layer of support for Oh-My-Zsh and Prezto.
 ____
 
-Has 323 line(s). Calls functions:
+Has 354 line(s). Calls functions:
 
  .zi-download-snippet
  |-- side.zsh/.zi-store-ices
@@ -301,9 +301,9 @@ ____
 Has 30 line(s). Calls functions:
 
  .zi-extract
- |-- ziextract
- |   `-- zi.zsh/+zi-message
- `-- zi.zsh/+zi-message
+ |-- zi.zsh/+zi-message
+ `-- ziextract
+     `-- zi.zsh/+zi-message
 
 Uses feature(s): _setopt_
 
@@ -349,9 +349,9 @@ ____
  FUNCTION: ∞zi-extract-hook [[[
 ____
 
-Has 8 line(s). Calls functions:
+Has 7 line(s). Calls functions:
 
- ∞zi-extract-hook
+ \342\210\236zi-extract-hook
  `-- zi.zsh/@zi-substitute
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
@@ -435,10 +435,10 @@ ____
 Has 195 line(s). Calls functions:
 
  .zi-get-package
- |-- ziextract
- |   `-- zi.zsh/+zi-message
  |-- zi.zsh/+zi-message
- `-- zi.zsh/@zi-substitute
+ |-- zi.zsh/@zi-substitute
+ `-- ziextract
+     `-- zi.zsh/+zi-message
 
 Uses feature(s): _eval_, _setopt_, _trap_
 
@@ -487,8 +487,8 @@ Has 61 line(s). Calls functions:
  .zi-install-completions
  |-- side.zsh/.zi-any-colorify-as-uspl2
  |-- side.zsh/.zi-exists-physically-message
- |-- zi.zsh/.zi-any-to-user-plugin
- `-- zi.zsh/+zi-message
+ |-- zi.zsh/+zi-message
+ `-- zi.zsh/.zi-any-to-user-plugin
 
 Uses feature(s): _setopt_
 
@@ -506,9 +506,9 @@ ____
  FUNCTION: ∞zi-make-ee-hook [[[
 ____
 
-Has 9 line(s). Calls functions:
+Has 10 line(s). Calls functions:
 
- ∞zi-make-ee-hook
+ \342\210\236zi-make-ee-hook
  |-- side.zsh/.zi-countdown
  `-- zi.zsh/@zi-substitute
 
@@ -522,9 +522,9 @@ ____
  FUNCTION: ∞zi-make-e-hook [[[
 ____
 
-Has 9 line(s). Calls functions:
+Has 11 line(s). Calls functions:
 
- ∞zi-make-e-hook
+ \342\210\236zi-make-e-hook
  |-- side.zsh/.zi-countdown
  `-- zi.zsh/@zi-substitute
 
@@ -535,13 +535,12 @@ Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 ____
  
- ]]]
  FUNCTION: ∞zi-make-hook [[[
 ____
 
 Has 10 line(s). Calls functions:
 
- ∞zi-make-hook
+ \342\210\236zi-make-hook
  |-- side.zsh/.zi-countdown
  `-- zi.zsh/@zi-substitute
 
@@ -577,6 +576,7 @@ zimv
 
 ____
  
+ ]]]
  FUNCTION zimv [[[
 ____
 
@@ -595,9 +595,9 @@ ____
  FUNCTION: ∞zi-mv-hook [[[
 ____
 
-Has 27 line(s). Calls functions:
+Has 25 line(s). Calls functions:
 
- ∞zi-mv-hook
+ \342\210\236zi-mv-hook
  `-- zi.zsh/@zi-substitute
 
 Uses feature(s): _setopt_
@@ -632,9 +632,9 @@ ____
  FUNCTION: ∞zi-ps-on-update-hook [[[
 ____
 
-Has 18 line(s). Calls functions:
+Has 17 line(s). Calls functions:
 
- ∞zi-ps-on-update-hook
+ \342\210\236zi-ps-on-update-hook
  `-- zi.zsh/+zi-message
 
 Uses feature(s): _eval_
@@ -652,7 +652,7 @@ ____
 
 Has 79 line(s). Calls functions:
 
- ∞zi-reset-hook
+ \342\210\236zi-reset-hook
  `-- zi.zsh/+zi-message
 
 Uses feature(s): _eval_
@@ -664,7 +664,6 @@ Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
 ____
  
- ]]]
  FUNCTION: .zi-setup-plugin-dir [[[
  Clones given plugin into PLUGIN_DIR. Supports multiple
  sites (respecting `from' and `proto' ice modifiers).
@@ -674,22 +673,21 @@ ____
  $2 - plugin
 ____
 
-Has 198 line(s). Calls functions:
+Has 209 line(s). Calls functions:
 
  .zi-setup-plugin-dir
  |-- side.zsh/.zi-any-colorify-as-uspl2
  |-- side.zsh/.zi-store-ices
- |-- ziextract
- |   `-- zi.zsh/+zi-message
+ |-- zi.zsh/+zi-message
  |-- zi.zsh/.zi-get-object-path
- `-- zi.zsh/+zi-message
+ `-- ziextract
+     `-- zi.zsh/+zi-message
 
 Uses feature(s): _setopt_, _trap_
 
 Called by:
 
  autoload.zsh/.zi-update-or-status
- zi.zsh/.zi-load
 
 .zi-update-snippet
 ~~~~~~~~~~~~~~~~~~
@@ -703,8 +701,8 @@ ____
 Has 76 line(s). Calls functions:
 
  .zi-update-snippet
- |-- zi.zsh/.zi-get-object-path
  |-- zi.zsh/+zi-message
+ |-- zi.zsh/.zi-get-object-path
  `-- zi.zsh/.zi-pack-ice
 
 Uses feature(s): _eval_, _setopt_

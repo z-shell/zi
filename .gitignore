@@ -8,6 +8,7 @@
 
 # Exclude for security reasons
 .history/
+.dccache
 .env
 
 # Zsh compiled script + zrecompile backup
@@ -25,8 +26,6 @@
 ._zinit
 .zi_lastupd
 .zinit_lastupd
-
-# A popular older versions plugin manager's files
 ._zplugin
 .zplugin_lstupd
 

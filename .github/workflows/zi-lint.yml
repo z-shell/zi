@@ -12,9 +12,9 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: ✨ 🌟 ✨
+      - name: "🌟 Checkout" 
         uses: actions/checkout@v2
-      - name: "✨ 🌟 ✨ Set matrix output"
+      - name: "✨ Set matrix output"
         id: set-matrix
         run: |
           MATRIX="$(find . -type d -name 'doc' -prune -o -type f -iname '*.zsh' -print | jq -ncR '{"include": [{"file": inputs}]}')"
@@ -28,12 +28,12 @@ jobs:
       matrix: ${{ fromJSON(needs.build-matrix.outputs.matrix) }}
 
     steps:
-      - name: ✨ 🌟 ✨
+      - name: "🌟 Checkout"
         uses: actions/checkout@v2
-      - name: "✨ 🌟 ✨ Install dependencies"
+      - name: "✨ Install dependencies"
         run: |
           sudo apt install -y zsh
-      - name: "👓 zsh -n: ${{ matrix.file }}"
+      - name: "✨ zsh -n: ${{ matrix.file }}"
         env:
           ZSH_FILE: ${{ matrix.file }}
         run: |

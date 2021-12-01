@@ -13,7 +13,7 @@ body:
       required: true
 
   - type: textarea
-    id: description
+    id: reproduce
     attributes:
       label: Steps to reproduce
       description: "Explain the steps required to duplicate the issue"
@@ -29,7 +29,7 @@ body:
       required: true
 
   - type: textarea
-    id: description
+    id: additional
     attributes:
       label: Aditional information
       description: "List any other information that is relevant to your issue. For reports and stats run `zi analytics`"

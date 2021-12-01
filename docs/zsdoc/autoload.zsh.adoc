@@ -13,6 +13,7 @@ Documentation automatically generated with `zshelldoc'
 FUNCTIONS
 ---------
 
+ .zi-analytics-menu
  .zi-any-to-uspl2
  .zi-at-eval
  .zi-build-module
@@ -28,6 +29,7 @@ FUNCTIONS
  .zi-compiled
  .zi-compile-uncompile-all
  .zi-confirm
+ .zi-control-menu
  .zi-create
  .zi-delete
  .zi-diff-env-compute
@@ -83,9 +85,26 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 5 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
+Has 4 line(s). No functions are called (may set up e.g. a hook, a Zle widget bound to a key, etc.).
 
 Uses feature(s): _source_
+
+.zi-analytics-menu
+~~~~~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: .zi-analytics-menu [[[
+ Shows ZI analytics.
+ 
+ User-action entry point.
+____
+
+Has 23 line(s). Doesn't call other functions.
+
+Called by:
+
+ zi.zsh/zi
 
 .zi-any-to-uspl2
 ~~~~~~~~~~~~~~~~
@@ -183,7 +202,7 @@ ____
  $1 - e.g. "_mkdir" or "mkdir"
 ____
 
-Has 30 line(s). Calls functions:
+Has 27 line(s). Calls functions:
 
  .zi-cdisable
 
@@ -204,7 +223,7 @@ ____
  $1 - e.g. "_mkdir" or "mkdir"
 ____
 
-Has 31 line(s). Calls functions:
+Has 26 line(s). Calls functions:
 
  .zi-cenable
 
@@ -227,7 +246,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 9 line(s). Calls functions:
+Has 7 line(s). Calls functions:
 
  .zi-changes
  |-- side.zsh/.zi-exists-physically-message
@@ -275,7 +294,7 @@ ____
  $1, ... - path to completion within plugin's directory
 ____
 
-Has 11 line(s). Doesn't call other functions.
+Has 10 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -295,7 +314,7 @@ ____
  $1, ... - path to completion within plugin's directory
 ____
 
-Has 12 line(s). Doesn't call other functions.
+Has 11 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -315,7 +334,7 @@ ____
  User-action entry point.
 ____
 
-Has 37 line(s). Calls functions:
+Has 35 line(s). Calls functions:
 
  .zi-clear-completions
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -347,7 +366,6 @@ Has 23 line(s). Calls functions:
 Called by:
 
  .zi-unload
- additional.zsh/.zi-clear-debug-report
 
 .zi-compiled
 ~~~~~~~~~~~~
@@ -360,7 +378,7 @@ ____
  User-action entry point.
 ____
 
-Has 26 line(s). Calls functions:
+Has 23 line(s). Calls functions:
 
  .zi-compiled
  |-- side.zsh/.zi-any-colorify-as-uspl2
@@ -383,7 +401,7 @@ ____
  User-action entry point.
 ____
 
-Has 23 line(s). Calls functions:
+Has 19 line(s). Calls functions:
 
  .zi-compile-uncompile-all
  |-- install.zsh/.zi-compile-plugin
@@ -417,6 +435,23 @@ Called by:
 
  .zi-delete
 
+.zi-control-menu
+~~~~~~~~~~~~~~~~
+
+____
+ 
+ FUNCTION: .zi-control-menu [[[
+ Shows control options.
+ 
+ User-action entry point.
+____
+
+Has 22 line(s). Doesn't call other functions.
+
+Called by:
+
+ zi.zsh/zi
+
 .zi-create
 ~~~~~~~~~~
 
@@ -431,7 +466,7 @@ ____
  $2 - (optional) plugin (only when $1 - i.e. user - given)
 ____
 
-Has 109 line(s). Calls functions:
+Has 103 line(s). Calls functions:
 
  .zi-create
  |-- side.zsh/.zi-any-colorify-as-uspl2
@@ -457,13 +492,13 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 99 line(s). Calls functions:
+Has 93 line(s). Calls functions:
 
  .zi-delete
  |-- side.zsh/.zi-compute-ice
+ |-- zi.zsh/+zi-prehelp-usage-message
  |-- zi.zsh/.zi-any-to-user-plugin
- |-- zi.zsh/.zi-parse-opts
- `-- zi.zsh/+zi-prehelp-usage-message
+ `-- zi.zsh/.zi-parse-opts
 
 Uses feature(s): _setopt_
 
@@ -481,7 +516,7 @@ ____
  $1 - user/plugin
 ____
 
-Has 30 line(s). Doesn't call other functions.
+Has 28 line(s). Doesn't call other functions.
 
 Uses feature(s): _setopt_
 
@@ -502,7 +537,7 @@ ____
  $1 - user/plugin
 ____
 
-Has 19 line(s). Doesn't call other functions.
+Has 16 line(s). Doesn't call other functions.
 
 Uses feature(s): _setopt_
 
@@ -523,7 +558,7 @@ ____
  $1 - user/plugin
 ____
 
-Has 17 line(s). Doesn't call other functions.
+Has 16 line(s). Doesn't call other functions.
 
 Uses feature(s): _setopt_
 
@@ -545,7 +580,7 @@ ____
  $1 - user/plugin
 ____
 
-Has 28 line(s). Doesn't call other functions.
+Has 27 line(s). Doesn't call other functions.
 
 Uses feature(s): _setopt_
 
@@ -569,7 +604,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 22 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
  .zi-edit
  `-- side.zsh/.zi-compute-ice
@@ -612,7 +647,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 6 line(s). Calls functions:
+Has 5 line(s). Calls functions:
 
  .zi-find-completions-of-plugin
  `-- zi.zsh/.zi-any-to-user-plugin
@@ -636,7 +671,7 @@ ____
  $2 - if 1, then examine PATH, if 2, then examine FPATH
 ____
 
-Has 16 line(s). Doesn't call other functions.
+Has 15 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -654,7 +689,7 @@ ____
  $1 - user/plugin (i.e. uspl2 format of plugin-spec)
 ____
 
-Has 36 line(s). Doesn't call other functions.
+Has 34 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -672,7 +707,7 @@ ____
  $1 - user/plugin (i.e. uspl2 format of plugin-spec)
 ____
 
-Has 21 line(s). Calls functions:
+Has 19 line(s). Calls functions:
 
  .zi-format-options
 
@@ -692,7 +727,7 @@ ____
  $1 - user/plugin (i.e. uspl2 format of plugin-spec)
 ____
 
-Has 35 line(s). Doesn't call other functions.
+Has 29 line(s). Doesn't call other functions.
 
 Uses feature(s): _setopt_
 
@@ -720,7 +755,7 @@ ____
  $2 - readlink command (":" or "readlink")
 ____
 
-Has 22 line(s). Doesn't call other functions.
+Has 19 line(s). Doesn't call other functions.
 
 Uses feature(s): _setopt_
 
@@ -758,7 +793,6 @@ Called by:
 
 ____
  
- ]]]
  FUNCTION: .zi-get-path [[[
  Returns path of given ID-string, which may be a plugin-spec
  (like "user/plugin" or "user" "plugin"), an absolute path
@@ -766,7 +800,7 @@ ____
  nickname (i.e. id-as'' ice-mod), or a snippet nickname.
 ____
 
-Has 8 line(s). Calls functions:
+Has 7 line(s). Calls functions:
 
  .zi-get-path
  `-- zi.zsh/.zi-get-object-path
@@ -793,7 +827,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 39 line(s). Calls functions:
+Has 37 line(s). Calls functions:
 
  .zi-glance
  |-- side.zsh/.zi-exists-physically-message
@@ -813,7 +847,7 @@ ____
  User-action entry point.
 ____
 
-Has 66 line(s). Doesn't call other functions.
+Has 29 line(s). Doesn't call other functions.
 
 Called by:
 
@@ -827,7 +861,7 @@ ____
  FUNCTION: .zi-list-bindkeys [[[
 ____
 
-Has 44 line(s). Calls functions:
+Has 39 line(s). Calls functions:
 
  .zi-list-bindkeys
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -939,11 +973,10 @@ Called by:
 
 ____
  
- ]]]
  FUNCTION: .zi-recall [[[
 ____
 
-Has 38 line(s). Calls functions:
+Has 35 line(s). Calls functions:
 
  .zi-recall
  |-- side.zsh/.zi-compute-ice
@@ -966,7 +999,7 @@ ____
  $1 - time spec, e.g. "1 week"
 ____
 
-Has 28 line(s). Calls functions:
+Has 23 line(s). Calls functions:
 
  .zi-recently
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -1044,7 +1077,7 @@ ____
  User-action entry point.
 ____
 
-Has 42 line(s). Calls functions:
+Has 39 line(s). Calls functions:
 
  .zi-search-completions
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -1060,17 +1093,18 @@ Called by:
 
 ____
  
+ ]]]
  FUNCTION: .zi-self-update [[[
  Updates ZI code (does a git pull).
  
  User-action entry point.
 ____
 
-Has 47 line(s). Calls functions:
+Has 45 line(s). Calls functions:
 
  .zi-self-update
- |-- zi.zsh/.zi-get-mtime-into
- `-- zi.zsh/+zi-message
+ |-- zi.zsh/+zi-message
+ `-- zi.zsh/.zi-get-mtime-into
 
 Uses feature(s): _setopt_, _source_, _zcompile_
 
@@ -1113,7 +1147,7 @@ ____
  User-action entry point.
 ____
 
-Has 72 line(s). Calls functions:
+Has 61 line(s). Calls functions:
 
  .zi-show-completions
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -1154,7 +1188,7 @@ ____
  User-action entry point.
 ____
 
-Has 22 line(s). Calls functions:
+Has 19 line(s). Calls functions:
 
  .zi-show-registered-plugins
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -1179,7 +1213,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 71 line(s). Calls functions:
+Has 66 line(s). Calls functions:
 
  .zi-show-report
  `-- zi.zsh/.zi-any-to-user-plugin
@@ -1203,7 +1237,7 @@ ____
  User-action entry point.
 ____
 
-Has 60 line(s). Calls functions:
+Has 51 line(s). Calls functions:
 
  .zi-show-times
  `-- side.zsh/.zi-any-colorify-as-uspl2
@@ -1227,7 +1261,7 @@ ____
  User-action entry point.
 ____
 
-Has 47 line(s). Calls functions:
+Has 44 line(s). Calls functions:
 
  .zi-show-zstatus
  `-- zi.zsh/+zi-message
@@ -1256,7 +1290,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 38 line(s). Calls functions:
+Has 31 line(s). Calls functions:
 
  .zi-stress
  |-- side.zsh/.zi-exists-physically-message
@@ -1281,7 +1315,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 22 line(s). Calls functions:
+Has 20 line(s). Calls functions:
 
  .zi-uncompile-plugin
  |-- side.zsh/.zi-any-colorify-as-uspl2
@@ -1307,7 +1341,7 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 46 line(s). Calls functions:
+Has 39 line(s). Calls functions:
 
  .zi-uninstall-completions
  |-- install.zsh/.zi-compinit
@@ -1344,10 +1378,9 @@ ____
  $2 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 394 line(s). Calls functions:
+Has 380 line(s). Calls functions:
 
  .zi-unload
- |-- additional.zsh/.zi-clear-debug-report
  |-- side.zsh/.zi-any-colorify-as-uspl2
  `-- zi.zsh/.zi-any-to-user-plugin
 
@@ -1355,7 +1388,6 @@ Uses feature(s): _alias_, _bindkey_, _eval_, _setopt_, _unalias_, _unfunction_, 
 
 Called by:
 
- additional.zsh/.zi-debug-unload
  zi.zsh/zi
  zi.zsh/.zi-run-task
 
@@ -1386,12 +1418,12 @@ ____
  FUNCTION: .zi-update-in-parallel [[[
 ____
 
-Has 84 line(s). Calls functions:
+Has 75 line(s). Calls functions:
 
  .zi-update-all-parallel
  |-- side.zsh/.zi-any-colorify-as-uspl2
- |-- zi.zsh/.zi-any-to-user-plugin
- `-- zi.zsh/+zi-message
+ |-- zi.zsh/+zi-message
+ `-- zi.zsh/.zi-any-to-user-plugin
 
 Uses feature(s): _setopt_
 
@@ -1414,7 +1446,7 @@ ____
  $3 - plugin (only when $1 - i.e. user - given)
 ____
 
-Has 300 line(s). Calls functions:
+Has 295 line(s). Calls functions:
 
  .zi-update-or-status
  |-- install.zsh/.zi-get-latest-gh-r-url-part
@@ -1425,8 +1457,8 @@ Has 300 line(s). Calls functions:
  |-- side.zsh/.zi-exists-physically-message
  |-- side.zsh/.zi-store-ices
  |-- side.zsh/.zi-two-paths
- |-- zi.zsh/.zi-any-to-user-plugin
  |-- zi.zsh/+zi-message
+ |-- zi.zsh/.zi-any-to-user-plugin
  `-- zi.zsh/.zi-set-m-func
 
 Uses feature(s): _kill_, _read_, _setopt_, _source_, _trap_, _wait_
@@ -1451,14 +1483,14 @@ ____
  User-action entry point.
 ____
 
-Has 124 line(s). Calls functions:
+Has 110 line(s). Calls functions:
 
  .zi-update-or-status-all
  |-- install.zsh/.zi-compinit
  |-- side.zsh/.zi-any-colorify-as-uspl2
+ |-- zi.zsh/+zi-message
  |-- zi.zsh/.zi-any-to-user-plugin
- |-- zi.zsh/.zi-get-mtime-into
- `-- zi.zsh/+zi-message
+ `-- zi.zsh/.zi-get-mtime-into
 
 Uses feature(s): _setopt_, _source_
 
@@ -1479,7 +1511,7 @@ ____
  $2 - snippet URL
 ____
 
-Has 34 line(s). Calls functions:
+Has 29 line(s). Calls functions:
 
  .zi-update-or-status-snippet
  |-- install.zsh/.zi-update-snippet

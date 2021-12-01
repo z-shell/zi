@@ -188,9 +188,9 @@ ____
 Has 23 line(s). Calls functions:
 
  .zi-exists-physically-message
+ |-- zi.zsh/+zi-message
  |-- zi.zsh/.zi-any-to-pid
- |-- zi.zsh/.zi-any-to-user-plugin
- `-- zi.zsh/+zi-message
+ `-- zi.zsh/.zi-any-to-user-plugin
 
 Uses feature(s): _setopt_
 

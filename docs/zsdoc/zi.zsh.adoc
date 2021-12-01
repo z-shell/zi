@@ -79,6 +79,7 @@ FUNCTIONS
  zpcompinit
  @zsh-plugin-run-on-unload
  @zsh-plugin-run-on-update
+ zt
 AUTOLOAD add-zsh-hook
 AUTOLOAD compinit
 AUTOLOAD is-at-least
@@ -90,14 +91,14 @@ DETAILS
 Script Body
 ~~~~~~~~~~~
 
-Has 212 line(s). Calls functions:
+Has 219 line(s). Calls functions:
 
  Script-Body
+ |-- +zi-message
+ |-- @zi-register-hook
  |-- add-zsh-hook
  |-- autoload.zsh/.zi-module
- |-- is-at-least
- |-- +zi-message
- `-- @zi-register-hook
+ `-- is-at-least
 
 Uses feature(s): _add-zsh-hook_, _alias_, _autoload_, _export_, _is-at-least_, _setopt_, _source_, _zmodload_, _zstyle_
 
@@ -116,8 +117,8 @@ Has 3 line(s). Calls functions:
 
  @autoload
  `-- :zi-tmp-subst-autoload
-     |-- is-at-least
-     `-- +zi-message
+     |-- +zi-message
+     `-- is-at-least
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
@@ -148,18 +149,19 @@ ____
  arguments, has completion.
 ____
 
-Has 555 line(s). Calls functions:
+Has 561 line(s). Calls functions:
 
  zi
- |-- additional.zsh/.zi-clear-debug-report
- |-- additional.zsh/.zi-debug-start
- |-- additional.zsh/.zi-debug-stop
- |-- additional.zsh/.zi-debug-unload
+ |-- +zi-message
+ |-- +zi-prehelp-usage-message
+ |   `-- +zi-message
+ |-- autoload.zsh/.zi-analytics-menu
  |-- autoload.zsh/.zi-cdisable
  |-- autoload.zsh/.zi-cenable
  |-- autoload.zsh/.zi-clear-completions
- |-- autoload.zsh/.zi-compiled
  |-- autoload.zsh/.zi-compile-uncompile-all
+ |-- autoload.zsh/.zi-compiled
+ |-- autoload.zsh/.zi-control-menu
  |-- autoload.zsh/.zi-help
  |-- autoload.zsh/.zi-list-bindkeys
  |-- autoload.zsh/.zi-list-compdef-replay
@@ -184,16 +186,14 @@ Has 555 line(s). Calls functions:
  |-- install.zsh/.zi-compile-plugin
  |-- install.zsh/.zi-compinit
  |-- install.zsh/.zi-forget-completion
- |-- install.zsh/.zi-install-completions
- |-- +zi-message
- `-- +zi-prehelp-usage-message
-     `-- +zi-message
+ `-- install.zsh/.zi-install-completions
 
 Uses feature(s): _autoload_, _compinit_, _eval_, _setopt_, _source_
 
 Called by:
 
  zinit
+ zt
 
 .zi-add-fpath
 ~~~~~~~~~~~~~
@@ -458,8 +458,6 @@ Has 4 line(s). Calls functions:
 Called by:
 
  .zi-load-plugin
- additional.zsh/.zi-debug-start
- additional.zsh/.zi-debug-stop
 
 .zi-diff-env
 ~~~~~~~~~~~~
@@ -705,12 +703,11 @@ ____
  $2 - plugin name, if the third format is used
 ____
 
-Has 92 line(s). Calls functions:
+Has 94 line(s). Calls functions:
 
  .zi-load
- |-- install.zsh/.zi-get-package
- |-- install.zsh/.zi-setup-plugin-dir
- `-- +zi-deploy-message
+ |-- +zi-deploy-message
+ `-- install.zsh/.zi-get-package
 
 Uses feature(s): _eval_, _setopt_, _source_, _zle_
 
@@ -718,7 +715,6 @@ Called by:
 
  .zi-load-object
  .zi-run-task
- additional.zsh/.zi-service
 
 .zi-load-ices
 ~~~~~~~~~~~~~
@@ -771,8 +767,8 @@ Has 126 line(s). Calls functions:
 
  .zi-load-plugin
  `-- :zi-tmp-subst-autoload
-     |-- is-at-least
-     `-- +zi-message
+     |-- +zi-message
+     `-- is-at-least
 
 Uses feature(s): _eval_, _setopt_, _source_, _unfunction_, _zle_
 
@@ -795,9 +791,9 @@ ____
 Has 203 line(s). Calls functions:
 
  .zi-load-snippet
- |-- install.zsh/.zi-download-snippet
  |-- +zi-deploy-message
- `-- +zi-message
+ |-- +zi-message
+ `-- install.zsh/.zi-download-snippet
 
 Uses feature(s): _autoload_, _eval_, _setopt_, _source_, _unfunction_, _zparseopts_, _zstyle_
 
@@ -807,7 +803,6 @@ Called by:
  .zi-load-object
  .zi-load
  .zi-run-task
- additional.zsh/.zi-service
 
 .zi-main-message-formatter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -845,9 +840,6 @@ Called by:
  .zi-set-m-func
  :zi-tmp-subst-autoload
  zi
- additional.zsh/.zi-debug-start
- additional.zsh/.zi-debug-unload
- additional.zsh/:zi-tmp-subst-source
  autoload.zsh/.zi-build-module
  autoload.zsh/.zi-cd
  autoload.zsh/.zi-self-update
@@ -887,15 +879,16 @@ Has 1 line(s). Calls functions:
 
  zinit
  `-- zi
-     |-- additional.zsh/.zi-clear-debug-report
-     |-- additional.zsh/.zi-debug-start
-     |-- additional.zsh/.zi-debug-stop
-     |-- additional.zsh/.zi-debug-unload
+     |-- +zi-message
+     |-- +zi-prehelp-usage-message
+     |   `-- +zi-message
+     |-- autoload.zsh/.zi-analytics-menu
      |-- autoload.zsh/.zi-cdisable
      |-- autoload.zsh/.zi-cenable
      |-- autoload.zsh/.zi-clear-completions
-     |-- autoload.zsh/.zi-compiled
      |-- autoload.zsh/.zi-compile-uncompile-all
+     |-- autoload.zsh/.zi-compiled
+     |-- autoload.zsh/.zi-control-menu
      |-- autoload.zsh/.zi-help
      |-- autoload.zsh/.zi-list-bindkeys
      |-- autoload.zsh/.zi-list-compdef-replay
@@ -920,10 +913,7 @@ Has 1 line(s). Calls functions:
      |-- install.zsh/.zi-compile-plugin
      |-- install.zsh/.zi-compinit
      |-- install.zsh/.zi-forget-completion
-     |-- install.zsh/.zi-install-completions
-     |-- +zi-message
-     `-- +zi-prehelp-usage-message
-         `-- +zi-message
+     `-- install.zsh/.zi-install-completions
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 
@@ -1308,8 +1298,8 @@ ____
 Has 111 line(s). Calls functions:
 
  :zi-tmp-subst-autoload
- |-- is-at-least
- `-- +zi-message
+ |-- +zi-message
+ `-- is-at-least
 
 Uses feature(s): _autoload_, _eval_, _is-at-least_, _setopt_, _zparseopts_
 
@@ -1374,7 +1364,6 @@ Uses feature(s): _setopt_, _unfunction_
 Called by:
 
  .zi-load-plugin
- additional.zsh/.zi-debug-stop
 
 .zi-tmp-subst-on
 ~~~~~~~~~~~~~~~~
@@ -1395,7 +1384,6 @@ Uses feature(s): _source_
 Called by:
 
  .zi-load-plugin
- additional.zsh/.zi-debug-start
 
 :zi-tmp-subst-zle
 ~~~~~~~~~~~~~~~~~
@@ -1521,6 +1509,58 @@ ____
 Has 2 line(s). Calls functions:
 
  @zsh-plugin-run-on-update
+
+Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
+
+zt
+~~
+
+____
+ 
+ ]]]
+ FUNCTION: zt. [[[
+ Common ICE modifier to simplify Turbo mode.
+____
+
+Has 1 line(s). Calls functions:
+
+ zt
+ `-- zi
+     |-- +zi-message
+     |-- +zi-prehelp-usage-message
+     |   `-- +zi-message
+     |-- autoload.zsh/.zi-analytics-menu
+     |-- autoload.zsh/.zi-cdisable
+     |-- autoload.zsh/.zi-cenable
+     |-- autoload.zsh/.zi-clear-completions
+     |-- autoload.zsh/.zi-compile-uncompile-all
+     |-- autoload.zsh/.zi-compiled
+     |-- autoload.zsh/.zi-control-menu
+     |-- autoload.zsh/.zi-help
+     |-- autoload.zsh/.zi-list-bindkeys
+     |-- autoload.zsh/.zi-list-compdef-replay
+     |-- autoload.zsh/.zi-ls
+     |-- autoload.zsh/.zi-module
+     |-- autoload.zsh/.zi-recently
+     |-- autoload.zsh/.zi-search-completions
+     |-- autoload.zsh/.zi-self-update
+     |-- autoload.zsh/.zi-show-all-reports
+     |-- autoload.zsh/.zi-show-completions
+     |-- autoload.zsh/.zi-show-debug-report
+     |-- autoload.zsh/.zi-show-registered-plugins
+     |-- autoload.zsh/.zi-show-report
+     |-- autoload.zsh/.zi-show-times
+     |-- autoload.zsh/.zi-show-zstatus
+     |-- autoload.zsh/.zi-uncompile-plugin
+     |-- autoload.zsh/.zi-uninstall-completions
+     |-- autoload.zsh/.zi-unload
+     |-- autoload.zsh/.zi-update-or-status
+     |-- autoload.zsh/.zi-update-or-status-all
+     |-- compinit
+     |-- install.zsh/.zi-compile-plugin
+     |-- install.zsh/.zi-compinit
+     |-- install.zsh/.zi-forget-completion
+     `-- install.zsh/.zi-install-completions
 
 Not called by script or any function (may be e.g. a hook, a Zle widget, etc.).
 

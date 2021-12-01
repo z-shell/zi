@@ -4,15 +4,6 @@ labels: ["bug 🐞"]
 title: "bug: "
 body:
 
-  - type: input
-    id: environment
-    attributes:
-      label: Environment
-      description: "Your environment details with: echo "\"${OSTYPE}|$(uname -m)|${ZSH_VERSION}\""
-      placeholder: "linux-gnu|x86_64|5.8"
-    validations:
-      required: true
-
   - type: textarea
     id: description
     attributes:

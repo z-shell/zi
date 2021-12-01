@@ -1,9 +1,6 @@
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 # Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
-# Adjust the shellcheck fot Zsh compatibility.
-# shellcheck shell=sh disable=SC1073,1072,1050
-
 #
 # Main state variables.
 #
@@ -14,7 +11,6 @@ if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
 # Rename snippets URL -> NAME.
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
-# Compatibility for previous versions.
 typeset -gAH ZINIT
 ZI=( "${(kv)ZINIT[@]}" "${(kv)ZI[@]}" )
 unset ZINIT
@@ -137,43 +133,40 @@ zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is req
 zmodload zsh/terminfo 2>/dev/null
 zmodload zsh/termcap 2>/dev/null
 
-if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || \
-    ( ${+termcap} -eq 1 && -n ${termcap[Co]} )
+if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+termcap} -eq 1 && -n ${termcap[Co]} )
 ]] {
-    ZI+=(
-        col-pname   $'\e[1;4m\e[32m'     col-uname   $'\e[1;4m\e[35m'     col-keyword $'\e[32m'
-        col-note    $'\e[38;5;148m'      col-error   $'\e[1m\e[38;5;204m' col-p       $'\e[38;5;81m'
-        col-info    $'\e[38;5;82m'       col-info2   $'\e[38;5;227m'      col-profile $'\e[38;5;148m'
-        col-uninst  $'\e[38;5;118m'      col-info3   $'\e[1m\e[38;5;227m' col-slight  $'\e[38;5;230m'
-        col-failure $'\e[38;5;204m'      col-happy   $'\e[1m\e[38;5;82m'  col-annex   $'\e[38;5;165m'
-        col-id-as   $'\e[4;38;5;220m'    col-version $'\e[3;38;5;46m'
-        # The more recent, fresh ones:
-        col-pre  $'\e[38;5;135m'  col-msg   $'\e[0m'        col-msg2  $'\e[38;5;172m'
-        col-obj  $'\e[38;5;218m'  col-obj2  $'\e[38;5;118m' col-file  $'\e[3;38;5;117m'
-        col-dir  $'\e[3;38;5;153m' col-func $'\e[38;5;219m'
-        col-url  $'\e[38;5;75m'   col-meta  $'\e[38;5;57m'  col-meta2 $'\e[38;5;147m'
-        col-data $'\e[38;5;82m'   col-data2 $'\e[38;5;117m' col-hi    $'\e[1m\e[38;5;183m'
-        col-var  $'\e[38;5;81m'   col-glob  $'\e[38;5;227m' col-ehi   $'\e[1m\e[38;5;210m'
-        col-cmd  $'\e[38;5;82m'   col-ice   $'\e[38;5;39m'  col-nl    $'\n'
-        col-txt  $'\e[38;5;254m' col-num  $'\e[3;38;5;155m' col-term  $'\e[38;5;185m'
-        col-warn $'\e[38;5;214m'  col-apo $'\e[1;38;5;220m' col-ok    $'\e[38;5;220m'
-        col-faint $'\e[38;5;238m' col-opt   $'\e[38;5;219m' col-lhi   $'\e[38;5;81m'
-        col-tab  $' \t '            col-msg3  $'\e[38;5;238m' col-b-lhi $'\e[1m\e[38;5;75m'
-        col-bar  $'\e[38;5;82m'  col-th-bar $'\e[38;5;82m'
-        col-…    "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
-        col-mdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
-        col-mmdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
-        col--…   "${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}"
-        col-↔    ${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}
-        col-rst  $'\e[0m'        col-b     $'\e[1m'        col-nb     $'\e[22m'
-        col-u    $'\e[4m'        col-it    $'\e[3m'        col-st     $'\e[9m'
-        col-nu   $'\e[24m'       col-nit   $'\e[23m'       col-nst    $'\e[29m'
-        col-bspc $'\b'        col-b-warn $'\e[1;38;5;214m' col-u-warn $'\e[4;38;5;214m'
+  ZI+=(
+      col-pname   $'\e[1;4m\e[32m'     col-uname   $'\e[1;4m\e[35m'     col-keyword $'\e[32m'
+      col-note    $'\e[38;5;148m'      col-error   $'\e[1m\e[38;5;204m' col-p       $'\e[38;5;81m'
+      col-info    $'\e[38;5;82m'       col-info2   $'\e[38;5;227m'      col-profile $'\e[38;5;148m'
+      col-uninst  $'\e[38;5;118m'      col-info3   $'\e[1m\e[38;5;227m' col-slight  $'\e[38;5;230m'
+      col-failure $'\e[38;5;204m'      col-happy   $'\e[1m\e[38;5;82m'  col-annex   $'\e[38;5;165m'
+      col-id-as   $'\e[4;38;5;220m'    col-version $'\e[3;38;5;46m'
+      col-pre  $'\e[38;5;135m'  col-msg   $'\e[0m'        col-msg2  $'\e[38;5;172m'
+      col-obj  $'\e[38;5;218m'  col-obj2  $'\e[38;5;118m' col-file  $'\e[3;38;5;117m'
+      col-dir  $'\e[3;38;5;153m' col-func $'\e[38;5;219m'
+      col-url  $'\e[38;5;75m'   col-meta  $'\e[38;5;57m'  col-meta2 $'\e[38;5;147m'
+      col-data $'\e[38;5;82m'   col-data2 $'\e[38;5;117m' col-hi    $'\e[1m\e[38;5;183m'
+      col-var  $'\e[38;5;81m'   col-glob  $'\e[38;5;227m' col-ehi   $'\e[1m\e[38;5;210m'
+      col-cmd  $'\e[38;5;82m'   col-ice   $'\e[38;5;39m'  col-nl    $'\n'
+      col-txt  $'\e[38;5;254m' col-num  $'\e[3;38;5;155m' col-term  $'\e[38;5;185m'
+      col-warn $'\e[38;5;214m'  col-apo $'\e[1;38;5;220m' col-ok    $'\e[38;5;220m'
+      col-faint $'\e[38;5;238m' col-opt   $'\e[38;5;219m' col-lhi   $'\e[38;5;81m'
+      col-tab  $' \t '            col-msg3  $'\e[38;5;238m' col-b-lhi $'\e[1m\e[38;5;75m'
+      col-bar  $'\e[38;5;82m'  col-th-bar $'\e[38;5;82m'
+      col-…    "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
+      col-mdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
+      col-mmdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
+      col--…   "${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}"
+      col-↔    ${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}
+      col-rst  $'\e[0m'        col-b     $'\e[1m'        col-nb     $'\e[22m'
+      col-u    $'\e[4m'        col-it    $'\e[3m'        col-st     $'\e[9m'
+      col-nu   $'\e[24m'       col-nit   $'\e[23m'       col-nst    $'\e[29m'
+      col-bspc $'\b'        col-b-warn $'\e[1;38;5;214m' col-u-warn $'\e[4;38;5;214m'
     )
-    if [[ ( ${+terminfo} -eq 1 && ${terminfo[colors]} -ge 256 ) || \
-        ( ${+termcap} -eq 1 && ${termcap[Co]} -ge 256 )
+    if [[ ( ${+terminfo} -eq 1 && ${terminfo[colors]} -ge 256 ) || ( ${+termcap} -eq 1 && ${termcap[Co]} -ge 256 )
     ]] {
-        ZI+=( col-pname $'\e[1;4m\e[38;5;39m' col-uname  $'\e[1;4m\e[38;5;207m' )
+      ZI+=( col-pname $'\e[1;4m\e[38;5;39m' col-uname  $'\e[1;4m\e[38;5;207m' )
     }
 }
 
@@ -215,19 +208,15 @@ builtin setopt noaliases
 :zi-reload-and-run () {
     local fpath_prefix="$1" autoload_opts="$2" func="$3"
     shift 3
-
     # Unfunction caller function (its name is given).
     unfunction -- "$func"
-
     local -a ___fpath
     ___fpath=( ${fpath[@]} )
     local -a +h fpath
     [[ $FPATH != *${${(@0)fpath_prefix}[1]}* ]] && \
         fpath=( ${(@0)fpath_prefix} ${___fpath[@]} )
-
     # After this the function exists again.
     builtin autoload ${(s: :)autoload_opts} -- "$func"
-
     # User wanted to call the function, not only load it.
     "$func" "$@"
 } # ]]]
@@ -248,17 +237,12 @@ builtin setopt noaliases
 
     # Process the id-as''/teleid'' to get the plugin dir.
     .zi-any-to-user-plugin $ZI[CUR_USPL2]
-    [[ $reply[1] = % ]] && \
-        local PLUGIN_DIR="$reply[2]" || \
-        local PLUGIN_DIR="$ZI[PLUGINS_DIR]/${reply[1]:+$reply[1]---}${reply[2]//\//---}"
-
-
+    [[ $reply[1] = % ]] && local PLUGIN_DIR="$reply[2]" || \
+    local PLUGIN_DIR="$ZI[PLUGINS_DIR]/${reply[1]:+$reply[1]---}${reply[2]//\//---}"
     # "Fpath elements" - ie those elements that are inside the plug-in directory.
-    # The name comes from the fact that they are the selected fpath elements → so just
-    # "items".
+    # The name comes from the fact that they are the selected fpath elements → so just "items".
     local -a fpath_elements
     fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
-
     # Add a function subdirectory to items, if any (this action is
     # according to the Plug Standard version 1.07 and later).
     [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
@@ -297,8 +281,7 @@ builtin setopt noaliases
                 builtin autoload ${opts[@]} $func
                 return $?
             elif [[ $func == /* ]]; then
-                if [[ $ZI[MUTE_WARNINGS] != (1|true|on|yes) && \
-                        -z $ZI[WARN_SHOWN_FOR_$ZI[CUR_USPL2]] ]]; then
+                if [[ $ZI[MUTE_WARNINGS] != (1|true|on|yes) && -z $ZI[WARN_SHOWN_FOR_$ZI[CUR_USPL2]] ]]; then
                     +zi-message "{u-warn}Warning{b-warn}: {rst}the plugin {pid}$ZI[CUR_USPL2]" \
                         "{rst}is using autoload functions specified by their absolute path," \
                         "which is not supported by this Zsh version ({↔} {version}$ZSH_VERSION{rst}," \
@@ -439,7 +422,8 @@ builtin setopt noaliases
 
         local prev="${(q)${(s: :)$(builtin bindkey ${(Q)string})}[-1]#undefined-key}"
 
-        # "-M map" given?
+    # "-M map" given?
+    if (( ${+opts[-M]} )); then
             local Mopt=-M
             local Marg="${opts[-M]}"
 
@@ -508,7 +492,6 @@ builtin setopt noaliases
             .zi-add-report "${ZI[CUR_USPL2]}" "Warning: last bindkey used non-typical options: ${(kv)opts[*]}"
         fi
     fi
-
     # Actual bindkey.
     builtin bindkey "${pos[@]}"
     return $? # testable
@@ -518,8 +501,7 @@ builtin setopt noaliases
 #
 # The hijacking is to gather report data (which is used in unload).
 :zi-tmp-subst-zstyle() {
-    builtin setopt localoptions noerrreturn noerrexit extendedglob nowarncreateglobal \
-        typesetsilent noshortloops unset
+    builtin setopt localoptions noerrreturn noerrexit extendedglob nowarncreateglobal typesetsilent noshortloops unset
     .zi-add-report "${ZI[CUR_USPL2]}" "Zstyle $*"
 
     # Remember in order to perform the actual zstyle call.
@@ -556,8 +538,7 @@ builtin setopt noaliases
 #
 # The hijacking is to gather report data (which is used in unload).
 :zi-tmp-subst-alias() {
-    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
-        typesetsilent noshortloops unset
+    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal typesetsilent noshortloops unset
     .zi-add-report "${ZI[CUR_USPL2]}" "Alias $*"
 
     # Remember to perform the actual alias call.
@@ -607,8 +588,7 @@ builtin setopt noaliases
 #
 # The hijacking is to gather report data (which is used in unload).
 :zi-tmp-subst-zle() {
-    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
-        typesetsilent noshortloops unset
+    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal typesetsilent noshortloops unset
     .zi-add-report "${ZI[CUR_USPL2]}" "Zle $*"
 
     # Remember to perform the actual zle call.
@@ -666,8 +646,7 @@ builtin setopt noaliases
 # The hijacking is not only for reporting, but also to save compdef
 # calls so that `compinit' can be called after loading plugins.
 :zi-tmp-subst-compdef() {
-    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
-        typesetsilent noshortloops unset
+    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal typesetsilent noshortloops unset
     .zi-add-report "${ZI[CUR_USPL2]}" "Saving \`compdef $*' for replay"
     ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" )
 
@@ -749,8 +728,7 @@ builtin setopt noaliases
 # Turn off temporary substituting of functions completely for a given mode ("load", "light",
 # "light-b" (i.e. the `trackbinds' mode) or "compdef").
 .zi-tmp-subst-off() {
-    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal \
-        typesetsilent noshortloops unset noaliases
+    builtin setopt localoptions noerrreturn noerrexit extendedglob warncreateglobal typesetsilent noshortloops unset noaliases
     local mode="$1"
 
     # Disable temporary substituting of functions only once.
@@ -823,14 +801,11 @@ builtin setopt noaliases
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
 .zi-diff-functions() {
-    local uspl2="$1"
-    local cmd="$2"
+  local uspl2="$1"
+  local cmd="$2"
 
-    [[ $cmd = begin ]] && \
-        { [[ -z ${ZI[FUNCTIONS_BEFORE__$uspl2]} ]] && \
-                ZI[FUNCTIONS_BEFORE__$uspl2]="${(j: :)${(qk)functions[@]}}"
-        } || \
-            ZI[FUNCTIONS_AFTER__$uspl2]+=" ${(j: :)${(qk)functions[@]}}"
+  [[ $cmd = begin ]] && { [[ -z ${ZI[FUNCTIONS_BEFORE__$uspl2]} ]] && ZI[FUNCTIONS_BEFORE__$uspl2]="${(j: :)${(qk)functions[@]}}"
+  } || ZI[FUNCTIONS_AFTER__$uspl2]+=" ${(j: :)${(qk)functions[@]}}"
 } # ]]]
 # FUNCTION: .zi-diff-options. [[[
 # Implements detection of change in option state. Performs
@@ -839,13 +814,9 @@ builtin setopt noaliases
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
 .zi-diff-options() {
-    local IFS=" "
-
-    [[ $2 = begin ]] && \
-        { [[ -z ${ZI[OPTIONS_BEFORE__$uspl2]} ]] && \
-            ZI[OPTIONS_BEFORE__$1]="${(kv)options[@]}"
-        } || \
-        ZI[OPTIONS_AFTER__$1]+=" ${(kv)options[@]}"
+  local IFS=" "
+  [[ $2 = begin ]] && { [[ -z ${ZI[OPTIONS_BEFORE__$uspl2]} ]] && ZI[OPTIONS_BEFORE__$1]="${(kv)options[@]}"
+  } || ZI[OPTIONS_AFTER__$1]+=" ${(kv)options[@]}"
 } # ]]]
 # FUNCTION: .zi-diff-env. [[[
 # Implements detection of change in PATH and FPATH.
@@ -853,24 +824,21 @@ builtin setopt noaliases
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
 .zi-diff-env() {
-    typeset -a tmp
-    local IFS=" "
-
-    [[ $2 = begin ]] && {
-            { [[ -z ${ZI[PATH_BEFORE__$uspl2]} ]] && \
-                tmp=( "${(q)path[@]}" )
-                ZI[PATH_BEFORE__$1]="${tmp[*]}"
-            }
-            { [[ -z ${ZI[FPATH_BEFORE__$uspl2]} ]] && \
-                tmp=( "${(q)fpath[@]}" )
-                ZI[FPATH_BEFORE__$1]="${tmp[*]}"
-            }
-    } || {
-            tmp=( "${(q)path[@]}" )
-            ZI[PATH_AFTER__$1]+=" ${tmp[*]}"
-            tmp=( "${(q)fpath[@]}" )
-            ZI[FPATH_AFTER__$1]+=" ${tmp[*]}"
-    }
+  typeset -a tmp
+  local IFS=" "
+  [[ $2 = begin ]] && {
+    { [[ -z ${ZI[PATH_BEFORE__$uspl2]} ]] && tmp=( "${(q)path[@]}" )
+      ZI[PATH_BEFORE__$1]="${tmp[*]}"
+        }
+        { [[ -z ${ZI[FPATH_BEFORE__$uspl2]} ]] && tmp=( "${(q)fpath[@]}" )
+          ZI[FPATH_BEFORE__$1]="${tmp[*]}"
+        }
+  } || {
+        tmp=( "${(q)path[@]}" )
+        ZI[PATH_AFTER__$1]+=" ${tmp[*]}"
+        tmp=( "${(q)fpath[@]}" )
+        ZI[FPATH_AFTER__$1]+=" ${tmp[*]}"
+  }
 } # ]]]
 # FUNCTION: .zi-diff-parameter. [[[
 # Implements detection of change in any parameter's existence and type.
@@ -879,15 +847,13 @@ builtin setopt noaliases
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
 .zi-diff-parameter() {
-    typeset -a tmp
-
-    [[ $2 = begin ]] && {
-        { [[ -z ${ZI[PARAMETERS_BEFORE__$uspl2]} ]] && \
-            ZI[PARAMETERS_BEFORE__$1]="${(j: :)${(qkv)parameters[@]}}"
-        }
-    } || {
-        ZI[PARAMETERS_AFTER__$1]+=" ${(j: :)${(qkv)parameters[@]}}"
+  typeset -a tmp
+  [[ $2 = begin ]] && {
+  { [[ -z ${ZI[PARAMETERS_BEFORE__$uspl2]} ]] && ZI[PARAMETERS_BEFORE__$1]="${(j: :)${(qkv)parameters[@]}}"
     }
+    } || {
+    ZI[PARAMETERS_AFTER__$1]+=" ${(j: :)${(qkv)parameters[@]}}"
+  }
 } # ]]]
 # FUNCTION: .zi-diff. [[[
 # Performs diff actions of all types
@@ -922,10 +888,8 @@ builtin setopt noaliases
 # Returns user and plugin in $reply.
 #
 .zi-any-to-user-plugin() {
-    emulate -LR zsh
-    builtin setopt extendedglob typesetsilent noshortloops rcquotes \
-        ${${${+reply}:#0}:+warncreateglobal}
-
+  emulate -LR zsh
+  builtin setopt extendedglob typesetsilent noshortloops rcquotes ${${${+reply}:#0}:+warncreateglobal}
     # Two components given?
     # That's a pretty fast track to call this function this way.
     if [[ -n $2 ]]; then
@@ -933,13 +897,11 @@ builtin setopt noaliases
         reply=( ${1:-${${(M)2#/}:+%}} ${${${(M)1#%}:+$2}:-${2//---//}} )
         return 0
     fi
-
     # Is it absolute path?
     if [[ $1 = /* ]]; then
         reply=( % $1 )
         return 0
     fi
-
     # Is it absolute path in zi format?
     if [[ $1 = %* ]]; then
         local -A map
@@ -948,46 +910,40 @@ builtin setopt noaliases
         reply[2]=${~reply[2]}
         return 0
     fi
-
     # Rest is for single component given.
     # It doesn't touch $2
-
     1=${1//---//}
     if [[ $1 = */* ]]; then
         reply=( ${1%%/*} ${1#*/} )
         return 0
     fi
-
     reply=( "" "${1:-_unknown}" )
 
     return 0
 } # ]]]
 # FUNCTION: .zi-any-to-pid. [[[
 .zi-any-to-pid() {
-    emulate -LR zsh
-    builtin setopt extendedglob typesetsilent noshortloops rcquotes \
-        ${${${+REPLY}:#0}:+warncreateglobal}
+  emulate -LR zsh
+  builtin setopt extendedglob typesetsilent noshortloops rcquotes ${${${+REPLY}:#0}:+warncreateglobal}
 
     1=${~1} 2=${~2}
 
-    # Two components given?
-    if [[ -n $2 ]] {
-        if [[ $1 == (%|/)* || ( -z $1 && $2 == /* ) ]] {
-            .zi-util-shands-path $1${${(M)1#(%/?|%[^/]|/?)}:+/}$2
-            REPLY=${${REPLY:#%*}:+%}$REPLY
-        } else {
-            REPLY=$1${1:+/}$2
-        }
-        return 0
+  # Two components given?
+  if [[ -n $2 ]] {
+    if [[ $1 == (%|/)* || ( -z $1 && $2 == /* ) ]] {
+        .zi-util-shands-path $1${${(M)1#(%/?|%[^/]|/?)}:+/}$2
+        REPLY=${${REPLY:#%*}:+%}$REPLY
+    } else {
+      REPLY=$1${1:+/}$2
     }
-
+      return 0
+  }
     # Is it absolute path?
     if [[ $1 = (%|/|\~)* ]] {
         .zi-util-shands-path $1
         REPLY=${${REPLY:#%*}:+%}$REPLY
         return 0
     }
-
     # Single component given.
     REPLY=${1//---//}
 
@@ -996,14 +952,13 @@ builtin setopt noaliases
 # FUNCTION: .zi-util-shands-path. [[[
 # Replaces parts of path with %HOME, etc.
 .zi-util-shands-path() {
-    emulate -LR zsh
-    builtin setopt extendedglob typesetsilent noshortloops rcquotes \
-        ${${${+REPLY}:#0}:+warncreateglobal}
+  emulate -LR zsh
+  builtin setopt extendedglob typesetsilent noshortloops rcquotes ${${${+REPLY}:#0}:+warncreateglobal}
 
-    local -A map
-    map=( \~ %HOME $HOME %HOME $ZI[SNIPPETS_DIR] %SNIPPETS $ZI[PLUGINS_DIR] %PLUGINS
-        "$ZPFX" %ZPFX HOME %HOME SNIPPETS %SNIPPETS PLUGINS %PLUGINS "" "" )
-    REPLY=${${1/(#b)(#s)(%|)(${(~j:|:)${(@k)map:#$HOME}}|$HOME|)/$map[$match[2]]}}
+  local -A map
+  map=( \~ %HOME $HOME %HOME $ZI[SNIPPETS_DIR] %SNIPPETS $ZI[PLUGINS_DIR] %PLUGINS
+      "$ZPFX" %ZPFX HOME %HOME SNIPPETS %SNIPPETS PLUGINS %PLUGINS "" "" )
+  REPLY=${${1/(#b)(#s)(%|)(${(~j:|:)${(@k)map:#$HOME}}|$HOME|)/$map[$match[2]]}}
     return 0
 } # ]]]
 # FUNCTION: .zi-find-other-matches. [[[
@@ -1091,7 +1046,6 @@ builtin setopt noaliases
         }
         [[ -e $local_dir/${dirname:+$dirname/}._zi || \
             -e $local_dir/${dirname:+$dirname/}._zplugin ]] && exists=1
-
         (( exists )) && break
     }
 
@@ -1099,8 +1053,7 @@ builtin setopt noaliases
     REPLY="$local_dir${dirname:+/$dirname}"
 
     return $(( 1 - exists ))
-}
-# ]]]
+} # ]]]
 # FUNCTION: @zi-substitute. [[[
 @zi-substitute() {
     emulate -LR zsh
@@ -1143,8 +1096,7 @@ builtin setopt noaliases
         ___value=${___value//(#m)(%[a-zA-Z0-9]##%|\$ZPFX|\$\{ZPFX\})/${___subst_map[$MATCH]}}
         : ${(P)___var_name::=$___value}
     done
-}
-# ]]]
+} # ]]]
 # FUNCTION: @zi-register-annex. [[[
 # Registers the z-annex inside ZI – i.e. an ZI extension
 @zi-register-annex() {
@@ -1156,8 +1108,7 @@ builtin setopt noaliases
         integer index="${type##[%a-zA-Z:_!-]##}"
         ZI_EXTS[ice-mods]="${ZI_EXTS[ice-mods]}${icemods:+|}${(j:|:)${(@)${(@s:|:)icemods}/(#b)(#s)(?)/$index-$match[1]}}"
     }
-}
-# ]]]
+} # ]]]
 # FUNCTION: @zi-register-hook. [[[
 # Registers the z-annex inside ZI – i.e. an ZI extension
 @zi-register-hook() {
@@ -1165,23 +1116,20 @@ builtin setopt noaliases
     ZI_EXTS2[seqno]=$(( ${ZI_EXTS2[seqno]:-0} + 1 ))
     ZI_EXTS2[$key${${(M)type#hook:}:+ ${ZI_EXTS2[seqno]}}]="${ZI_EXTS2[seqno]} z-annex-data: ${(q)name} ${(q)type} ${(q)handler} '' ${(q)icemods}"
     ZI_EXTS2[ice-mods]="${ZI_EXTS2[ice-mods]}${icemods:+|}$icemods"
-}
-# ]]]
+} # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
 # http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html
 @zsh-plugin-run-on-unload() {
     ICE[ps-on-unload]="${(j.; .)@}"
     .zi-pack-ice "$id_as" ""
-}
-# ]]]
+} # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism
 @zsh-plugin-run-on-update() {
     ICE[ps-on-update]="${(j.; .)@}"
     .zi-pack-ice "$id_as" ""
-}
-# ]]]
+} # ]]]
 
 #
 # Remaining functions.
@@ -1191,31 +1139,28 @@ builtin setopt noaliases
 # Creates all directories needed by ZI, first checks if they
 # already exist.
 .zi-prepare-home() {
-    [[ -n ${ZI[HOME_READY]} ]] && return
-    ZI[HOME_READY]=1
+  [[ -n ${ZI[HOME_READY]} ]] && return
+  ZI[HOME_READY]=1
 
-    [[ ! -d ${ZI[HOME_DIR]} ]] && {
-        command mkdir  -p "${ZI[HOME_DIR]}"
-        # For compaudit.
-        command chmod go-w "${ZI[HOME_DIR]}"
-        # Also set up */bin and ZPFX in general.
-        command mkdir 2>/dev/null -p $ZPFX/bin
-    }
-    [[ ! -d ${ZI[ZMODULES_DIR]} ]] && {
-        command mkdir -p "${ZI[ZMODULES_DIR]}"
-        # For compaudit.
-        command chmod go-w "${ZI[ZMODULES_DIR]}"
-
-    }
-    [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]] && {
-        command rm -rf "${ZI[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zi"
-        command mkdir -p "${ZI[PLUGINS_DIR]}/_local---zi"
-        command chmod go-w "${ZI[PLUGINS_DIR]}"
-        command ln -s "${ZI[BIN_DIR]}/lib/_zi" "${ZI[PLUGINS_DIR]}/_local---zi"
-
-        # Also set up */bin and ZPFX in general.
-        command mkdir 2>/dev/null -p $ZPFX/bin
-
+  [[ ! -d ${ZI[HOME_DIR]} ]] && {
+      command mkdir  -p "${ZI[HOME_DIR]}"
+      # For compaudit.
+      command chmod go-w "${ZI[HOME_DIR]}"
+      # Also set up */bin and ZPFX in general.
+      command mkdir 2>/dev/null -p $ZPFX/bin
+  }
+  [[ ! -d ${ZI[ZMODULES_DIR]} ]] && {
+      command mkdir -p "${ZI[ZMODULES_DIR]}"
+      # For compaudit.
+      command chmod go-w "${ZI[ZMODULES_DIR]}"
+  }
+  [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]] && {
+      command rm -rf "${ZI[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zi"
+      command mkdir -p "${ZI[PLUGINS_DIR]}/_local---zi"
+      command chmod go-w "${ZI[PLUGINS_DIR]}"
+      command ln -s "${ZI[BIN_DIR]}/lib/_zi" "${ZI[PLUGINS_DIR]}/_local---zi"
+      # Also set up */bin and ZPFX in general.
+      command mkdir 2>/dev/null -p $ZPFX/bin
         (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
         (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
         .zi-clear-completions &>/dev/null
@@ -1225,13 +1170,10 @@ builtin setopt noaliases
         command mkdir "${ZI[COMPLETIONS_DIR]}"
         # For compaudit.
         command chmod go-w "${ZI[COMPLETIONS_DIR]}"
-
         # Symlink _zi completion into _local---zi directory.
         command ln -s "${ZI[PLUGINS_DIR]}/_local---zi/_zi" "${ZI[COMPLETIONS_DIR]}"
-
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
-
         (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
         .zi-compinit &>/dev/null
     }
@@ -1239,11 +1181,9 @@ builtin setopt noaliases
         command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
         command chmod go-w "${ZI[SNIPPETS_DIR]}"
         ( builtin cd ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
-
         # Also create the SERVICES_DIR.
         command mkdir -p "${ZI[SERVICES_DIR]}"
         command chmod go-w "${ZI[SERVICES_DIR]}"
-
         # Also set up */bin and ZPFX in general.
         command mkdir 2>/dev/null -p $ZPFX/bin
     }
@@ -1301,7 +1241,6 @@ builtin setopt noaliases
     builtin set --
     integer correct retval exists
     [[ -o ksharrays ]] && correct=1
-
     [[ -n ${ICE[(i)(\!|)(sh|bash|ksh|csh)]}${ICE[opts]} ]] && {
         local -a precm
         precm=(
@@ -1316,9 +1255,7 @@ builtin setopt noaliases
     # Remove leading whitespace and trailing /.
     url="${${url#"${url%%[! $'\t']*}"}%/}"
     ICE[teleid]="${ICE[teleid]:-$url}"
-    [[ ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ]] && \
-        ICE[pick]="${ICE[pick]:-/dev/null}"
-
+    [[ ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ]] && ICE[pick]="${ICE[pick]:-/dev/null}"
     local local_dir dirname filename save_url="$url"
 
     # Allow things like $OSTYPE in the URL.
@@ -1448,8 +1385,7 @@ builtin setopt noaliases
 
         (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt noaliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
     elif [[ -n ${opts[(r)--command]} || ${ICE[as]} = command ]]; then
-        [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && \
-            ICE[pick]="${id_as:t}"
+        [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${id_as:t}"
         # Subversion - directory and multiple files possible.
         if (( ${+ICE[svn]} )); then
             if [[ -n ${ICE[pick]} ]]; then
@@ -1661,8 +1597,7 @@ builtin setopt noaliases
 
     [[ -z ${ICE[subst]} ]] && local ___builtin=builtin
 
-    [[ ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ]] && \
-        ICE[pick]="${ICE[pick]:-/dev/null}"
+    [[ ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ]] && ICE[pick]="${ICE[pick]:-/dev/null}"
 
     if [[ -n ${ICE[autoload]} ]] {
         :zi-tmp-subst-autoload -Uz \
@@ -1671,8 +1606,7 @@ builtin setopt noaliases
     }
 
     if [[ ${ICE[as]} = command ]]; then
-        [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && \
-            ICE[pick]="${___id_as:t}"
+        [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${___id_as:t}"
         reply=()
         if [[ -n ${ICE[pick]} && ${ICE[pick]} != /dev/null ]]; then
             reply=( ${(M)~ICE[pick]##/*}(DN) $___pdir_path/${~ICE[pick]}(DN) )
@@ -1879,13 +1813,13 @@ builtin setopt noaliases
 # .reset-prompt' call to be invoked
 +zi-deploy-message() {
     [[ $1 = <-> && ( ${#} = 1 || ( $2 = (hup|nval|err) && ${#} = 2 ) ) ]] && { zle && {
-            local alltext text IFS=$'\n' nl=$'\n'
-            repeat 25; do read -r -u"$1" text; alltext+="${text:+$text$nl}"; done
-            [[ $alltext = @rst$nl ]] && { builtin zle reset-prompt; ((1)); } || \
-                { [[ -n $alltext ]] && builtin zle -M "$alltext"; }
-        }
-        builtin zle -F "$1"; exec {1}<&-
-        return 0
+        local alltext text IFS=$'\n' nl=$'\n'
+        repeat 25; do read -r -u"$1" text; alltext+="${text:+$text$nl}"; done
+        [[ $alltext = @rst$nl ]] && { builtin zle reset-prompt; ((1)); } || \
+            { [[ -n $alltext ]] && builtin zle -M "$alltext"; }
+    }
+    builtin zle -F "$1"; exec {1}<&-
+    return 0
     }
     local THEFD=13371337 hasw
     # The expansion is: if there is @sleep: pfx, then use what's after.
@@ -2212,8 +2146,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     [[ ${REPLY::=$___action} = \!* ]] && zle && zle .reset-prompt
 
     return ___s
-}
-# ]]]
+} # ]]]
 
 # FUNCTION: .zi-submit-turbo. [[[
 # If `zi load`, `zi light` or `zi snippet`  will be
@@ -2238,8 +2171,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     elif [[ -n ${ICE[wait]}${ICE[load]}${ICE[unload]}${ICE[subscribe]} ]]; then
         ZI_TASKS+=( "${${ICE[wait]:+0}:-1}+0+1 $tpe ${ZI[WAIT_IDX]} ${mode:-_} ${(q)id} ${opt_plugin:+${(q)opt_uspl2}}" )
     fi
-}
-# ]]]
+} # ]]]
 # FUNCTION: -zi_scheduler_add_sh. [[[
 # Copies task into ZI_RUN array, called when a task timeouts.
 # A small function ran from pattern in /-substitution as a math
@@ -2252,8 +2184,7 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
     else
         return idx
     fi
-}
-# ]]]
+} # ]]]
 # FUNCTION: @zi-scheduler. [[[
 # Searches for timeout tasks, executes them. There's an array of tasks
 # waiting for execution, this scheduler manages them, detects which ones
@@ -2310,7 +2241,6 @@ $match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
                         # However, there's a severe bug in Zsh <= 5.3.1 - use of the period
                         # (,) is impossible inside ${..//$arr[$(( ... ))]}.
                         ___i=2
-
                         ZI_TASKS=( ${ZI_TASKS[@]/(#b)([0-9]##)+([0-9]##)+([1-3])(*)/${ZI_TASKS[
                         $(( (___ar2=${match[2]}+1) ? (
                             (___ar3=${(M)match[3]%[1-3]}) ? (
@@ -2446,8 +2376,7 @@ zi() {
     )
 
     cmd="$1"
-    if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|\
-cdclear|delete) ]]; then
+    if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|cdclear|delete) ]]; then
         if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
             .zi-parse-opts "$cmd" "$@"
             if (( OPTS[opt_-h,--help] )); then
@@ -2564,7 +2493,6 @@ env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-anne
                             # An error is actually only an odd return code.
                             ___retval+=$(( ___retval2 & 1 ? ___retval2 : 0 ))
                             (( ___retval2 & 1 && $# )) && shift
-
                             # Override $@?
                             if (( ___retval2 & 2 )) {
                                 local -a ___args
@@ -3010,19 +2938,14 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
     :zi-tmp-subst-autoload -Uz \
         ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
         ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
-}
-# ]]]
+} # ]]]
 # Compatibility functions. [[[
+zt() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
-# ]]]
-# FUNCTION: zt. [[[
-# Common ICE modifier to simplify Turbo mode.
-zt()       { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
-# ]]]
 
 #
 # Source-executed code.
@@ -3089,15 +3012,13 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
             command date '+%s' >! "${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT"
         }
     }
-}
-# ]]]
+} # ]]]
 
 # !atpull-pre.
 @zi-register-hook "-r/--reset" hook:e-\!atpull-pre ∞zi-reset-hook
 # !atpull-post.
 @zi-register-hook "ICE[reset]" hook:e-\!atpull-post ∞zi-reset-hook
 @zi-register-hook "atpull'!'" hook:e-\!atpull-post ∞zi-atpull-e-hook
-
 # e-!atpull-pre.
 @zi-register-hook "make'!!'" hook:no-e-\!atpull-pre ∞zi-make-ee-hook
 @zi-register-hook "mv''" hook:no-e-\!atpull-pre ∞zi-mv-hook
@@ -3111,7 +3032,6 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
 # atpull-post.
 @zi-register-hook "compile-plugin" hook:atpull-post ∞zi-compile-plugin-hook
 @zi-register-hook "ps-on-update" hook:%atpull-post ∞zi-ps-on-update-hook
-
 # !atclone-pre.
 @zi-register-hook "make'!!'" hook:\!atclone-pre ∞zi-make-ee-hook
 @zi-register-hook "mv''" hook:\!atclone-pre ∞zi-mv-hook

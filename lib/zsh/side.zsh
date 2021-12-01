@@ -289,7 +289,6 @@
     done
         [[ "${___mdata[mode]}" = "1" ]] && ___mdata[svn]=""
     } 2>/dev/null
-
     # Handle flag-Ices; svn must be last
     for ___key in ${ice_order[@]}; do
         [[ $___key == (no|)compile ]] && continue

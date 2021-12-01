@@ -57,7 +57,6 @@ timeline() {
       (( cur_frame = cur_frame ? cur_frame : 1 ))
       last_time=$SECONDS
   }
-
   print -nr -- ${frames_splitted[cur_frame+1]}" "
   print -nPr "%F{183}"
   print -f "%s %s" "${bar// /░}" ""
@@ -106,7 +105,6 @@ IFS=''
 [[ $+ZI_CIVIS == 1 && -n $TERM ]] && eval $ZI_CIVIS
 
 if [[ -n $TERM ]] {
-
 { command perl -pe 'BEGIN { $|++; $/ = \1 }; tr/\r/\n/' || \
     gstdbuf -o0 gtr '\r' '\n' || \
     cat } |& \
@@ -150,7 +148,6 @@ while read -r line; do
         have_5_compress=1
         compress_5="${match[1]}"
     fi
-
     if (( loop_count >= 2 )); then
         integer pr
         (( pr = have_4_deltas ? deltas_4 / 10 : (

@@ -50,10 +50,6 @@ elif [[ -d $HOME/.zinit ]]; then
         ZI[HOME_DIR]="$HOME/.zinit"
 elif [[ -d ${ZDOTDIR:-$HOME}/.zinit ]]; then
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zinit"
-elif [[ -d $HOME/.zplugin ]]; then
-        ZI[HOME_DIR]="$HOME/.zplugin"
-elif [[ -d ${ZDOTDIR:-$HOME}/.zplugin ]]; then
-        ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zplugin"
     else
         ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
 fi
@@ -1588,9 +1584,11 @@ builtin setopt noaliases
             zle && { builtin print; zle .reset-prompt; }
             return 1
         }
-        if ! .zi-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"; then
+        .zinit-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"
+        local rc="$?"
+        if [[ "$rc" -ne 0 ]]; then
             zle && { builtin print; zle .reset-prompt; }
-            return 1
+            return "$rc"
         fi
         zle && ___rst=1
     }

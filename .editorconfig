@@ -4,20 +4,12 @@
 root = true
 
 [*]
-indent_style = tab
-indent_size = 4
+indent_style = space
+indent_size = 2
 charset = utf-8
 end_of_line = lf
 trim_trailing_whitespace = true
 insert_final_newline = true
-continuation_indent_size = 4
-
-[Makefile]
-indent_style = tab
 
 [**.{md,rst}]
 trim_trailing_whitespace = false
-
-[*.{yml,json}]
-indent_style = space
-indent_size = 2

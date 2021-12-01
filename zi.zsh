@@ -70,14 +70,14 @@ pullopts|debug|null|binary|make|nocompile|notify|reset"
 
 # Allow overwrite.
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
-: ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}
 : ${ZI[ZMODULES_DIR]:=${ZI[HOME_DIR]}/zmodules}
+: ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
 typeset -g ZPFX
+: ${ZI[MAN_DIR]:=${ZPFX}/man}
 : ${ZPFX:=${ZI[HOME_DIR]}/polaris}
 : ${ZI[ALIASES_OPT]::=${${options[aliases]:#off}:+1}}
-: ${ZI[MAN_DIR]:=${ZPFX}/man}
 
 ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}   ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
 ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
@@ -309,7 +309,6 @@ builtin setopt noaliases
                         "{var}\$ZI[MUTE_WARNINGS]{rst} to a truth value.)"
                     ZI[WARN_SHOWN_FOR_$ZI[CUR_USPL2]]=1
                 fi
-
                 # Apply workaround
                 func=$func:t
             fi
@@ -334,7 +333,6 @@ builtin setopt noaliases
                                 [[ \$body2 != \$body ]] && \
                                     body2=\"\${body2%\}[[:space:]]#([$nl]#([[:blank:]]#\#[^$nl]#((#e)|[$nl]))#)#}\"
                             }
-
                             functions[${${(q)custom[count*2]}:-$func}]=\"\$body2\"
                             ${(q)${custom[count*2]}:-$func} \"\$@\"
                         }"
@@ -442,7 +440,6 @@ builtin setopt noaliases
         local prev="${(q)${(s: :)$(builtin bindkey ${(Q)string})}[-1]#undefined-key}"
 
         # "-M map" given?
-        if (( ${+opts[-M]} )); then
             local Mopt=-M
             local Marg="${opts[-M]}"
 

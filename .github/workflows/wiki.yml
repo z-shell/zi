@@ -16,8 +16,8 @@ jobs:
       uses: SwiftDocOrg/github-wiki-publish-action@1.0.0
       with:
         path: docs/wiki
-        env:
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #   - name: wiki-page-creator-action
 #     uses: Decathlon/wiki-page-creator-action@v2.0.0

@@ -1,0 +1,17 @@
+name: "Codebase improvement"
+description: Suggest a better solution for algorithms, development tools, etc.
+labels: ["enhancement ✨"]
+title: "dev: "
+body:
+
+  - type: textarea
+    id: enhancement
+    attributes:
+      label: "Your feedback for the existing codebase"
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are greatly appreciated.

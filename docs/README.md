@@ -10,8 +10,8 @@ Beta release
 </h4>
 
 <div align="center">
-  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">《 Report an issue 》</a>
-  · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">《 Request a Feature 》</a>
+  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
+  · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
   · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
 </div>
 

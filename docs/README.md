@@ -6,7 +6,7 @@
   </h1>
 
 <h4 align="center">
-Beta release
+Nightly Release
 </h4>
 
 <div align="center">

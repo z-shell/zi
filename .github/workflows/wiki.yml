@@ -4,8 +4,7 @@ on:
   push:
     paths:
       - 'docs/wiki/**'
-    branches:
-      - wiki
+    branches: [ 'main', 'wiki' ]
 
 jobs:
   deploy-wiki:

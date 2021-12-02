@@ -19,32 +19,7 @@ unset ZINIT
 # Common needed values.
 #
 
-[[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]] && ZI[BIN_DIR]=
-# Respect the plugin standard.
-ZI[ZERO]="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
-[[ ! -o functionargzero || ${options[posixargzero]} = on || ${ZI[ZERO]} != */* ]] && ZI[ZERO]="${(%):-%N}"
-: ${ZI[BIN_DIR]:="${ZI[ZERO]:h}"}
-[[ ${ZI[BIN_DIR]} = \~* ]] && ZI[BIN_DIR]=${~ZI[BIN_DIR]}
-# Make ZI[BIN_DIR] path absolute.
-ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
-# Final test of ZI[BIN_DIR].
-if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
-  builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
-  return 1
-fi
-
-if [[ -z ${ZI[HOME_DIR]} ]]; then
-  if [[ -d ${HOME}/.zi ]]; then
-  ZI[HOME_DIR]="${HOME}/.zi"
-  elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
-  ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
-  elif [[ -d ${XDG_DATA_HOME:-$HOME}/.zi ]]; then
-  ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
-  else
-  ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
-  fi
-fi
-
+# ICES List
 ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|unload|blockf|pick|bpick|src|as|\
 ver|silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|cloneonly|make|service|trackbinds|\
 multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|\
@@ -54,7 +29,32 @@ ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|noco
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|notify|reset"
 
-# Allow overwrite.
+# BIN_DIR Setup
+[[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]] && ZI[BIN_DIR]=
+ZI[ZERO]="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
+[[ ! -o functionargzero || ${options[posixargzero]} = on || ${ZI[ZERO]} != */* ]] && ZI[ZERO]="${(%):-%N}"
+: ${ZI[BIN_DIR]:="${ZI[ZERO]:h}"}
+[[ ${ZI[BIN_DIR]} = \~* ]] && ZI[BIN_DIR]=${~ZI[BIN_DIR]}
+ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
+if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
+  builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
+  return 1
+fi
+
+# HOME_DIR Setup
+if [[ -z ${ZI[HOME_DIR]} ]]; then
+  if [[ -d ${HOME}/.zi ]]; then
+  ZI[HOME_DIR]="${HOME}/.zi"
+  elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
+  ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
+  elif [[ -d ${XDG_DATA_HOME:-$HOME}/.zi ]]; then
+  ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
+  else
+  ZI[HOME_DIR]="${HOME}/.zi"
+  fi
+fi
+
+# Directories Setup
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}
@@ -113,35 +113,36 @@ zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is req
 zmodload zsh/terminfo 2>/dev/null
 zmodload zsh/termcap 2>/dev/null
 
+# Terminal color codes
 if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+termcap} -eq 1 && -n ${termcap[Co]} ) ]] {
   ZI+=(
-  col-pname   $'\e[1;4m\e[32m'     col-uname   $'\e[1;4m\e[35m'     col-keyword $'\e[32m'
-  col-note    $'\e[38;5;148m'      col-error   $'\e[1m\e[38;5;204m' col-p       $'\e[38;5;81m'
-  col-info    $'\e[38;5;82m'       col-info2   $'\e[38;5;227m'      col-profile $'\e[38;5;148m'
-  col-uninst  $'\e[38;5;118m'      col-info3   $'\e[1m\e[38;5;227m' col-slight  $'\e[38;5;230m'
-  col-failure $'\e[38;5;204m'      col-happy   $'\e[1m\e[38;5;82m'  col-annex   $'\e[38;5;165m'
-  col-id-as   $'\e[4;38;5;220m'    col-version $'\e[3;38;5;46m'
-  col-pre  $'\e[38;5;135m'  col-msg   $'\e[0m'        col-msg2  $'\e[38;5;172m'
-  col-obj  $'\e[38;5;218m'  col-obj2  $'\e[38;5;118m' col-file  $'\e[3;38;5;117m'
-  col-dir  $'\e[3;38;5;153m' col-func $'\e[38;5;219m'
-  col-url  $'\e[38;5;75m'   col-meta  $'\e[38;5;57m'  col-meta2 $'\e[38;5;147m'
-  col-data $'\e[38;5;82m'   col-data2 $'\e[38;5;117m' col-hi    $'\e[1m\e[38;5;183m'
-  col-var  $'\e[38;5;81m'   col-glob  $'\e[38;5;227m' col-ehi   $'\e[1m\e[38;5;210m'
-  col-cmd  $'\e[38;5;82m'   col-ice   $'\e[38;5;39m'  col-nl    $'\n'
-  col-txt  $'\e[38;5;254m' col-num  $'\e[3;38;5;155m' col-term  $'\e[38;5;185m'
-  col-warn $'\e[38;5;214m'  col-apo $'\e[1;38;5;220m' col-ok    $'\e[38;5;220m'
-  col-faint $'\e[38;5;238m' col-opt   $'\e[38;5;219m' col-lhi   $'\e[38;5;81m'
-  col-tab  $' \t '            col-msg3  $'\e[38;5;238m' col-b-lhi $'\e[1m\e[38;5;75m'
-  col-bar  $'\e[38;5;82m'  col-th-bar $'\e[38;5;82m'
-  col-…    "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
-  col-mdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
-  col-mmdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
-  col--…   "${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}"
-  col-↔    ${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}
-  col-rst  $'\e[0m'        col-b     $'\e[1m'        col-nb     $'\e[22m'
-  col-u    $'\e[4m'        col-it    $'\e[3m'        col-st     $'\e[9m'
-  col-nu   $'\e[24m'       col-nit   $'\e[23m'       col-nst    $'\e[29m'
-  col-bspc $'\b'        col-b-warn $'\e[1;38;5;214m' col-u-warn $'\e[4;38;5;214m'
+  col-annex   $'\e[38;5;165m'      col-info    $'\e[38;5;82m'       col-p       $'\e[38;5;81m'
+  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;227m'      col-pname   $'\e[1;4m\e[32m'
+  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;227m' col-pre     $'\e[38;5;135m'
+  col-bar     $'\e[38;5;82m'       col-it      $'\e[3m'             col-profile $'\e[38;5;148m'
+  col-bspc    $'\b'                col-keyword $'\e[32m'            col-rst     $'\e[0m'
+  col-b-lhi   $'\e[1m\e[38;5;75m'  col-lhi     $'\e[38;5;81m'       col-slight  $'\e[38;5;230m'
+  col-b-warn  $'\e[1;38;5;214m'    col-msg     $'\e[0m'             col-st      $'\e[9m'
+  col-cmd     $'\e[38;5;82m'       col-msg2    $'\e[38;5;172m'      col-tab     $' \t '
+  col-data    $'\e[38;5;82m'       col-msg3    $'\e[38;5;238m'      col-term    $'\e[38;5;185m'
+  col-data2   $'\e[38;5;117m'      col-meta    $'\e[38;5;57m'       col-th-bar  $'\e[38;5;82m'
+  col-dir     $'\e[3;38;5;153m'    col-meta2   $'\e[38;5;147m'      col-txt     $'\e[38;5;254m'
+  col-ehi     $'\e[1m\e[38;5;210m' col-nb      $'\e[22m'            col-u       $'\e[4m'
+  col-error   $'\e[1m\e[38;5;204m' col-nit     $'\e[23m'            col-uname   $'\e[1;4m\e[35m'
+  col-failure $'\e[38;5;204m'      col-nl      $'\n'                col-uninst  $'\e[38;5;118m'
+  col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;75m'
+  col-file    $'\e[3;38;5;117m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
+  col-func    $'\e[38;5;219m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;81m'
+  col-glob    $'\e[38;5;227m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
+  col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
+  col-hi      $'\e[1m\e[38;5;183m' col-obj2    $'\e[38;5;118m'
+  col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'
+  col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;219m'
+  col-mdsh    $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
+  col-mmdsh   $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
+  col-↔     "${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}"
+  col-…     "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
+  col--…    "${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}"
   )
   if [[ ( ${+terminfo} -eq 1 && ${terminfo[colors]} -ge 256 ) || ( ${+termcap} -eq 1 && ${termcap[Co]} -ge 256 ) ]] {
     ZI+=( col-pname $'\e[1;4m\e[38;5;39m' col-uname  $'\e[1;4m\e[38;5;207m' )
@@ -769,8 +770,7 @@ builtin setopt noaliases
 #
 
 # FUNCTION: .zi-diff-functions. [[[
-# Implements detection of newly created functions. Performs
-# data gathering, computation is done in *-compute().
+# Implements detection of newly created functions. Performs data gathering, computation is done in *-compute().
 #
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
@@ -1017,8 +1017,7 @@ builtin setopt noaliases
       [[ $id_as == _local/* && -d $local_dir && ! -d $local_dir/._zi ]] && command mkdir -p "$local_dir"/._zi
       dirname=""
     }
-    [[ -e $local_dir/${dirname:+$dirname/}._zi || \
-      -e $local_dir/${dirname:+$dirname/}._zplugin ]] && exists=1
+    [[ -e $local_dir/${dirname:+$dirname/}._zi || -e $local_dir/${dirname:+$dirname/}._zplugin ]] && exists=1
     (( exists )) && break
   }
 
@@ -1209,8 +1208,7 @@ builtin setopt noaliases
   zparseopts -E -D -a opts f -command || { +zi-message "{u-warn}Error{b-warn}:{rst} Incorrect options (accepted ones: {opt}-f{rst}, {opt}--command{rst})."; return 1; }
   local url="$1"
   [[ -n ${ICE[teleid]} ]] && url="${ICE[teleid]}"
-  # Hide arguments from sourced scripts. Without this calls our "$@" are visible as "$@"
-  # within scripts that we `source`.
+  # Hide arguments from sourced scripts. Without this calls our "$@" are visible as "$@" within scripts that we `source`.
   builtin set --
   integer correct retval exists
   [[ -o ksharrays ]] && correct=1
@@ -1263,8 +1261,7 @@ builtin setopt noaliases
   )
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-    "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" load || \
-      return $(( 10 - $? ))
+    "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" load || return $(( 10 - $? ))
   done
 
   # Download or copy the file.
@@ -1277,14 +1274,12 @@ builtin setopt noaliases
   (( ${+ICE[cloneonly]} || retval )) && return 0
 
   ZI_SNIPPETS[$id_as]="$id_as <${${ICE[svn]+svn}:-single file}>"
-
   ZI[CUR_USPL2]="$id_as" ZI_REPORTS[$id_as]=
 
   reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atinit-<-> <->]} )
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
-    "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" \!atinit || \
-      return $(( 10 - $? ))
+    "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" \!atinit || return $(( 10 - $? ))
   done
 
   (( ${+ICE[atinit]} )) && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; } && eval "${ICE[atinit]}"; ((1)); } || eval "${ICE[atinit]}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
@@ -1465,17 +1460,14 @@ builtin setopt noaliases
   )
   for ___key in "${reply[@]}"; do
     ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]:-$ZI_EXTS2[$___key]}[@]}" )
-    "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" "${${___key##(zi|z-annex) hook:}%% <->}" load || \
-      return $(( 10 - $? ))
+    "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" "${${___key##(zi|z-annex) hook:}%% <->}" load || return $(( 10 - $? ))
   done
 
   if [[ $___user != % && ! -d ${ZI[PLUGINS_DIR]}/${___id_as//\//---} ]] {
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
     reply=( "$___user" "$___plugin" ) REPLY=github
     if (( ${+ICE[pack]} )) {
-      if ! .zi-get-package "$___user" "$___plugin" "$___id_as" \
-        "${ZI[PLUGINS_DIR]}/${___id_as//\//---}" \
-        "${ICE[pack]:-default}"
+      if ! .zi-get-package "$___user" "$___plugin" "$___id_as" "${ZI[PLUGINS_DIR]}/${___id_as//\//---}" "${ICE[pack]:-default}"
       then
         zle && { builtin print; zle .reset-prompt; }
         return 1
@@ -1514,8 +1506,7 @@ builtin setopt noaliases
   reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atinit-<-> <->]} )
   for ___key in "${reply[@]}"; do
     ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]}[@]}" )
-    "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}" \!atinit || \
-      return $(( 10 - $? ))
+    "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}" \!atinit || return $(( 10 - $? ))
   done
 
   [[ ${+ICE[atinit]} = 1 && $ICE[atinit] != '!'*   ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit]}"; ((1)); } || eval "${ICE[atinit]}"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
@@ -1523,8 +1514,7 @@ builtin setopt noaliases
   reply=( ${(on)ZI_EXTS[(I)z-annex hook:atinit-<-> <->]} )
   for ___key in "${reply[@]}"; do
     ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]}[@]}" )
-    "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}" atinit || \
-      return $(( 10 - $? ))
+    "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}" atinit || return $(( 10 - $? ))
   done
 
   .zi-load-plugin "$___user" "$___plugin" "$___id_as" "$___mode" "$___rst"; ___retval=$?
@@ -1536,7 +1526,6 @@ builtin setopt noaliases
 
   # Mark no load is in progress.
   ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
-
   ZI[TIME_INDEX]=$(( ${ZI[TIME_INDEX]:-0} + 1 ))
   ZI[TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$SECONDS
   ZI[AT_TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$EPOCHREALTIME
@@ -1748,8 +1737,7 @@ builtin setopt noaliases
       ${${${(M)user:#%}:+$plugin}:-${ZI[PLUGINS_DIR]}/${id_as//\//---}}${add_dir:+/$add_dir}
     )
   }
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-run. [[[
 # Run code inside plugin's folder
 # It uses the `correct' parameter from upper's scope zi().
@@ -1778,8 +1766,7 @@ builtin setopt noaliases
   else
     +zi-message "{u-warn}Error{b-warn}:{rst} no such plugin or snippet."
   fi
-}
-# ]]]
+} # ]]]
 # FUNCTION: +zi-deploy-message. [[[
 # Deploys a sub-prompt message to be displayed OR a `zle
 # .reset-prompt' call to be invoked
@@ -1798,8 +1785,7 @@ builtin setopt noaliases
   exec {THEFD} < <(LANG=C sleep $(( 0.01 + ${${${(M)1#@sleep:}:+${1#@sleep:}}:-0} )); builtin print -r -- ${1:#(@msg|@sleep:*)} "${@[2,-1]}"; )
   command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
   builtin zle -F "$THEFD" +zi-deploy-message
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-formatter-pid. [[[
 .zi-formatter-pid() {
   builtin emulate -L zsh -o extendedglob
@@ -1821,8 +1807,7 @@ builtin setopt noaliases
 
   # Supply extreme whitespace back.
   REPLY=$pbz$REPLY$kbz
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-formatter-bar. [[[
 .zi-formatter-bar() {
   .zi-formatter-bar-util ─ bar
@@ -1841,8 +1826,7 @@ builtin setopt noaliases
   fi
 
   REPLY=$ZI[col-$2]${(pl:COLUMNS-1::$ch:):-}$ZI[col-rst]
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-formatter-url. [[[
 .zi-formatter-url() {
   builtin emulate -LR zsh -o extendedglob
@@ -1869,8 +1853,7 @@ builtin setopt noaliases
     # …revert to the basic if not…
     REPLY=$ZI[col-url]$1$ZI[col-rst]
   }
-}
-# ]]]
+} # ]]]
 # FUNCTION: +zi-message-formatter [[[
 .zi-main-message-formatter() {
   if [[ -z $1 && -z $2 && -z $3 ]]; then
@@ -1926,8 +1909,7 @@ $(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
   if [[ -n ${opt:#*n*} || -z $opt ]]; then
     print -n $'\015'
   fi
-}
-# ]]]
+} # ]]]
 # FUNCTION: +zi-prehelp-usage-message. [[[
 +zi-prehelp-usage-message() {
   builtin emulate -LR zsh -o extendedglob
@@ -1972,8 +1954,7 @@ $(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
         "See \`{cmd}help$bcol\` for a more detailed usage information and" \
         "the list of the {cmd}subcommands$bcol.{rst}"
   }
-}
-# ]]]
+} # ]]]
 # FUNCTION: +zi-parse-opts. [[[
 .zi-parse-opts() {
   builtin emulate -LR zsh -o extendedglob
@@ -2734,7 +2715,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
               .zi-forget-completion "$___f"
               +zi-message "Initializing completion system ({func}compinit{rst}){…}"
               builtin autoload -Uz compinit
-              compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+              compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
             else
               ___retval=1
             fi
@@ -2752,7 +2733,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
               .zi-forget-completion "$___f"
               +zi-message "Initializing completion system ({func}compinit{rst}){…}"
               builtin autoload -Uz compinit
-              compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+              compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
             else
               ___retval=1
             fi
@@ -2766,7 +2747,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
           [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "Initializing completion ({func}compinit{rst}){…}"
           builtin autoload -Uz compinit
-          compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+          compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           ;;
         (cuninstall)
           if [[ -z $2 && -z $3 ]]; then
@@ -2777,7 +2758,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
             .zi-uninstall-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
             +zi-message "Initializing completion ({func}compinit{rst}){…}"
             builtin autoload -Uz compinit
-            compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+            compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           fi
           ;;
         (csearch)
@@ -2887,7 +2868,7 @@ zicdclear() { .zi-compdef-clear -q; }
 # A function that can be invoked from within `atinit', `atload', etc.
 # ice-mod.  It runs `autoload compinit; compinit' and respects
 # ZI[ZCOMPDUMP_PATH] and ZI[COMPINIT_OPTS].
-zicompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zicompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 # ]]]
 # FUNCTION: zicompdef. [[[
 # Stores compdef for a replay with `zicdreplay' (turbo mode) or
@@ -2906,7 +2887,7 @@ zt() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
-zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 
 #

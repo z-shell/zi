@@ -96,7 +96,7 @@ _For more information and to report security issues, please refer to our [securi
 ## About
 
 > **[?]**
-> [**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directy related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
+> [**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive feature-rich plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directy related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 

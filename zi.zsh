@@ -55,12 +55,13 @@ if [[ -z ${ZI[HOME_DIR]} ]]; then
   else
   ZI[HOME_DIR]="${HOME}/.zi"
   fi
-else
-  builtin print -P "%F{196}Could not establish ZI[HOME_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
+fi
+if [[ ! -d ${ZI[HOME_DIR]} ]]; then
+  builtin print -P "%F{196}Could not establish ZI[HOME_DIR] location. It should point to the default home location of ❮ ZI ❯%f"
   return 1
 fi
 
-# Directories setup.
+# ❮ ZI ❯ Home directories setup.
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}

@@ -93,21 +93,24 @@ Together, we can make Z-Shell ❮ ZI ❯ **better**!
 
 ## Security
 
-Z-Shell ❮ ZI ❯ follows good practices of security, but 100% security cannot be assured.
-Z-Shell ❮ ZI ❯ is provided **"as is"** without any **warranty**. Use at your own risk.
+-   Z-Shell ❮ ZI ❯ follows good practices of security, but 100% security cannot be assured.
+-   Z-Shell ❮ ZI ❯ is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our [security documentation](../docs/SECURITY.md)._
 
 ## About
 
 > **[?]**
-> [**❮ ZI ❯**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related). Z-Shell [**❮ ZI ❯**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
+> [**❮ ZI ❯**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related).
+>
+> Z-Shell [**❮ ZI ❯**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
 > **[?]**
 > The [Z-Shell](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
-> I don't want to depend on an unreliable source. For these reasons, I started maintaining these tools myself and everyone interested is welcome.
+>
+> We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
 
 ## Roadmap
 

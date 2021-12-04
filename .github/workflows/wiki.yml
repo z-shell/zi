@@ -5,7 +5,7 @@ on:
     paths:
       - 'docs/wiki/**'
   workflow_dispatch:
-  
+
 jobs:
   deploy-wiki:
     runs-on: ubuntu-latest

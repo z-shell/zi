@@ -3080,7 +3080,7 @@ EOF
 ❯ man                           – Manual
 ❯ help                          – Help
 »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
-  builtin print -r -- "\n${ZI[col-p]}❮ ZI ❯ Usage of available sub-commands${ZI[col-rst]}:"
+  builtin print -r -- "${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:"
 
   integer idx
   local type key
@@ -3094,16 +3094,12 @@ EOF
         { builtin print -rl -- "(Couldn't find the help-handler \`${arr[6]}' of the z-annex \`${arr[3]}')"; }
     done
   done
-builtin print -r -- "\n»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-builtin print -r -- "\n${ZI[col-p]}Available ice-modifiers:\n\n${ice_order[*]}${ZI[col-rst]}"
+builtin print -r -- "${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}"
+builtin print -r -- "${ice_order[*]}"
 } # ]]]
-
-#
-# Analytics function
-#
-
 # FUNCTION: .zi-analytics-menu [[[
 # Shows ❮ ZI ❯ analytics.
 #
@@ -3133,11 +3129,6 @@ builtin print -r -- "\n${ZI[col-p]}Available ice-modifiers:\n\n${ice_order[*]}${
 ❯ ls                          – List snippets in formatted and colorized manner
 »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 } # ]]]
-
-#
-# Shows control commands
-#
-
 # FUNCTION: .zi-control-menu [[[
 # Shows control options.
 #

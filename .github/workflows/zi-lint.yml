@@ -1,18 +1,16 @@
 name: ZI Lint
 
-on: 
+on:
   push:
-  pull_request:
-    branches: 
-    - dev-codebase
-    
+  pull_request_target:
+
 jobs:
   build-matrix:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: "🌟 Checkout" 
+      - name: "🌟 Checkout"
         uses: actions/checkout@v2
       - name: "✨ Set matrix output"
         id: set-matrix

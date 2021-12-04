@@ -11,9 +11,11 @@ if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
 # Rename snippets URL -> NAME.
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
-typeset -gAH ZINIT
+# Compatibility for previous versions.
+typeset -gAH ZINIT ZPLGM
 ZI=( "${(kv)ZINIT[@]}" "${(kv)ZI[@]}" )
-unset ZINIT
+ZI=( "${(kv)ZPLGM[@]}" "${(kv)ZI[@]}" )
+unset ZINIT ZPLGM
 
 #
 # Common needed values.
@@ -36,6 +38,7 @@ ZI[ZERO]="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 : ${ZI[BIN_DIR]:="${ZI[ZERO]:h}"}
 [[ ${ZI[BIN_DIR]} = \~* ]] && ZI[BIN_DIR]=${~ZI[BIN_DIR]}
 ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
+# Check if ZI[BIN_DIR] is established correctly.
 if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
   builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
   return 1
@@ -52,6 +55,9 @@ if [[ -z ${ZI[HOME_DIR]} ]]; then
   else
   ZI[HOME_DIR]="${HOME}/.zi"
   fi
+else
+  builtin print -P "%F{196}Could not establish ZI[HOME_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
+  return 1
 fi
 
 # Directories setup.
@@ -140,9 +146,9 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+te
   col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;219m'
   col-mdsh    $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
   col-mmdsh   $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
-  col-↔     "${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}"
-  col-…     "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
-  col--…    "${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}"
+  col-↔       ${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}
+  col-…       ${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}
+  col--…      ${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}
   )
   if [[ ( ${+terminfo} -eq 1 && ${terminfo[colors]} -ge 256 ) || ( ${+termcap} -eq 1 && ${termcap[Co]} -ge 256 ) ]] {
     ZI+=( col-pname $'\e[1;4m\e[38;5;39m' col-uname  $'\e[1;4m\e[38;5;207m' )
@@ -269,7 +275,7 @@ builtin setopt noaliases
         # Apply workaround
         func=$func:t
       fi
-      # TODO: #42 Requires futher investigation as some function parts commented out.
+      # TODO: #43 Requires futher investigation as some function parts commented out.
       if [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
         builtin autoload ${opts[@]} "$PLUGIN_DIR/$func"
         retval=$?
@@ -338,13 +344,8 @@ builtin setopt noaliases
   local -A opts
   zparseopts -A opts -D ${(s::):-lLdDAmrsevaR} M: N:
 
-  if (( ${#opts} == 0 ||
-    ( ${#opts} == 1 && ${+opts[-M]} ) ||
-    ( ${#opts} == 1 && ${+opts[-R]} ) ||
-    ( ${#opts} == 1 && ${+opts[-s]} ) ||
-    ( ${#opts} <= 2 && ${+opts[-M]} && ${+opts[-s]} ) ||
-    ( ${#opts} <= 2 && ${+opts[-M]} && ${+opts[-R]} )
-  )); then
+  if (( ${#opts} == 0 || ( ${#opts} == 1 && ${+opts[-M]} ) || ( ${#opts} == 1 && ${+opts[-R]} ) || ( ${#opts} == 1 && ${+opts[-s]} ) || ( ${#opts} <= 2 && ${+opts[-M]} && ${+opts[-s]} ) || ( ${#opts} <= 2 && ${+opts[-M]} && ${+opts[-R]} ) )); then
+
     local string="${(q)1}" widget="${(q)2}"
     local quoted
 
@@ -1865,7 +1866,7 @@ builtin setopt noaliases
   # $ (...) - vertical tab 0xB ↔ 13 in the system octagonal connected back carriage (015).
   local nl=$'\n' vertical=$'\013' carriager=$'\015'
   REPLY=${REPLY//$nl/$vertical$carriager}
-# TODO: #40 Unknown reason for commenting this out. Requires further investigation.
+# TODO: #44 Unknown reason for commenting this out. Requires further investigation.
 #    REPLY+="x(${3}…)"
 } # ]]]
 # FUNCTION: +zi-message. [[[
@@ -1985,7 +1986,7 @@ return retval
     ${(@)${(A@kons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
-  # TODO #41 Snippet's dir computation…
+  # TODO #45 Snippet's dir computation…
   if [[ ! -d $___path ]] {
     if ! .zi-get-object-path snippet "${id_as//\//---}"; then
       return 1

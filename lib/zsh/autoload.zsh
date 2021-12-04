@@ -2032,9 +2032,7 @@ ZI[EXTENDED_GLOB]=""
       fi
     done
   done
-}
-# ]]]
-
+} # ]]]
 # FUNCTION: .zi-compiled [[[
 # Displays list of plugins that are compiled.
 #
@@ -2433,8 +2431,7 @@ ZI[EXTENDED_GLOB]=""
     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
     "${arr[5]}" "$1" "$2" $3 "$4" "$5" "${${key##(zi|z-annex) hook:}%% <->}" delete:TODO
   done
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-delete [[[
 # Deletes plugin's or snippet's directory (in ❮ ZI ❯ home directory).
 #
@@ -2476,7 +2473,9 @@ final_todelete=( \${final_todelete[@]:#(\${(~j:|:)loadedsnips}|*/plugins|*/._bac
 todelete=( \${\${\${(@)\${(@)final_todelete##\$dir/#}//(#i)(#m)(http(s|)|ftp(s|)|ssh|rsync)--/\${MATCH%--}://}//--//}//(#b)(*)\/([^\/]##)(#e)/\$match[1]/\$ZI[col-file]\$match[2]\$ZI[col-rst]} )
 todelete=( \${todelete[@]//(#m)(#s)[^\/]##(#e)/\$ZI[col-file]\$MATCH\$ZI[col-rst]} )
 final_todelete=( \${\${\${(@)\${(@)final_todelete##\$dir/#}//(#i)(#m)(http(s|)|ftp(s|)|ssh|rsync)--/\${MATCH%--}://}//--//}//(#b)(*)\/([^\/]##)(#e)/\$match[1]/\$match[2]} )
-builtin print; print -Prln \"\$ZI[col-obj]Deleting the following \"\\"\$ZI[col-file]\${#todelete}\$ZI[col-msg2] UNLOADED\$ZI[col-obj] snippets:%f%b\" \$todelete \"%f%b\"
+builtin print; print -Prln \"\$ZI[col-obj]Deleting the following \"\
+\"\$ZI[col-file]\${#todelete}\$ZI[col-msg2] UNLOADED\$ZI[col-obj] snippets:%f%b\" \
+\$todelete \"%f%b\"
 sleep 3
 local snip
 for snip ( \$final_todelete ) { zi delete -q -y \$snip; _retval+=\$?; }
@@ -2584,8 +2583,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
     }
   fi
   return 0
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-changes [[[
 # Shows `git log` of given plugin.
 #
@@ -2598,8 +2596,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   local user="${reply[-2]}" plugin="${reply[-1]}"
   .zi-exists-physically-message "$user" "$plugin" || return 1
   (
-    builtin cd -q "${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}" && \
-    command git log -p --graph --decorate --date=relative -C -M
+    builtin cd -q "${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}" && command git log -p --graph --decorate --date=relative -C -M
   )
 } # ]]]
 # FUNCTION: .zi-recently [[[

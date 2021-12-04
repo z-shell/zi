@@ -3081,7 +3081,6 @@ EOF
 ❯ help                          – Help
 ${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:
 »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
-Usage of available sub-commands:
   integer idx
   local type key
   local -a arr

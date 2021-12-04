@@ -3,8 +3,9 @@ name: Verify PR Labels
 
 on:
   workflow_dispatch:
-  pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
+  pull_request_target:
+    branches: [ 'main' ]
+    types: [ 'opened', 'labeled', 'unlabeled', 'synchronize' ]
 
 jobs:
   pr_labels:

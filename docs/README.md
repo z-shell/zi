@@ -2,7 +2,7 @@
   <a href="https://github.com/z-shell/zi">
     <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
-❮  ZI  ❯
+❮ ZI ❯
   </h1>
 
 <h4 align="center">
@@ -25,18 +25,19 @@ Nightly Release
 <details>
 <summary>Table of Contents</summary>
 
--   [Getting Started](#getting-started)
-    -   [Prerequisites](#prerequisites)
-    -   [Installation](#installation)
--   [Usage](#usage)
--   [Roadmap](#roadmap)
--   [Support](#support)
--   [Contributing](#contributing)
--   [Authors & contributors](#authors--contributors)
--   [Project assistance](#project-assistance)
--   [Security](#security)
--   [About](#about)
--   [Acknowledgements](#acknowledgements)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Authors & contributors](#authors--contributors)
+- [Project assistance](#project-assistance)
+- [Security](#security)
+- [About](#about)
+- [Acknowledgements](#acknowledgements)
+- [Roadmap](#roadmap)
+- [Support](#support)
 
 </details>
 
@@ -72,31 +73,31 @@ Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for be
 
 ## Authors & contributors
 
-The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
+The original setup of this repository is by [Z-Shell ❮ ZI ❯ Community](https://github.com/z-shell).
 
 For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
 
 ## Project assistance
 
-If you want to say **thank you** or/and support active development of Z-Shell ZI:
+If you want to say **thank you** or/and support active development of Z-Shell ❮ ZI ❯:
 
 -   Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
--   Tweet about the Z-Shell ZI.
+-   Tweet about the Z-Shell ❮ ZI ❯.
 -   Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
-Together, we can make Z-Shell ZI **better**!
+Together, we can make Z-Shell ❮ ZI ❯ **better**!
 
 ## Security
 
-Z-Shell ZI follows good practices of security, but 100% security cannot be assured.
-Z-Shell ZI is provided **"as is"** without any **warranty**. Use at your own risk.
+Z-Shell ❮ ZI ❯ follows good practices of security, but 100% security cannot be assured.
+Z-Shell ❮ ZI ❯ is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our [security documentation](../docs/SECURITY.md)._
 
 ## About
 
 > **[?]**
-> [**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directy related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
+> [**❮ ZI ❯**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related). Z-Shell [**❮ ZI ❯**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
@@ -124,6 +125,5 @@ Reach out to the maintainer at one of the following places:
 
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
-
 [twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
 [twitter-link]: https://twitter.com/intent/tweet?text=Z-shell%20-%20ZI%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,plugin,z-shell

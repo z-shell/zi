@@ -11,7 +11,7 @@ commands=(
   control:'❮ ZI ❯ Control commands'
   zstatus:'Checks ❮ ZI ❯ Status'
   times:'Statistics on plugin loading times'
-  self-update:'Updates and Compile ZI'
+  self-update:'Updates and Compile ❮ ZI ❯'
   help:'Usage Information'
   man:'Manpage'
   load:'Load plugin'
@@ -54,11 +54,11 @@ commands=(
   cdclear:'Clear compdef replay list'
   srv:'Control a service, command can be: stop,start,restart,next,quit; `next'' moves the service to another Zshell'
   recall:'Fetch saved ice modifiers and construct `zi ice ...'' command'
-  env-whitelist:'Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose'
   bindkeys:'Lists bindkeys set up by each plugin'
-  module:'Manage binary Zsh module shipped with ZI, see `zi module help'''
+  module:'Manage binary Zsh module shipped with ❮ ZI ❯, see `zi module help'''
   run:"Execute code inside plugin's folder"
-  {add-fpath}:'Add plugin folder to $fpath'
+  env-whitelist:'Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose'
+  add-fpath:'Add plugin folder to $fpath'
 )
 
 _arguments -C \
@@ -67,7 +67,7 @@ _arguments -C \
 
 case $state in
   command)
-    _describe -t commands "❮ ZI ❯ command" commands && ret=0
+    _describe -t commands "❮ ZI ❯ commands" commands && ret=0
     ;;
     argument)
       case $words[2] in

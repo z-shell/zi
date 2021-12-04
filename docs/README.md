@@ -71,6 +71,10 @@ First off, thanks for taking the time to contribute! Contributions are what make
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
 
+Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser. 
+
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi) 
+
 ## Authors & contributors
 
 The original setup of this repository is by [Z-Shell ❮ ZI ❯ Community](https://github.com/z-shell).

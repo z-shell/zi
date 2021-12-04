@@ -1880,6 +1880,9 @@ ZI[EXTENDED_GLOB]=""
   +zi-message "❮ ZI ❯ Home directory: {file}${ZI[HOME_DIR]}{rst}"
   +zi-message "❮ ZI ❯ Binary directory: {file}${ZI[BIN_DIR]}{rst}"
   +zi-message "❮ ZI ❯ Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "❮ ZI ❯ Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "❮ ZI ❯ Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "❮ ZI ❯ Zmodules directory: {file}${ZI[ZMODULES_DIR]{rst}"
   +zi-message "❮ ZI ❯ Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "Loaded plugins: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
@@ -2029,9 +2032,7 @@ ZI[EXTENDED_GLOB]=""
       fi
     done
   done
-}
-# ]]]
-
+} # ]]]
 # FUNCTION: .zi-compiled [[[
 # Displays list of plugins that are compiled.
 #
@@ -2387,7 +2388,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 
 # FUNCTION: .zi-cd [[[
-# Jumps to plugin's directory (in ZI's home directory).
+# Jumps to plugin's directory (in ❮ ZI ❯ home directory).
 #
 # User-action entry point.
 #
@@ -2430,10 +2431,9 @@ ZI[EXTENDED_GLOB]=""
     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
     "${arr[5]}" "$1" "$2" $3 "$4" "$5" "${${key##(zi|z-annex) hook:}%% <->}" delete:TODO
   done
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-delete [[[
-# Deletes plugin's or snippet's directory (in ZI's home directory).
+# Deletes plugin's or snippet's directory (in ❮ ZI ❯ home directory).
 #
 # User-action entry point.
 #
@@ -2556,8 +2556,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   return 0
 } # ]]]
 # FUNCTION: .zi-confirm [[[
-# Prints given question, waits for "y" key, evals
-# given expression if "y" obtained
+# Prints given question, waits for "y" key, evals given expression if "y" obtained
 #
 # $1 - question
 # $2 - expression
@@ -2584,8 +2583,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
     }
   fi
   return 0
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-changes [[[
 # Shows `git log` of given plugin.
 #
@@ -2598,8 +2596,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   local user="${reply[-2]}" plugin="${reply[-1]}"
   .zi-exists-physically-message "$user" "$plugin" || return 1
   (
-    builtin cd -q "${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}" && \
-    command git log -p --graph --decorate --date=relative -C -M
+    builtin cd -q "${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}" && command git log -p --graph --decorate --date=relative -C -M
   )
 } # ]]]
 # FUNCTION: .zi-recently [[[
@@ -2811,8 +2808,7 @@ EOF
   }
 } # ]]]
 # FUNCTION: .zi-edit [[[
-# Runs $EDITOR on source of given plugin. If the variable is not
-# set then defaults to `vim'.
+# Runs $EDITOR on source of given plugin. If the variable is not set then defaults to `code'.
 #
 # User-action entry point.
 #
@@ -2837,15 +2833,13 @@ EOF
       return 1
     fi
   fi
-  "${EDITOR:-vim}" "$local_dir"
+  "${EDITOR:-code}" "$local_dir"
   return 0
 } # ]]]
 # FUNCTION: .zi-stress [[[
-# Compiles plugin with various options on and off to see
-# how well the code is written. The options are:
+# Compiles plugin with various options on and off to see how well the code is written. The options are:
 #
-# NO_SHORT_LOOPS, IGNORE_BRACES, IGNORE_CLOSE_BRACES, SH_GLOB,
-# CSH_JUNKIE_QUOTES, NO_MULTI_FUNC_DEF.
+# NO_SHORT_LOOPS, IGNORE_BRACES, IGNORE_CLOSE_BRACES, SH_GLOB, CSH_JUNKIE_QUOTES, NO_MULTI_FUNC_DEF.
 #
 # User-action entry point.
 #
@@ -2922,10 +2916,8 @@ EOF
   )
 } # ]]]
 # FUNCTION: .zi-get-path [[[
-# Returns path of given ID-string, which may be a plugin-spec
-# (like "user/plugin" or "user" "plugin"), an absolute path
-# ("%" "/home/..." and also "%SNIPPETS/..." etc.), or a plugin
-# nickname (i.e. id-as'' ice-mod), or a snippet nickname.
+# Returns path of given ID-string, which may be a plugin-spec (like "user/plugin" or "user" "plugin"), an absolute path
+# ("%" "/home/..." and also "%SNIPPETS/..." etc.), or a plugin nickname (i.e. id-as'' ice-mod), or a snippet nickname.
 .zi-get-path() {
   emulate -LR zsh
   setopt extendedglob warncreateglobal typesetsilent noshortloops
@@ -2945,15 +2937,12 @@ EOF
   local -a ice_order nval_ices output
   ice_order=(
     ${(s.|.)ZI[ice-list]}
-    # Include all additional ices – after
-    # stripping them from the possible: ''
+    # Include all additional ices – after stripping them from the possible: ''
     ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   nval_ices=(
       ${(s.|.)ZI[nval-ice-list]}
-      # Include only those additional ices,
-      # don't have the '' in their name, i.e.
-      # aren't designed to hold value
+      # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
       ${(@)${(@)${(@Akons:|:u)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
       # Must be last
       svn
@@ -3066,8 +3055,8 @@ EOF
 #
 # User-action entry point.
 .zi-help() {
-  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
 ❯ analytics                     – ❮ ZI ❯ Analytics
 ❯ control                       – ❮ ZI ❯ Control options
 ❯ self-update                   – ❮ ZI ❯ Self update and compile
@@ -3079,9 +3068,8 @@ EOF
 ❯ env-whitelist [-v|-h] {env..} – Specify names or paterns of variables left unchanged during an unload. -v – verbose
 ❯ man                           – Manual
 ❯ help                          – Help
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
-  builtin print -r -- "\n${ZI[col-p]}❮ ZI ❯ Usage of available sub-commands${ZI[col-rst]}:"
-
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:"
   integer idx
   local type key
   local -a arr
@@ -3094,23 +3082,19 @@ EOF
         { builtin print -rl -- "(Couldn't find the help-handler \`${arr[6]}' of the z-annex \`${arr[3]}')"; }
     done
   done
-builtin print -r -- "\n»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-builtin print -r -- "\n${ZI[col-p]}Available ice-modifiers:\n\n${ice_order[*]}${ZI[col-rst]}"
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
+${ice_order[*]}"
 } # ]]]
-
-#
-# Analytics function
-#
-
 # FUNCTION: .zi-analytics-menu [[[
 # Shows ❮ ZI ❯ analytics.
 #
 # User-action entry point.
 .zi-analytics-menu() {
-  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
 ❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
@@ -3131,20 +3115,15 @@ builtin print -r -- "\n${ZI[col-p]}Available ice-modifiers:\n\n${ice_order[*]}${
 ❯ cdlist                      – Show compdef replay list
 ❯ csearch                     – Search for available completions from any plugin
 ❯ ls                          – List snippets in formatted and colorized manner
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 } # ]]]
-
-#
-# Shows control commands
-#
-
 # FUNCTION: .zi-control-menu [[[
 # Shows control options.
 #
 # User-action entry point.
 .zi-control-menu() {
-  builtin print -r -- "${ZI[col-p]}ZI Control${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}❮ ZI ❯ Control${ZI[col-rst]}:
 ❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 ❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
 ❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
@@ -3164,5 +3143,5 @@ builtin print -r -- "\n${ZI[col-p]}Available ice-modifiers:\n\n${ice_order[*]}${
 ❯ run     [-l]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
 ❯ ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, e.g. from\"gitlab\"
 ❯ srv        ${ZI[col-pname]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z-Shell
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 } # ]]]

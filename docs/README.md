@@ -2,7 +2,7 @@
   <a href="https://github.com/z-shell/zi">
     <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
-❮  ZI  ❯
+❮ ZI ❯
   </h1>
 
 <h4 align="center">
@@ -69,6 +69,10 @@ Nightly Release
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
+
+Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser. 
+
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi) 
 
 ## Authors & contributors
 

@@ -2,7 +2,7 @@
 name: Verify PR Labels
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  
   pull_request_target:
     branches: [ 'main' ]
     types: [ 'opened', 'labeled', 'unlabeled', 'synchronize' ]

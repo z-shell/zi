@@ -1880,6 +1880,9 @@ ZI[EXTENDED_GLOB]=""
   +zi-message "❮ ZI ❯ Home directory: {file}${ZI[HOME_DIR]}{rst}"
   +zi-message "❮ ZI ❯ Binary directory: {file}${ZI[BIN_DIR]}{rst}"
   +zi-message "❮ ZI ❯ Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "❮ ZI ❯ Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "❮ ZI ❯ Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "❮ ZI ❯ Zmodules directory: {file}${ZI[ZMODULES_DIR]{rst}"
   +zi-message "❮ ZI ❯ Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "Loaded plugins: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
@@ -2387,7 +2390,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 
 # FUNCTION: .zi-cd [[[
-# Jumps to plugin's directory (in ZI's home directory).
+# Jumps to plugin's directory (in ❮ ZI ❯ home directory).
 #
 # User-action entry point.
 #
@@ -2433,7 +2436,7 @@ ZI[EXTENDED_GLOB]=""
 }
 # ]]]
 # FUNCTION: .zi-delete [[[
-# Deletes plugin's or snippet's directory (in ZI's home directory).
+# Deletes plugin's or snippet's directory (in ❮ ZI ❯ home directory).
 #
 # User-action entry point.
 #
@@ -2473,9 +2476,7 @@ final_todelete=( \${final_todelete[@]:#(\${(~j:|:)loadedsnips}|*/plugins|*/._bac
 todelete=( \${\${\${(@)\${(@)final_todelete##\$dir/#}//(#i)(#m)(http(s|)|ftp(s|)|ssh|rsync)--/\${MATCH%--}://}//--//}//(#b)(*)\/([^\/]##)(#e)/\$match[1]/\$ZI[col-file]\$match[2]\$ZI[col-rst]} )
 todelete=( \${todelete[@]//(#m)(#s)[^\/]##(#e)/\$ZI[col-file]\$MATCH\$ZI[col-rst]} )
 final_todelete=( \${\${\${(@)\${(@)final_todelete##\$dir/#}//(#i)(#m)(http(s|)|ftp(s|)|ssh|rsync)--/\${MATCH%--}://}//--//}//(#b)(*)\/([^\/]##)(#e)/\$match[1]/\$match[2]} )
-builtin print; print -Prln \"\$ZI[col-obj]Deleting the following \"\
-\"\$ZI[col-file]\${#todelete}\$ZI[col-msg2] UNLOADED\$ZI[col-obj] snippets:%f%b\" \
-\$todelete \"%f%b\"
+builtin print; print -Prln \"\$ZI[col-obj]Deleting the following \"\\"\$ZI[col-file]\${#todelete}\$ZI[col-msg2] UNLOADED\$ZI[col-obj] snippets:%f%b\" \$todelete \"%f%b\"
 sleep 3
 local snip
 for snip ( \$final_todelete ) { zi delete -q -y \$snip; _retval+=\$?; }
@@ -2556,8 +2557,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   return 0
 } # ]]]
 # FUNCTION: .zi-confirm [[[
-# Prints given question, waits for "y" key, evals
-# given expression if "y" obtained
+# Prints given question, waits for "y" key, evals given expression if "y" obtained
 #
 # $1 - question
 # $2 - expression
@@ -2811,8 +2811,7 @@ EOF
   }
 } # ]]]
 # FUNCTION: .zi-edit [[[
-# Runs $EDITOR on source of given plugin. If the variable is not
-# set then defaults to `vim'.
+# Runs $EDITOR on source of given plugin. If the variable is not set then defaults to `code'.
 #
 # User-action entry point.
 #
@@ -2837,15 +2836,13 @@ EOF
       return 1
     fi
   fi
-  "${EDITOR:-vim}" "$local_dir"
+  "${EDITOR:-code}" "$local_dir"
   return 0
 } # ]]]
 # FUNCTION: .zi-stress [[[
-# Compiles plugin with various options on and off to see
-# how well the code is written. The options are:
+# Compiles plugin with various options on and off to see how well the code is written. The options are:
 #
-# NO_SHORT_LOOPS, IGNORE_BRACES, IGNORE_CLOSE_BRACES, SH_GLOB,
-# CSH_JUNKIE_QUOTES, NO_MULTI_FUNC_DEF.
+# NO_SHORT_LOOPS, IGNORE_BRACES, IGNORE_CLOSE_BRACES, SH_GLOB, CSH_JUNKIE_QUOTES, NO_MULTI_FUNC_DEF.
 #
 # User-action entry point.
 #
@@ -2922,10 +2919,8 @@ EOF
   )
 } # ]]]
 # FUNCTION: .zi-get-path [[[
-# Returns path of given ID-string, which may be a plugin-spec
-# (like "user/plugin" or "user" "plugin"), an absolute path
-# ("%" "/home/..." and also "%SNIPPETS/..." etc.), or a plugin
-# nickname (i.e. id-as'' ice-mod), or a snippet nickname.
+# Returns path of given ID-string, which may be a plugin-spec (like "user/plugin" or "user" "plugin"), an absolute path
+# ("%" "/home/..." and also "%SNIPPETS/..." etc.), or a plugin nickname (i.e. id-as'' ice-mod), or a snippet nickname.
 .zi-get-path() {
   emulate -LR zsh
   setopt extendedglob warncreateglobal typesetsilent noshortloops
@@ -2945,15 +2940,12 @@ EOF
   local -a ice_order nval_ices output
   ice_order=(
     ${(s.|.)ZI[ice-list]}
-    # Include all additional ices – after
-    # stripping them from the possible: ''
+    # Include all additional ices – after stripping them from the possible: ''
     ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   nval_ices=(
       ${(s.|.)ZI[nval-ice-list]}
-      # Include only those additional ices,
-      # don't have the '' in their name, i.e.
-      # aren't designed to hold value
+      # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
       ${(@)${(@)${(@Akons:|:u)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
       # Must be last
       svn
@@ -3105,7 +3097,7 @@ ${ice_order[*]}"
 # User-action entry point.
 .zi-analytics-menu() {
   builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-  ${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
+${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
 ❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
@@ -3134,7 +3126,7 @@ ${ice_order[*]}"
 # User-action entry point.
 .zi-control-menu() {
   builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}ZI Control${ZI[col-rst]}:
+${ZI[col-p]}❮ ZI ❯ Control${ZI[col-rst]}:
 ❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 ❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
 ❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)

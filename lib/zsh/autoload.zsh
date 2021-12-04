@@ -3067,7 +3067,7 @@ EOF
 # User-action entry point.
 .zi-help() {
   builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 ❯ analytics                     – ❮ ZI ❯ Analytics
 ❯ control                       – ❮ ZI ❯ Control options
 ❯ self-update                   – ❮ ZI ❯ Self update and compile
@@ -3080,8 +3080,8 @@ EOF
 ❯ man                           – Manual
 ❯ help                          – Help
 ${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
-
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+Usage of available sub-commands:
   integer idx
   local type key
   local -a arr
@@ -3097,8 +3097,8 @@ ${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
   builtin print -r -- "${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
-  builtin print -r -- "${ice_order[*]}"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ice_order[*]}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
 # Shows ❮ ZI ❯ analytics.
@@ -3106,7 +3106,7 @@ ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[i
 # User-action entry point.
 .zi-analytics-menu() {
   builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 ❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
@@ -3127,7 +3127,7 @@ ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[i
 ❯ cdlist                      – Show compdef replay list
 ❯ csearch                     – Search for available completions from any plugin
 ❯ ls                          – List snippets in formatted and colorized manner
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 } # ]]]
 # FUNCTION: .zi-control-menu [[[
 # Shows control options.
@@ -3135,7 +3135,7 @@ ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[i
 # User-action entry point.
 .zi-control-menu() {
   builtin print -r -- "${ZI[col-p]}ZI Control${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 ❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 ❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
 ❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
@@ -3155,5 +3155,5 @@ ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[i
 ❯ run     [-l]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
 ❯ ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, e.g. from\"gitlab\"
 ❯ srv        ${ZI[col-pname]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z-Shell
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 } # ]]]

@@ -3067,7 +3067,7 @@ EOF
 # User-action entry point.
 .zi-help() {
   builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 ❯ analytics                     – ❮ ZI ❯ Analytics
 ❯ control                       – ❮ ZI ❯ Control options
 ❯ self-update                   – ❮ ZI ❯ Self update and compile
@@ -3079,7 +3079,9 @@ EOF
 ❯ env-whitelist [-v|-h] {env..} – Specify names or paterns of variables left unchanged during an unload. -v – verbose
 ❯ man                           – Manual
 ❯ help                          – Help
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+  builtin print -r -- "\n${ZI[col-p]}❮ ZI ❯ Usage of available sub-commands${ZI[col-rst]}:"
+
   integer idx
   local type key
   local -a arr
@@ -3092,9 +3094,10 @@ EOF
         { builtin print -rl -- "(Couldn't find the help-handler \`${arr[6]}' of the z-annex \`${arr[3]}')"; }
     done
   done
+builtin print -r -- "\n»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-print -- "\nAvailable ice-modifiers:\n\n${ice_order[*]}"
+builtin print -r -- "\n${ZI[col-p]}Available ice-modifiers:\n\n${ice_order[*]}${ZI[col-rst]}"
 } # ]]]
 
 #

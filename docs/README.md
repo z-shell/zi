@@ -107,7 +107,7 @@ _For more information and to report security issues, please refer to our [securi
 
 > **[?]**
 > The [Z-Shell](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
-> I don't want to depend on an unreliable source. For these reasons, I started maintaining these tools myself and everyone interested is welcome.
+> We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
 
 ## Roadmap
 

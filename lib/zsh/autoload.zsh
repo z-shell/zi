@@ -3066,8 +3066,8 @@ EOF
 #
 # User-action entry point.
 .zi-help() {
-  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
 ❯ analytics                     – ❮ ZI ❯ Analytics
 ❯ control                       – ❮ ZI ❯ Control options
 ❯ self-update                   – ❮ ZI ❯ Self update and compile
@@ -3079,8 +3079,8 @@ EOF
 ❯ env-whitelist [-v|-h] {env..} – Specify names or paterns of variables left unchanged during an unload. -v – verbose
 ❯ man                           – Manual
 ❯ help                          – Help
-${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:"
   integer idx
   local type key
   local -a arr
@@ -3095,8 +3095,8 @@ ${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:
   done
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-  builtin print -r -- "${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
 ${ice_order[*]}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
@@ -3104,8 +3104,8 @@ ${ice_order[*]}"
 #
 # User-action entry point.
 .zi-analytics-menu() {
-  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  ${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
 ❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
@@ -3133,8 +3133,8 @@ ${ice_order[*]}"
 #
 # User-action entry point.
 .zi-control-menu() {
-  builtin print -r -- "${ZI[col-p]}ZI Control${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
+${ZI[col-p]}ZI Control${ZI[col-rst]}:
 ❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
 ❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
 ❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)

@@ -1,4 +1,6 @@
 - [Home](Home)
   - [Introduction](Introduction)
-  - [For-Syntax](For-Syntax)
-  - [ZI-Packages](ZI-Packages)
+    - [For-Syntax](For-Syntax)
+    - [ZI-Packages](ZI-Packages)
+  - [Ice Modifiers](Ice Modifiers)
+    - [Alternate Ice Syntax](Alternate-Ice-Syntax)

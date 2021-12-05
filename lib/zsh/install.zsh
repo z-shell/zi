@@ -462,7 +462,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     }
 
     if [[ $update != -u ]] {
-      hook_rc=0
       # Store ices at clone of a plugin
       .zi-store-ices "$local_path/._zi" ICE "" "" "" ""
       reply=(
@@ -473,11 +472,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_path" "${${key##(zi|z-annex) hook:}%% <->}" load
-        hook_rc=$?
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
       # Run annexes' atclone hooks (the after atclone-ice ones)
       reply=(
@@ -488,15 +482,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_path" "${${key##(zi|z-annex) hook:}%% <->}"
-        hook_rc=$?
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
     }
-
-    return "$retval"
+    ((1))
   ) || return $?
 
   typeset -ga INSTALLED_EXECS
@@ -908,7 +896,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   trap "command rmdir ${(qqq)local_dir}/${(qqq)dirname} 2>/dev/null; return 1;" INT TERM QUIT HUP
 
   local -a list arr
-  integer retval=0 hook_rc=0
+  integer retval
   local teleid_clean=${ICE[teleid]%%\?*}
   [[ $teleid_clean == *://* ]] && \
     local sname=${(M)teleid_clean##*://[^/]##(/[^/]##)(#c0,4)} || \
@@ -992,11 +980,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             for key in "${reply[@]}"; do
               arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
               "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:svn
-              hook_rc=$?
-              [[ "$hook_rc" -ne 0 ]] && {
-                retval="$hook_rc"
-                builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-              }
             done
 
             if (( ZI[annex-multi-flag:pull-active] == 2 )) {
@@ -1080,11 +1063,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             for key in "${reply[@]}"; do
               arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
               "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:url
-              hook_rc="$?"
-              [[ "$hook_rc" -ne 0 ]] && {
-                retval="$hook_rc"
-                builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-              }
             done
           }
 
@@ -1138,11 +1116,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:file
-          hook_rc="$?"
-          [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
-            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-          }
         done
       }
 
@@ -1181,7 +1154,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       +zi-message "{u-warn}Warning{b-warn}:{rst} the snippet {url}$id_as{rst} isn't" \
         "fully downloaded – you should remove it with {apo}\`{cmd}zi delete $id_as{apo}\`{rst}."
     }
-
     # Empty update short-path
     if (( ZI[annex-multi-flag:pull-active] == 0 )) {
       # Run annexes' atpull hooks (the `always' after atpull-ice ones)
@@ -1192,15 +1164,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       )
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-        "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:0
-        hook_rc="$?"
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
-
-      return $retval;
+      return 0;
     }
 
     if [[ $update = -u ]] {
@@ -1214,11 +1179,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
-        hook_rc=$?
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
     } else {
       # Run annexes' atclone hooks (the before atclone-ice ones)
@@ -1256,11 +1216,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
-          hook_rc=$?
-          [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
-            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-          }
         done
       }
       # Run annexes' atpull hooks (the `always' after atpull-ice ones)
@@ -1273,13 +1228,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:$ZI[annex-multi-flag:pull-active]
-        hook_rc=$?
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
     }
+    ((1))
   ) || return $?
   typeset -ga INSTALLED_EXECS
   { INSTALLED_EXECS=( "${(@f)$(<${TMPDIR:-/tmp}/zi-execs.$$.lst)}" ) } 2>/dev/null
@@ -1824,13 +1775,11 @@ zpextract() { ziextract "$@"; }
 # ]]]
 # FUNCTION: .zi-at-eval [[[
 .zi-at-eval() {
-  local atpull="$1" atclone="$2"
+  local atclone="$2" atpull="$1"
   integer retval
   @zi-substitute atclone atpull
-  local cmd="$atpull"
-  [[ $atpull == "%atclone" ]] && cmd="$atclone"
-  eval "$cmd"
-  return "$?"
+  [[ $atpull = "%atclone" ]] && { eval "$atclone"; retval=$?; } || { eval "$atpull"; retval=$?; }
+    return $retval
 } # ]]]
 # FUNCTION: .zi-get-cygwin-package [[[
 .zi-get-cygwin-package() {
@@ -2047,10 +1996,8 @@ zimv() {
 
   local make=${ICE[make]}
   @zi-substitute make
-  (( ${+ICE[make]} )) || return 0
-  [[ $make = "!!"* ]] || return 0
   # Git-plugin make'' at download
-  .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!\!}}
+  [[ $make = "!!"* ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!\!}}
 } # ]]]
 # FUNCTION: ∞zi-make-e-hook [[[
 ∞zi-make-e-hook() {
@@ -2058,8 +2005,6 @@ zimv() {
 
   local make=${ICE[make]}
   @zi-substitute make
-  (( ${+ICE[make]} )) || return 0
-  [[ $make = ("!"[^\!]*|"!") ]] || return 0
   # Git-plugin make'' at download
   [[ $make = ("!"[^\!]*|"!") ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!}}
 } # ]]]
@@ -2070,70 +2015,45 @@ zimv() {
 
   local make=${ICE[make]}
   @zi-substitute make
-  (( ${+ICE[make]} )) || return 0
-  [[ $make != "!"* ]] || return 0
   # Git-plugin make'' at download
-  .zi-countdown make &&
-    command make -C "$dir" ${(@s; ;)make}
+  (( ${+ICE[make]} )) && [[ $make != "!"* ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)make}
 } # ]]]
 # FUNCTION: ∞zi-atclone-hook [[[
 ∞zi-atclone-hook() {
   [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   local atclone=${ICE[atclone]}
   @zi-substitute atclone
-  (( ${+ICE[atclone]} )) || return 0
-  local rc=0
-  [[ -n $atclone ]] && .zi-countdown atclone && {
-    local ___oldcd=$PWD
-    (( ${+ICE[nocd]} == 0 )) && {
-      () {
-        setopt localoptions noautopushd
-        builtin cd -q "$dir"
-      }
-    }
-    eval "$atclone"
-    rc="$?"
-    () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
-  }
-  return "$rc"
+  [[ -n $atclone ]] && .zi-countdown atclone && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && eval "$atclone"; ((1)); } || eval "$atclone"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
 } # ]]]
 # FUNCTION: ∞zi-extract-hook [[[
 ∞zi-extract-hook() {
   [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   local extract=${ICE[extract]}
   @zi-substitute extract
-  (( ${+ICE[extract]} )) || return 0
-  .zi-extract plugin "$extract" "$dir"
+  (( ${+ICE[extract]} )) && .zi-extract plugin "$extract" "$dir"
 } # ]]]
 # FUNCTION: ∞zi-mv-hook [[[
 ∞zi-mv-hook() {
-  [[ -z $ICE[mv] ]] && return 0
+  [[ -z $ICE[mv] ]] && return
   [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   if [[ $ICE[mv] == *("->"|"→")* ]] {
     local from=${ICE[mv]%%[[:space:]]#(->|→)*} to=${ICE[mv]##*(->|→)[[:space:]]#} || \
   } else {
     local from=${ICE[mv]%%[[:space:]]##*} to=${ICE[mv]##*[[:space:]]##}
   }
-
   @zi-substitute from to
-
-  local -a mv_args=("-f")
   local -a afr
-
-    ( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
-        afr=( ${~from}(DN) )
-        if (( ! ${#afr} )) {
-            +zi-message "{warn}Warning: mv ice didn't match any file. [{error}$ICE[mv]{warn}]" \
-              "{nl}{warn}Available files:{nl}{obj}$(ls -1)"
-            return 1
-        }
-        if (( !OPTS[opt_-q,--quiet] )) {
-            mv_args+=("-v")
-        }
-        command mv "${mv_args[@]}" "${afr[1]}" "$to"
-        local retval=$?
-        command mv "${mv_args[@]}" "${afr[1]}".zwc "$to".zwc 2>/dev/null
-        return $retval
+  ( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+    afr=( ${~from}(DN) )
+    if (( ${#afr} )) {
+      if (( !OPTS[opt_-q,--quiet] )) {
+        command mv -vf "${afr[1]}" "$to"
+        command mv -vf "${afr[1]}".zwc "$to".zwc 2>/dev/null
+      } else {
+        command mv -f "${afr[1]}" "$to"
+        command mv -f "${afr[1]}".zwc "$to".zwc 2>/dev/null
+      }
+    }
   )
 } # ]]]
 # FUNCTION: ∞zi-cp-hook [[[
@@ -2166,67 +2086,35 @@ zimv() {
 # FUNCTION: ∞zi-compile-plugin-hook [[[
 ∞zi-compile-plugin-hook() {
   [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-  if ! [[ ( $hook = *\!at(clone|pull)* && ${+ICE[nocompile]} -eq 0 ) || ( $hook = at(clone|pull)* && $ICE[nocompile] = '!' ) ]] {
-    return 0
-  }
-
-  # Compile plugin
-  if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
-        () {
-      emulate -LR zsh
-      setopt extendedglob warncreateglobal
-      if [[ $tpe == snippet ]] {
-        .zi-compile-plugin "%$dir" ""
-      } else {
-        .zi-compile-plugin "$id_as" ""
+  if [[ ( $hook = *\!at(clone|pull)* && ${+ICE[nocompile]} -eq 0 ) || ( $hook = at(clone|pull)* && $ICE[nocompile] = '!' ) ]] {
+    # Compile plugin
+    if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
+      () {
+        emulate -LR zsh
+        setopt extendedglob warncreateglobal
+        if [[ $tpe == snippet ]] {
+          .zi-compile-plugin "%$dir" ""
+        } else {
+          .zi-compile-plugin "$id_as" ""
+        }
       }
     }
   }
 } # ]]]
 # FUNCTION: ∞zi-atpull-e-hook [[[
 ∞zi-atpull-e-hook() {
-    (( ${+ICE[atpull]} )) || return 0
-  [[ -n ${ICE[atpull]} ]] || return 0
-  [[ $ICE[atpull] == "!"* ]] || return 0
   [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-  local atpull=${ICE[atpull]#\!}
-  local rc=0
-  .zi-countdown atpull && {
-    local ___oldcd=$PWD
-    (( ${+ICE[nocd]} == 0 )) && {
-      () { setopt localoptions noautopushd; builtin cd -q "$dir"; }
-    }
-    .zi-at-eval "$atpull" "$ICE[atclone]"
-    rc="$?"
-    () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
-  }
-  return "$rc"
+  [[ $ICE[atpull] = "!"* ]] && .zi-countdown atpull && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && .zi-at-eval "${ICE[atpull]#\!}" "$ICE[atclone]"; ((1)); } || .zi-at-eval "${ICE[atpull]#\!}" "$ICE[atclone]"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };}
 } # ]]]
 # FUNCTION: ∞zi-atpull-hook [[[
 ∞zi-atpull-hook() {
-  (( ${+ICE[atpull]} )) || return 0
-  [[ -n ${ICE[atpull]} ]] || return 0
-  [[ $ICE[atpull] == "!"* ]] && return 0
-  [[ "$1" == plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-  local atpull=${ICE[atpull]}
-  local rc=0
-  .zi-countdown atpull && {
-    local ___oldcd=$PWD
-    (( ${+ICE[nocd]} == 0 )) && {
-      () { setopt localoptions noautopushd; builtin cd -q "$dir"; }
-    }
-    .zi-at-eval "$atpull" $ICE[atclone]
-    rc="$?"
-    () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
-  }
-  return "$rc"
+  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+  [[ -n $ICE[atpull] && $ICE[atpull] != "!"* ]] && .zi-countdown atpull && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && .zi-at-eval "$ICE[atpull]" "$ICE[atclone]"; ((1)); } || .zi-at-eval "${ICE[atpull]#!}" $ICE[atclone]; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };}
 } # ]]]
 # FUNCTION: ∞zi-ps-on-update-hook [[[
 ∞zi-ps-on-update-hook() {
-[[ -z $ICE[ps-on-update] ]] && return 0
-  [[ "$1" = plugin ]] && \
-    local tpe="$1" dir="${5#%}" hook="$6" subtype="$7" || local tpe="$1" dir="${4#%}" hook="$5" subtype="$6"
-
+if [[ -z $ICE[ps-on-update] ]] { return 1; }
+  [[ "$1" = plugin ]] && local tpe="$1" dir="${5#%}" hook="$6" subtype="$7" || local tpe="$1" dir="${4#%}" hook="$5" subtype="$6"
   if (( !OPTS[opt_-q,--quiet] )) {
     +zi-message "Running $tpe's provided update code: {info}${ICE[ps-on-update][1,50]}${ICE[ps-on-update][51]:+…}{rst}"
     (

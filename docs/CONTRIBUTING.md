@@ -4,6 +4,9 @@ When contributing to this repository, please first discuss the change you wish t
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## Knowledge Base
+
+- [ZI Documentation](https://github.com/z-shell/zi/wiki)
+
 > **[?]**
 > Useful information about Zsh.
 

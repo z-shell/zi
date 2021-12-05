@@ -47,7 +47,16 @@ pdf/autoload.zsh.pdf:
 	@mkdir -p pdf
 	asciidoctor -a reproducible -b pdf -r asciidoctor-pdf -D pdf autoload.zsh.adoc
 
+move: pdf
+	git clone https://github.com/z-shell/wiki.git
+	mv *.adoc wiki/
+	mv pdf/*.pdf wiki/pdf/
+	echo "Docs update: ["`date "+%m/%d/%Y %H:%M:%S"`"]" > wiki/.git/COMMIT_EDITMSG_
+	git -C wiki add .
+	git -C wiki commit -F wiki/.git/COMMIT_EDITMSG_
+	git -C wiki push -f origin main
+
 clean:
-	rm -rf man pdf data
+	rm -rf man pdf data wiki
 
 .PHONY: man pdf clean

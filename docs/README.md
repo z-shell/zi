@@ -62,6 +62,8 @@ Nightly Release
 
 #### Interactive install
 
+> Requires: `bash`, `git`, `curl`.
+
 ```shell
 bash <(curl -fsSL https://git.io/zi-setup)
 ```
@@ -73,6 +75,8 @@ bash <(curl -fsSL https://git.io/zi-install)
 ```
 
 #### Manual install
+
+> Requires: `git`.
 
 - Clone repository:
 
@@ -98,8 +102,10 @@ autoload -Uz _zi
 
 ## Documentation
 
+Please see [documentation](https://github.com/z-shell/zi/wiki).
+
 > **[?]**
-> Work in progress.
+> Documentation in progress.
 
 ## Contributing
 

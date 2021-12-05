@@ -1877,13 +1877,13 @@ ZI[EXTENDED_GLOB]=""
 
   local infoc="${ZI[col-info2]}"
 
-  +zi-message "❮ ZI ❯ Home directory: {file}${ZI[HOME_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Binary directory: {file}${ZI[BIN_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Zmodules directory: {file}${ZI[ZMODULES_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
+  +zi-message "Home directory: {file}${ZI[HOME_DIR]}{rst}"
+  +zi-message "Binary directory: {file}${ZI[BIN_DIR]}{rst}"
+  +zi-message "Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "Zmodules directory: {file}${ZI[ZMODULES_DIR]}{rst}"
+  +zi-message "Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "Loaded plugins: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
   # Count light-loaded plugins

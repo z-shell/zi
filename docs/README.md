@@ -98,8 +98,10 @@ autoload -Uz _zi
 
 ## Documentation
 
+Please see [documentation](https://github.com/z-shell/zi/wiki).
+
 > **[?]**
-> Work in progress.
+> Documentation in progress.
 
 ## Contributing
 

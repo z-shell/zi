@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The [Introduction](../Introduction/) covers the classic ZI invocation
+The [Introduction](Introduction/) covers the classic ZI invocation
 syntax, which is:
 
 ```zsh

@@ -1231,11 +1231,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" load
-        hook_rc=$?
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
 
       reply=(
@@ -1261,6 +1256,11 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
+          hook_rc=$?
+          [[ "$hook_rc" -ne 0 ]] && {
+            retval="$hook_rc"
+            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+          }
         done
       }
       # Run annexes' atpull hooks (the `always' after atpull-ice ones)
@@ -1831,8 +1831,7 @@ zpextract() { ziextract "$@"; }
   [[ $atpull == "%atclone" ]] && cmd="$atclone"
   eval "$cmd"
   return "$?"
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-get-cygwin-package [[[
 .zi-get-cygwin-package() {
   emulate -LR zsh

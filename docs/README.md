@@ -55,12 +55,12 @@ Nightly Release
 
 ### Installation
 
-#### Interactive install
-
 > **[?]**
 > Interactive installation currently in development mode.
 >
 > After installing and reloading the shell run: zi self-update
+
+#### Interactive install
 
 ```shell
 bash <(curl -fsSL https://git.io/zi-setup)
@@ -87,8 +87,8 @@ git clone https://github.com/z-shell/zi.git "${ZI_HOME}/bin"
 ZI_HOME="${HOME}/.zi"
 source "${ZI_HOME}/bin/zi.zsh"
 # Next two lines must be below the above two
-autoload -Uz _zinit
-(( ${+_comps} )) && _comps[zinit]=_zinit
+autoload -Uz _zi
+(( ${+_comps} )) && _comps[zi]=_zi
 ```
 
 ## Usage

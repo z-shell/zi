@@ -22,12 +22,15 @@ Nightly Release
 [![Tweet][twitter-badge]][twitter-link]
 </div>
 
-<details>
+<details open="open">
 <summary>Table of Contents</summary>
 
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+    - [Interactive install](#interactive-install)
+    - [Quick install](#quick-install)
+    - [Manual install](#manual-install)
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
@@ -52,8 +55,41 @@ Nightly Release
 
 ### Installation
 
+#### Interactive install
+
 > **[?]**
-> Work in progress.
+> Interactive installation currently in development mode.
+>
+> After installing and reloading the shell run: zi self-update
+
+```shell
+bash <(curl -fsSL https://git.io/zi-setup)
+```
+
+#### Quick install
+
+```shell
+bash <(curl -fsSL https://git.io/zi-install)
+```
+
+#### Manual install
+
+- Clone repository:
+
+```zsh
+ZI_HOME="${HOME}/.zi" && mkdir -p "$(dirname $ZI_HOME)"
+git clone https://github.com/z-shell/zi.git "${ZI_HOME}/bin"
+```
+
+-  Source `zi.zsh` from your `.zshrc`:
+
+```zsh
+ZI_HOME="${HOME}/.zi"
+source "${ZI_HOME}/bin/zi.zsh"
+# Next two lines must be below the above two
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+```
 
 ## Usage
 
@@ -71,9 +107,9 @@ First off, thanks for taking the time to contribute! Contributions are what make
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
 
-Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser. 
+Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser.
 
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi) 
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi)
 
 ## Authors & contributors
 

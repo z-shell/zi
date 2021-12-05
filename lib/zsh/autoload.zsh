@@ -1287,7 +1287,7 @@ ZI[EXTENDED_GLOB]=""
   # Deliver and withdraw the `m` function when finished.
   .zi-set-m-func set
   trap ".zi-set-m-func unset" EXIT
-  integer retval hook_rc was_snippet
+  integer retval was_snippet
   .zi-two-paths "$2${${2:#(%|/)*}:+${3:+/}}$3"
   if [[ -d ${reply[-4]} || -d ${reply[-2]} ]]; then
     .zi-update-or-status-snippet "$1" "$2${${2:#(%|/)*}:+${3:+/}}$3"
@@ -1409,11 +1409,6 @@ ZI[EXTENDED_GLOB]=""
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:bin
-          hook_rc=$?
-          [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
-            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-          }
         done
         if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
           if ! .zi-setup-plugin-dir "$user" "$plugin" "$id_as" release -u $version; then
@@ -1489,11 +1484,6 @@ ZI[EXTENDED_GLOB]=""
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
-            hook_rc=$?
-            [[ "$hook_rc" -ne 0 ]] && {
-              retval="$hook_rc"
-              builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-            }
         done
         ICE=()
         (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command egrep -v '(FETCH_HEAD|up.to.date\.|From.*://)'
@@ -1533,12 +1523,6 @@ ZI[EXTENDED_GLOB]=""
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update
-        hook_rc="$?"
-        [[ "$hook_rc" -ne 0 ]] && {
-          # note: this will effectively return the last != 0 rc
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
       # Run annexes' atpull hooks (the after atpull-ice ones).
       # Block common for Git and gh-r plugins.
@@ -1550,11 +1534,6 @@ ZI[EXTENDED_GLOB]=""
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update
-        hook_rc="$?"
-        [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-        }
       done
       ICE=()
     }
@@ -1572,11 +1551,6 @@ ZI[EXTENDED_GLOB]=""
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
     "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:$ZI[annex-multi-flag:pull-active]
-    hook_rc=$?
-    [[ "$hook_rc" -ne 0 ]] && {
-      retval="$hook_rc"
-      builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-    }
   done
   ICE=()
   typeset -ga INSTALLED_EXECS
@@ -1647,7 +1621,7 @@ ZI[EXTENDED_GLOB]=""
   [[ $2 = restart ]] && \
     +zi-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'
   local file
-  integer sum el update_rc
+  integer sum el
   for file ( "" side install autoload ) {
     .zi-get-mtime-into "${ZI[BIN_DIR]}/$file.zsh" el; sum+=el
   }
@@ -1742,19 +1716,12 @@ ZI[EXTENDED_GLOB]=""
     else
       (( !OPTS[opt_-q,--quiet] )) && builtin print "Updating $REPLY" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
-      update_rc=$?
-      # TODO: remember
-      [[ $update_rc -ne 0 ]] && {
-        +zi-message "{warn}Warning: {pid}${user}/${plugin} {warn}update returned {obj}$update_rc"
-        retval=$?
-      }
     fi
   done
   .zi-compinit 1 1 &>/dev/null
   if (( !OPTS[opt_-q,--quiet] )) {
     +zi-message "{msg2}The update took {obj}${SECONDS}{msg2} seconds{rst}"
   }
-  return "$retval"
 } # ]]]
 # FUNCTION: .zi-update-in-parallel [[[
 .zi-update-all-parallel() {
@@ -1779,25 +1746,19 @@ ZI[EXTENDED_GLOB]=""
       # Should happen only in a very special conditions
       # TODO handle this
       [[ ! -f ${snip:h}/url ]] && continue
-      [[ -f ${snip:h}/id-as ]] && \
-        id_as="$(<${snip:h}/id-as)" || \
-        id_as=
+      [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
       counter+=1
       local ef_id="${id_as:-$(<${snip:h}/url)}"
       local PUFILEMAIN=${${ef_id#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
       local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
-
       .zi-update-or-status-snippet "$st" "$ef_id" &>! $PUFILE &
-
       PUAssocArray[$!]=$PUFILE
-
       .zi-wait-for-update-jobs snippets
     }
   }
 
   counter=0
   PUAssocArray=()
-
   if (( OPTS[opt_-l,--plugins] || !OPTS[opt_-s,--snippets] )) {
     local -a files2
     files=( ${ZI[PLUGINS_DIR]}/*(ND/) )
@@ -1835,9 +1796,7 @@ ZI[EXTENDED_GLOB]=""
       .zi-any-to-user-plugin "$uspl"
       local user=${reply[-2]} plugin=${reply[-1]}
       .zi-update-or-status update "$user" "$plugin" &>>! $PUFILE &
-
       PUAssocArray[$!]=$PUFILE
-
       .zi-wait-for-update-jobs plugins
     }
   }
@@ -1865,8 +1824,7 @@ ZI[EXTENDED_GLOB]=""
       "${OPTS[value]}{obj} concurrent update jobs" \
       "({msg2}${tpe}{obj}){…}{rst}"
   }
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-show-zstatus [[[
 # Shows ❮ ZI ❯ status, i.e. number of loaded plugins,
 # of available completions, etc.
@@ -1877,13 +1835,13 @@ ZI[EXTENDED_GLOB]=""
 
   local infoc="${ZI[col-info2]}"
 
-  +zi-message "❮ ZI ❯ Home directory: {file}${ZI[HOME_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Binary directory: {file}${ZI[BIN_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
-  +zi-message "❮ ZI ❯ Zmodules directory: {file}${ZI[ZMODULES_DIR]{rst}"
-  +zi-message "❮ ZI ❯ Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
+  +zi-message "Home directory: {file}${ZI[HOME_DIR]}{rst}"
+  +zi-message "Binary directory: {file}${ZI[BIN_DIR]}{rst}"
+  +zi-message "Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "Zmodules directory: {file}${ZI[ZMODULES_DIR]}{rst}"
+  +zi-message "Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "Loaded plugins: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
   # Count light-loaded plugins

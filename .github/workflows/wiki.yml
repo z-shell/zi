@@ -11,22 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
-    - name: Publish to GitHub Wiki
-      uses: SwiftDocOrg/github-wiki-publish-action@1.0.0
-      with:
-        path: docs/wiki
+    - name: GitHub Wiki Action
+      uses: Andrew-Chen-Wang/github-wiki-action@v2
       env:
-        GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_WIKI_TOKEN }}
-
-#   - name: wiki-page-creator-action
-#     uses: Decathlon/wiki-page-creator-action@v2.0.0
-
-#    - name: GitHub Wiki Action
-#      uses: Andrew-Chen-Wang/github-wiki-action@v2
-#      env:
-#        WIKI_DIR: docs/wiki/
-#        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        GH_MAIL: ${{ secrets.GH_MAIL }}
-#        GH_NAME: ${{ github.repository_owner }}
-#        EXCLUDED_FILES: "docs/wiki/drafts"
+        WIKI_DIR: docs/wiki/
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_MAIL: ${{ secrets.GH_MAIL }}
+        GH_NAME: ${{ github.repository_owner }}
+        EXCLUDED_FILES: "docs/wiki/drafts"

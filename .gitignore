@@ -189,3 +189,6 @@ zmodules/Test/*.tmp
 /zmodules/cscope.out
 /zmodules/stamp-h
 /zmodules/autom4te.cache
+NEWS.md
+.gitignore
+Untitled-1.sh

@@ -5,6 +5,7 @@ root = true
 
 [*]
 indent_style = space
+tab_width   = 8
 indent_size = 2
 charset = utf-8
 end_of_line = lf
@@ -13,3 +14,11 @@ insert_final_newline = true
 
 [**.{md,rst}]
 trim_trailing_whitespace = false
+
+[*.[ch]]
+indent_style = tab
+indent_size = 4
+
+[ChangeLog]
+indent_style = tab
+indent_size = 8

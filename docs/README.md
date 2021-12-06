@@ -20,6 +20,7 @@ Nightly Release
 
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![Tweet][twitter-badge]][twitter-link]
+
 </div>
 
 <details open="open">
@@ -85,7 +86,7 @@ ZI_HOME="${HOME}/.zi" && mkdir -p "$(dirname $ZI_HOME)"
 git clone https://github.com/z-shell/zi.git "${ZI_HOME}/bin"
 ```
 
--  Source `zi.zsh` from your `.zshrc`:
+- Source `zi.zsh` from your `.zshrc`:
 
 ```zsh
 ZI_HOME="${HOME}/.zi"
@@ -97,15 +98,11 @@ autoload -Uz _zi
 
 ## Usage
 
-> **[?]**
-> Work in progress.
+All usage information available [**here**](https://github.com/z-shell/zi/wiki/Usage). If you know how we could improve it, please let us know. We highly appreciated any feedback.
 
 ## Documentation
 
-Please see [documentation](https://github.com/z-shell/zi/wiki).
-
-> **[?]**
-> Documentation in progress.
+All [documentation](https://github.com/z-shell/zi/wiki) can be viewed on our wiki pages.
 
 ## Contributing
 
@@ -127,25 +124,24 @@ For a full list of all authors and contributors, see [the contributors page](htt
 
 If you want to say **thank you** or/and support active development of Z-Shell ❮ ZI ❯:
 
--   Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
--   Tweet about the Z-Shell ❮ ZI ❯.
--   Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
+- Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
+- Tweet about the Z-Shell ❮ ZI ❯.
+- Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
 Together, we can make Z-Shell ❮ ZI ❯ **better**!
 
 ## Security
 
--   Z-Shell ❮ ZI ❯ follows good practices of security, but 100% security cannot be assured.
--   Z-Shell ❮ ZI ❯ is provided **"as is"** without any **warranty**. Use at your own risk.
+- Z-Shell ZI follows good practices of security, but 100% security cannot be assured.
+- Z-Shell ZI is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our [security documentation](../docs/SECURITY.md)._
 
 ## About
 
-> **[?]**
-> [**❮ ZI ❯**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related).
+> **[?]** > [**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related).
 >
-> Z-Shell [**❮ ZI ❯**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
+> Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
@@ -158,9 +154,9 @@ _For more information and to report security issues, please refer to our [securi
 
 See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known issues).
 
--   [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
--   [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
--   [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+- [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+- [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+- [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
 
@@ -169,8 +165,8 @@ See the [open issues](https://github.com/z-shell/zi/issues) for a list of propos
 
 Reach out to the maintainer at one of the following places:
 
--   [GitHub Discussions](https://github.com/z-shell/zi/discussions)
--   Contact options listed on [this GitHub profile](https://github.com/z-shell)
+- [GitHub Discussions](https://github.com/z-shell/zi/discussions)
+- Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases

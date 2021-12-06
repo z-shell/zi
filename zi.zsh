@@ -92,7 +92,7 @@ ZI[LEFTAR]=";:^[[D;:^[OD;:\\e[D;:\\eOD;:${termcap[kl]/$'\e'/^\[};:${terminfo[kcu
 
 builtin autoload -Uz is-at-least
 is-at-least 5.1 && ZI[NEW_AUTOLOAD]=1 || ZI[NEW_AUTOLOAD]=0
-is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
+#is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
 
 # Parameters - temporary substituting of functions. [[[
 ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
@@ -718,8 +718,7 @@ builtin setopt noaliases
   [[ $cmd = begin ]] && { [[ -z ${ZI[FUNCTIONS_BEFORE__$uspl2]} ]] && ZI[FUNCTIONS_BEFORE__$uspl2]="${(j: :)${(qk)functions[@]}}" } || ZI[FUNCTIONS_AFTER__$uspl2]+=" ${(j: :)${(qk)functions[@]}}"
 } # ]]]
 # FUNCTION: .zi-diff-options. [[[
-# Implements detection of change in option state. Performs
-# data gathering, computation is done in *-compute().
+# Implements detection of change in option state. Performs data gathering, computation is done in *-compute().
 #
 # $1 - user/plugin (i.e. uspl2 format)
 # $2 - command, can be "begin" or "end"
@@ -894,7 +893,7 @@ builtin setopt noaliases
 # FUNCTION: .zi-register-plugin. [[[
 # Adds the plugin to ZI_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
-# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html).
+# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard).
 .zi-register-plugin() {
   local uspl2="$1" mode="$2" teleid="$3"
   integer ret=0
@@ -1011,7 +1010,7 @@ builtin setopt noaliases
 } # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
-# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html
+# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard
 @zsh-plugin-run-on-unload() {
   ICE[ps-on-unload]="${(j.; .)@}"
   .zi-pack-ice "$id_as" ""

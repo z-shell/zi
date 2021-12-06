@@ -2637,7 +2637,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 # Copyright (c) $year $user_name
 
 # According to the Zsh Plugin Standard:
-# http://z-shell.github.io/ZSH-TOP-100/Zsh-Plugin-Standard.html
+# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard
 
 0=\${\${ZERO:-\${0:#\$ZSH_ARGZERO}}:-\${(%):-%N}}
 0=\${\${(M)0:#/*}:-\$PWD/\$0}
@@ -2747,8 +2747,7 @@ EOF
   local -A ICE2
   local local_dir filename is_snippet the_id="$1${${1:#(%|/)*}:+${2:+/}}$2"
 
-  .zi-compute-ice "$the_id" "pack" \
-    ICE2 local_dir filename is_snippet || return 1
+  .zi-compute-ice "$the_id" "pack" ICE2 local_dir filename is_snippet || return 1
 
   ICE2[teleid]="${ICE2[teleid]:-${ICE2[id-as]}}"
   if (( is_snippet )); then

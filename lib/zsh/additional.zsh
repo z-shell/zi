@@ -41,14 +41,11 @@
 .zi-service() {
   emulate -LR zsh
   setopt extendedglob warncreateglobal typesetsilent noshortloops
-
   local ___tpe="$1" ___mode="$2" ___id="$3" ___fle="${ZI[SERVICES_DIR]}/${ICE[service]}.lock" ___fd ___cmd ___tmp ___lckd ___strd=0
   { builtin print -n >! "$___fle"; } 2>/dev/null 1>&2
   [[ ! -e ${___fle:r}.fifo ]] && command mkfifo "${___fle:r}.fifo" 2>/dev/null 1>&2
   [[ ! -e ${___fle:r}.fifo2 ]] && command mkfifo "${___fle:r}.fifo2" 2>/dev/null 1>&2
-
   typeset -g ZSRV_WORK_DIR="${ZI[SERVICES_DIR]}" ZSRV_ID="${ICE[service]}"  # should be also set by other p-m
-
   while (( 1 )); do
     (
       while (( 1 )); do
@@ -63,7 +60,6 @@
         else
           return 0
         fi
-
         [[ $___cmd = (#i)NEXT ]] && { kill -TERM "$ZSRV_PID"; builtin read -t 2 ___tmp <>"${___fle:r}.fifo2"; kill -HUP "$ZSRV_PID"; exec {___fd}>&-; ___lckd=0; ___strd=0; builtin read -t 10 ___tmp <>"${___fle:r}.fifo2"; }
         [[ $___cmd = (#i)STOP ]] && { kill -TERM "$ZSRV_PID"; builtin read -t 2 ___tmp <>"${___fle:r}.fifo2"; kill -HUP "$ZSRV_PID"; ___strd=0; builtin print >! "${___fle:r}.stop"; }
         [[ $___cmd = (#i)QUIT ]] && { kill -HUP ${sysparams[pid]}; return 1; }
@@ -108,12 +104,12 @@ function $f {
     return 1
   fi
 
-  ZI[DTRACE]=1
+ZI[DTRACE]=1
 
-  .zi-diff _dtrace/_dtrace begin
+.zi-diff _dtrace/_dtrace begin
 
-  # Full shadeing on
-  .zi-tmp-subst-on dtrace
+# Full shadeing on
+.zi-tmp-subst-on dtrace
 } # ]]]
 # FUNCTION: .zi-debug-stop [[[
 # Stops Dtrace, i.e. session tracking for changes in Zsh state.

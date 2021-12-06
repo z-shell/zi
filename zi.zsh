@@ -13,8 +13,10 @@ typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS Z
 typeset -gaH ZI_COMPDEF_REPLAY
 # Compatibility for previous versions.
 typeset -gAH ZINIT ZPLGM
-ZI=( "${(kv)ZINIT[@]}" "${(kv)ZI[@]}" )
-ZI=( "${(kv)ZPLGM[@]}" "${(kv)ZI[@]}" )
+ZI=(
+  "${(kv)ZINIT[@]}" "${(kv)ZI[@]}"
+  "${(kv)ZPLGM[@]}" "${(kv)ZI[@]}"
+  )
 unset ZINIT ZPLGM
 
 #

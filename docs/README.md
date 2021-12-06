@@ -32,7 +32,6 @@ Nightly Release
     - [Interactive install](#interactive-install)
     - [Quick install](#quick-install)
     - [Manual install](#manual-install)
-- [Usage](#usage)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Authors & contributors](#authors--contributors)
@@ -96,13 +95,9 @@ autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi
 ```
 
-## Usage
-
-All usage information available [**here**](https://github.com/z-shell/zi/wiki/Usage). If you know how we could improve it, please let us know. We highly appreciated any feedback.
-
 ## Documentation
 
-All [documentation](https://github.com/z-shell/zi/wiki) can be viewed on our wiki pages.
+All [documentation](https://github.com/z-shell/zi/wiki) can be viewed on our wiki pages. If you know how we could improve it, please let us know. We highly appreciated any feedback.
 
 ## Contributing
 

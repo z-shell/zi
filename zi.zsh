@@ -1387,7 +1387,7 @@ builtin setopt noaliases
   .zi-load-plugin "$___user" "$___plugin" "$___id_as" "$___mode" "$___rst"; ___retval=$?
   (( ${+ICE[notify]} == 1 )) && { [[ $___retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zi-deploy-message @msg "$msg" } || +zi-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $___retval"; }
   (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @___rst
-  # Retire feature `m`.
+  # Unset the `m` function.
   .zi-set-m-func unset
   # Mark no load is in progress.
   ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
@@ -1625,10 +1625,10 @@ builtin setopt noaliases
 # FUNCTION: .zi-formatter-pid. [[[
 .zi-formatter-pid() {
   builtin emulate -L zsh -o extendedglob
-  # Remember extreme whitespace.
+  # Save whitespace location
   local pbz=${(M)1##(#s)[[:space:]]##}
   local kbz=${(M)1%%[[:space:]]##(#e)}
-  # Remove extreme whitespace.
+  # Trim leading/trailing whitespace
   1=${1//((#s)[[:space:]]##|[[:space:]]##(#e))/}
   ((${+functions[.zi-first]})) || source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
   .zi-any-colorify-as-uspl2 "$1";
@@ -1637,7 +1637,7 @@ builtin setopt noaliases
   pbz=${pbz/[[:blank:]]/ }
   local kbz_rev="${(j::)${(@Oas::)kbz}}"
   kbz="${(j::)${(@Oas::)${kbz_rev/[[:blank:]]/ }}}"
-  # Supply extreme whitespace back.
+  # Restore whitespace location
   REPLY=$pbz$REPLY$kbz
 } # ]]]
 # FUNCTION: .zi-formatter-bar. [[[
@@ -1693,6 +1693,7 @@ builtin setopt noaliases
   fi
   local append influx in_prepend
   if [[ $2 == (b|u|it|st|nb|nu|nit|nst) ]]; then
+  # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
   append=$ZI[col-$2]
   elif [[ $2 == (…|ndsh|mdsh|mmdsh|-…|lr|) || -z $2 || -z $ZI[col-$2] ]]; then
   # Resume previous escape code, if stored.
@@ -1701,6 +1702,7 @@ builtin setopt noaliases
     influx=$ZI[col-$ZI[__last-formatter-code]]
     fi
   else
+  # End of escaping logic
     append=$ZI[col-rst]
   fi
   # Construct the text.
@@ -1723,14 +1725,11 @@ builtin setopt noaliases
 
 # First try a dedicated formatter, marking its empty output with ←→, then
 # the general formatter and in the end filter-out the ←→ from the message.
-msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/\
-${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]\
-${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-\
-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
+msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]\
+${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
   builtin print -rn -- "$REPLY"
 )${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+$match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
-
-  # Restore the default color at the end of the message.
+  # Reset color attributes at the end of the message.
   msg=$msg$ZI[col-rst]
   # Output the processed message:
   builtin print -Pr ${opt:#--} -- $msg
@@ -1749,8 +1748,7 @@ $(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
   # -h/--help given?
   if (( OPTS[opt_-h,--help] )) {
     # Yes – a help message:
-    +zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" \
-        "the available {b-lhi}options{ehi}:{rst}"
+    +zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" "the available {b-lhi}options{ehi}:{rst}"
     local opt
     for opt ( ${(kos:|:)allowed} ) {
       [[ $opt == --* ]] && continue
@@ -1765,11 +1763,8 @@ $(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
   } elif [[ -n $allowed ]] {
     shift 2
     # No – an error message:
-    +zi-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" \
-        "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
-        "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" \
-        "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." \
-        "{nl}{…} Aborting.{rst}"
+    +zi-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
+    "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}{…} Aborting.{rst}"
   } else {
     local -a cmds
     cmds=( load snippet update delete )

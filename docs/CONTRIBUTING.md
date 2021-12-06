@@ -10,7 +10,7 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 > **[?]**
 > Useful information about Zsh.
 
--   [Zsh Site](http://zsh.sourceforge.net/) 
+-   [Zsh Site](http://zsh.sourceforge.net/)
 -   [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
 -   [Zsh Doc](https://zsh.sourceforge.io/Doc/)
 >
@@ -18,9 +18,9 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 -   [Zsh tips](http://www.zzapper.co.uk/zshtips.html)
 -   [101 Powerful & Practical ZSH GLOBS](http://www.zzapper.co.uk/101ZshGlobs.php)
 -   [Practical differences between Bash ans Zsh](https://apple.stackexchange.com/questions/361870/what-are-the-practical-differences-between-bash-and-zsh/361957#361957)
->   
+>
 -   [zshdb - a gdb-like debugger for zsh](https://zshdb.readthedocs.io/en/latest/index.html)
--   [Debian Bug report logs: Bugs in package zsh](https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=zsh)   
+-   [Debian Bug report logs: Bugs in package zsh](https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=zsh)
 
 ## Development environment setup
 
@@ -48,7 +48,7 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
     your extra branch(es).
 
 > **[?]**
-> Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code.
+> Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code. ([examples](https://www.google.com/search?q=english+"present+tense+example"))
 
 ## Issues and feature requests
 

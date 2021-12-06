@@ -95,10 +95,7 @@ case $state in
                 plugins=( "${plugins[@]//---//}" )
                 plugins=( "${plugins[@]:#_local/zi}" )
                 plugins=( "${plugins[@]:#custom}" )
-                _alternative \
-                    'plugins:-- Plugin --:compadd -a - plugins' \
-                    'directories:-- Directory --:_directories' && \
-                        ret=0
+                _alternative 'plugins:-- Plugin --:compadd -a - plugins' 'directories:-- Directory --:_directories' && ret=0
                 ;;
             run|add-fpath)
                 typeset -a plugins
@@ -108,15 +105,11 @@ case $state in
                 plugins=( "${plugins[@]:#custom}" )
                 local -a opts
                 if [[ $words[2] = run ]]; then
-                    opts=( -l )
+                  opts=( -l )
                 else
-                    opts=( -f --front )
+                  opts=( -f --front )
                 fi
-                _alternative \
-                    'plugins:-- Plugin --:compadd -a - plugins' \
-                    'directories:-- Directory --:_directories' \
-                    'opts:-- Option --:compadd -a - opts' && \
-                        ret=0
+                _alternative 'plugins:-- Plugin --:compadd -a - plugins' 'directories:-- Directory --:_directories' 'opts:-- Option --:compadd -a - opts' && ret=0
                 ;;
             compile|stress|edit|glance|recall|update|status|cd|changes|delete)
                 # Plugins
@@ -133,15 +126,13 @@ case $state in
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )
                 for sni ( ${snippets[@]} ) {
-                    if [[ -n ${ZI_SNIPPETS[$sni]} ]]; then
-                        snippets_alreadyld+=( $sni )
-                        snippets=( ${snippets[@]:#$sni} )
-                    fi
+                  if [[ -n ${ZI_SNIPPETS[$sni]} ]]; then
+                    snippets_alreadyld+=( $sni )
+                    snippets=( ${snippets[@]:#$sni} )
+                  fi
                 }
-                _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' \
-                    'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' \
-                    'plugins:-- Plugin --:compadd -a - plugins' && \
-                        ret=0
+                _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' 'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' \
+                'plugins:-- Plugin --:compadd -a - plugins' && ret=0
                 ;;
             unload|report)
                 typeset -a plugins absolute normal
@@ -152,9 +143,7 @@ case $state in
                 local hm="${HOME%/}"
                 absolute=( "${absolute[@]/$hm/HOME}" )
                 plugins=( $normal $absolute )
-                _wanted plugins expl "-- Plugin --" \
-                    compadd "$@" -a - plugins && \
-                        ret=0
+                _wanted plugins expl "-- Plugin --" compadd "$@" -a - plugins && ret=0
                 ;;
             all-reports)
                 _message "Hit enter to get all reports (for all loaded plugins)" && ret=0
@@ -173,16 +162,13 @@ case $state in
                 typeset -a completions
                 completions=( "${ZI[COMPLETIONS_DIR]}"/_*(N:t) )
                 completions=( "${completions[@]#_}" )
-                _wanted plugins expl "-- Completion --" \
-                compadd "$@" -a - completions && ret=0
+                _wanted plugins expl "-- Completion --" compadd "$@" -a - completions && ret=0
                 ;;
             cenable)
                 # Find disabled
                 typeset -a completions
                 completions=( "${ZI[COMPLETIONS_DIR]}"/[^_]*(N:t) )
-                _wanted plugins expl "-- Completion --" \
-                    compadd "$@" -a - completions && \
-                        ret=0
+                _wanted plugins expl "-- Completion --" compadd "$@" -a - completions && ret=0
                 ;;
             creinstall)
                 # Complete only plugins that have any completions
@@ -191,19 +177,17 @@ case $state in
                 typeset -a plugins completions
                 local p c user plugin
                 for p in "${ZI[PLUGINS_DIR]}"/*; do
-                    completions=( "$p"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|_zsh_highlight*|/zsdoc/*)(DN) )
-                    for c in "${completions[@]}"; do
-                        p="${p:t}"
-                        user="${p%%---*}"
-                        plugin="${p#*---}"
-                        [[ "$user" = "$plugin" && "${user}---${plugin}" != "$p" ]] && user=""
-                        plugins+=( "${user:+$user/}$plugin" )
-                        break
-                    done
+                  completions=( "$p"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|_zsh_highlight*|/zsdoc/*)(DN) )
+                  for c in "${completions[@]}"; do
+                    p="${p:t}"
+                    user="${p%%---*}"
+                    plugin="${p#*---}"
+                    [[ "$user" = "$plugin" && "${user}---${plugin}" != "$p" ]] && user=""
+                    plugins+=( "${user:+$user/}$plugin" )
+                    break
+                  done
                 done
-                _wanted plugins expl "-- Plugin --" \
-                    compadd "$@" -a - plugins && \
-                        ret=0
+                _wanted plugins expl "-- Plugin --" compadd "$@" -a - plugins && ret=0
                 ;;
             cuninstall)
                 # We must iterate each plugin and check if
@@ -211,24 +195,22 @@ case $state in
                 typeset -a plugins completions
                 local p c user plugin cfile bkpfile
                 for p in "${ZI[PLUGINS_DIR]}"/*; do
-                    completions=( "$p"/**/_[^_.][^.]#(N) )
-                    for c in "${completions[@]}"; do
-                        cfile="${c:t}"
-                        bkpfile="${cfile#_}"
-                        # Completion installed, either enabled or disabled?
-                        if [[ -e "${ZI[COMPLETIONS_DIR]}"/"$cfile" || -e "${ZI[COMPLETIONS_DIR]}"/"$bkpfile" ]]; then
-                            p="${p:t}"
-                            user="${p%%---*}"
-                            plugin="${p#*---}"
-                            [[ "$user" = "$plugin" && "${user}---${plugin}" != "$p" ]] && user=""
-                            plugins+=( "${user:+$user/}$plugin" )
-                            break
-                        fi
-                    done
+                  completions=( "$p"/**/_[^_.][^.]#(N) )
+                  for c in "${completions[@]}"; do
+                    cfile="${c:t}"
+                    bkpfile="${cfile#_}"
+                    # Completion installed, either enabled or disabled?
+                    if [[ -e "${ZI[COMPLETIONS_DIR]}"/"$cfile" || -e "${ZI[COMPLETIONS_DIR]}"/"$bkpfile" ]]; then
+                      p="${p:t}"
+                      user="${p%%---*}"
+                      plugin="${p#*---}"
+                      [[ "$user" = "$plugin" && "${user}---${plugin}" != "$p" ]] && user=""
+                      plugins+=( "${user:+$user/}$plugin" )
+                      break
+                    fi
+                  done
                 done
-                _wanted plugins expl "-- Plugin --" \
-                    compadd "$@" -a - plugins && \
-                        ret=0
+                _wanted plugins expl "-- Plugin --" compadd "$@" -a - plugins && ret=0
                 ;;
             compinit)
                 _message "Hit enter to refresh completion system" && ret=0
@@ -241,15 +223,13 @@ case $state in
                 snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
                 snippets=( ${snippets[@]/--//} )
                 for sni ( ${snippets[@]} ) {
-                    if [[ -n ${ZI_SNIPPETS[$sni]} ]]; then
-                        snippets_alreadyld+=( $sni )
-                        snippets=( ${snippets[@]:#$sni} )
-                    fi
+                  if [[ -n ${ZI_SNIPPETS[$sni]} ]]; then
+                    snippets_alreadyld+=( $sni )
+                    snippets=( ${snippets[@]:#$sni} )
+                  fi
                 }
-                _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' \
-                    'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' \
-                    'files:-- File --:_files' && \
-                        ret=0
+                _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' 'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' \
+                'files:-- File --:_files' && ret=0
                 ;;
             dstart|dtrace)
                 _message "Hit enter to start tracking this session" && ret=0
@@ -274,18 +254,16 @@ case $state in
                 plugins=( "${ZI[PLUGINS_DIR]}"/*(N) )
                 typeset -a show_plugins p matches
                 for p in "${plugins[@]}"; do
-                    matches=( $p/*.zwc(N) )
-                    if [ "$#matches" -ne "0" ]; then
-                        p="${p:t}"
-                        [ "$p" = "_local---zi" ] && continue
-                        [ "$p" = "custom" ] && continue
-                        p="${p//---//}"
-                        show_plugins+=( "$p" )
-                    fi
+                  matches=( $p/*.zwc(N) )
+                  if [ "$#matches" -ne "0" ]; then
+                    p="${p:t}"
+                    [ "$p" = "_local---zi" ] && continue
+                    [ "$p" = "custom" ] && continue
+                    p="${p//---//}"
+                    show_plugins+=( "$p" )
+                  fi
                 done
-                _wanted show_plugins expl "-- Plugin --" \
-                    compadd "$@" -a - show_plugins && \
-                        ret=0
+                _wanted show_plugins expl "-- Plugin --" compadd "$@" -a - show_plugins && ret=0
                 ;;
             uncompile-all)
                 _message 'Hit enter remove compiled versions of all downloaded plugins' && ret=0
@@ -305,9 +283,9 @@ case $state in
             recently)
                 typeset -a timespecs
                 timespecs=(
-                    "3 days":"code modified during last 3 days"
-                    "1 week":"code modified during last 7 days (default)"
-                    "1 month":"code modified during last month"
+                  "3 days":"code modified during last 3 days"
+                  "1 week":"code modified during last 7 days (default)"
+                  "1 month":"code modified during last month"
                 )
                 _describe -t timespecs "Time spec" timespecs && ret=0
                 ;;
@@ -315,8 +293,7 @@ case $state in
                 _message 'Plugin spec or just enter, to create new plugin' && ret=0
                 ;;
             env-whitelist)
-                _wanted plugins expl "-- Parameter To White List During Any Plugin Unload --" \
-                    _parameters && ret=0
+                _wanted plugins expl "-- Parameter To White List During Any Plugin Unload --" _parameters && ret=0
                 ;;
             *)
                 ret=1

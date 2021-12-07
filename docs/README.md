@@ -46,6 +46,9 @@ Nightly Release
 
 ---
 
+[![asciicast](https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg)](https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf)
+
+
 ## Getting Started
 
 ### Prerequisites

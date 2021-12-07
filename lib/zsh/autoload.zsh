@@ -2966,7 +2966,20 @@ EOF
     }
     builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
   )
-} # ]]]
+}
+# ]]]
+# FUNCTION: .zi-turbo [[[
+# ZI simplified Turbo mode.
+# # Allows to specify load group of plugins in order.
+# Allowed group values [0-9][a-d], default depth set to 3.
+# e.g. '0a' first, '0b' for second, '2a' for third and '9d' the last possible etc.
+#
+# zt '0a' for some-first-plugin
+# zt '0b' for \
+#   some-plugin \
+#   another-plugin
+.zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
+# ]]]
 
 #
 # Help function

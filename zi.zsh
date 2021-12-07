@@ -2620,6 +2620,8 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
         (-h|help)
           .zi-help
           ;;
+        (zt)
+          .zi-turbo
         (ls)
           shift
           .zi-ls "$@"
@@ -2680,7 +2682,6 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
   ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 } # ]]]
 # Compatibility functions. [[[
-zt() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }

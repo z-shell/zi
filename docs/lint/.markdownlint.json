@@ -1,0 +1,24 @@
+{
+  "default": true,
+  "MD033": {
+    "allowed_elements": [
+      "h1",
+      "h2",
+      "h3",
+      "HR",
+      "p",
+      "a",
+      "div",
+      "img",
+      "br",
+      "details",
+      "summary",
+      "strong",
+      "table",
+      "tr",
+      "td"
+    ]
+  },
+  "line-length": false,
+  "first-line-heading": false
+}

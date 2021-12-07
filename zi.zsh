@@ -2151,7 +2151,7 @@ zi() {
 
   reply=( ${ZI_EXTS[(I)z-annex subcommand:*]} )
 
-  [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|turbo|ice|\
+  [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
 update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|\
 completions|cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|\
 dunload|dreport|dclear|compile|uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|\
@@ -2620,9 +2620,6 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
         (-h|help)
           .zi-help
           ;;
-        (turbo)
-          .zi-turbo
-          ;;
         (ls)
           shift
           .zi-ls "$@"
@@ -2682,6 +2679,12 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
   ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
   ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 } # ]]]
+# FUNCTION: zi-turbo. [[[
+# ZI simplified Turbo mode.
+# Allows to specify load group of plugins in order. Allowed group values [0-9][a-d], default depth set to 3.
+# e.g. '0a' first, '0b' for second, '2a' for third and '9d' the last possible etc.
+zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
+# ]]]
 # Compatibility functions. [[[
 zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }

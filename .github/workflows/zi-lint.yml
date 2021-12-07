@@ -1,7 +1,6 @@
 name: ZI Lint
 
 on:
-  push:
   pull_request_target:
 
 jobs:

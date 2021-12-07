@@ -1,7 +1,8 @@
-name: Deploy Wiki
+name: 📖 Wiki CI
 
 on:
   push:
+    branches: wiki
     paths:
       - 'docs/wiki/**'
   workflow_dispatch:
@@ -11,7 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: GitHub Wiki Action
+    - name: 🌟 Markdown lint
+      uses: nosborn/github-action-markdown-cli@master
+      with:
+        files: "docs/wiki/*.md"
+        config_file: "docs/lint/.markdownlint.json"
+
+    - name: 📩 Add to wiki  
       uses: Andrew-Chen-Wang/github-wiki-action@v2
       env:
         WIKI_DIR: docs/wiki/

@@ -2151,7 +2151,7 @@ zi() {
 
   reply=( ${ZI_EXTS[(I)z-annex subcommand:*]} )
 
-  [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|zt|ice|\
+  [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|turbo|ice|\
 update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|\
 completions|cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|\
 dunload|dreport|dclear|compile|uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|\
@@ -2620,7 +2620,7 @@ You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice
         (-h|help)
           .zi-help
           ;;
-        (zt)
+        (turbo)
           .zi-turbo
           ;;
         (ls)

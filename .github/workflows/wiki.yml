@@ -2,27 +2,27 @@ name: 📖 Wiki CI
 
 on:
   push:
-    branches: wiki
+    branches: [ wiki ]
     paths:
-      - 'docs/wiki/**'
+      - "docs/wiki/**"
   workflow_dispatch:
 
 jobs:
   deploy-wiki:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: 🌟 Markdown lint
-      uses: nosborn/github-action-markdown-cli@master
-      with:
-        files: "docs/wiki/*.md"
-        config_file: "docs/lint/.markdownlint.json"
+      - uses: actions/checkout@v2
+      - name: 🌟 Markdown lint
+        uses: nosborn/github-action-markdown-cli@master
+        with:
+          files: "docs/wiki/*.md"
+          config_file: "docs/lint/.markdownlint.json"
 
-    - name: 📩 Add to wiki  
-      uses: Andrew-Chen-Wang/github-wiki-action@v2
-      env:
-        WIKI_DIR: docs/wiki/
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GH_MAIL: ${{ secrets.GH_MAIL }}
-        GH_NAME: ${{ github.repository_owner }}
-        EXCLUDED_FILES: "docs/wiki/drafts"
+      - name: 📩 Add to wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v2
+        env:
+          WIKI_DIR: docs/wiki/
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_MAIL: ${{ secrets.GH_MAIL }}
+          GH_NAME: ${{ github.repository_owner }}
+          EXCLUDED_FILES: "docs/wiki/drafts"

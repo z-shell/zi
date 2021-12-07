@@ -1,6 +1,7 @@
 name: 🌟 ZI Lint
 
 on:
+  workflow_dispatch:
   pull_request_target:
 
 jobs:

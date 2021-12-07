@@ -259,9 +259,9 @@
   for ___key in ${ice_order[@]}; do
     [[ $___key == (no|)compile ]] && continue
     (( 0 == ${+ICE[no$___key]} && 0 == ${+___sice[no$___key]} )) && continue
-  # "If there is such ice currently, and there's no no* ice given, and there's the no* ice in the static ice" – skip, don't unset.
-  # With conjunction with the previous line this has the proper meaning: uset if at least in one – current or static – ice
-  # there's the no* ice, but not if it's only in the static ice (unless there's on such ice "anyway").
+    # "If there is such ice currently, and there's no no* ice given, and there's the no* ice in the static ice" – skip, don't unset.
+    # With conjunction with the previous line this has the proper meaning: uset if at least in one – current or static – ice
+    # there's the no* ice, but not if it's only in the static ice (unless there's on such ice "anyway").
     (( 1 == ${+ICE[$___key]} && 0 == ${+ICE[no$___key]} && 1 == ${+___sice[no$___key]} )) && continue
     if [[ "$___key" = "svn" ]]; then
       command builtin print -r -- "0" >! "$___zi_path/mode"
@@ -297,8 +297,8 @@
 # $2 - name of hash that holds values
 # $3 - additional keys of hash to store, space separated
 # $4 - additional keys of hash to store, empty-meaningful ices, space separated
-# $5 – the URL, if applicable
-# $6 – the mode (1 - svn, 0 - single file), if applicable
+# $5 - the URL, if applicable
+# $6 - the mode (1 - svn, 0 - single file), if applicable
 .zi-store-ices() {
   local ___pfx="$1" ___ice_var="$2" ___add_ices="$3" ___add_ices2="$4" url="$5" mode="$6"
   # Copy from .zi-recall

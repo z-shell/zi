@@ -1908,197 +1908,195 @@ zimv() {
 # ]]]
 # FUNCTION: ∞zi-reset-opt-hook [[[
 ∞zi-reset-hook() {
-  # File
-  if [[ "$1" = plugin ]] {
-    local type="$1" user="$2" plugin="$3" id_as="$4" dir="${5#%}" hook="$6"
+# File
+if [[ "$1" = plugin ]] {
+  local type="$1" user="$2" plugin="$3" id_as="$4" dir="${5#%}" hook="$6"
+} else {
+  local type="$1" url="$2" id_as="$3" dir="${4#%}" hook="$5"
+}
+if (( ( OPTS[opt_-r,--reset] && ZI[-r/--reset-opt-hook-has-been-run] == 0 ) || ( ${+ICE[reset]} && ZI[-r/--reset-opt-hook-has-been-run] == 1 )
+)) {
+  if (( ZI[-r/--reset-opt-hook-has-been-run] )) {
+    local msg_bit="{meta}reset{msg2} ice given{pre}" option=
   } else {
-    local type="$1" url="$2" id_as="$3" dir="${4#%}" hook="$5"
+    local msg_bit="{meta2}-r/--reset{msg2} given to \`{meta}update{pre}'" option=1
   }
-  if (( ( OPTS[opt_-r,--reset] && ZI[-r/--reset-opt-hook-has-been-run] == 0 ) || ( ${+ICE[reset]} && ZI[-r/--reset-opt-hook-has-been-run] == 1 )
-  )) {
-    if (( ZI[-r/--reset-opt-hook-has-been-run] )) {
-      local msg_bit="{meta}reset{msg2} ice given{pre}" option=
+  if [[ $type == snippet ]] {
+    if (( $+ICE[svn] )) {
+      if [[ $skip_pull -eq 0 && -d $filename/.svn ]] {
+        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository ($msg_bit) with command: {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
+        command svn revert --recursive $filename/.
+      }
     } else {
-      local msg_bit="{meta2}-r/--reset{msg2} given to \`{meta}update{pre}'" option=1
-    }
-    if [[ $type == snippet ]] {
-      if (( $+ICE[svn] )) {
-        if [[ $skip_pull -eq 0 && -d $filename/.svn ]] {
-          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository ($msg_bit) with command: {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
-          command svn revert --recursive $filename/.
-        }
-      } else {
-        if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
-          if (( !OPTS[opt_-q,--quiet] )) {
-            if [[ -f $local_dir/$dirname/$filename ]] {
-              if [[ -n $option || -z $ICE[reset] ]] {
-                +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2} {…}{rst}"
-              } else {
-                +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2}," \
-                  "with the supplied code: {data2}$ICE[reset]{msg2} {…}{rst}"
-              }
-              if (( option )) {
-                command rm -f "$local_dir/$dirname/$filename"
-              } else {
-                eval "${ICE[reset]:-rm -f \"$local_dir/$dirname/$filename\"}"
-              }
+      if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
+        if (( !OPTS[opt_-q,--quiet] )) {
+          if [[ -f $local_dir/$dirname/$filename ]] {
+            if [[ -n $option || -z $ICE[reset] ]] {
+              +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2} {…}{rst}"
             } else {
-              +zi-message "{pre}reset ($msg_bit):{msg2} The file {file}$filename{msg2} is already deleted {…}{rst}"
-              if [[ -n $ICE[reset] && ! -n $option ]] {
-                +zi-message "{pre}reset ($msg_bit):{msg2} (skipped running the provided reset-code:" \
-                  "{data2}$ICE[reset]{msg2}){rst}"
-              }
+              +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2}," \
+                "with the supplied code: {data2}$ICE[reset]{msg2} {…}{rst}"
+            }
+            if (( option )) {
+              command rm -f "$local_dir/$dirname/$filename"
+            } else {
+              eval "${ICE[reset]:-rm -f \"$local_dir/$dirname/$filename\"}"
+            }
+          } else {
+            +zi-message "{pre}reset ($msg_bit):{msg2} The file {file}$filename{msg2} is already deleted {…}{rst}"
+            if [[ -n $ICE[reset] && ! -n $option ]] {
+              +zi-message "{pre}reset ($msg_bit):{msg2} (skipped running the provided reset-code:" \
+                "{data2}$ICE[reset]{msg2}){rst}"
             }
           }
-        } else {
-            [[ -f $local_dir/$dirname/$filename ]] && \
-              +zi-message "{pre}reset ($msg_bit): {msg2}Skipping the removal of {file}$filename{msg2}" \
-                "as there is no new copy scheduled for download.{rst}" || \
-              +zi-message "{pre}reset ($msg_bit): {msg2}The file {file}$filename{msg2} is already deleted" \
-                "and {ehi}no new download is being scheduled.{rst}"
         }
+      } else {
+          [[ -f $local_dir/$dirname/$filename ]] && \
+            +zi-message "{pre}reset ($msg_bit): {msg2}Skipping the removal of {file}$filename{msg2}" \
+              "as there is no new copy scheduled for download.{rst}" || \
+            +zi-message "{pre}reset ($msg_bit): {msg2}The file {file}$filename{msg2} is already deleted" \
+              "and {ehi}no new download is being scheduled.{rst}"
       }
-    } elif [[ $type == plugin ]] {
-      if (( is_release && !skip_pull )) {
-        if (( option )) {
-          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*"
-          builtin eval command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)
-        } else {
-          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}${ICE[reset]:-rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*}"
-          builtin eval ${ICE[reset]:-command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)}
-        }
-      } elif (( !skip_pull )) {
-        if (( option )) {
-          +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} git reset --hard HEAD {…}"
-          command git reset --hard HEAD
-        } else {
-          +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} ${ICE[reset]:-git reset --hard HEAD} {…}"
-          builtin eval "${ICE[reset]:-git reset --hard HEAD}"
-        }
+    }
+  } elif [[ $type == plugin ]] {
+    if (( is_release && !skip_pull )) {
+      if (( option )) {
+        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*"
+        builtin eval command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)
+      } else {
+        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}${ICE[reset]:-rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*}"
+        builtin eval ${ICE[reset]:-command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)}
+      }
+    } elif (( !skip_pull )) {
+      if (( option )) {
+        +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} git reset --hard HEAD {…}"
+        command git reset --hard HEAD
+      } else {
+        +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} ${ICE[reset]:-git reset --hard HEAD} {…}"
+        builtin eval "${ICE[reset]:-git reset --hard HEAD}"
       }
     }
   }
+}
 
-  if (( OPTS[opt_-r,--reset] )) {
-    if (( ZI[-r/--reset-opt-hook-has-been-run] == 1 )) {
-      ZI[-r/--reset-opt-hook-has-been-run]=0
-    } else {
-      ZI[-r/--reset-opt-hook-has-been-run]=1
-    }
+if (( OPTS[opt_-r,--reset] )) {
+  if (( ZI[-r/--reset-opt-hook-has-been-run] == 1 )) {
+    ZI[-r/--reset-opt-hook-has-been-run]=0
   } else {
-    # If there's no -r/--reset, pretend that it already has been served.
     ZI[-r/--reset-opt-hook-has-been-run]=1
   }
+} else {
+  # If there's no -r/--reset, pretend that it already has been served.
+  ZI[-r/--reset-opt-hook-has-been-run]=1
+}
 } # ]]]
 # FUNCTION: ∞zi-make-ee-hook [[[
 ∞zi-make-ee-hook() {
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
 
-  local make=${ICE[make]}
-  @zi-substitute make
-  # Git-plugin make'' at download
-  [[ $make = "!!"* ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!\!}}
+local make=${ICE[make]}
+@zi-substitute make
+# Git-plugin make'' at download
+[[ $make = "!!"* ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!\!}}
 } # ]]]
 # FUNCTION: ∞zi-make-e-hook [[[
 ∞zi-make-e-hook() {
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
 
-  local make=${ICE[make]}
-  @zi-substitute make
-  # Git-plugin make'' at download
-  [[ $make = ("!"[^\!]*|"!") ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!}}
+local make=${ICE[make]}
+@zi-substitute make
+# Git-plugin make'' at download
+[[ $make = ("!"[^\!]*|"!") ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!}}
 } # ]]]
 # FUNCTION: ∞zi-make-hook [[[
 ∞zi-make-hook() {
-  [[ "$1" = plugin ]] && \
-    local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-
-  local make=${ICE[make]}
-  @zi-substitute make
-  # Git-plugin make'' at download
-  (( ${+ICE[make]} )) && [[ $make != "!"* ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)make}
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+local make=${ICE[make]}
+@zi-substitute make
+# Git-plugin make'' at download
+(( ${+ICE[make]} )) && [[ $make != "!"* ]] && .zi-countdown make && command make -C "$dir" ${(@s; ;)make}
 } # ]]]
 # FUNCTION: ∞zi-atclone-hook [[[
 ∞zi-atclone-hook() {
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-  local atclone=${ICE[atclone]}
-  @zi-substitute atclone
-  [[ -n $atclone ]] && .zi-countdown atclone && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && eval "$atclone"; ((1)); } || eval "$atclone"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+local atclone=${ICE[atclone]}
+@zi-substitute atclone
+[[ -n $atclone ]] && .zi-countdown atclone && { local ___oldcd=$PWD; (( ${+ICE[nocd]} == 0 )) && { () { setopt localoptions noautopushd; builtin cd -q "$dir"; } && eval "$atclone"; ((1)); } || eval "$atclone"; () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; }
 } # ]]]
 # FUNCTION: ∞zi-extract-hook [[[
 ∞zi-extract-hook() {
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-  local extract=${ICE[extract]}
-  @zi-substitute extract
-  (( ${+ICE[extract]} )) && .zi-extract plugin "$extract" "$dir"
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+local extract=${ICE[extract]}
+@zi-substitute extract
+(( ${+ICE[extract]} )) && .zi-extract plugin "$extract" "$dir"
 } # ]]]
 # FUNCTION: ∞zi-mv-hook [[[
 ∞zi-mv-hook() {
-  [[ -z $ICE[mv] ]] && return
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
-  if [[ $ICE[mv] == *("->"|"→")* ]] {
-    local from=${ICE[mv]%%[[:space:]]#(->|→)*} to=${ICE[mv]##*(->|→)[[:space:]]#} || \
-  } else {
-    local from=${ICE[mv]%%[[:space:]]##*} to=${ICE[mv]##*[[:space:]]##}
-  }
-  @zi-substitute from to
-  local -a afr
-  ( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
-    afr=( ${~from}(DN) )
-    if (( ${#afr} )) {
-      if (( !OPTS[opt_-q,--quiet] )) {
-        command mv -vf "${afr[1]}" "$to"
-        command mv -vf "${afr[1]}".zwc "$to".zwc 2>/dev/null
-      } else {
-        command mv -f "${afr[1]}" "$to"
-        command mv -f "${afr[1]}".zwc "$to".zwc 2>/dev/null
-      }
+[[ -z $ICE[mv] ]] && return
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+if [[ $ICE[mv] == *("->"|"→")* ]] {
+  local from=${ICE[mv]%%[[:space:]]#(->|→)*} to=${ICE[mv]##*(->|→)[[:space:]]#} || \
+} else {
+  local from=${ICE[mv]%%[[:space:]]##*} to=${ICE[mv]##*[[:space:]]##}
+}
+@zi-substitute from to
+local -a afr
+( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+  afr=( ${~from}(DN) )
+  if (( ${#afr} )) {
+    if (( !OPTS[opt_-q,--quiet] )) {
+      command mv -vf "${afr[1]}" "$to"
+      command mv -vf "${afr[1]}".zwc "$to".zwc 2>/dev/null
+    } else {
+      command mv -f "${afr[1]}" "$to"
+      command mv -f "${afr[1]}".zwc "$to".zwc 2>/dev/null
     }
-  )
+  }
+)
 } # ]]]
 # FUNCTION: ∞zi-cp-hook [[[
 ∞zi-cp-hook() {
-  [[ -z $ICE[cp] ]] && return
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+[[ -z $ICE[cp] ]] && return
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
 
-  if [[ $ICE[cp] == *("->"|"→")* ]] {
-    local from=${ICE[cp]%%[[:space:]]#(->|→)*} to=${ICE[cp]##*(->|→)[[:space:]]#} || \
-  } else {
-    local from=${ICE[cp]%%[[:space:]]##*} to=${ICE[cp]##*[[:space:]]##}
-  }
+if [[ $ICE[cp] == *("->"|"→")* ]] {
+  local from=${ICE[cp]%%[[:space:]]#(->|→)*} to=${ICE[cp]##*(->|→)[[:space:]]#} || \
+} else {
+  local from=${ICE[cp]%%[[:space:]]##*} to=${ICE[cp]##*[[:space:]]##}
+}
 
-  @zi-substitute from to
+@zi-substitute from to
 
-  local -a afr
-  ( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
-    afr=( ${~from}(DN) )
-    if (( ${#afr} )) {
-      if (( !OPTS[opt_-q,--quiet] )) {
-        command cp -vf "${afr[1]}" "$to"
-        command cp -vf "${afr[1]}".zwc "$to".zwc 2>/dev/null
-      } else {
-        command cp -f "${afr[1]}" "$to"
-        command cp -f "${afr[1]}".zwc "$to".zwc 2>/dev/null
-      }
+local -a afr
+( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+  afr=( ${~from}(DN) )
+  if (( ${#afr} )) {
+    if (( !OPTS[opt_-q,--quiet] )) {
+      command cp -vf "${afr[1]}" "$to"
+      command cp -vf "${afr[1]}".zwc "$to".zwc 2>/dev/null
+    } else {
+      command cp -f "${afr[1]}" "$to"
+      command cp -f "${afr[1]}".zwc "$to".zwc 2>/dev/null
     }
-  )
+  }
+)
 } # ]]]
 # FUNCTION: ∞zi-compile-plugin-hook [[[
 ∞zi-compile-plugin-hook() {
-  [[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
+[[ "$1" = plugin ]] && local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   if [[ ( $hook = *\!at(clone|pull)* && ${+ICE[nocompile]} -eq 0 ) || ( $hook = at(clone|pull)* && $ICE[nocompile] = '!' ) ]] {
-    # Compile plugin
-    if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
-      () {
-        emulate -LR zsh
-        setopt extendedglob warncreateglobal
-        if [[ $tpe == snippet ]] {
-          .zi-compile-plugin "%$dir" ""
-        } else {
-          .zi-compile-plugin "$id_as" ""
-        }
+  # Compile plugin
+  if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
+    () {
+      emulate -LR zsh
+      setopt extendedglob warncreateglobal
+      if [[ $tpe == snippet ]] {
+        .zi-compile-plugin "%$dir" ""
+      } else {
+        .zi-compile-plugin "$id_as" ""
       }
     }
+  }
   }
 } # ]]]
 # FUNCTION: ∞zi-atpull-e-hook [[[

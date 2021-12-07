@@ -1,7 +1,9 @@
 ---
-name: Sync Labels
+name: ♻️ Sync Labels
 
 on:
+  schedule:
+    - cron: "20 2 * * 2"
   push:
     branches:
       - main

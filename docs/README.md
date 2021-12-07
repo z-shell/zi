@@ -32,7 +32,6 @@ Nightly Release
     - [Interactive install](#interactive-install)
     - [Quick install](#quick-install)
     - [Manual install](#manual-install)
-- [Usage](#usage)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Authors & contributors](#authors--contributors)
@@ -46,6 +45,9 @@ Nightly Release
 </details>
 
 ---
+
+[![asciicast](https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg)](https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf)
+
 
 ## Getting Started
 
@@ -96,13 +98,9 @@ autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi
 ```
 
-## Usage
-
-All usage information available [**here**](https://github.com/z-shell/zi/wiki/Usage). If you know how we could improve it, please let us know. We highly appreciated any feedback.
-
 ## Documentation
 
-All [documentation](https://github.com/z-shell/zi/wiki) can be viewed on our wiki pages.
+All [documentation](https://github.com/z-shell/zi/wiki) can be viewed on our wiki pages. If you know how we could improve it, please let us know. We highly appreciated any feedback.
 
 ## Contributing
 
@@ -116,19 +114,19 @@ Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-config
 
 ## Authors & contributors
 
-The original setup of this repository is by [Z-Shell ❮ ZI ❯ Community](https://github.com/z-shell).
+The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
 
 For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
 
 ## Project assistance
 
-If you want to say **thank you** or/and support active development of Z-Shell ❮ ZI ❯:
+If you want to say **thank you** or/and support active development of Z-Shell ZI :
 
 - Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
-- Tweet about the Z-Shell ❮ ZI ❯.
+- Tweet about the ❮ ZI ❯.
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
-Together, we can make Z-Shell ❮ ZI ❯ **better**!
+Together, we can make Z-Shell ZI **better**!
 
 ## Security
 

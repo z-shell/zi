@@ -1,4 +1,4 @@
-name: ZI Lint
+name: 🌟 ZI Lint
 
 on:
   pull_request_target:
@@ -14,7 +14,7 @@ jobs:
       - name: "✨ Set matrix output"
         id: set-matrix
         run: |
-          MATRIX="$(find . -type d -name 'doc' -prune -o -type f -iname '*.zsh' -print | jq -ncR '{"include": [{"file": inputs}]}')"
+          MATRIX="$(find . -type d -name 'doc' -prune -o -type f \(-iname '*.zsh' -name '_zi' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
           echo "MATRIX=${MATRIX}" >&2
           echo "::set-output name=matrix::${MATRIX}"
   lint:

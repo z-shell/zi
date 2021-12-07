@@ -13,7 +13,7 @@ trim_trailing_whitespace = false
 
 [*.{yml,yaml}]
 indent_style = space
-tab_width = 4
+tab_width = 2
 
 [*.{sh,bash,zsh,fish}]
 indent_style = space

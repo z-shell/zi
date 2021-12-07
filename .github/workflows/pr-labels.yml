@@ -1,10 +1,10 @@
 ---
-name: Verify PR Labels
+name: 🏷️ Verify PR Labels
 
 on:
   workflow_dispatch:  
   pull_request_target:
-   types: ['opened', 'labeled', 'unlabeled', 'synchronize' ]
+   types: [ 'opened', 'labeled', 'unlabeled', 'synchronize' ]
 
 jobs:
   pr_labels:

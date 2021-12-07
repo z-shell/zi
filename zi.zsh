@@ -144,7 +144,7 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+te
   col-func    $'\e[38;5;219m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;81m'
   col-glob    $'\e[38;5;227m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
   col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
-  col-hi      $'\e[1m\e[38;5;183m' col-obj2    $'\e[38;5;118m'
+  col-hi      $'\e[1m\e[38;5;183m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
   col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'
   col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;219m'
   col-mdsh  "$'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'"
@@ -2183,8 +2183,7 @@ env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-anne
       local ___last_ice=${@[___retval2]}
       shift ___retval2
       if [[ $# -gt 0 && $1 != for ]] {
-        +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" \
-            "{apo}\`{cmd}$1{apo}\`{rst} "
+        +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" "{apo}\`{cmd}$1{apo}\`{rst} "
         +zi-prehelp-usage-message rst
         return 1
       } elif (( $# == 0 )) {
@@ -2266,8 +2265,7 @@ env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-anne
                     { [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] && \
                       +zi-message "{u-warn}Warning{b-warn}:{msg} Bad new-ices returned" \
                         "from the annex{ehi}:{rst} {annex}${___arr[3]}{msg}," \
-                        "please file an issue report at:{url}" \
-                  "https://github.com/z-shell/${___arr[3]}/issues/new{msg}.{rst}"
+                        "please file an issue report at:{url}" "https://github.com/z-shell/${___arr[3]}/issues/new{msg}.{rst}"
                       ___ices=(  ) ___retval+=7
                     }
               }

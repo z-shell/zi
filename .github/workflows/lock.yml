@@ -1,9 +1,9 @@
 ---
-name: Lock closed issues and PRs
+name: 🔒 Lock closed issues and PRs
 
 on:
   schedule:
-    - cron: "0 9 * * *"
+    - cron: "30 2 * * *"
   workflow_dispatch:
 
 jobs:

@@ -1779,7 +1779,8 @@ ${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]";
         "See \`{cmd}help$bcol\` for a more detailed usage information and" \
         "the list of the {cmd}subcommands$bcol.{rst}"
   }
-} # ]]]
+}
+# ]]]
 # FUNCTION: +zi-parse-opts. [[[
 .zi-parse-opts() {
   builtin emulate -LR zsh -o extendedglob
@@ -1804,6 +1805,7 @@ integer retval
   [[ ${ZI_ICES[as]} = program ]] && ZI_ICES[as]=command
   [[ -n ${ZI_ICES[on-update-of]} ]] && ZI_ICES[subscribe]="${ZI_ICES[subscribe]:-${ZI_ICES[on-update-of]}}"
   [[ -n ${ZI_ICES[pick]} ]] && ZI_ICES[pick]="${ZI_ICES[pick]//\$ZPFX/${ZPFX%/}}"
+
 return retval
 } # ]]]
 # FUNCTION: .zi-pack-ice. [[[
@@ -1840,15 +1842,13 @@ return retval
   [[ -n ${ICE[pick]} ]] && ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"
 
   return 0
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-setup-params. [[[
 .zi-setup-params() {
   emulate -LR zsh -o extendedglob
   reply=( ${(@)${(@s.;.)ICE[param]}/(#m)*/${${MATCH%%(-\>|→|=\>)*}//((#s)[[:space:]]##|[[:space:]]##(#e))}${${(M)MATCH#*(-\>|→|=\>)}:+\=${${MATCH#*(-\>|→|=\>)}//((#s)[[:space:]]##|[[:space:]]##(#e))}}} )
   (( ${#reply} )) && return 0 || return 1
-}
-# ]]]
+} # ]]]
 
 #
 # Turbo.
@@ -2066,8 +2066,7 @@ return retval
   ZI_RUN[1-correct,___idx-correct]=()
 
   [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
-}
-# ]]]
+} # ]]]
 
 #
 # Exposed functions.
@@ -2369,9 +2368,9 @@ env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-anne
         +zi-message -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
         if [[ -n $___last_ice ]] {
           +zi-message -n " (the last recognized ice was: {ice}"\
-"${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
-You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice is in fact a plugin.{rst}
-{note}Note:{rst} The {apo}\`{ice}ice{apo}\`{rst} subcommand is now again required if not using the for-syntax"
+          "${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
+          You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice is in fact a plugin.{rst}
+          {note}Note:{rst} The {apo}\`{ice}ice{apo}\`{rst} subcommand is now again required if not using the for-syntax"
         }
         +zi-message "."
       }
@@ -2725,7 +2724,7 @@ ZI[STATES___local/zi]=1
 zstyle ':prezto:module:completion' loaded 1
 
 # Colorize completions for commands unload, report, creinstall, cuninstall.
-zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;36=4;35'
+zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;34=1;33'
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]

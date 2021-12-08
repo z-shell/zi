@@ -1,4 +1,4 @@
-name: 🌟 ZI Lint
+name: ✅ Zsh check 
 
 on:
   workflow_dispatch:
@@ -10,8 +10,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: "🌟 Checkout"
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: "✨ Set matrix output"
         id: set-matrix
         run: |
@@ -26,8 +25,7 @@ jobs:
       matrix: ${{ fromJSON(needs.build-matrix.outputs.matrix) }}
 
     steps:
-      - name: "🌟 Checkout"
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: "✨ Install dependencies"
         run: |
           sudo apt install -y zsh

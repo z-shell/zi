@@ -1,4 +1,4 @@
-name: 📖 Wiki CI
+name: 📖 Wiki
 
 on:
   push:

@@ -32,7 +32,6 @@ jobs:
           pr-inactive-days: '7'
           pr-lock-reason: ""
           pr-comment: >
-          
             Pull Request closed and locked due to lack of activity.
 
             If you'd like to build on this closed PR, you can clone it using

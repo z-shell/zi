@@ -1,3 +1,4 @@
+---
 name: 🧬 Automatic Rebase
 on:
   issue_comment:

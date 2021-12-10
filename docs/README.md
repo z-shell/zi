@@ -63,7 +63,7 @@ Nightly Release
 >
 > After installing and reloading the shell run: zi self-update
 
-#### Interactive install
+#### Interactive install (beta)
 
 > Requires: `bash`, `git`, `curl`.
 
@@ -137,16 +137,12 @@ _For more information and to report security issues, please refer to our [securi
 
 ## About
 
-> **[?]** [**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related).
->
-> Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
+[**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
 
 ## Acknowledgements
 
-> **[?]**
-> The [Z-Shell](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
->
-> We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
+The [Z-Shell](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
+We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
 
 ## Roadmap
 
@@ -157,15 +153,13 @@ See the [open issues](https://github.com/z-shell/zi/issues) for a list of propos
 - [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Support
-
-> **[?]**
-> Provide additional ways to contact the project maintainer/maintainers.
-
-Reach out to the maintainer at one of the following places:
+  
+Reach out to the maintainers at one of the following places:
 
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
+  
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social

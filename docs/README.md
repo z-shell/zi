@@ -46,8 +46,19 @@ Nightly Release
 
 ---
 
-[![asciicast](https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg)](https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf)
+## About
 
+  [**ZI**](https://github.com/z-shell/zi) is an interactive and flexible plugin manager for [**Zsh**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).
+
+
+- Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-parameter-holding-the-plugin-managers-capabilities)
+
+## Documentation
+
+Please see [wiki](https://github.com/z-shell/zi/wiki).
+
+> Curentlly we are working on how to improve and unify documentation in to one place.
+> If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.
 
 ## Getting Started
 
@@ -98,9 +109,13 @@ autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi
 ```
 
-## Documentation
+## Roadmap
 
-All [documentation](https://github.com/z-shell/zi/wiki) can be viewed on our wiki pages. If you know how we could improve it, please let us know. We highly appreciated any feedback.
+See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known issues).
+
+- [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+- [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
+- [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 
 ## Contributing
 
@@ -111,12 +126,6 @@ Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for be
 Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser.
 
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi)
-
-## Authors & contributors
-
-The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
-
-For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
 
 ## Project assistance
 
@@ -135,22 +144,17 @@ Together, we can make Z-Shell ZI **better**!
 
 _For more information and to report security issues, please refer to our [security documentation](../docs/SECURITY.md)._
 
-## About
-
-[**ZI**](https://github.com/z-shell/zi) (formerly zplugin, zinit) is an interactive and flexible plugin manager for Z shell [**(Zsh)**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) (not directly related). Z-Shell [**ZI**](https://github.com/z-shell/zi) is an open source community project released under the [MIT License](../LICENSE).
-
 ## Acknowledgements
 
-The [Z-Shell](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
+The [**Z-Shell**](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
 We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
+[**ZI**](https://github.com/z-shell/zi), formerly known as zplugin, zinit, is an open source community project released under the [MIT License](../LICENSE).
 
-## Roadmap
+### Authors & contributors
 
-See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known issues).
+The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
 
-- [Top Feature Requests](https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
-- [Top issues](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc) (Add your votes using the 👍 reaction)
-- [Newest issues](https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
 
 ## Support
   
@@ -159,8 +163,11 @@ Reach out to the maintainers at one of the following places:
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
-  
+---
+
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
 [twitter-link]: https://twitter.com/intent/tweet?text=Z-shell%20-%20ZI%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,plugin,z-shell
+[asciinema-preview]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg
+[asciinema-link]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf

@@ -50,7 +50,7 @@ Nightly Release
 
   [**ZI**](https://github.com/z-shell/zi) is an interactive and flexible plugin manager for [**Zsh**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).
 
-
+- Extensions: [z-annexes](https://github.com/z-shell/z-annexes)
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-parameter-holding-the-plugin-managers-capabilities)
 
 ## Documentation
@@ -132,7 +132,7 @@ Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-config
 If you want to say **thank you** or/and support active development of Z-Shell ZI :
 
 - Add a [GitHub Star](https://github.com/z-shell/zi) to the project.
-- Tweet about the ❮ ZI ❯.
+- [Tweet][twitter-link] about the ZI.
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
 Together, we can make Z-Shell ZI **better**!
@@ -168,6 +168,7 @@ Reach out to the maintainers at one of the following places:
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
-[twitter-link]: https://twitter.com/intent/tweet?text=Z-shell%20-%20ZI%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,plugin,z-shell
+[twitter-link]: https://twitter.com/intent/tweet?text=Interactive%20feature-rich%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell
 [asciinema-preview]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg
 [asciinema-link]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf
+

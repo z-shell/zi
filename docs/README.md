@@ -29,7 +29,7 @@ Nightly Release
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
-    - [Interactive install](#interactive-install)
+    - [Interactive install](#interactive-install-beta)
     - [Quick install](#quick-install)
     - [Manual install](#manual-install)
 - [Documentation](#documentation)

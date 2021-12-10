@@ -2677,9 +2677,9 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
   ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 } # ]]]
 # FUNCTION: zi-turbo. [[[
-# ZI simplified Turbo mode.
-# Allows to specify load group of plugins in order. Allowed group values [0-9][a-d], default depth set to 3.
-# e.g. '0a' first, '0b' for second, '2a' for third and '9d' the last possible etc.
+# With zi-turbo first argument is a wait time and suffix, i.e. "0a".
+# Anything that doesn't match will be passed as if it were an ice mod.
+# Default ices depth'3' and lucid, allowed values [0-9][a-d].
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 # ]]]
 # Compatibility functions. [[[

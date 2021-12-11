@@ -12,12 +12,11 @@ if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
 # Compatibility for previous versions.
-typeset -gAH ZINIT ZPLGM
+typeset -gAH ZINIT
 ZI=(
   "${(kv)ZINIT[@]}" "${(kv)ZI[@]}"
-  "${(kv)ZPLGM[@]}" "${(kv)ZI[@]}"
   )
-unset ZINIT ZPLGM
+unset ZINIT
 
 #
 # Common needed values.
@@ -77,7 +76,7 @@ typeset -g ZPFX
 ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}   ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
 ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 
-export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0uUpiPsf
+export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0fuUpiPs
 [[ -z ${path[(re)$ZPFX/bin]} ]] && [[ -d "$ZPFX/bin" ]] && path=( "$ZPFX/bin" "${path[@]}" )
 [[ -z ${path[(re)$ZPFX/sbin]} ]] && [[ -d "$ZPFX/sbin" ]] && path=( "$ZPFX/sbin" "${path[@]}" )
 [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
@@ -126,27 +125,27 @@ zmodload zsh/termcap 2>/dev/null
 if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+termcap} -eq 1 && -n ${termcap[Co]} ) ]] {
   ZI+=(
   col-annex   $'\e[38;5;165m'      col-info    $'\e[38;5;82m'       col-p       $'\e[38;5;81m'
-  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;227m'      col-pname   $'\e[1;4m\e[32m'
-  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;227m' col-pre     $'\e[38;5;135m'
-  col-bar     $'\e[38;5;82m'       col-it      $'\e[3m'             col-profile $'\e[38;5;148m'
+  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;220m'      col-pname   $'\e[1;4m\e[32m'
+  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;220m' col-pre     $'\e[38;5;93m'
+  col-bar     $'\e[38;5;82m'       col-it      $'\e[3m'             col-profile $'\e[38;5;201m'
   col-bspc    $'\b'                col-keyword $'\e[32m'            col-rst     $'\e[0m'
-  col-b-lhi   $'\e[1m\e[38;5;75m'  col-lhi     $'\e[38;5;81m'       col-slight  $'\e[38;5;230m'
+  col-b-lhi   $'\e[1m\e[38;5;27m'  col-lhi     $'\e[38;5;33m'       col-slight  $'\e[38;5;230m'
   col-b-warn  $'\e[1;38;5;214m'    col-msg     $'\e[0m'             col-st      $'\e[9m'
   col-cmd     $'\e[38;5;82m'       col-msg2    $'\e[38;5;172m'      col-tab     $' \t '
-  col-data    $'\e[38;5;82m'       col-msg3    $'\e[38;5;238m'      col-term    $'\e[38;5;185m'
-  col-data2   $'\e[38;5;117m'      col-meta    $'\e[38;5;57m'       col-th-bar  $'\e[38;5;82m'
-  col-dir     $'\e[3;38;5;153m'    col-meta2   $'\e[38;5;147m'      col-txt     $'\e[38;5;254m'
+  col-data    $'\e[38;5;82m'       col-msg3    $'\e[38;5;238m'      col-term    $'\e[38;5;190m'
+  col-data2   $'\e[38;5;39m'       col-meta    $'\e[38;5;57m'       col-th-bar  $'\e[38;5;82m'
+  col-dir     $'\e[3;38;5;135m'    col-meta2   $'\e[38;5;147m'      col-txt     $'\e[38;5;254m'
   col-ehi     $'\e[1m\e[38;5;210m' col-nb      $'\e[22m'            col-u       $'\e[4m'
   col-error   $'\e[1m\e[38;5;204m' col-nit     $'\e[23m'            col-uname   $'\e[1;4m\e[35m'
   col-failure $'\e[38;5;204m'      col-nl      $'\n'                col-uninst  $'\e[38;5;118m'
-  col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;75m'
-  col-file    $'\e[3;38;5;117m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
-  col-func    $'\e[38;5;219m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;81m'
-  col-glob    $'\e[38;5;227m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
+  col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;33m'
+  col-file    $'\e[3;38;5;39m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
+  col-func    $'\e[38;5;135m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;39m'
+  col-glob    $'\e[38;5;226m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
   col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
-  col-hi      $'\e[1m\e[38;5;183m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
+  col-hi      $'\e[1m\e[38;5;165m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
   col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'
-  col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;219m'
+  col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;82m'
   col-mdsh  "$'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'"
   col-mmdsh "$'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'"
   col-…     "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
@@ -1779,7 +1778,8 @@ ${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]";
         "See \`{cmd}help$bcol\` for a more detailed usage information and" \
         "the list of the {cmd}subcommands$bcol.{rst}"
   }
-} # ]]]
+}
+# ]]]
 # FUNCTION: +zi-parse-opts. [[[
 .zi-parse-opts() {
   builtin emulate -LR zsh -o extendedglob
@@ -1804,6 +1804,7 @@ integer retval
   [[ ${ZI_ICES[as]} = program ]] && ZI_ICES[as]=command
   [[ -n ${ZI_ICES[on-update-of]} ]] && ZI_ICES[subscribe]="${ZI_ICES[subscribe]:-${ZI_ICES[on-update-of]}}"
   [[ -n ${ZI_ICES[pick]} ]] && ZI_ICES[pick]="${ZI_ICES[pick]//\$ZPFX/${ZPFX%/}}"
+
 return retval
 } # ]]]
 # FUNCTION: .zi-pack-ice. [[[
@@ -1840,15 +1841,13 @@ return retval
   [[ -n ${ICE[pick]} ]] && ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"
 
   return 0
-}
-# ]]]
+} # ]]]
 # FUNCTION: .zi-setup-params. [[[
 .zi-setup-params() {
   emulate -LR zsh -o extendedglob
   reply=( ${(@)${(@s.;.)ICE[param]}/(#m)*/${${MATCH%%(-\>|→|=\>)*}//((#s)[[:space:]]##|[[:space:]]##(#e))}${${(M)MATCH#*(-\>|→|=\>)}:+\=${${MATCH#*(-\>|→|=\>)}//((#s)[[:space:]]##|[[:space:]]##(#e))}}} )
   (( ${#reply} )) && return 0 || return 1
-}
-# ]]]
+} # ]]]
 
 #
 # Turbo.
@@ -2066,8 +2065,7 @@ return retval
   ZI_RUN[1-correct,___idx-correct]=()
 
   [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
-}
-# ]]]
+} # ]]]
 
 #
 # Exposed functions.
@@ -2369,9 +2367,9 @@ env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-anne
         +zi-message -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
         if [[ -n $___last_ice ]] {
           +zi-message -n " (the last recognized ice was: {ice}"\
-"${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
-You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice is in fact a plugin.{rst}
-{note}Note:{rst} The {apo}\`{ice}ice{apo}\`{rst} subcommand is now again required if not using the for-syntax"
+          "${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
+          You can try to prepend {apo}${___q}{lhi}@{apo}'{error} to the ID if the last ice is in fact a plugin.{rst}
+          {note}Note:{rst} The {apo}\`{ice}ice{apo}\`{rst} subcommand is now again required if not using the for-syntax"
         }
         +zi-message "."
       }
@@ -2678,9 +2676,9 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
   ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 } # ]]]
 # FUNCTION: zi-turbo. [[[
-# ZI simplified Turbo mode.
-# Allows to specify load group of plugins in order. Allowed group values [0-9][a-d], default depth set to 3.
-# e.g. '0a' first, '0b' for second, '2a' for third and '9d' the last possible etc.
+# With zi-turbo first argument is a wait time and suffix, i.e. "0a".
+# Anything that doesn't match will be passed as if it were an ice mod.
+# Default ices depth'3' and lucid, allowed values [0-9][a-d].
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 # ]]]
 # Compatibility functions. [[[
@@ -2713,8 +2711,11 @@ builtin alias zpl=zi zplg=zi zini=zi
 
 # Remember source's timestamps for the automatic-reload feature.
 typeset -g ZI_TMP
-for ZI_TMP ( "" side install autoload ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/$ZI_TMP.zsh" "ZI[mtime$ZI_TMP]"
+for ZI_TMP ( zi ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/${ZI_TMP}.zsh" "ZI[mtime]"
+}
+for ZI_TMP ( side install autoload ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
 }
 
 # Simulate existence of _local/zi plugin. This will allow to cuninstall of its completion
@@ -2725,7 +2726,7 @@ ZI[STATES___local/zi]=1
 zstyle ':prezto:module:completion' loaded 1
 
 # Colorize completions for commands unload, report, creinstall, cuninstall.
-zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;36=4;35'
+zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;34=1;33'
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]

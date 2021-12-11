@@ -946,6 +946,7 @@ builtin setopt noaliases
   }
   reply=( "$local_dir" "$dirname" "$exists" )
   REPLY="$local_dir${dirname:+/$dirname}"
+
   return $(( 1 - exists ))
 } # ]]]
 # FUNCTION: @zi-substitute. [[[
@@ -2711,9 +2712,7 @@ builtin alias zpl=zi zplg=zi zini=zi
 
 # Remember source's timestamps for the automatic-reload feature.
 typeset -g ZI_TMP
-for ZI_TMP ( zi ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/${ZI_TMP}.zsh" "ZI[mtime]"
-}
+.zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
 for ZI_TMP ( side install autoload ) {
   .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
 }

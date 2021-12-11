@@ -639,24 +639,25 @@ ZI[EXTENDED_GLOB]=""
   if [[ $1 != -q ]] {
     +zi-message "Compiling »»» ❮ ZI ❯ {…}"
   }
-  command rm -f $ZI[BIN_DIR]/*.zwc(DN)
-  command rm -f $ZI[BIN_DIR]/lib/zsh/*.zwc(DN)
-  zcompile -U $ZI[BIN_DIR]/zi.zsh
-  zcompile -U $ZI[BIN_DIR]/lib/zsh/side.zsh
-  zcompile -U $ZI[BIN_DIR]/lib/zsh/install.zsh
-  zcompile -U $ZI[BIN_DIR]/lib/zsh/autoload.zsh
-  zcompile -U $ZI[BIN_DIR]/lib/zsh/additional.zsh
-  zcompile -U $ZI[BIN_DIR]/lib/zsh/git-process-output.zsh
+  command rm -f ${ZI[BIN_DIR]}/*.zwc(DN)
+  command rm -f ${ZI[BIN_DIR]}/lib/zsh/*.zwc(DN)
+  zcompile -U ${ZI[BIN_DIR]}/zi.zsh
+  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/side.zsh
+  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/install.zsh
+  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/autoload.zsh
+  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/additional.zsh
+  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh
   # Load for the current session
   [[ $1 != -q ]] && +zi-message "Reloading »»» ❮ ZI ❯ for the current session{…}"
-  source $ZI[BIN_DIR]/zi.zsh
-  source $ZI[BIN_DIR]/lib/zsh/side.zsh
-  source $ZI[BIN_DIR]/lib/zsh/install.zsh
-  source $ZI[BIN_DIR]/lib/zsh/autoload.zsh
+  source ${ZI[BIN_DIR]}/zi.zsh
+  source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
+  source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
+  source ${ZI[BIN_DIR]}/lib/zsh/autoload.zsh
   # Read and remember the new modification timestamps
   local file
-  for file ( "" side install autoload ) {
-    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/$file.zsh" "ZI[mtime$file]"
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
+  for file ( side install autoload ) {
+    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" "ZI[mtime-${file}]"
   }
 } # ]]]
 # FUNCTION: .zi-show-registered-plugins [[[
@@ -1609,21 +1610,23 @@ fi
   .zi-self-update -q
   [[ $2 = restart ]] && +zi-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'
   local file
-  integer sum el
-  for file ( "" side install autoload ) {
-    .zi-get-mtime-into "${ZI[BIN_DIR]}/$file.zsh" el; sum+=el
+  integer sum ela elb
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" ela; (( sum += ela ))
+  for file ( side install autoload ) {
+    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" elb; (( sum += elb ))
   }
   # Reload ZI?
   if [[ $2 != restart ]] && (( ZI[mtime] + ZI[mtime-side] + ZI[mtime-install] + ZI[mtime-autoload] != sum )) {
-    +zi-message "{msg2}Detected ❮ ZI ❯ update in another session -" "{pre}reloading ZI{msg2}{…}{rst}"
-    source $ZI[BIN_DIR]/zi.zsh
-    source $ZI[BIN_DIR]/lib/zsh/side.zsh
-    source $ZI[BIN_DIR]/lib/zsh/install.zsh
-    source $ZI[BIN_DIR]/lib/zsh/autoload.zsh
-    for file ( "" side install autoload ) {
-      .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/$file.zsh" "ZI[mtime$file]"
+    +zi-message "{msg2}Detected ❮ ZI ❯ update in another session -" "{pre}reloading{msg2}{…}{rst}"
+    source ${ZI[BIN_DIR]}/zi.zsh
+    source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
+    source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
+    source ${ZI[BIN_DIR]}/lib/zsh/autoload.zsh
+    .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
+    for file ( side install autoload ) {
+      .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" "ZI[mtime-${file}]"
     }
-    +zi-message "%B{pname}Done.{rst}"$'\n'
+    +zi-message "{pname}Done.{rst}"$'\n'
     .zi-update-or-status-all "$1" restart
     return $?
   }
@@ -1644,9 +1647,9 @@ fi
   local -A ICE
   if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
     local -a snipps
-    snipps=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zi|._zplugin)(ND) )
+    snipps=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)(ND) )
     [[ $st != status && ${OPTS[opt_-q,--quiet]} != 1 && -n $snipps ]] && +zi-message "{info}Note:{rst} updating also unloaded snippets"
-    for snip ( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zi|._zplugin)/mode(D) ) {
+    for snip ( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(D) ) {
       [[ ! -f ${snip:h}/url ]] && continue
       [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
       .zi-update-or-status-snippet "$st" "${id_as:-$(<${snip:h}/url)}"
@@ -1806,12 +1809,12 @@ fi
 
   local infoc="${ZI[col-info2]}"
 
-  +zi-message "Home directory: {file}${ZI[HOME_DIR]}{rst}"
-  +zi-message "Binary directory: {file}${ZI[BIN_DIR]}{rst}"
-  +zi-message "Plugin directory: {file}${ZI[PLUGINS_DIR]}{rst}"
-  +zi-message "Snippet directory: {file}${ZI[SNIPPETS_DIR]}{rst}"
-  +zi-message "Service directory: {file}${ZI[SERVICES_DIR]}{rst}"
-  +zi-message "Zmodules directory: {file}${ZI[ZMODULES_DIR]}{rst}"
+  +zi-message "Home directory:        {file}${ZI[HOME_DIR]}{rst}"
+  +zi-message "Binary directory:      {file}${ZI[BIN_DIR]}{rst}"
+  +zi-message "Plugin directory:      {file}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "Snippet directory:     {file}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "Service directory:     {file}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "Modules directory:     {file}${ZI[ZMODULES_DIR]}{rst}"
   +zi-message "Completions directory: {file}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "Loaded plugins: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"

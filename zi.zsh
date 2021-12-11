@@ -2711,9 +2711,11 @@ builtin alias zpl=zi zplg=zi zini=zi
 
 # Remember source's timestamps for the automatic-reload feature.
 typeset -g ZI_TMP
-local ZMTDIR=( "" "lib/zsh" )
-for ZI_TMP ( "zi" side install autoload ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/${ZMTDIR}/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
+for ZI_TMP ( zi ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/${ZI_TMP}.zsh" "ZI[mtime]"
+}
+for ZI_TMP ( side install autoload ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
 }
 
 # Simulate existence of _local/zi plugin. This will allow to cuninstall of its completion

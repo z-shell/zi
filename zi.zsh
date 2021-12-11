@@ -77,7 +77,7 @@ typeset -g ZPFX
 ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}   ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
 ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 
-export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0uUpiPsf
+export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0fuUpiPs
 [[ -z ${path[(re)$ZPFX/bin]} ]] && [[ -d "$ZPFX/bin" ]] && path=( "$ZPFX/bin" "${path[@]}" )
 [[ -z ${path[(re)$ZPFX/sbin]} ]] && [[ -d "$ZPFX/sbin" ]] && path=( "$ZPFX/sbin" "${path[@]}" )
 [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
@@ -141,10 +141,10 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+te
   col-failure $'\e[38;5;204m'      col-nl      $'\n'                col-uninst  $'\e[38;5;118m'
   col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;33m'
   col-file    $'\e[3;38;5;117m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
-  col-func    $'\e[38;5;82m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;81m'
-  col-glob    $'\e[38;5;227m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
+  col-func    $'\e[38;5;219m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;81m'
+  col-glob    $'\e[38;5;226m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
   col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
-  col-hi      $'\e[1m\e[38;5;183m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
+  col-hi      $'\e[1m\e[38;5;165m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
   col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'
   col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;82m'
   col-mdsh  "$'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'"

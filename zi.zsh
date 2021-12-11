@@ -12,12 +12,11 @@ if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
 # Compatibility for previous versions.
-typeset -gAH ZINIT ZPLGM
+typeset -gAH ZINIT
 ZI=(
   "${(kv)ZINIT[@]}" "${(kv)ZI[@]}"
-  "${(kv)ZPLGM[@]}" "${(kv)ZI[@]}"
   )
-unset ZINIT ZPLGM
+unset ZINIT
 
 #
 # Common needed values.
@@ -126,22 +125,22 @@ zmodload zsh/termcap 2>/dev/null
 if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+termcap} -eq 1 && -n ${termcap[Co]} ) ]] {
   ZI+=(
   col-annex   $'\e[38;5;165m'      col-info    $'\e[38;5;82m'       col-p       $'\e[38;5;81m'
-  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;227m'      col-pname   $'\e[1;4m\e[32m'
-  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;227m' col-pre     $'\e[38;5;93m'
-  col-bar     $'\e[38;5;82m'       col-it      $'\e[3m'             col-profile $'\e[38;5;51m'
+  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;220m'      col-pname   $'\e[1;4m\e[32m'
+  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;220m' col-pre     $'\e[38;5;93m'
+  col-bar     $'\e[38;5;82m'       col-it      $'\e[3m'             col-profile $'\e[38;5;201m'
   col-bspc    $'\b'                col-keyword $'\e[32m'            col-rst     $'\e[0m'
-  col-b-lhi   $'\e[1m\e[38;5;75m'  col-lhi     $'\e[38;5;81m'       col-slight  $'\e[38;5;230m'
+  col-b-lhi   $'\e[1m\e[38;5;27m'  col-lhi     $'\e[38;5;33m'       col-slight  $'\e[38;5;230m'
   col-b-warn  $'\e[1;38;5;214m'    col-msg     $'\e[0m'             col-st      $'\e[9m'
   col-cmd     $'\e[38;5;82m'       col-msg2    $'\e[38;5;172m'      col-tab     $' \t '
   col-data    $'\e[38;5;82m'       col-msg3    $'\e[38;5;238m'      col-term    $'\e[38;5;190m'
-  col-data2   $'\e[38;5;117m'      col-meta    $'\e[38;5;57m'       col-th-bar  $'\e[38;5;82m'
+  col-data2   $'\e[38;5;39m'       col-meta    $'\e[38;5;57m'       col-th-bar  $'\e[38;5;82m'
   col-dir     $'\e[3;38;5;135m'    col-meta2   $'\e[38;5;147m'      col-txt     $'\e[38;5;254m'
   col-ehi     $'\e[1m\e[38;5;210m' col-nb      $'\e[22m'            col-u       $'\e[4m'
   col-error   $'\e[1m\e[38;5;204m' col-nit     $'\e[23m'            col-uname   $'\e[1;4m\e[35m'
   col-failure $'\e[38;5;204m'      col-nl      $'\n'                col-uninst  $'\e[38;5;118m'
   col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;33m'
-  col-file    $'\e[3;38;5;117m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
-  col-func    $'\e[38;5;219m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;81m'
+  col-file    $'\e[3;38;5;39m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
+  col-func    $'\e[38;5;135m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;39m'
   col-glob    $'\e[38;5;226m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
   col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
   col-hi      $'\e[1m\e[38;5;165m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
@@ -2712,8 +2711,9 @@ builtin alias zpl=zi zplg=zi zini=zi
 
 # Remember source's timestamps for the automatic-reload feature.
 typeset -g ZI_TMP
-for ZI_TMP ( "" side install autoload ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/$ZI_TMP.zsh" "ZI[mtime$ZI_TMP]"
+
+for ZI_TMP ( "zi" "lib/zsh/side" "/lib/zsh/install" "/lib/zsh/autoload" ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/${ZI_TMP}.zsh" "ZI[mtime${ZI_TMP}]"
 }
 
 # Simulate existence of _local/zi plugin. This will allow to cuninstall of its completion

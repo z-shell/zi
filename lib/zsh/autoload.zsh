@@ -2981,8 +2981,8 @@ EOF
 #
 # User-action entry point.
 .zi-help() {
-  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
+  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 ❯ analytics                     – ❮ ZI ❯ Analytics
 ❯ control                       – ❮ ZI ❯ Control options
 ❯ self-update                   – ❮ ZI ❯ Self update and compile
@@ -2995,7 +2995,7 @@ ${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
 ❯ man                           – Manual
 ❯ help                          – Help
 »»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:"
+${ZI[col-p]}Available sub-commands${ZI[col-rst]}:"
   integer idx
   local type key
   local -a arr
@@ -3010,8 +3010,7 @@ ${ZI[col-p]}Usage of available sub-commands${ZI[col-rst]}:"
   done
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
+  builtin print -r -- "${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
 ${ice_order[*]}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
@@ -3019,8 +3018,8 @@ ${ice_order[*]}"
 #
 # User-action entry point.
 .zi-analytics-menu() {
-  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
+  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 ❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
 ❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
 ❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
@@ -3041,7 +3040,7 @@ ${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
 ❯ cdlist                      – Show compdef replay list
 ❯ csearch                     – Search for available completions from any plugin
 ❯ ls                          – List snippets in formatted and colorized manner
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
 } # ]]]
 # FUNCTION: .zi-control-menu [[[
 # Shows control options.

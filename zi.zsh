@@ -13,9 +13,7 @@ typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS Z
 typeset -gaH ZI_COMPDEF_REPLAY
 # Compatibility for previous versions.
 typeset -gAH ZINIT
-ZI=(
-  "${(kv)ZINIT[@]}" "${(kv)ZI[@]}"
-  )
+ZI=( "${(kv)ZINIT[@]}" "${(kv)ZI[@]}" )
 unset ZINIT
 
 #
@@ -134,14 +132,14 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+te
   col-cmd     $'\e[38;5;82m'       col-msg2    $'\e[38;5;172m'      col-tab     $' \t '
   col-data    $'\e[38;5;82m'       col-msg3    $'\e[38;5;238m'      col-term    $'\e[38;5;190m'
   col-data2   $'\e[38;5;39m'       col-meta    $'\e[38;5;57m'       col-th-bar  $'\e[38;5;82m'
-  col-dir     $'\e[3;38;5;135m'    col-meta2   $'\e[38;5;147m'      col-txt     $'\e[38;5;254m'
+  col-dir     $'\e[3;38;5;135m'    col-meta2   $'\e[38;5;135m'      col-txt     $'\e[38;5;254m'
   col-ehi     $'\e[1m\e[38;5;210m' col-nb      $'\e[22m'            col-u       $'\e[4m'
   col-error   $'\e[1m\e[38;5;204m' col-nit     $'\e[23m'            col-uname   $'\e[1;4m\e[35m'
   col-failure $'\e[38;5;204m'      col-nl      $'\n'                col-uninst  $'\e[38;5;118m'
   col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;33m'
-  col-file    $'\e[3;38;5;39m'    col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
+  col-file    $'\e[3;38;5;39m'     col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
   col-func    $'\e[38;5;135m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;39m'
-  col-glob    $'\e[38;5;226m'      col-num     $'\e[3;38;5;155m'    col-version $'\e[3;38;5;46m'
+  col-glob    $'\e[38;5;226m'      col-num     $'\e[3;38;5;154m'    col-version $'\e[3;38;5;46m'
   col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
   col-hi      $'\e[1m\e[38;5;165m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
   col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'
@@ -946,6 +944,7 @@ builtin setopt noaliases
   }
   reply=( "$local_dir" "$dirname" "$exists" )
   REPLY="$local_dir${dirname:+/$dirname}"
+
   return $(( 1 - exists ))
 } # ]]]
 # FUNCTION: @zi-substitute. [[[
@@ -1769,14 +1768,14 @@ ${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]";
     cmds=( load snippet update delete )
     local bcol="{$cmd}" sep="${ZI[col-rst]}${ZI[col-$cmd]}\`, \`${ZI[col-cmd]}"
     +zi-message "$bcol(it should be one of, e.g.{ehi}:" \
-        "{nb}$bcol\`{cmd}${(pj:$sep:)cmds}$bcol\`," \
-        "{cmd}{…}$bcol, e.g.{ehi}: {nb}$bcol\`{lhi}zi {b}{cmd}load" \
-        "{pid}username/reponame$bcol\`) or a {b}{hi}for{nb}$bcol-based" \
-        "command body (i.e.{ehi}:{rst}$bcol e.g.{ehi}: {rst}$bcol\`{lhi}zi" \
-          "{…}{b}ice-spec{nb}{…} {hi}for{nb}{lhi} {…}({b}plugin" \
-          "{nb}or{b} snippet) {pname}ID-1 ID-2 {-…} {lhi}{…}$bcol\`)." \
-        "See \`{cmd}help$bcol\` for a more detailed usage information and" \
-        "the list of the {cmd}subcommands$bcol.{rst}"
+    "{nb}$bcol\`{cmd}${(pj:$sep:)cmds}$bcol\`," \
+    "{cmd}{…}$bcol, e.g.{ehi}: {nb}$bcol\`{lhi}zi {b}{cmd}load" \
+    "{pid}username/reponame$bcol\`) or a {b}{hi}for{nb}$bcol-based" \
+    "command body (i.e.{ehi}:{rst}$bcol e.g.{ehi}: {rst}$bcol\`{lhi}zi" \
+      "{…}{b}ice-spec{nb}{…} {hi}for{nb}{lhi} {…}({b}plugin" \
+      "{nb}or{b} snippet) {pname}ID-1 ID-2 {-…} {lhi}{…}$bcol\`)." \
+    "See \`{cmd}help$bcol\` for a more detailed usage information and" \
+    "the list of the {cmd}subcommands$bcol.{rst}"
   }
 }
 # ]]]
@@ -2037,7 +2036,7 @@ return retval
 
     AFD=13371337 # for older Zsh + noclobber option
     exec {AFD}< <(LANG=C command sleep 0.002; builtin print run;)
-  command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
+    command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
     zle -F "$AFD" @zi-scheduler
   }
 
@@ -2150,10 +2149,10 @@ zi() {
   reply=( ${ZI_EXTS[(I)z-annex subcommand:*]} )
 
   [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
-update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|\
-completions|cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|\
-dunload|dreport|dclear|compile|uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|\
-env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snippet) ]] && {
+update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|cclear|\
+cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|uncompile|\
+compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run\
+${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snippet) ]] && {
     integer ___error
     if [[ $1 = (load|light|snippet) ]] {
       integer  ___is_snippet
@@ -2682,7 +2681,7 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 # ]]]
 # Compatibility functions. [[[
-zinit() { zi "$@"; }
+#zinit() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
@@ -2705,15 +2704,13 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zpl=zi zplg=zi zini=zi
+builtin alias zpl=zi zplg=zi zini=zi zinit=zi
 
 .zi-prepare-home
 
 # Remember source's timestamps for the automatic-reload feature.
 typeset -g ZI_TMP
-for ZI_TMP ( zi ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/${ZI_TMP}.zsh" "ZI[mtime]"
-}
+.zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
 for ZI_TMP ( side install autoload ) {
   .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
 }

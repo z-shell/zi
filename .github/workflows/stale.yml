@@ -1,5 +1,5 @@
 ---
-name: 👻 Stale
+name: 🧹 Stale
 
 on:
   schedule:
@@ -18,8 +18,8 @@ jobs:
           days-before-stale: 30
           days-before-close: 7
           remove-stale-when-updated: true
-          stale-issue-label: "stale"
-          exempt-issue-labels: "no-stale,help-wanted"
+          stale-issue-label: "stale 👻"
+          exempt-issue-labels: "no-stale 🔒,help-wanted 👥"
           stale-issue-message: >
             There hasn't been any activity on this issue recently, and in order
             to prioritize active issues, it will be marked as stale.
@@ -32,8 +32,8 @@ jobs:
             in 7 days if no further activity occurs.
 
             Thank you for your contributions!
-          stale-pr-label: "stale"
-          exempt-pr-labels: "no-stale"
+          stale-pr-label: "stale 👻"
+          exempt-pr-labels: "no-stale 🔒"
           stale-pr-message: >
             There hasn't been any activity on this pull request recently, and in
             order to prioritize active work, it has been marked as stale.

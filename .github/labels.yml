@@ -46,6 +46,9 @@
 - name: "in-progress ⚡"
   color: fbca04
   description: "Issue is currently being worked on by a developer."
+- name: "triage ⚠️"
+  color: fbca04
+  description: "The issue is awaiting investigation."
 - name: "stale 👻"
   color: ffffff
   description: "No activity for quite some time."
@@ -56,12 +59,12 @@
 - name: "security 🛡️"
   color: ee0701
   description: "Addressing a vulnerability or security risk in this project."
-- name: "incomplete 👽"
-  color: fef2c0
-  description: "Missing information."
-- name: "invalid ⚠️"
-  color: 0b467f
-  description: "This is off-topic, spam, or otherwise doesn't apply to this project."
+#- name: "incomplete 👽"
+#  color: fef2c0
+#  description: "Missing information."
+#- name: "invalid ⚠️"
+#  color: 0b467f
+#  description: "This is off-topic, spam, or otherwise doesn't apply to this project."
 
 - name: "beginner-friendly 💕"
   color: 0e8a16
@@ -70,22 +73,22 @@
   color: 832Aeb
   description: "We need some extra helping hands or expertise in order to resolve this!"
   
-- name: "priority-critical 🔥"
-  color: ee0701
-  description: "Must be addressed as soon as possible."
-- name: "priority-high ‼️"
-  color: d93f0b
-  description: "After critical issues are fixed, these should be dealt with before any further issues."
-- name: "priority-medium 📌"
-  color: fbcA04
-  description: "This issue may be useful, and needs some attention."
-- name: "priority-low 🔖"
-  color: ffffff
-  description: "Good addition, will do on spare time."
+#- name: "priority-critical 🔥"
+#  color: ee0701
+#  description: "Must be addressed as soon as possible."
+#- name: "priority-high ‼️"
+#  color: d93f0b
+#  description: "After critical issues are fixed, these should be dealt with before any further issues."
+#- name: "priority-medium 📌"
+#  color: fbcA04
+#  description: "This issue may be useful, and needs some attention."
+#- name: "priority-low 🔖"
+#  color: ffffff
+#  description: "Good addition, will do on spare time."
 
-- name: "major 🔺"
-  color: b60205
-  description: "This PR causes a major bump in the version number."
-- name: "minor 🔸"
-  color: 5319e7
-  description: "This PR causes a minor bump in the version number."
+#- name: "major 🔺"
+#  color: b60205
+#  description: "This PR causes a major bump in the version number."
+#- name: "minor 🔸"
+#  color: 5319e7
+#  description: "This PR causes a minor bump in the version number."

@@ -50,10 +50,15 @@ Nightly Release
 
   [**ZI**](https://github.com/z-shell/zi) is an interactive, feature-rich and flexible plugin manager for [**Zsh**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).
 
+<details open="open">
+<summary> Ecosystem </summary>
+
 - [Annexes](https://github.com/z-shell/z-annexes) - ([wiki](https://github.com/z-shell/zi/wiki/Annexes))
   - [Meta Plugins](https://github.com/z-shell/z-a-meta-plugins) - ([wiki](https://github.com/z-shell/zi/wiki/z-a-meta-plugins))
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-parameter-holding-the-plugin-managers-capabilities)
 
+</details>
+  
 ## Documentation
 
 Please see [wiki](https://github.com/z-shell/zi/wiki).

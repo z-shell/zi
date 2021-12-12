@@ -1,12 +1,13 @@
 ---
-name: Release Notes Preview
+name: 💌 Release Notes Preview
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
   issue_comment:
     types: [ edited ]
-
+  workflow_dispatch:
+    
 jobs:
   preview:
     runs-on: ubuntu-latest

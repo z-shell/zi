@@ -99,19 +99,19 @@ if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" ]]; then
 fi
 ```
 
-  This will:
- - Clone and install ZI if missing.
- - If successful or not required will load ZI.
- - Enable ZI completions.
+- This will:
+  - Clone and install ZI if missing.
+  - If successful or not required will load ZI.
+  - Enable ZI completions.
 
-  All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
-  Post-install we recommend visiting: 
-  
- - Wiki:
-   - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
-   - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
-   - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Example-Oh-My-Zsh-setup)
-   - [Gallery](https://github.com/z-shell/zi/wiki/GALLERY)
+- All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
+- Post-install we recommend:
+  - Run: `exec zsh` and `zi self-update`.
+  - Visiting Wiki:
+    - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
+    - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
+    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Example-Oh-My-Zsh-setup)
+    - [Gallery](https://github.com/z-shell/zi/wiki/GALLERY)
 
 #### Interactive install (beta)
 

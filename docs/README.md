@@ -74,6 +74,45 @@ Please see [wiki](https://github.com/z-shell/zi/wiki).
 >
 > After installing and reloading the shell run: zi self-update
 
+#### ZI Loader
+
+Forthcoming releases will introduce ZI profiles that allow changing the Zsh environment or configuration files with a single command. The specified way of installation is a part of the upcoming profiles loader.
+
+Create a configuration files directory:
+
+```zsh
+zi_config="${XDG_CONFIG_HOME:-$HOME/.config}/zi"
+command mkdir -p $zi_config
+```
+
+Download:
+
+```zsh
+curl -fsSL https://git.io/zi-loader -o ${zi_config}/init.zsh
+```
+
+Add at the top of your `.zshrc`:
+
+```zsh
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" ]]; then
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" && zzinit
+fi
+```
+
+- This will:
+  - Clone and install ZI if missing.
+  - If successful or not required will load ZI.
+  - Enable ZI completions.
+
+- All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
+- Post-install we recommend:
+  - Run: `exec zsh` and `zi self-update`.
+  - Visiting Wiki:
+    - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
+    - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
+    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Example-Oh-My-Zsh-setup)
+    - [Gallery](https://github.com/z-shell/zi/wiki/GALLERY)
+
 #### Interactive install (beta)
 
 > Requires: `bash`, `git`, `curl`.
@@ -92,18 +131,18 @@ bash <(curl -fsSL https://git.io/zi-install)
 
 > Requires: `git`.
 
-- Clone repository:
+  Clone repository:
 
 ```zsh
-ZI_HOME="${HOME}/.zi" && mkdir -p "$(dirname $ZI_HOME)"
-git clone https://github.com/z-shell/zi.git "${ZI_HOME}/bin"
+zi_home="${HOME}/.zi" && command mkdir -p $zi_home
+command git clone https://github.com/z-shell/zi.git "${zi_home}/bin"
 ```
 
-- Source `zi.zsh` from your `.zshrc`:
+  Source `zi.zsh` from your `.zshrc`:
 
 ```zsh
-ZI_HOME="${HOME}/.zi"
-source "${ZI_HOME}/bin/zi.zsh"
+zi_home="${HOME}/.zi"
+source "${zi_home}/bin/zi.zsh"
 # Next two lines must be below the above two
 autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi

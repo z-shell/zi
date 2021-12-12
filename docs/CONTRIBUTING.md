@@ -22,12 +22,11 @@ Useful information about Zsh.
 
 **Notes:**
   - Any files to support prefered editor should be collaborated and respected across repositories. e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
-
-***
-
-  Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
+  - [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts. 
 
 ### Clean Pull Request guidelines
+
+  Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
 
 -   Create a personal fork of the project on Github.
 -   Clone the fork on your local machine. Your remote repo on Github is called `origin`.

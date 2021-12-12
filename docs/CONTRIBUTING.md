@@ -5,27 +5,27 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 
 ## Knowledge Base
 
-- [ZI Documentation](https://github.com/z-shell/zi/wiki)
+- [ZI Wiki](https://github.com/z-shell/zi/wiki)
 
-> **[?]**
-> Useful information about Zsh.
-
--   [Zsh Site](http://zsh.sourceforge.net/)
--   [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
--   [Zsh Doc](https://zsh.sourceforge.io/Doc/)
->
--   [Bash 2 Zsh](http://www.bash2zsh.com/)
--   [Zsh tips](http://www.zzapper.co.uk/zshtips.html)
--   [101 Powerful & Practical ZSH GLOBS](http://www.zzapper.co.uk/101ZshGlobs.php)
--   [Practical differences between Bash ans Zsh](https://apple.stackexchange.com/questions/361870/what-are-the-practical-differences-between-bash-and-zsh/361957#361957)
->
--   [zshdb - a gdb-like debugger for zsh](https://zshdb.readthedocs.io/en/latest/index.html)
--   [Debian Bug report logs: Bugs in package zsh](https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=zsh)
+Useful information about Zsh.
+  -   [Zsh Site](http://zsh.sourceforge.net/)
+  -   [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
+  -   [Zsh Doc](https://zsh.sourceforge.io/Doc/)
+  -   [Bash 2 Zsh](http://www.bash2zsh.com/)
+  -   [Zsh tips](http://www.zzapper.co.uk/zshtips.html)
+  -   [101 Powerful & Practical ZSH GLOBS](http://www.zzapper.co.uk/101ZshGlobs.php)
+  -   [Practical differences between Bash ans Zsh](https://apple.stackexchange.com/questions/361870/what-are-the-practical-differences-between-bash-and-zsh/361957#361957)
+  -   [zshdb - a gdb-like debugger for zsh](https://zshdb.readthedocs.io/en/latest/index.html)
+  -   [Debian Bug report logs: Bugs in package zsh](https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=zsh)
 
 ## Development environment setup
 
-> **[?]**
-> Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
+**Notes:**
+  - Any files to support prefered editor should be collaborated and respected across repositories. e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
+
+***
+
+  Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
 
 ### Clean Pull Request guidelines
 

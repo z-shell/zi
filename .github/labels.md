@@ -20,19 +20,9 @@
 - name: "new-feature 🎉"
   color: 0e8a16
   description: "Introduces new feature"
-- name: "feature-request 💡"
-  color: 0e8a16
-  description: "Suggests new feature"
-- name: "annex 💠"
-  color: 3e16f3
-  description: "Related with annex"
-- name: "plugin 🧿"
-  color: 3e16f3
-  description: "Related with plugin"
-- name: "package 📦"
-  color: 3e16f3
-  description: "Related with package"
-  
+- name: "security 🛡️"
+  color: ee0701
+  description: "Addressing a vulnerability or security risk in this project."
 - name: "maintenance 📈"
   color: 531999
   description: "Generic maintenance tasks."
@@ -46,7 +36,7 @@
 - name: "in-progress ⚡"
   color: fbca04
   description: "Issue is currently being worked on by a developer."
-- name: "triage ⚠️"
+- name: "triage 🧬"
   color: fbca04
   description: "The issue is awaiting investigation."
 - name: "stale 👻"
@@ -56,35 +46,46 @@
   color: fef2c0
   description: "This is exempt from the stale bot."
 
-- name: "security 🛡️"
-  color: ee0701
-  description: "Addressing a vulnerability or security risk in this project."
-#- name: "incomplete 👽"
-#  color: fef2c0
-#  description: "Missing information."
-#- name: "invalid ⚠️"
-#  color: 0b467f
-#  description: "This is off-topic, spam, or otherwise doesn't apply to this project."
-
+- name: "Q&A ✍️"
+  color: fef2c0
+  description: "Questions and answers"
+- name: "invalid ⚠️"
+  color: 0b467f
+  description: "This is off-topic or incorrect"
 - name: "beginner-friendly 💕"
   color: 0e8a16
   description: "Good first issue for people wanting to contribute to this project."
 - name: "help-wanted 👥"
   color: 832Aeb
   description: "We need some extra helping hands or expertise in order to resolve this!"
-  
-#- name: "priority-critical 🔥"
+- name: "feature-request 💡"
+  color: 0e8a16
+  description: "Suggests new feature"
+- name: "locked ‼️"
+  color: d93f0b
+  description: "Spam, inappropriate or otherwise doesn't apply to this project"
+- name: "resolved ☑️"
+  color: 0e8a16
+  description: "The issue has been fixed and is therefore considered resolved."
+#- name: "priority-hight 🔥"
 #  color: ee0701
 #  description: "Must be addressed as soon as possible."
-#- name: "priority-high ‼️"
-#  color: d93f0b
-#  description: "After critical issues are fixed, these should be dealt with before any further issues."
 #- name: "priority-medium 📌"
 #  color: fbcA04
 #  description: "This issue may be useful, and needs some attention."
-#- name: "priority-low 🔖"
-#  color: ffffff
-#  description: "Good addition, will do on spare time."
+- name: "priority-low 🔖"
+  color: ffffff
+  description: "Good addition, will do on spare time."
+
+#- name: "annex 💠"
+#  color: 3e16f3
+#  description: "Related with annex"
+#- name: "plugin 🧿"
+#  color: 3e16f3
+#  description: "Related with plugin"
+#- name: "package 📦"
+#  color: 3e16f3
+#  description: "Related with package"
 
 #- name: "major 🔺"
 #  color: b60205

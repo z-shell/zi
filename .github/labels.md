@@ -36,7 +36,7 @@
 - name: "in-progress ⚡"
   color: fbca04
   description: "Issue is currently being worked on by a developer."
-- name: "triage 🧬"
+- name: "triage 📑"
   color: fbca04
   description: "The issue is awaiting investigation."
 - name: "stale 👻"

@@ -4,20 +4,14 @@
   </a>
 ❮ ZI ❯
   </h1>
-
-<h4 align="center">
-Nightly Release
-</h4>
-
 <div align="center">
   <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
   · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
   · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
 </div>
-
 <div align="center">
 <br />
-
+  
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![Tweet][twitter-badge]][twitter-link]
 
@@ -169,7 +163,6 @@ Reach out to the maintainers at one of the following places:
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
----
 
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases

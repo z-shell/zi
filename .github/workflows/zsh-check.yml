@@ -30,11 +30,13 @@ jobs:
       - name: "✨ Install dependencies"
         run: |
           sudo apt install -y zsh
+
       - name: "⚡ zsh -n: ${{ matrix.file }}"
         env:
           ZSH_FILE: ${{ matrix.file }}
         run: |
           zsh -n "${ZSH_FILE}"
+
       - name: "⚡ zcompile ${{ matrix.file }}"
         env:
           ZSH_FILE: ${{ matrix.file }}

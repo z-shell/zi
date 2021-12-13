@@ -55,7 +55,8 @@
   
 ## Documentation
 
-Please see [wiki](https://github.com/z-shell/zi/wiki).
+- [ZI Ecosystem wiki](https://github.com/z-shell/zi/wiki)
+- [Code Documentation](https://github.com/z-shell/zi/wiki/Code-Documentation)
 
 > Curentlly we are working on how to improve and unify documentation in to one place.
 > If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.

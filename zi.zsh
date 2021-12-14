@@ -2612,7 +2612,7 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
         (analytics)
           .zi-analytics-menu
           ;;
-        (-h|help)
+        (-h|--help|help)
           .zi-help
           ;;
         (ls)

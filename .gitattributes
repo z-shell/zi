@@ -1,7 +1,7 @@
 # Auto detect text files and perform LF normalization so files in repo had LF and client translates to CRLF on Windows
 * text=auto
 *.md diff=markdown
-*.zsh diff=zsh eol=lf
-∧* diff=zsh
-\.za-* diff=zsh
-*.zi diff=zsh
+*.zsh text eol=lf diff=zsh
+∧* text eol=lf diff=zsh 
+\.za-* text eol=lf diff=zsh
+*.zi text eol=lf diff=zsh

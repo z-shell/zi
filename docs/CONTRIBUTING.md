@@ -5,15 +5,14 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 
 ## Knowledge Base
 
-- [ZI Documentation](https://github.com/z-shell/zi/wiki)
+- [ZI Wiki](https://github.com/z-shell/zi/wiki)
 
-> **[?]**
-> Useful information about Zsh.
-
--   [Zsh Site](http://zsh.sourceforge.net/)
--   [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
--   [Zsh Doc](https://zsh.sourceforge.io/Doc/)
->
+###  Zsh Official
+- [Zsh Site](http://zsh.sourceforge.net/)
+  - [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
+  - [Zsh Documentation](https://zsh.sourceforge.io/Doc/)
+  - [The Z Shell Manual](https://zsh.sourceforge.io/Doc/Release/index.html#Top) 
+### Useful
 -   [Bash 2 Zsh](http://www.bash2zsh.com/)
 -   [Zsh tips](http://www.zzapper.co.uk/zshtips.html)
 -   [101 Powerful & Practical ZSH GLOBS](http://www.zzapper.co.uk/101ZshGlobs.php)
@@ -24,10 +23,13 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 
 ## Development environment setup
 
-> **[?]**
-> Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
+**Notes:**
+  - Any files to support prefered editor should be collaborated and respected across repositories. e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
+  - [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts. 
 
 ### Clean Pull Request guidelines
+
+  Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
 
 -   Create a personal fork of the project on Github.
 -   Clone the fork on your local machine. Your remote repo on Github is called `origin`.
@@ -47,7 +49,6 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 -   Once the pull request is approved and merged you can pull the changes from `upstream` to your local repo and delete
     your extra branch(es).
 
-> **[?]**
 > Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code. ([examples](https://www.google.com/search?q=english+"present+tense+example"))
 
 ## Issues and feature requests

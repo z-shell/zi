@@ -180,7 +180,7 @@ _For more information and to report security issues, please refer to our [securi
 ## Acknowledgements
 
 The [**Z-Shell**](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
-We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
+We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested are welcome join.
 [**ZI**](https://github.com/z-shell/zi), formerly known as zplugin, zinit, is an open source community project released under the [MIT License](../LICENSE).
 
 ### Authors & contributors

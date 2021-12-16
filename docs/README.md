@@ -53,6 +53,8 @@
 - [ZI Wiki](https://github.com/z-shell/zi/wiki)
 - [Code Documentation](https://github.com/z-shell/zi/wiki/Code-Documentation)
 
+> **Tip:** [Advanced repository search](https://github.com/search/advanced?q=&r=z-shell%2Fzi)
+>
 > Curentlly we are working on how to improve and unify documentation in to one place.
 > If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.
 
@@ -60,15 +62,11 @@
 
 ### Prerequisites
 
-> **[?]**
 > Work in progress.
 
 ### Installation
 
-> **[?]**
 > Interactive installation currently in development mode.
->
-> After installing and reloading the shell run: zi self-update
 
 #### ZI Loader
 

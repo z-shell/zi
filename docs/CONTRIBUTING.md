@@ -6,6 +6,8 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 ## Knowledge Base
 
 - [ZI Wiki](https://github.com/z-shell/zi/wiki)
+- [Zsh Plugin Standard](https://z-shell.github.io/docs/zsh/Zsh-Plugin-Standard.html)
+- [Zsh Native Scripting Handbook](https://z-shell.github.io/docs/zsh/Zsh-Native-Scripting-Handbook.html)
 
 ###  Zsh Official
 - [Zsh Site](http://zsh.sourceforge.net/)

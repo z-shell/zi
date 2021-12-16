@@ -46,7 +46,7 @@
 
 - [Annexes](https://github.com/z-shell/z-annexes)
   - [Meta Plugins](https://github.com/z-shell/z-a-meta-plugins)
-- Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-capabilities)
+- Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-parameter-holding-the-plugin-managers-capabilities)
   
 ## Documentation
 

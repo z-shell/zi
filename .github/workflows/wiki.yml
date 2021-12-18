@@ -3,7 +3,8 @@ name: 📖 Wiki
 
 on:
   push:
-    branches: [ wiki ]
+    branches:
+      - main
     paths:
       - "docs/wiki/**"
   workflow_dispatch:

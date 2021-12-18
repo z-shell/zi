@@ -2,9 +2,8 @@
   <a href="https://github.com/z-shell/zi">
     <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
-❮ ZI ❯
-  </h2>
-<div align="center">
+❮ ZI ❯ 
+  </h2><div align="center">
   
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![Tweet][twitter-badge]][twitter-link]
@@ -38,12 +37,14 @@
 
 </details>
 
----
-
 ## About
+  
+  <h3 align="center">
 
-  [**ZI**](https://github.com/z-shell/zi) is an interactive, feature-rich and flexible plugin manager for [**Zsh**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).
-
+  [**ZI**](https://github.com/z-shell/zi) is an interactive, feature-rich plugin manager for [**Zsh**](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).
+  
+  </h3>
+  
 - [Annexes](https://github.com/z-shell/z-annexes)
   - [Meta Plugins](https://github.com/z-shell/z-a-meta-plugins)
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-parameter-holding-the-plugin-managers-capabilities)
@@ -53,7 +54,7 @@
 - [ZI Wiki](https://github.com/z-shell/zi/wiki)
 - [Code Documentation](https://github.com/z-shell/zi/wiki/Code-Documentation)
 
-> **Tip:** [Advanced repository search](https://github.com/search/advanced?q=&r=z-shell%2Fzi)
+> **Tip:** [Advanced search](https://github.com/search/advanced?q=user%3Az-shell&type=Users)
 >
 > Curentlly we are working on how to improve and unify documentation in to one place.
 > If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.

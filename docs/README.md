@@ -1,9 +1,9 @@
-<h1 align="center">
+<h2 align="center">
   <a href="https://github.com/z-shell/zi">
     <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
 ❮ ZI ❯
-  </h1>
+  </h2>
 <div align="center">
   
 [![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)

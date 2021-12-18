@@ -2,7 +2,6 @@
 name: ✅ Zsh Check
 
 on:
-  workflow_dispatch:
   pull_request_target:
 
 jobs:
@@ -11,7 +10,8 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
       - name: "✨ Set matrix output"
         id: set-matrix
         run: |
@@ -26,7 +26,8 @@ jobs:
       matrix: ${{ fromJSON(needs.build-matrix.outputs.matrix) }}
 
     steps:
-      - uses: actions/checkout@v2
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
       - name: "✨ Install dependencies"
         run: |
           sudo apt install -y zsh

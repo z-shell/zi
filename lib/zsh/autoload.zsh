@@ -2635,7 +2635,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   local year="${$(command date "+%Y"):-2020}"
 
   command cat >! "${plugin:t}.plugin.zsh" <<EOF
-# -*- mode: sh; sh-indentation: 4; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
+# -*- mode: sh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 
 # Copyright (c) $year $user_name
 
@@ -2660,7 +2660,7 @@ autoload -Uz example-script
 # Use alternate vim marks [[[ and ]]] as the original ones can
 # confuse nested substitutions, e.g.: \${\${\${VAR}}}
 
-# vim:ft=zsh:tw=80:sw=4:sts=4:et:foldmarker=[[[,]]]
+# vim:ft=zsh:tw=120:sw=2:sts=2:et:foldmarker=[[[,]]]
 EOF
 
   command cat >>! .git/config <<EOF

@@ -9,7 +9,7 @@ jobs:
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase')
     runs-on: ubuntu-latest
     steps:
-      - name: ☑️ Checkout the latest code
+      - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

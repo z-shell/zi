@@ -45,7 +45,7 @@
   
   </h3>
   
-- [Annexes](https://github.com/z-shell/z-annexes)
+- [Annexes](https://github.com/z-shell/zannex)
   - [Meta Plugins](https://github.com/z-shell/z-a-meta-plugins)
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-parameter-holding-the-plugin-managers-capabilities)
   
@@ -96,7 +96,7 @@ fi
 
 - This will:
   - Clone and install ZI if missing.
-  - If successful or not required will load ZI.
+  - If install successful or not required will load ZI.
   - Enable ZI completions.
 
 - All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
@@ -105,8 +105,8 @@ fi
   - Visiting Wiki:
     - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
     - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
-    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Example-Oh-My-Zsh-setup)
-    - [Gallery](https://github.com/z-shell/zi/wiki/GALLERY)
+    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
+    - [Gallery](https://github.com/z-shell/zi/wiki/Gallery)
 
 #### Interactive install (beta)
 

@@ -3,21 +3,28 @@ name: 📖 Wiki
 
 on:
   push:
-    branches: [ wiki ]
-    paths:
-      - "docs/wiki/**"
   workflow_dispatch:
 
 jobs:
-  deploy-wiki:
+  sync-wiki:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: 📩 Add to wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@v2
-        env:
-          WIKI_DIR: docs/wiki/
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_MAIL: ${{ secrets.GH_MAIL }}
-          GH_NAME: ${{ github.repository_owner }}
-          EXCLUDED_FILES: "docs/wiki/drafts"
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 📥 Add from wiki
+        run: |
+          git clone https://github.com/z-shell/docs.git /tmp/docs
+          git clone https://github.com/z-shell/zi.wiki.git /tmp/wiki
+          rsync -av /tmp/wiki/* /tmp/docs/wiki/zi
+      - name: ☑️ Commit new changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Wiki sync"
+          commit_options: "--no-verify --signoff"
+          repository: /tmp/docs
+          file_pattern: wiki/zi
+          status_options: "--untracked-files=no"
+          push_options: "--force"
+          skip_dirty_check: true
+          skip_fetch: true
+          disable_globbing: true

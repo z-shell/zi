@@ -79,8 +79,6 @@
 
 ### Installation
 
-> Interactive installation currently in development mode.
-
 #### ZI Loader
 
 Forthcoming releases will introduce ZI profiles that allow changing the Zsh environment or configuration files with a single command. The specified way of installation is a part of the upcoming profiles loader.
@@ -91,7 +89,6 @@ Create a configuration files directory:
 zi_config="${XDG_CONFIG_HOME:-$HOME/.config}/zi"
 command mkdir -p $zi_config
 ```
-
 Download:
 
 ```zsh
@@ -112,17 +109,10 @@ fi
   - Enable ZI completions.
 
 - All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
-- Post-install we recommend:
-  - Run: `exec zsh` and `zi self-update`.
-  - Visiting Wiki:
-    - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
-    - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
-    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
-    - [Gallery](https://github.com/z-shell/zi/wiki/Gallery)
 
 #### Interactive install (beta)
 
-> Requires: `bash`, `git`, `curl`.
+> Interactive installation currently in development mode.
 
 ```shell
 bash <(curl -fsSL https://git.io/zi-setup)
@@ -130,13 +120,17 @@ bash <(curl -fsSL https://git.io/zi-setup)
 
 #### Quick install
 
-```shell
-bash <(curl -fsSL https://git.io/zi-install)
+```zsh
+sh <(curl -fsSL https://git.io/get-zi)
+```
+
+To skip `.zshrc` update run:
+
+```zsh
+export RCUPDATE=0; sh <(curl -fsSL https://git.io/get-zi)
 ```
 
 #### Manual install
-
-> Requires: `git`.
 
   Clone repository:
 
@@ -154,6 +148,14 @@ source "${zi_home}/bin/zi.zsh"
 autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi
 ```
+
+#### Post-install we recommend:
+ - Run: `exec zsh` and `zi self-update`.
+ - Visiting Wiki:
+   - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
+   - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
+   - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
+   - [Gallery](https://github.com/z-shell/zi/wiki/Gallery)
 
 ## Roadmap
 

@@ -44,14 +44,14 @@
   description: "No activity for quite some time."
 - name: "no-stale 🔒"
   color: fef2c0
-  description: "This is exempt from the stale bot."
+  description: "This is exempt from the stale bot"
 
 - name: "Q&A ✍️"
   color: fef2c0
-  description: "Questions and answers"
+  description: "Questions and answers."
 - name: "invalid ⚠️"
   color: 0b467f
-  description: "This is off-topic or incorrect"
+  description: "This is off-topic or incorrect."
 - name: "beginner-friendly 💕"
   color: 0e8a16
   description: "Good first issue for people wanting to contribute to this project."
@@ -60,10 +60,10 @@
   description: "We need some extra helping hands or expertise in order to resolve this!"
 - name: "feature-request 💡"
   color: 0e8a16
-  description: "Suggests new feature"
+  description: "Suggests new feature."
 - name: "locked ‼️"
   color: d93f0b
-  description: "Spam, inappropriate or otherwise doesn't apply to this project"
+  description: "Spam, inappropriate or otherwise doesn't apply to this project."
 - name: "resolved ☑️"
   color: 0e8a16
   description: "The issue has been fixed and is therefore considered resolved."
@@ -75,7 +75,7 @@
 #  description: "This issue may be useful, and needs some attention."
 - name: "priority-low 🔖"
   color: ffffff
-  description: "Good addition, will do on spare time."
+  description: "This issue currently can't be resolved."
 
 #- name: "annex 💠"
 #  color: 3e16f3

@@ -6,26 +6,14 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 ## Knowledge Base
 
 - [ZI Wiki](https://github.com/z-shell/zi/wiki)
-
-###  Zsh Official
-- [Zsh Site](http://zsh.sourceforge.net/)
-  - [Zsh FAQ](https://zsh.sourceforge.io/FAQ/)
-  - [Zsh Documentation](https://zsh.sourceforge.io/Doc/)
-  - [The Z Shell Manual](https://zsh.sourceforge.io/Doc/Release/index.html#Top) 
-### Useful
--   [Bash 2 Zsh](http://www.bash2zsh.com/)
--   [Zsh tips](http://www.zzapper.co.uk/zshtips.html)
--   [101 Powerful & Practical ZSH GLOBS](http://www.zzapper.co.uk/101ZshGlobs.php)
--   [Practical differences between Bash ans Zsh](https://apple.stackexchange.com/questions/361870/what-are-the-practical-differences-between-bash-and-zsh/361957#361957)
->
--   [zshdb - a gdb-like debugger for zsh](https://zshdb.readthedocs.io/en/latest/index.html)
--   [Debian Bug report logs: Bugs in package zsh](https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=zsh)
+- [Zsh Plugin Standard](https://z-shell.github.io/docs/zsh/Zsh-Plugin-Standard.html)
+- [Zsh Native Scripting Handbook](https://z-shell.github.io/docs/zsh/Zsh-Native-Scripting-Handbook.html)
 
 ## Development environment setup
 
 **Notes:**
-  - Any files to support prefered editor should be collaborated and respected across repositories. e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
-  - [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts. 
+> Any files to support prefered editor should be collaborated and respected across repositories. e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
+> [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts.
 
 ### Clean Pull Request guidelines
 

@@ -30,11 +30,11 @@
   color: 5319e7
   description: "Work that improves the continuous integration."
 - name: "dependencies 📦"
-  color: fbcA04
+  color: fbca04
   description: "Change in project dependencies."
 
 - name: "in-progress ⚡"
-  color: fbca04
+  color: f510f4
   description: "Issue is currently being worked on by a developer."
 - name: "triage 📑"
   color: fbca04

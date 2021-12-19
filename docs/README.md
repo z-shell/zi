@@ -1,20 +1,19 @@
-<h1 align="center">
+<h2 align="center">
   <a href="https://github.com/z-shell/zi">
     <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
-❮ ZI ❯
-  </h1>
-<div align="center">
+❮ ZI ❯ 
+  </h2><div align="center">
+  
+[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Tweet][twitter-badge]][twitter-link]
+  
   <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
   · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
   · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
 </div>
 <div align="center">
 <br />
-  
-[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-[![Tweet][twitter-badge]][twitter-link]
-
 </div>
 
 <details open="open">
@@ -38,10 +37,8 @@
 
 </details>
 
----
-
 ## About
-
+  
 <h3><div align="center">
   
 **ZI is a fast and feature-rich plugin manager for [Zsh](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).** 
@@ -69,6 +66,8 @@
 - [ZI Wiki](https://github.com/z-shell/zi/wiki)
 - [Code Documentation](https://github.com/z-shell/zi/wiki/Code-Documentation)
 
+> **Tip:** [Advanced search](https://github.com/search/advanced?q=user%3Az-shell&type=Users)
+>
 > Curentlly we are working on how to improve and unify documentation in to one place.
 > If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.
 
@@ -76,15 +75,11 @@
 
 ### Prerequisites
 
-> **[?]**
 > Work in progress.
 
 ### Installation
 
-> **[?]**
 > Interactive installation currently in development mode.
->
-> After installing and reloading the shell run: zi self-update
 
 #### ZI Loader
 
@@ -113,7 +108,7 @@ fi
 
 - This will:
   - Clone and install ZI if missing.
-  - If successful or not required will load ZI.
+  - If install successful or not required will load ZI.
   - Enable ZI completions.
 
 - All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
@@ -122,8 +117,8 @@ fi
   - Visiting Wiki:
     - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
     - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
-    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Example-Oh-My-Zsh-setup)
-    - [Gallery](https://github.com/z-shell/zi/wiki/GALLERY)
+    - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
+    - [Gallery](https://github.com/z-shell/zi/wiki/Gallery)
 
 #### Interactive install (beta)
 
@@ -198,7 +193,7 @@ _For more information and to report security issues, please refer to our [securi
 ## Acknowledgements
 
 The [**Z-Shell**](https://github.com/z-shell) was created to recover the `zdharma` organization project which was deleted by the owner.
-We don't want to depend on an unreliable source. For this reason started maintaining all tools, everyone interested is welcome join.
+We don't want to depend on an unreliable source.
 [**ZI**](https://github.com/z-shell/zi), formerly known as zplugin, zinit, is an open source community project released under the [MIT License](../LICENSE).
 
 ### Authors & contributors

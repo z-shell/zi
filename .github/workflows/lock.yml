@@ -4,7 +4,6 @@ name: 🔒 Lock closed issues and PRs
 on:
   schedule:
     - cron: "30 2 * * *"
-  workflow_dispatch:
 
 permissions:
   issues: write

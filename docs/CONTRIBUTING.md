@@ -39,6 +39,35 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 
 > Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code. ([examples](https://www.google.com/search?q=english+"present+tense+example"))
 
+## Commit messages 
+
+- Use the Present Tense ("Add feature" not "Added feature").
+- Use the Imperative Mood ("Move file to..." not "Moves file to...").
+- Limit the subject line to 50 characters
+- Wrap the body at 72 characters
+- Reference issues and pull requests, where possible.
+
+- Be creative with emojies
+  - :tada: `:tada:` Initial commit
+  - :art: `:art:` when improving the format/structure of the code
+  - :racehorse: `:racehorse:` when improving performance
+  - :books: `:books:` when writing docs
+  - :pencil2: `:pencil2:` when fixing typos
+  - :bug: `:bug:` when fixing a bug
+  - :fire: `:fire:` when removing code or files
+  - :green_heart: `:green_heart:` when fixing the CI build
+  - :white_check_mark: `:white_check_mark:` when adding tests
+  - :lock: `:lock:` when dealing with security
+  - :heavy_plus_sign: `:heavy_plus_sign:` when adding new dependencies
+  - :arrow_up: `:arrow_up:` when upgrading dependencies
+  - :arrow_down: `:arrow_down:` when downgrading dependencies
+  - :shirt: `:shirt:` when removing linter warnings
+  - :construction: `:construction:` work in progress
+  - :sparkles: `:sparkles:` when adding feature
+  - :lipstick: `:lipstick:` when improving UI
+  - :gem: `:gem:` new release
+  - :rocket: `:rocket:` Anything related to Deployments/DevOps
+
 ## Issues and feature requests
 
 You've found a bug in the source code, a mistake in the documentation or maybe you'd like a new feature?Take a look at [GitHub Discussions](https://github.com/z-shell/zi/discussions) to see if it's already being discussed. You can help us by [submitting an issue on GitHub](https://github.com/z-shell/zi/issues). Before you create an issue, make sure to search the issue archive -- your issue may have already been addressed!

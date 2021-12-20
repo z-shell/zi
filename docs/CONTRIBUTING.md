@@ -1,4 +1,4 @@
-# Contributing
+# Contributing Guidelines
 
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
@@ -8,6 +8,17 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 - [ZI Wiki](https://github.com/z-shell/zi/wiki)
 - [Zsh Plugin Standard](https://z-shell.github.io/docs/zsh/Zsh-Plugin-Standard.html)
 - [Zsh Native Scripting Handbook](https://z-shell.github.io/docs/zsh/Zsh-Native-Scripting-Handbook.html)
+
+### Need some help regarding the basics?🤔
+
+You can refer to the following articles on basics of Git and Github and also contact the Project Mentors,
+in case you are stuck:
+
+- [Forking a Repo](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
+- [Cloning a Repo](https://help.github.com/en/desktop/contributing-to-projects/creating-an-issue-or-pull-request)
+- [How to create a Pull Request](https://opensource.com/article/19/7/create-pull-request-github)
+- [Getting started with Git and GitHub](https://towardsdatascience.com/getting-started-with-git-and-github-6fcd0f2d4ac6)
+- [Learn GitHub from Scratch](https://lab.github.com/githubtraining/introduction-to-github)
 
 ## Development environment setup
 
@@ -91,3 +102,91 @@ Please try to create bug reports that are:
 4. Commit your changes (`git commit -m 'feat: add amazing_feature'`) Z-Shell ZI uses [conventional commits](https://www.conventionalcommits.org), so please follow the specification in your commit messages.
 5. Push to the branch (`git push origin feat/amazing_feature`)
 6. [Open a Pull Request](https://github.com/z-shell/zi/compare?expand=1)
+
+## Submitting Contribution
+
+Below you will find the process and workflow used to review and merge your changes.
+
+### Step 0 : Find an issue
+
+- Take a look at the Existing Issues or create your **own** Issues!
+- Wait for the Issue to be assigned to you after which you can start working on it.
+- Note : Every change in this project should/must have an associated issue.
+
+### Step 1 : Fork the Project
+
+- Fork this Repository. This will create a Local Copy of this Repository on your Github Profile.
+Keep a reference to the original project in `upstream` remote.  
+
+```bash
+git clone https://github.com/<your-username>/<repo-name>  
+cd <repo-name>  
+git remote add upstream https://github.com/<upstream-owner>/<repo-name>  
+```  
+
+- If you have already forked the project, update your copy before working.
+
+```bash
+git remote update
+git checkout <branch-name>
+git rebase upstream/<branch-name>
+```  
+
+### Step 2 : Branch
+
+Create a new branch. Use its name to identify the issue your addressing.
+
+```bash
+# It will create a new branch with name Branch_Name and switch to that branch 
+git checkout -b branch_name
+```
+
+### Step 3 : Work on the issue assigned
+
+- Work on the issue(s) assigned to you.
+- Add all the files/folders needed.
+- After you've made changes or made your contribution to the project add changes to the branch you've just created by:
+
+```bash  
+# To add all new files to branch Branch_Name  
+git add .  
+
+# To add only a few files to Branch_Name
+git add <some files>
+```
+
+### Step 4 : Commit
+
+- To commit give a descriptive message for the convenience of reviewer by:
+
+```bash
+# This message get associated with all files you have changed  
+git commit -m "message"  
+```
+
+- **NOTE**: A PR should have only one commit. Multiple commits should be squashed.
+
+### Step 5 : Work Remotely
+
+- Now you are ready to your work to the remote repository.
+- When your work is ready and complies with the project conventions, upload your changes to your fork:
+
+```bash  
+# To push your work to your remote repository
+git push -u origin Branch_Name
+```
+
+### Step 6 : Pull Request
+
+- Go to your repository in browser and click on compare and pull requests.
+Then add a title and description to your pull request that explains your contribution.  
+
+### Note : Do not add images, rather 👇 
+
+- We plan to remove all the images and screenshots from our repository and link them to markdown files.
+    
+    #### How to do that? 
+
+    - You can do that by hosting all you images and screenshots to any images hosting sites such as [imgur](https://imgur.com/), [imgbb](https://imgbb.com/), [postimages](https://postimages.org/).
+    - Then link your uploaded images to README files.
+

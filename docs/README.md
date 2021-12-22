@@ -121,13 +121,14 @@ bash <(curl -fsSL https://git.io/zi-setup)
 #### Quick install
 
 ```zsh
-sh <(curl -fsSL https://git.io/get-zi)
-```
+# Will make offers or display notes depending on changes or status.
+sh -c "$(curl -fsSL https://git.io/get-zi)" --
 
-To skip `.zshrc` update run:
+# Non interactive. Just clone or update repository. 
+sh -c "$(curl -fsSL https://git.io/get-zi)" -- -i skip
 
-```zsh
-export RCUPDATE=0; sh <(curl -fsSL https://git.io/get-zi)
+# Minimal .zshrc setup. No extras offered.  
+sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a skip
 ```
 
 #### Manual install

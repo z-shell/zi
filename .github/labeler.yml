@@ -1,2 +1,2 @@
 documentation 📝:
-- any: ['docs/**/*.md', 'docs/*.md']
+  - any: ["docs/**/*.md", "docs/*.md"]

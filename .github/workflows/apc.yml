@@ -10,6 +10,6 @@ jobs:
     steps:
       - uses: alex-page/github-project-automation-plus@v0.8.1
         with:
-          project: Workspace
+          project: CodeSpace
           column: Triage
           repo-token: ${{ secrets.GH_PAT }}

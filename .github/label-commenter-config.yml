@@ -1,7 +1,7 @@
 comment:
   header: Hi, there.
   footer: "\n\n > This is an automated comment. Responding to the bot or mentioning it won't have any effect.\n\n"
-  
+
 labels:
   - name: invalid ⚠️
     labeled:
@@ -19,7 +19,7 @@ labels:
     labeled:
       issue:
         body: |
-          Please ask questions at the Github discussions. 
+          Please ask questions at the Github discussions.
           https://github.com/z-shell/zi/discussions/categories/q-a
         action: close
   - name: priority-low 🔖

@@ -27,7 +27,7 @@
     - [ZI Loader setup](#zi-loader-setup)
     - [Quick install](#quick-install)
     - [Manual install](#manual-install)
-    - [Post-install we recommend:](#post-install-we-recommend)
+    - [Post-install](#post-install)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [Project assistance](#project-assistance)
@@ -141,10 +141,10 @@ autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi
 ```
 
-#### Post-install we recommend:
+#### Post-install
 
 - Run: `exec zsh` and `zi self-update`.
-- Visiting Wiki:
+- Visit Wiki:
   - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
   - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
   - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)

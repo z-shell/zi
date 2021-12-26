@@ -2830,8 +2830,9 @@ EOF
   }
   (
     builtin cd -q "${ZI[SNIPPETS_DIR]}"
+    local tree_cmd="$commands[tree]"
     local -a list
-    list=( "${(f@)"$(LANG=en_US.utf-8 tree -L 3 --charset utf-8)"}" )
+    list=( "${(f@)"$(LANG=en_US.utf-8 $tree_cmd -L 3 --charset utf-8)"}" )
     # Oh-My-Zsh single file
     list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--raw--master(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
     # Oh-My-Zsh SVN

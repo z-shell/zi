@@ -1466,17 +1466,18 @@ ziextract() {
   emulate -LR zsh
   setopt extendedglob typesetsilent noshortloops # warncreateglobal
 
+  if (( $+commands[file] != 1 )) { +zi-message "{error}ziextract:{msg2} The {obj}file{msg2} command is required for recognizing the type of data to be processed.{rst}"; return 1; }
   local -a opt_move opt_move2 opt_norm opt_auto opt_nobkp
   zparseopts -D -E -move=opt_move -move2=opt_move2 -norm=opt_norm -auto=opt_auto -nobkp=opt_nobkp || \
-    { +zi-message "{error}ziextract:{msg2} Incorrect options given to" "\`{pre}ziextract{msg2}' (available are: {meta}--auto{msg2}," \
-        "{meta}--move{msg2}, {meta}--move2{msg2}, {meta}--norm{msg2}," "{meta}--nobkp{msg2}).{rst}"; return 1; }
+  { +zi-message "{error}ziextract:{msg2} Incorrect options given to" "\`{pre}ziextract{msg2}' (available are: {meta}--auto{msg2}," \
+  "{meta}--move{msg2}, {meta}--move2{msg2}, {meta}--norm{msg2}," "{meta}--nobkp{msg2}).{rst}"; return 1; }
 
   local file="$1" ext="$2"
   integer move=${${${(M)${#opt_move}:#0}:+0}:-1} \
-      move2=${${${(M)${#opt_move2}:#0}:+0}:-1} \
-      norm=${${${(M)${#opt_norm}:#0}:+0}:-1} \
-      auto=${${${(M)${#opt_auto}:#0}:+0}:-1} \
-      nobkp=${${${(M)${#opt_nobkp}:#0}:+0}:-1}
+  move2=${${${(M)${#opt_move2}:#0}:+0}:-1} \
+  norm=${${${(M)${#opt_norm}:#0}:+0}:-1} \
+  auto=${${${(M)${#opt_auto}:#0}:+0}:-1} \
+  nobkp=${${${(M)${#opt_nobkp}:#0}:+0}:-1}
 
   if (( auto )) {
     # First try known file extensions

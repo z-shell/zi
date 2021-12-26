@@ -226,7 +226,7 @@ Members are expected to remain active contributors to the community.
 
 ### Requirements
 
-- Enabled [two-factor authentication] on their GitHub account
+- Enabled two-factor authentication on their GitHub account
 - Actively contributing to 1 or more repositories.
 - **[Membership request](https://github.com/z-shell/community/issues/new?assignees=&labels=&template=member_application.md&title=REQUEST%3A+New+member+for+%3Cyour-GH-handle%3E+of+%3Cz-shell+property%3E) against the z-shell/org repo**
   - Ensure your sponsors if any are @mentioned on the issue

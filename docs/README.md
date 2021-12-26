@@ -60,6 +60,8 @@
 
 - Provides [reports and statistics](https://github.com/z-shell/zi/wiki/Commands#reports-and-statistics) about the plugins, such as describing what **aliases**, **functions**, **bindkeys**, **Zle widgets**, **zstyles**, [completions](https://github.com/z-shell/zi/wiki/Introduction#completion-management), variables, `PATH` and `FPATH` elements a plugin has set up. Allows to quickly [familiarize](https://github.com/z-shell/zi/wiki/Profiling-plugins) oneself with a new plugin and provides rich and easy-to-digest information that might be helpful on various occasions. supports the unloading of plugins and the ability to list, (un)install, and **selectively disable**, **enable** plugin's completions.
 
+- Test configurations with docker at [playground](https://github.com/z-shell/playground)
+
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-capabilities)
 
 ## Documentation
@@ -141,10 +143,10 @@ autoload -Uz _zi
 (( ${+_comps} )) && _comps[zi]=_zi
 ```
 
-#### Post-install
+#### Post-install 
 
 - Run: `exec zsh` and `zi self-update`.
-- Visit Wiki:
+- Visit wiki:
   - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
   - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
   - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
@@ -208,5 +210,3 @@ Reach out to the maintainers at one of the following places:
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
 [twitter-link]: https://twitter.com/intent/tweet?text=Interactive%20feature-rich%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell
-[asciinema-preview]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg
-[asciinema-link]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf

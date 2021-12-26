@@ -210,5 +210,3 @@ Reach out to the maintainers at one of the following places:
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
 [twitter-link]: https://twitter.com/intent/tweet?text=Interactive%20feature-rich%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell
-[asciinema-preview]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg
-[asciinema-link]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf

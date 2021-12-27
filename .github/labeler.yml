@@ -1,2 +1,4 @@
 documentation 📝:
   - any: ["docs/**/*.md", "docs/*.md"]
+ci 🤖:
+  - any: [".github/workflows/*.yml"]

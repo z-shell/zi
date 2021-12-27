@@ -78,39 +78,6 @@
 
 ### Installation
 
-#### ZI Loader setup
-
-Forthcoming releases will introduce ZI profiles that allow changing the Zsh environment or configuration files with a single command. The specified way of installation is a part of the upcoming profiles loader.
-
-Create a configuration files directory:
-
-```zsh
-zi_config="${XDG_CONFIG_HOME:-$HOME/.config}/zi"
-command mkdir -p $zi_config
-```
-
-Download:
-
-```zsh
-curl -fsSL https://git.io/zi-loader -o ${zi_config}/init.zsh
-```
-
-Add at the top of your `.zshrc`:
-
-```zsh
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" ]]; then
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" && zzinit
-fi
-```
-
-- This will:
-
-  - Clone and install ZI if missing.
-  - If install successful or not required will load ZI.
-  - Enable ZI completions.
-
-- All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
-
 #### Quick install
 
 ```zsh
@@ -125,6 +92,9 @@ sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a annex
 
 # Minimal configuration + annexes + zunit.
 sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a zunit
+
+# Minimal configuration with loader
+sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a loader
 
 # Suggest your .zshrc configuration to:
 # https://github.com/z-shell/playground
@@ -153,7 +123,7 @@ autoload -Uz _zi
 #### Post-install 
 
 - Run: `exec zsh` and `zi self-update`.
-- Visit wiki:
+- Visit [wiki](https://github.com/z-shell/zi/wiki/):
   - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
   - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
   - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)

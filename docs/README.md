@@ -114,14 +114,21 @@ fi
 #### Quick install
 
 ```zsh
-# Will make offers or display notes depending on changes or status.
+# Will add minimal configuration
 sh -c "$(curl -fsSL https://git.io/get-zi)" --
 
 # Non interactive. Just clone or update repository.
 sh -c "$(curl -fsSL https://git.io/get-zi)" -- -i skip
 
-# Minimal .zshrc setup. No extras offered.
-sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a skip
+# Minimal configuration + annexes.
+sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a annex
+
+# Minimal configuration + annexes + zunit.
+sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a zunit
+
+# Suggest your .zshrc configuration to:
+# https://github.com/z-shell/playground
+sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a ???
 ```
 
 #### Manual install

@@ -32,6 +32,9 @@
 - name: "dependencies 📦"
   color: fbca04
   description: "Change in project dependencies."
+- name: "submodules ⚙️"
+  color: fbca04
+  description: "Change in project dependencies."
 
 - name: "in-progress ⚡"
   color: f510f4

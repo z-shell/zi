@@ -11,34 +11,25 @@
 <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
 · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
 · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
-
-</div>
-<div align="center">
-<br />
 </div>
 
 <details open="open">
 <summary>Table of Contents</summary>
 
-- [About](#about)
-- [Documentation](#documentation)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-    - [ZI Loader setup](#zi-loader-setup)
-    - [Quick install](#quick-install)
-    - [Manual install](#manual-install)
-    - [Post-install](#post-install)
+- [Wiki](https://github.com/z-shell/zi/wiki)
+  - [Installation](https://github.com/z-shell/zi/wiki/Installation)
+  - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [Project assistance](#project-assistance)
 - [Security](#security)
 - [Acknowledgements](#acknowledgements)
-  - [Authors & contributors](#authors--contributors)
+- [Authors & contributors](#authors--contributors)
 - [Support](#support)
 
 </details>
 
-## About
+---
 
 <h3><div align="center">
 
@@ -48,7 +39,7 @@
 
 - Has a [turbo mode](https://github.com/z-shell/zi/wiki/Introduction#turbo-mode-zsh--53) which yields 50-80% [faster](https://github.com/z-shell/pm-perf-test) Zsh startup.
 
-- Allow to install [RubyGems](https://rubygems.org/), [Node modules](https://www.npmjs.com/), [Rust](https://crates.io/) packages and almost everything from [GitHub](https://github.com).
+- Allow to install [**RubyGems**](https://rubygems.org/) [[1](https://github.com/z-shell/zi/wiki/z-a-bin-gem-node)] [[2](https://github.com/z-shell/any-gem)], [**Node modules**](https://www.npmjs.com/) [[1](https://github.com/z-shell/zi/wiki/z-a-bin-gem-node)] [[2](https://github.com/z-shell/any-node)], [**Rust packages**](https://crates.io/) [[1](https://github.com/z-shell/zi/wiki/z-a-rust)] and almost everything from [**GitHub**](https://github.com) [[1](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)] [[2](https://github.com/z-shell/zi/wiki/Gallery)] [[3](https://github.com/z-shell/zi/wiki/Annexes)] [[4](https://github.com/z-shell/zi/wiki/Packages)].
 
 - Supports loading [Oh My Zsh and Prezto](https://github.com/z-shell/zi/wiki/Introduction#oh-my-zsh-prezto) plugins and libraries, however, the implementation isn't framework-specific and doesn't bloat the plugin manager with such code. See our wiki on how to [migrate](https://github.com/z-shell/zi/wiki/Usage#migration) from other plugin managers.
 
@@ -63,71 +54,6 @@
 - Test configurations with docker at [playground](https://github.com/z-shell/playground)
 
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-capabilities)
-
-## Documentation
-
-- [ZI Wiki](https://github.com/z-shell/zi/wiki)
-- [Code Documentation](https://github.com/z-shell/zi/wiki/Code-Documentation)
-
-> **Tip:** [Advanced search](https://github.com/search/advanced?q=user%3Az-shell&type=Users)
->
-> Curentlly we are working on how to improve and unify documentation in to one place.
-> If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.
-
-## Getting Started
-
-### Installation
-
-#### Quick install
-
-```zsh
-# Will add minimal configuration
-sh -c "$(curl -fsSL https://git.io/get-zi)" --
-
-# Non interactive. Just clone or update repository.
-sh -c "$(curl -fsSL https://git.io/get-zi)" -- -i skip
-
-# Minimal configuration + annexes.
-sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a annex
-
-# Minimal configuration + annexes + zunit.
-sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a zunit
-
-# Minimal configuration with loader
-sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a loader
-
-# Suggest your .zshrc configuration to:
-# https://github.com/z-shell/playground
-sh -c "$(curl -fsSL https://git.io/get-zi)" -- -a ???
-```
-
-#### Manual install
-
-Clone repository:
-
-```zsh
-zi_home="${HOME}/.zi" && command mkdir -p $zi_home
-command git clone https://github.com/z-shell/zi.git "${zi_home}/bin"
-```
-
-Source `zi.zsh` from your `.zshrc`:
-
-```zsh
-zi_home="${HOME}/.zi"
-source "${zi_home}/bin/zi.zsh"
-# Next two lines must be below the above two
-autoload -Uz _zi
-(( ${+_comps} )) && _comps[zi]=_zi
-```
-
-#### Post-install 
-
-- Run: `exec zsh` and `zi self-update`.
-- Visit [wiki](https://github.com/z-shell/zi/wiki/):
-  - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
-  - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
-  - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
-  - [Gallery](https://github.com/z-shell/zi/wiki/Gallery)
 
 ## Roadmap
 
@@ -170,7 +96,7 @@ The [**Z-Shell**](https://github.com/z-shell) was created to recover the `zdharm
 We don't want to depend on an unreliable source.
 [**ZI**](https://github.com/z-shell/zi), formerly known as zplugin, zinit, is an open source community project released under the [MIT License](../LICENSE).
 
-### Authors & contributors
+## Authors & contributors
 
 The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
 

@@ -6,7 +6,7 @@ on:
     paths:
       - "./zi.zsh"
       - "lib/**"
-      
+
 jobs:
   build-matrix:
     runs-on: ubuntu-latest

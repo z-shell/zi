@@ -427,10 +427,10 @@ ZI[EXTENDED_GLOB]=""
   tmp=$( "$readlink_cmd" "$cpath" )
   # This in effect works as: "if different, then readlink"
   [[ -n "$tmp" ]] && in_plugin_path="$tmp"
-  if [[ "$in_plugin_path" != "$cpath" ]]; then
+  if [[ "$in_plugin_path" != "$cpath" && -r "$in_plugin_path" ]]; then
     # Get the user---plugin part of path
-    while [[ "$in_plugin_path" != ${ZI[PLUGINS_DIR]}/[^/]## && "$in_plugin_path" != "/" ]]; do
-      in_plugin_path="${in_plugin_path:h}"
+    while [[ "$in_plugin_path" != ${ZI[PLUGINS_DIR]}/[^/]## && "$in_plugin_path" != "/" && "$in_plugin_path" != "." ]]; do
+    in_plugin_path="${in_plugin_path:h}"
     done
     in_plugin_path="${in_plugin_path:t}"
     if [[ -z "$in_plugin_path" ]]; then
@@ -468,9 +468,8 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 # FUNCTION: .zi-check-comp-consistency [[[
 # ❮ ZI ❯ creates symlink for each installed completion.
-# This function checks whether given completion (i.e.
-# file like "_mkdir") is indeed a symlink. Backup file
-# is a completion that is disabled - has the leading "_" removed.
+# This function checks whether given completion (i.e. file like "_mkdir") is indeed a symlink.
+# Backup file is a completion that is disabled - has the leading "_" removed.
 #
 # $1 - path to completion within plugin's directory
 # $2 - path to backup file within plugin's directory
@@ -1838,7 +1837,7 @@ fi
   completions=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
   +zi-message "Disabled completions: {num}${#completions[@]}{rst}"
   # Number of completions existing in all plugins
-  completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN) )
+  completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/tests/*|/zsdoc/*|*.ps1)(DN) )
   +zi-message "Completions available overall: {num}${#completions[@]}{rst}"
   # Enumerate snippets loaded
   # }, ${infoc}{rst}", j:, :, {msg}"$'\e[0m, +zi-message h

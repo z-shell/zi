@@ -114,6 +114,10 @@ Reach out to the maintainers at one of the following places:
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
+## Supporters
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg)](https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://badgen.net/badge/icon/twitter?icon=twitter&label

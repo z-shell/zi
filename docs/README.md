@@ -116,7 +116,8 @@ Reach out to the maintainers at one of the following places:
 
 ## Supporters
 
-[![DigitalOcean Referral Badge](https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg)](https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
+<a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" width="160" height="80" /></a>
+<a href="https://cloudflare.com"><img src="https://github.com/ss-o/zi/raw/main/docs/images/cloudflare_shell_logo.png" alt="Cloudflare" width="160" height="80" /></a>
 
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases

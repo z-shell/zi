@@ -1,12 +1,13 @@
-<h2 align="center">
+<h1 align="center">
   <a href="https://github.com/z-shell/zi">
     <img src="images/logo.svg" alt="Logo" width="80" height="80">
   </a>
 ❮ ZI ❯
-  </h2><div align="center">
-
-[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-[![Tweet][twitter-badge]][twitter-link]
+  </h1><div align="center">
+  
+[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE) [![Version][ver-badge]][ver-link] 
+[![Tweet][twitter-badge]][twitter-link] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://code.visualstudio.com/) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
 
 <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
 · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
@@ -73,6 +74,10 @@ Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-config
 
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi)
 
+
+ [![Contributors over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=z-shell/zi)
+  
+
 ## Project assistance
 
 If you want to say **thank you** or/and support active development of Z-Shell ZI :
@@ -109,7 +114,15 @@ Reach out to the maintainers at one of the following places:
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
+## Supporters
+
+<div align="center">
+<a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" width="160" height="80" /></a>
+<a href="https://cloudflare.com"><img src="https://github.com/ss-o/zi/raw/main/docs/images/cloudflare_shell_logo.png" alt="Cloudflare" width="160" height="80" /></a>
+<a href="https://www.linode.com/?r=33649c0c3c30a16fbf06261c564753bd14e4b36e"><img src="https://github.com/ss-o/zi/raw/main/docs/images/linode-z-shell.png" alt="Linode" width="160" height="80" /></a>
+</div>
+  
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
-[twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
+[twitter-badge]: https://badgen.net/badge/icon/twitter?icon=twitter&label
 [twitter-link]: https://twitter.com/intent/tweet?text=Interactive%20feature-rich%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell

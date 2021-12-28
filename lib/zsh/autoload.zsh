@@ -427,10 +427,10 @@ ZI[EXTENDED_GLOB]=""
   tmp=$( "$readlink_cmd" "$cpath" )
   # This in effect works as: "if different, then readlink"
   [[ -n "$tmp" ]] && in_plugin_path="$tmp"
-  if [[ "$in_plugin_path" != "$cpath" ]]; then
+  if [[ "$in_plugin_path" != "$cpath" && -r "$in_plugin_path" ]]; then
     # Get the user---plugin part of path
-    while [[ "$in_plugin_path" != ${ZI[PLUGINS_DIR]}/[^/]## && "$in_plugin_path" != "/" ]]; do
-      in_plugin_path="${in_plugin_path:h}"
+    while [[ "$in_plugin_path" != ${ZI[PLUGINS_DIR]}/[^/]## && "$in_plugin_path" != "/" && "$in_plugin_path" != "." ]]; do
+    in_plugin_path="${in_plugin_path:h}"
     done
     in_plugin_path="${in_plugin_path:t}"
     if [[ -z "$in_plugin_path" ]]; then
@@ -468,9 +468,8 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 # FUNCTION: .zi-check-comp-consistency [[[
 # ❮ ZI ❯ creates symlink for each installed completion.
-# This function checks whether given completion (i.e.
-# file like "_mkdir") is indeed a symlink. Backup file
-# is a completion that is disabled - has the leading "_" removed.
+# This function checks whether given completion (i.e. file like "_mkdir") is indeed a symlink.
+# Backup file is a completion that is disabled - has the leading "_" removed.
 #
 # $1 - path to completion within plugin's directory
 # $2 - path to backup file within plugin's directory
@@ -587,6 +586,7 @@ ZI[EXTENDED_GLOB]=""
 
 # FUNCTION: .zi-pager [[[
 # BusyBox less lacks the -X and -i options, so it can use more
+# TODO: .zi-pager:7: less not found
 .zi-pager() {
   setopt LOCAL_OPTIONS EQUALS
   # Quiet mode ? → no pager.
@@ -1610,7 +1610,7 @@ fi
   .zi-self-update -q
   [[ $2 = restart ]] && +zi-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'
   local file
-  integer sum ela elb
+  integer sum ela elb update_rc
   .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" ela; (( sum += ela ))
   for file ( side install autoload ) {
     .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" elb; (( sum += elb ))
@@ -1698,12 +1698,18 @@ fi
     else
       (( !OPTS[opt_-q,--quiet] )) && builtin print "Updating $REPLY" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
+      update_rc=$?
+      [[ $update_rc -ne 0 ]] && {
+        +zi-message "{warn}Warning: {pid}${user}/${plugin} {warn}update returned {obj}$update_rc"
+        retval=$?
+      }
     fi
   done
   .zi-compinit 1 1 &>/dev/null
   if (( !OPTS[opt_-q,--quiet] )) {
     +zi-message "{msg2}The update took {obj}${SECONDS}{msg2} seconds{rst}"
   }
+  return "$retval"
 } # ]]]
 # FUNCTION: .zi-update-in-parallel [[[
 .zi-update-all-parallel() {
@@ -1838,7 +1844,7 @@ fi
   completions=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
   +zi-message "Disabled completions: {num}${#completions[@]}{rst}"
   # Number of completions existing in all plugins
-  completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN) )
+  completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/tests/*|/zsdoc/*|*.ps1)(DN) )
   +zi-message "Completions available overall: {num}${#completions[@]}{rst}"
   # Enumerate snippets loaded
   # }, ${infoc}{rst}", j:, :, {msg}"$'\e[0m, +zi-message h

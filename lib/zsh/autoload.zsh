@@ -1610,7 +1610,7 @@ fi
   .zi-self-update -q
   [[ $2 = restart ]] && +zi-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'
   local file
-  integer sum ela elb
+  integer sum ela elb update_rc
   .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" ela; (( sum += ela ))
   for file ( side install autoload ) {
     .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" elb; (( sum += elb ))
@@ -1698,12 +1698,18 @@ fi
     else
       (( !OPTS[opt_-q,--quiet] )) && builtin print "Updating $REPLY" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
+      update_rc=$?
+      [[ $update_rc -ne 0 ]] && {
+        +zi-message "{warn}Warning: {pid}${user}/${plugin} {warn}update returned {obj}$update_rc"
+        retval=$?
+      }
     fi
   done
   .zi-compinit 1 1 &>/dev/null
   if (( !OPTS[opt_-q,--quiet] )) {
     +zi-message "{msg2}The update took {obj}${SECONDS}{msg2} seconds{rst}"
   }
+  return "$retval"
 } # ]]]
 # FUNCTION: .zi-update-in-parallel [[[
 .zi-update-all-parallel() {

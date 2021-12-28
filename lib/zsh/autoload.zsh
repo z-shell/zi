@@ -586,6 +586,7 @@ ZI[EXTENDED_GLOB]=""
 
 # FUNCTION: .zi-pager [[[
 # BusyBox less lacks the -X and -i options, so it can use more
+# TODO: .zi-pager:7: less not found
 .zi-pager() {
   setopt LOCAL_OPTIONS EQUALS
   # Quiet mode ? → no pager.

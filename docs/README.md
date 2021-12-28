@@ -7,7 +7,7 @@
   
 [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE) [![Version][ver-badge]][ver-link] 
-[![Tweet][twitter-badge]][twitter-link] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://code.visualstudio.com/) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
+[![Tweet][twitter-badge]][twitter-link] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://open.vscode.dev/z-shell/zi) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
 
 <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
 · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
@@ -70,12 +70,7 @@ First off, thanks for taking the time to contribute! Contributions are what make
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
 
-Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser.
-
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi)
-
-
- [![Contributors over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=z-shell/zi)
+[![Contributors over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=z-shell/zi)
   
 
 ## Project assistance

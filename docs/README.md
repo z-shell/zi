@@ -4,7 +4,7 @@
   </a>
 ❮ ZI ❯
   </h1><div align="center">
-  
+
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE) [![Version][ver-badge]][ver-link] 
 [![Tweet][twitter-badge]][twitter-link] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://open.vscode.dev/z-shell/zi) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
 
@@ -68,7 +68,7 @@ See the [open issues](https://github.com/z-shell/zi/issues) for a list of propos
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
-  
+
 <div align="center">
   <img src="https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi" alt="Contributors over time" width="60%" height="300"></img>
 </div>
@@ -116,7 +116,7 @@ Reach out to the maintainers at one of the following places:
 <a href="https://cloudflare.com"><img src="https://github.com/ss-o/zi/raw/main/docs/images/cloudflare_shell_logo.png" alt="Cloudflare" width="160" height="80" /></a>
 <a href="https://www.linode.com/?r=33649c0c3c30a16fbf06261c564753bd14e4b36e"><img src="https://github.com/ss-o/zi/raw/main/docs/images/linode-z-shell.png" alt="Linode" width="160" height="80" /></a>
 </div>
-  
+
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://badgen.net/badge/icon/twitter?icon=twitter&label

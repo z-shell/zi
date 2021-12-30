@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://github.com/z-shell/zi">
-    <img src="images/logo.svg" alt="Logo" width="80" height="80">
+    <img src="images/logo.svg" alt="Logo" width="80" height="80"></img>
   </a>
 ❮ ZI ❯
   </h1><div align="center">
@@ -68,9 +68,10 @@ See the [open issues](https://github.com/z-shell/zi/issues) for a list of propos
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
-
-[![Contributors over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=z-shell/zi)
   
+<div align="center">
+  <img src="https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi" alt="Contributors over time" width="90%" height="300"></img>
+</div>
 
 ## Project assistance
 

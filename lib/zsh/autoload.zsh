@@ -1908,20 +1908,23 @@ fi
       attime="${(l:5:: :)$(( attime * 1000 ))%%[,.]*} ms"
     fi
     [[ -z $EPOCHREALTIME ]] && attime="<no zsh/datetime module → no time data>"
+      local line="$time"
     if [[ "$opt" = *-[a-z]#m[a-z]#* ]]; then
-      time="$attime"
+      line="$attime"
+    elif [[ "$opt" = *-[a-z]#a[a-z]#* ]]; then
+      line="$attime $line"
     fi
+      line="$line - $REPLY"
     if [[ ${sice[as]} == "command" ]]; then
-      builtin print "$time" - "$REPLY (command)"
+      line="$line (command)"
     elif [[ -n ${sice[sbin]+abc} ]]; then
-      builtin print "$time" - "$REPLY (sbin command)"
+      line="$line (sbin command)"
     elif [[ -n ${sice[fbin]+abc} ]]; then
-      builtin print "$time" - "$REPLY (fbin command)"
+      line="$line (fbin command)"
     elif [[ ( ${sice[pick]} = /dev/null || ${sice[as]} = null ) && ${+sice[make]} = 1 ]]; then
-      builtin print "$time" - "$REPLY (/dev/null make plugin)"
-    else
-      builtin print "$time" - "$REPLY"
+      line="$line (/dev/null make plugin)"
     fi
+    builtin print "$line"
     (( sum += ZI[$entry] ))
   done
   builtin print "Total: $sum sec"
@@ -3034,7 +3037,7 @@ ${ice_order[*]}"
 ❯ stress         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Test plugin for compatibility with set of options
 ❯ changes        ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – View plugin's git log
 ❯ recently       ${ZI[col-info]}[time]${ZI[col-rst]}       – Show plugins that changed recently, argument is e.g. 1 month 2 days
-❯ times [-s] [-m]             – Statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – show plugin loading moments
+❯ times [-s] [-m] [-a]        – Statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – loading moments, -a – show both
 ❯ zstatus                     – Overall ❮ ZI ❯ status
 ❯ dtrace|dstart               – Start tracking what's going on in session
 ❯ dstop                       – Stop tracking what's going on in session

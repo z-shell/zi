@@ -70,7 +70,11 @@ First off, thanks for taking the time to contribute! Contributions are what make
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
   
 <div align="center">
+<<<<<<< HEAD
   <img src="https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi" alt="Contributors over time" width="90%" height="300"></img>
+=======
+  <img src="https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi" alt="Contributors over time" width="60%" height="300"></img>
+>>>>>>> d4bf4f0 (	modified:   .editorconfig)
 </div>
 
 ## Project assistance

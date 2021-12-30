@@ -23,34 +23,35 @@ in case you are stuck:
 ## Development environment setup
 
 **Notes:**
-> Any files to support prefered editor should be collaborated and respected across repositories. e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
-> [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts.
+
+- Any files to support prefered editor should be collaborated and respected across repositories. (e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2)).
+- [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts.
 
 ### Clean Pull Request guidelines
 
-  Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
+Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
 
--   Create a personal fork of the project on Github.
--   Clone the fork on your local machine. Your remote repo on Github is called `origin`.
-    -   `git clone https://github.com/{YOUR-USERNAME}/zi`
--   Add the original repository as a remote called `upstream`.
-    -   `git remote add upstream https://github.com/z-shell/zi.git`
--   If you created your fork a while ago be sure to pull upstream changes into your local repository.
--   Create a new branch to work on! Branch from `develop` if it exists, else from `main`.
--   Implement/fix your feature, comment your code.
--   Follow the code style of the project, including indentation.
--   If there is related tests please run them.
--   Write or adapt tests as needed.
--   Add or change the documentation as needed.
--   Squash your commits into a single commit with git's [interactive rebase](https://help.github.com/articles/interactive-rebase). Create a new branch if necessary.
--   Push your branch to your fork on Github, the remote `origin`.
--   From your fork open a pull request in the correct branch. Target the project's `develop` branch if there is one, else go for `main`!
--   Once the pull request is approved and merged you can pull the changes from `upstream` to your local repo and delete
-    your extra branch(es).
+- Create a personal fork of the project on Github.
+- Clone the fork on your local machine. Your remote repo on Github is called `origin`.
+  - `git clone https://github.com/{YOUR-USERNAME}/zi`
+- Add the original repository as a remote called `upstream`.
+  - `git remote add upstream https://github.com/z-shell/zi.git`
+- If you created your fork a while ago be sure to pull upstream changes into your local repository.
+- Create a new branch to work on! Branch from `develop` if it exists, else from `main`.
+- Implement/fix your feature, comment your code.
+- Follow the code style of the project, including indentation.
+- If there is related tests please run them.
+- Write or adapt tests as needed.
+- Add or change the documentation as needed.
+- Squash your commits into a single commit with git's [interactive rebase](https://help.github.com/articles/interactive-rebase). Create a new branch if necessary.
+- Push your branch to your fork on Github, the remote `origin`.
+- From your fork open a pull request in the correct branch. Target the project's `develop` branch if there is one, else go for `main`!
+- Once the pull request is approved and merged you can pull the changes from `upstream` to your local repo and delete
+  your extra branch(es).
 
 > Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code. ([examples](https://www.google.com/search?q=english+"present+tense+example"))
 
-## Commit messages 
+## Commit messages
 
 - Use the Present Tense ("Add feature" not "Added feature").
 - Use the Imperative Mood ("Move file to..." not "Moves file to...").
@@ -85,10 +86,10 @@ You've found a bug in the source code, a mistake in the documentation or maybe y
 
 Please try to create bug reports that are:
 
--   _Reproducible._ Include steps to reproduce the problem.
--   _Specific._ Include as much detail as possible: which version, what environment, etc.
--   _Unique._ Do not duplicate existing opened issues.
--   _Scoped to a Single Bug._ One bug per report.
+- _Reproducible._ Include steps to reproduce the problem.
+- _Specific._ Include as much detail as possible: which version, what environment, etc.
+- _Unique._ Do not duplicate existing opened issues.
+- _Scoped to a Single Bug._ One bug per report.
 
 **Even better: Submit a pull request with a fix or new feature!**
 
@@ -116,13 +117,13 @@ Below you will find the process and workflow used to review and merge your chang
 ### Step 1 : Fork the Project
 
 - Fork this Repository. This will create a Local Copy of this Repository on your Github Profile.
-Keep a reference to the original project in `upstream` remote.  
+  Keep a reference to the original project in `upstream` remote.
 
 ```bash
-git clone https://github.com/<your-username>/<repo-name>  
-cd <repo-name>  
-git remote add upstream https://github.com/<upstream-owner>/<repo-name>  
-```  
+git clone https://github.com/<your-username>/<repo-name>
+cd <repo-name>
+git remote add upstream https://github.com/<upstream-owner>/<repo-name>
+```
 
 - If you have already forked the project, update your copy before working.
 
@@ -130,14 +131,14 @@ git remote add upstream https://github.com/<upstream-owner>/<repo-name>
 git remote update
 git checkout <branch-name>
 git rebase upstream/<branch-name>
-```  
+```
 
 ### Step 2 : Branch
 
 Create a new branch. Use its name to identify the issue your addressing.
 
 ```bash
-# It will create a new branch with name Branch_Name and switch to that branch 
+# It will create a new branch with name Branch_Name and switch to that branch
 git checkout -b branch_name
 ```
 
@@ -147,9 +148,9 @@ git checkout -b branch_name
 - Add all the files/folders needed.
 - After you've made changes or made your contribution to the project add changes to the branch you've just created by:
 
-```bash  
-# To add all new files to branch Branch_Name  
-git add .  
+```bash
+# To add all new files to branch Branch_Name
+git add .
 
 # To add only a few files to Branch_Name
 git add <some files>
@@ -160,8 +161,8 @@ git add <some files>
 - To commit give a descriptive message for the convenience of reviewer by:
 
 ```bash
-# This message get associated with all files you have changed  
-git commit -m "message"  
+# This message get associated with all files you have changed
+git commit -m "message"
 ```
 
 - **NOTE**: A PR should have only one commit. Multiple commits should be squashed.
@@ -171,7 +172,7 @@ git commit -m "message"
 - Now you are ready to your work to the remote repository.
 - When your work is ready and complies with the project conventions, upload your changes to your fork:
 
-```bash  
+```bash
 # To push your work to your remote repository
 git push -u origin Branch_Name
 ```
@@ -179,14 +180,53 @@ git push -u origin Branch_Name
 ### Step 6 : Pull Request
 
 - Go to your repository in browser and click on compare and pull requests.
-Then add a title and description to your pull request that explains your contribution.  
+  Then add a title and description to your pull request that explains your contribution.
 
-### Note : Do not add images, rather 👇 
+### Note : Do not add images, rather 👇
 
 - We plan to remove all the images and screenshots from our repository and link them to markdown files.
-    
-    #### How to do that? 
 
-    - You can do that by hosting all you images and screenshots to any images hosting sites such as [imgur](https://imgur.com/), [imgbb](https://imgbb.com/), [postimages](https://postimages.org/).
-    - Then link your uploaded images to README files.
+  #### How to do that?
 
+  - You can do that by hosting all you images and screenshots to any images hosting sites such as [imgur](https://imgur.com/), [imgbb](https://imgbb.com/), [postimages](https://postimages.org/).
+  - Then link your uploaded images to README files.
+
+## Community membership
+
+This section outlines the various responsibilities of contributor roles in
+Z-shell. Responsibilities for most roles are scoped to these subprojects.
+
+| Role     | Responsibilities                        | Requirements                                                       | Defined by                                                |
+| -------- | --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
+| Member   | Active contributor in the community     | Sponsored by 2 reviewers or multiple contributions to the project  | Z-shell GitHub org member                                 |
+| Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [Reviewers](.../github/CODEOWNERS.md) file reviewer entry |
+| Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [Approvers](../github/CODEOWNERS.md) file approver entry  |
+
+### New contributors
+
+New contributors should be welcomed to the community by existing members,
+helped with PR workflow, and directed to relevant documentation and
+communication channels.
+
+### Established community members
+
+Established community members are expected to demonstrate their adherence to the
+principles in this document, familiarity with project organization, roles,
+policies, procedures, conventions, etc., and technical and/or writing ability.
+Role-specific expectations, responsibilities, and requirements are enumerated
+below.
+
+### Member
+
+Members are continuously active contributors in the community. They can have
+issues and PRs assigned to them, and pre-submit tests are automatically run for their PRs.
+Members are expected to remain active contributors to the community.
+
+**Defined by:** Member of the Z-shell GitHub organization
+
+### Requirements
+
+- Enabled two-factor authentication on their GitHub account
+- Actively contributing to 1 or more repositories.
+- **[Membership request](https://github.com/z-shell/community/issues/new?assignees=&labels=&template=member_application.md&title=REQUEST%3A+New+member+for+%3Cyour-GH-handle%3E+of+%3Cz-shell+property%3E) against the z-shell/org repo**
+  - Ensure your sponsors if any are @mentioned on the issue

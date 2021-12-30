@@ -3,7 +3,6 @@ description: File a bug report
 labels: ["bug 🐞"]
 title: "bug: "
 body:
-
   - type: markdown
     attributes:
       value: |

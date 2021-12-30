@@ -1,56 +1,48 @@
-<h2 align="center">
+<h1 align="center">
   <a href="https://github.com/z-shell/zi">
-    <img src="images/logo.svg" alt="Logo" width="80" height="80">
+    <img src="images/logo.svg" alt="Logo" width="80" height="80"></img>
   </a>
-❮ ZI ❯ 
-  </h2><div align="center">
+❮ ZI ❯
+  </h1><div align="center">
   
-[![Project license](https://img.shields.io/github/license/z-shell/zi.svg?style=flat-square)](../LICENSE) [![Version][ver-badge]][ver-link] [![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-[![Tweet][twitter-badge]][twitter-link]
-  
-  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
-  · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
-  · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
-</div>
-<div align="center">
-<br />
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE) [![Version][ver-badge]][ver-link] 
+[![Tweet][twitter-badge]][twitter-link] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://open.vscode.dev/z-shell/zi) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
+
+<a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
+· <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
+· <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
 </div>
 
 <details open="open">
 <summary>Table of Contents</summary>
 
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-    - [Interactive install](#interactive-install-beta)
-    - [Quick install](#quick-install)
-    - [Manual install](#manual-install)
-- [Documentation](#documentation)
+- [Wiki](https://github.com/z-shell/zi/wiki)
+  - [Installation](https://github.com/z-shell/zi/wiki/Installation)
+  - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
-- [Authors & contributors](#authors--contributors)
 - [Project assistance](#project-assistance)
 - [Security](#security)
-- [About](#about)
 - [Acknowledgements](#acknowledgements)
-- [Roadmap](#roadmap)
+- [Authors & contributors](#authors--contributors)
 - [Support](#support)
 
 </details>
 
-## About
-  
+---
+
 <h3><div align="center">
-  
-**ZI is a fast and feature-rich plugin manager for [Zsh](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).** 
-  
+
+**ZI is a fast and feature-rich plugin manager for [Zsh](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).**
+
 </div></h3>
 
 - Has a [turbo mode](https://github.com/z-shell/zi/wiki/Introduction#turbo-mode-zsh--53) which yields 50-80% [faster](https://github.com/z-shell/pm-perf-test) Zsh startup.
 
-- Allow to install [RubyGems](https://rubygems.org/), [Node modules](https://www.npmjs.com/), [Rust](https://crates.io/) packages and almost everything from [GitHub](https://github.com).
+- Allow to install [**RubyGems**](https://rubygems.org/) [[1](https://github.com/z-shell/zi/wiki/z-a-bin-gem-node)] [[2](https://github.com/z-shell/any-gem)], [**Node modules**](https://www.npmjs.com/) [[1](https://github.com/z-shell/zi/wiki/z-a-bin-gem-node)] [[2](https://github.com/z-shell/any-node)], [**Rust packages**](https://crates.io/) [[1](https://github.com/z-shell/zi/wiki/z-a-rust)] and almost everything from [**GitHub**](https://github.com) [[1](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)] [[2](https://github.com/z-shell/zi/wiki/Gallery)] [[3](https://github.com/z-shell/zi/wiki/Annexes)] [[4](https://github.com/z-shell/zi/wiki/Packages)].
 
 - Supports loading [Oh My Zsh and Prezto](https://github.com/z-shell/zi/wiki/Introduction#oh-my-zsh-prezto) plugins and libraries, however, the implementation isn't framework-specific and doesn't bloat the plugin manager with such code. See our wiki on how to [migrate](https://github.com/z-shell/zi/wiki/Usage#migration) from other plugin managers.
-     
+
 - The dedicated [packages](https://github.com/z-shell/zi/wiki/Packages/) that offload the user from providing long and complex commands. See the [Z-Shell ZI](https://github.com/z-shell) organization for a complete list of packages.
 
 - The specialized extensions — called [annexes](https://github.com/z-shell/zi/wiki/Annexes/) — allow to extend the plugin manager with new commands, URL-preprocessors (used by e.g.: [z-a-readurl](https://github.com/z-shell/z-a-readurl) annex), post-install and post-update hooks and much more.
@@ -59,103 +51,9 @@
 
 - Provides [reports and statistics](https://github.com/z-shell/zi/wiki/Commands#reports-and-statistics) about the plugins, such as describing what **aliases**, **functions**, **bindkeys**, **Zle widgets**, **zstyles**, [completions](https://github.com/z-shell/zi/wiki/Introduction#completion-management), variables, `PATH` and `FPATH` elements a plugin has set up. Allows to quickly [familiarize](https://github.com/z-shell/zi/wiki/Profiling-plugins) oneself with a new plugin and provides rich and easy-to-digest information that might be helpful on various occasions. supports the unloading of plugins and the ability to list, (un)install, and **selectively disable**, **enable** plugin's completions.
 
+- Test configurations with docker at [playground](https://github.com/z-shell/playground)
+
 - Capabilities: [0fuUpiPs](https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard#9-global-capabilities)
-  
-## Documentation
-
-- [ZI Wiki](https://github.com/z-shell/zi/wiki)
-- [Code Documentation](https://github.com/z-shell/zi/wiki/Code-Documentation)
-
-> **Tip:** [Advanced search](https://github.com/search/advanced?q=user%3Az-shell&type=Users)
->
-> Curentlly we are working on how to improve and unify documentation in to one place.
-> If you know how we could improve it, please let us know. Any feedback, **greatly appreciated**.
-
-## Getting Started
-
-### Prerequisites
-
-> Work in progress.
-
-### Installation
-
-#### ZI Loader
-
-Forthcoming releases will introduce ZI profiles that allow changing the Zsh environment or configuration files with a single command. The specified way of installation is a part of the upcoming profiles loader.
-
-Create a configuration files directory:
-
-```zsh
-zi_config="${XDG_CONFIG_HOME:-$HOME/.config}/zi"
-command mkdir -p $zi_config
-```
-Download:
-
-```zsh
-curl -fsSL https://git.io/zi-loader -o ${zi_config}/init.zsh
-```
-
-Add at the top of your `.zshrc`:
-
-```zsh
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" ]]; then
-  source "${XDG_CONFIG_HOME:-$HOME/.config}/zi/init.zsh" && zzinit
-fi
-```
-
-- This will:
-  - Clone and install ZI if missing.
-  - If install successful or not required will load ZI.
-  - Enable ZI completions.
-
-- All can be accomplished individually or skipped. The functionality will be attached in documentation subsequently.
-
-#### Interactive install (beta)
-
-> Interactive installation currently in development mode.
-
-```shell
-bash <(curl -fsSL https://git.io/zi-setup)
-```
-
-#### Quick install
-
-```zsh
-sh <(curl -fsSL https://git.io/get-zi)
-```
-
-To skip `.zshrc` update run:
-
-```zsh
-export RCUPDATE=0; sh <(curl -fsSL https://git.io/get-zi)
-```
-
-#### Manual install
-
-  Clone repository:
-
-```zsh
-zi_home="${HOME}/.zi" && command mkdir -p $zi_home
-command git clone https://github.com/z-shell/zi.git "${zi_home}/bin"
-```
-
-  Source `zi.zsh` from your `.zshrc`:
-
-```zsh
-zi_home="${HOME}/.zi"
-source "${zi_home}/bin/zi.zsh"
-# Next two lines must be below the above two
-autoload -Uz _zi
-(( ${+_comps} )) && _comps[zi]=_zi
-```
-
-#### Post-install we recommend:
- - Run: `exec zsh` and `zi self-update`.
- - Visiting Wiki:
-   - [Introduction](https://github.com/z-shell/zi/wiki/Introduction)
-   - [ZI Annex meta plugins](https://github.com/z-shell/zi/wiki/z-a-meta-plugins)
-   - [Oh My Zsh integration](https://github.com/z-shell/zi/wiki/Oh-My-Zsh-setup)
-   - [Gallery](https://github.com/z-shell/zi/wiki/Gallery)
 
 ## Roadmap
 
@@ -170,10 +68,10 @@ See the [open issues](https://github.com/z-shell/zi/issues) for a list of propos
 First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
-
-Further releases of ❮ ZI ❯ will have Visual Studio Code workspace pre-configured, which allows easy workspace integration locally or directly in the browser.
-
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/z-shell/zi)
+  
+<div align="center">
+  <img src="https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi" alt="Contributors over time" width="60%" height="300"></img>
+</div>
 
 ## Project assistance
 
@@ -198,24 +96,28 @@ The [**Z-Shell**](https://github.com/z-shell) was created to recover the `zdharm
 We don't want to depend on an unreliable source.
 [**ZI**](https://github.com/z-shell/zi), formerly known as zplugin, zinit, is an open source community project released under the [MIT License](../LICENSE).
 
-### Authors & contributors
+## Authors & contributors
 
 The original setup of this repository is by [Z-Shell ZI Community](https://github.com/z-shell).
 
 For a full list of all authors and contributors, see [the contributors page](https://github.com/z-shell/zi/contributors).
 
 ## Support
-  
+
 Reach out to the maintainers at one of the following places:
 
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
+## Supporters
 
+<div align="center">
+<a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" width="160" height="80" /></a>
+<a href="https://cloudflare.com"><img src="https://github.com/ss-o/zi/raw/main/docs/images/cloudflare_shell_logo.png" alt="Cloudflare" width="160" height="80" /></a>
+<a href="https://www.linode.com/?r=33649c0c3c30a16fbf06261c564753bd14e4b36e"><img src="https://github.com/ss-o/zi/raw/main/docs/images/linode-z-shell.png" alt="Linode" width="160" height="80" /></a>
+</div>
+  
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
-[twitter-badge]: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
+[twitter-badge]: https://badgen.net/badge/icon/twitter?icon=twitter&label
 [twitter-link]: https://twitter.com/intent/tweet?text=Interactive%20feature-rich%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell
-[asciinema-preview]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf.svg
-[asciinema-link]: https://asciinema.org/a/QcC3gmoOqIkMdPJ7J9v6hiWGf
-

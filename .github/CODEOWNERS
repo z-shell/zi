@@ -10,7 +10,7 @@
 # The `docs/*` pattern will match files like
 # `docs/getting-started.md` but not further nested files like
 # `docs/build-app/troubleshooting.md`.
-#docs/* @z-shell 
+#docs/* @z-shell
 
 # In this example, @z-shell owns any file in an `lib` directory anywhere in your repository.
 #lib/ @z-shell

@@ -2,33 +2,19 @@
 name: 🏷️ Verify PR Labels
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
   pull_request_target:
-   types: [ 'opened', 'labeled', 'unlabeled', 'synchronize' ]
+    types: ["opened", "labeled", "unlabeled", "synchronize"]
 
 jobs:
   pr_labels:
     name: 🏭 Verify PR Labels
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Update and get pip cache dir
-        id: pip-cache
-        run: |
-          python -m pip install --upgrade pip
-          echo "::set-output name=dir::$(pip cache dir)"
-
-      - name: 📤 Restore pip cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: 🏷 Verify PR has a valid label
         uses: jesusvasquez333/verify-pr-label-action@v1.4.0
         with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
-          pull-request-number: '${{ github.event.pull_request.number }}'
-          valid-labels: 'breaking-change 💥, bug 🐞, documentation 📝, enhancement ✨, security 🛡️, refactor ♻️, performance 🚀, new-feature 🎉, triage 📑, maintenance 📈, ci 🤖, in-progress ⚡, dependencies 📦'
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          pull-request-number: "${{ github.event.pull_request.number }}"
+          valid-labels: "breaking-change 💥, bug 🐞, documentation 📝, enhancement ✨, security 🛡️, refactor ♻️, performance 🚀, new-feature 🎉, triage 📑, maintenance 📈, ci 🤖, in-progress ⚡, dependencies 📦, submodules ⚙️"
           disable-reviews: true

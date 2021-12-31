@@ -69,10 +69,6 @@ First off, thanks for taking the time to contribute! Contributions are what make
 
 Please read [our contribution guidelines](CONTRIBUTING.md), and thank you for being involved!
 
-<div align="center">
-  <img src="https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=z-shell/zi" alt="Contributors over time" width="60%" height="300"></img>
-</div>
-
 ## Project assistance
 
 If you want to say **thank you** or/and support active development of Z-Shell ZI :

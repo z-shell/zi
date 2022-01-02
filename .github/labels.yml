@@ -80,15 +80,15 @@
   color: ffffff
   description: "This issue currently can't be resolved."
 
-#- name: "annex 💠"
-#  color: 3e16f3
-#  description: "Related with annex"
-#- name: "plugin 🧿"
-#  color: 3e16f3
-#  description: "Related with plugin"
-#- name: "package 📦"
-#  color: 3e16f3
-#  description: "Related with package"
+- name: "annex 💠"
+  color: 3e16f3
+  description: "Related with annex"
+- name: "plugin 🧿"
+  color: 3e16f3
+  description: "Related with plugin"
+- name: "package 📦"
+  color: 3e16f3
+  description: "Related with package"
 
 #- name: "major 🔺"
 #  color: b60205

@@ -585,8 +585,6 @@ ZI[EXTENDED_GLOB]=""
 #
 
 # FUNCTION: .zi-pager [[[
-# BusyBox less lacks the -X and -i options, so it can use more
-# TODO: .zi-pager:7: less not found
 .zi-pager() {
   setopt LOCAL_OPTIONS EQUALS
   # Quiet mode ? → no pager.
@@ -594,15 +592,32 @@ ZI[EXTENDED_GLOB]=""
     cat
     return 0
   }
-  if [[ ${${:-=less}:A:t} = busybox* ]] {
-    more 2>/dev/null
-    (( ${+commands[more]} ))
-  } else {
+  # Try use less if it's available because of functionality.
+  if (( $+commands[less] )) && (( $+commands[more] )); then
+    # BusyBox less lacks the -X and -i options, so it can use more.
+    if [[ ${${:-=less}:A:t} = busybox* ]]; then
+      more 2>/dev/null
+      (( ${+commands[more]} ))
+    else
+      less -FRXi 2>/dev/null
+      (( ${+commands[less]} ))
+    fi
+    (( $? )) && cat
+    return 0
+  fi
+  # If less available then → use it.
+  if (( $+commands[less] )); then
     less -FRXi 2>/dev/null
-    (( ${+commands[less]} ))
-  }
-  (( $? )) && cat
-  return 0
+    return 0
+  fi
+  # If more available then → use it, otherwise → no pager.
+  if (( $+commands[more] )); then
+    more 2>/dev/null
+    return 0
+  else
+    cat
+    return 0
+  fi
 } # ]]]
 # FUNCTION: .zi-self-update [[[
 # Updates ❮ ZI ❯ code (does a git pull).
@@ -614,7 +629,7 @@ ZI[EXTENDED_GLOB]=""
   [[ $1 = -q ]] && +zi-message "{info2}Updating »»» ❮ ZI ❯ {…}{rst}"
   local nl=$'\n' escape=$'\x1b['
   local -a lines
-  (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout main &>/dev/null && command git checkout master &>/dev/null && command git fetch --quiet && \
+  (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout HEAD &>/dev/null && command git fetch --quiet && \
   lines=( ${(f)"$(command git log --color --date=short --pretty=format:'%Cgreen%cd %h %Creset%s %Cred%d%Creset || %b' ..FETCH_HEAD)"} )
   if (( ${#lines} > 0 )); then
     # Remove the (origin/master ...) segments, to expect only tags to appear

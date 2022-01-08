@@ -198,12 +198,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   req=( ${(s.;.)${:-${required:+$required\;}${ICE[required]}}} )
   for required ( $req ) {
     if [[ $required == (bgn|dl|monitor) ]]; then
-      if [[ ( $required == bgn && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-bin-gem-node *]} ) || \
-        ( $required == dl && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ) || \
-        ( $required == monitor && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-readurl *]} )
-      ]]; then
+      if [[ ( $required == bgn && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-bin-gem-node *]} ) || ( $required == dl && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ) || ( $required == monitor && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-readurl *]} ) ]]; then
         local -A namemap
-        namemap=( bgn Bin-Gem-Node dl Patch-Dl monitor readurl )
+        namemap=( bgn bin-gem-node dl patch-dl monitor readurl )
         +zi-message -n "{u-warn}ERROR{b-warn}: {error}the "
         if [[ -z ${(MS)ICE[required]##(\;|(#s))$required(\;|(#e))} ]]; then
           +zi-message -n "{error}requested profile {apo}\`{hi}$profile{apo}\`{error} "
@@ -213,11 +210,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         +zi-message '{error}requires the {apo}`{annex}'${namemap[$required]}'{apo}`' \
           "{error}annex, which is currently not installed." \
           "{nl}{nl}If you'd like to install it, you can visit its homepage:" \
-          "{nl}– {url}https://github.com/z-shell/z-a-${(L)namemap[$required]}{rst}" \
-          "{nl}for instructions."
+          "{nl}– {url}https://github.com/z-shell/z-a-${(L)namemap[$required]}{rst}" "{nl}for instructions."
         (( ${#profiles[@]:#$profile} > 0 )) && \
-          +zi-message "{nl}Other available profiles are:" \
-          "{profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
+          +zi-message "{nl}Other available profiles are:" "{profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
 
         return 1
       fi
@@ -247,10 +242,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       "annex loaded, which provides it."
     +zi-message "The ice will be inactive, i.e.: no additional" \
       "files will become downloaded (the ice downloads the given URLs)." \
-      "The package should still work, as it doesn't indicate to" \
-      "{u}{slight}require{rst} the annex."
-    +zi-message "{nl}You can download the" \
-      "annex from its homepage at {url}https://github.com/z-shell/z-a-patch-dl{rst}."
+      "The package should still work, as it doesn't indicate to" "{u}{slight}require{rst} the annex."
+    +zi-message "{nl}You can download the" "annex from its homepage at {url}https://github.com/z-shell/z-a-patch-dl{rst}."
   }
 
   [[ -n ${jsondata1[message]} ]] && \
@@ -1365,23 +1358,24 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   local -A matchstr
   matchstr=(
-    i386    "((386|686|linux32|x86*(#e))~*x86_64*)"
-    i686    "((386|686|linux32|x86*(#e))~*x86_64*)"
-    x86_64  "(x86_64|amd64|intel|linux64)"
-    amd64   "(x86_64|amd64|intel|linux64)"
-    aarch64 "aarch64"
+    i386      "((386|686|linux32|x86*(#e))~*x86_64*)"
+    i686      "((386|686|linux32|x86*(#e))~*x86_64*)"
+    x86_64    "(x86_64|amd64|intel|linux64|linux_amd64)"
+    amd64     "(x86_64|amd64|intel|linux64|linux_amd64)"
+    aarch64   "(aarch64|arm64|arm64v8|armv8|armv8l|arm64v8l)"
     aarch64-2 "arm"
-    linux   "(linux|linux-gnu)"
-    darwin  "(darwin|mac|macos|osx|os-x)"
-    cygwin  "(windows|cygwin|[-_]win|win64|win32)"
-    windows "(windows|cygwin|[-_]win|win64|win32)"
-    msys "(windows|msys|cygwin|[-_]win|win64|win32)"
-    armv7l  "(arm7|armv7)"
-    armv7l-2 "arm7"
-    armv6l  "(arm6|armv6)"
-    armv6l-2 "arm"
-    armv5l  "(arm5|armv5)"
-    armv5l-2 "arm"
+    linux     "(linux|linux-gnu|linux-musl)"
+    darwin    "(darwin|mac|macos|macosx|osx|os-x)"
+    cygwin    "(windows|cygwin|[-_]win|win64|win32)"
+    windows   "(windows|cygwin|[-_]win|win64|win32)"
+    msys      "(windows|msys|cygwin|[-_]win|win64|win32)"
+    mingw     "(windows|msys|cygwin|[-_]win|win64|win32)"
+    armv7l    "(arm7|armv7)"
+    armv7l-2  "arm7"
+    armv6l    "(arm6|armv6)"
+    armv6l-2  "arm"
+    armv5l    "(arm5|armv5)"
+    armv5l-2  "arm"
   )
 
   local -a list init_list
@@ -1520,9 +1514,7 @@ ziextract() {
             for file2 ( $archives2 ) {
               fname=${file2%:*} desc=${file2##*:}
               local type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
-              if [[ $type != $type2 && \
-                $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar)
-              ]] {
+              if [[ $type != $type2 && $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar) ]] {
                 # TODO: If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
                 [[ $fname != $infname && $norm -eq 0 ]] && command rm -f "$infname"
                 (( !OPTS[opt_-q,--quiet] )) && \

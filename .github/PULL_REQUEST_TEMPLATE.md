@@ -1,10 +1,8 @@
 <!--- Please provide a general summary of your changes in the title above -->
-
 ## Pull Request type
 
 <!-- Please try to limit your pull request to one type; submit multiple pull requests if needed. -->
-
-Please check the type of change your PR introduces:
+<!-- Please check the type of change your PR introduces: -->
 
 - [ ] CI
 - [ ] Bugfix

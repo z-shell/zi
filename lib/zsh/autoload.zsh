@@ -630,7 +630,7 @@ ZI[EXTENDED_GLOB]=""
   local nl=$'\n' escape=$'\x1b['
   local -a lines
   (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout HEAD &>/dev/null && command git fetch --quiet && \
-  lines=( ${(f)"$(command git log --color --date=short --pretty=format:'%Cgreen%cd %h %Creset%s %Cred%d%Creset || %b' ..FETCH_HEAD)"} )
+  lines=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset || %b' ..FETCH_HEAD)"} )
   if (( ${#lines} > 0 )); then
     # Remove the (origin/master ...) segments, to expect only tags to appear
     lines=( "${(S)lines[@]//\(([,[:blank:]]#(origin|HEAD|master|main)[^a-zA-Z]##(HEAD|origin|master|main)[,[:blank:]]#)#\)/}" )

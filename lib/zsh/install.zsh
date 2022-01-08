@@ -115,13 +115,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   emulate -LR zsh
   setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
-  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 \
-    local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson \
-    tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123} \
-    URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
+  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson \
+    tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123} URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
 
-  local pro_sep="{rst}, {profile}" epro_sep="{error}, {profile}" \
-    tool_sep="{rst}, {cmd}" lhi_hl="{lhi}" profile_hl="{profile}"
+  local pro_sep="{rst}, {profile}" epro_sep="{error}, {profile}" tool_sep="{rst}, {cmd}" lhi_hl="{lhi}" profile_hl="{profile}"
 
   trap "rmdir ${(qqq)local_path} 2>/dev/null; return 1" INT TERM QUIT HUP
   trap "rmdir ${(qqq)local_path} 2>/dev/null" EXIT
@@ -238,10 +235,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   if [[ -n ${ICE[dl]} && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ]] {
     +zi-message "{nl}{u-warn}WARNING{b-warn}:{rst} the profile uses" \
-      "{ice}dl''{rst} ice however there's currently no {annex}z-a-patch-dl{rst}" \
-      "annex loaded, which provides it."
-    +zi-message "The ice will be inactive, i.e.: no additional" \
-      "files will become downloaded (the ice downloads the given URLs)." \
+      "{ice}dl''{rst} ice however there's currently no {annex}z-a-patch-dl{rst}" "annex loaded, which provides it."
+    +zi-message "The ice will be inactive, i.e.: no additional" "files will become downloaded (the ice downloads the given URLs)." \
       "The package should still work, as it doesn't indicate to" "{u}{slight}require{rst} the annex."
     +zi-message "{nl}You can download the" "annex from its homepage at {url}https://github.com/z-shell/z-a-patch-dl{rst}."
   }
@@ -302,8 +297,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   return $?
 } # ]]]
 # FUNCTION: .zi-setup-plugin-dir [[[
-# Clones given plugin into PLUGIN_DIR. Supports multiple
-# sites (respecting `from' and `proto' ice modifiers).
+# Clones given plugin into PLUGIN_DIR.
+# Supports multiple sites (respecting `from' and `proto' ice modifiers).
 # Invokes compilation of plugin's main file.
 #
 # $1 - user
@@ -500,10 +495,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     { ADD_COMPILED=( "${(@f)$(<${TMPDIR:-/tmp}/zi.compiled.$$.lst)}" ) } 2>/dev/null
   }
 
-  # After any download – rehash the command table
-  # This will however miss the as"program" binaries
-  # as their PATH gets extended - and it is done
-  # later. It will however work for sbin'' ice.
+  # After any download – rehash the command table this will miss the as"program" binaries
+  # as their PATH gets extended - and it is done later. It will however work for sbin'' ice.
   (( !OPTS[opt_-p,--parallel] )) && rehash
 
   return 0
@@ -608,8 +601,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   symlinked=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc )
   backup_comps=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc )
 
-  # Delete completions if they are really there, either
-  # as completions (_fname) or backups (fname)
+  # Delete completions if they are really there,
+  # either as completions (_fname) or backups (fname)
   for c in "${symlinked[@]}" "${backup_comps[@]}"; do
     action=0
     cfile="${c:t}"
@@ -630,8 +623,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   compinit ${${(M)use_C:#1}:+-C} -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
 } # ]]]
 # FUNCTION: .zi-download-file-stdout [[[
-# Downloads file to stdout. Supports following backend commands:
-# curl, wget, lftp, lynx. Used by snippet loading.
+# Downloads file to stdout.
+# Supports following backend commands: curl, wget, lftp, lynx.
+# Used by snippet loading.
 .zi-download-file-stdout() {
   local url="$1" restart="$2" progress="${(M)3:#1}"
 
@@ -720,9 +714,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   return 0
 } # ]]]
 # FUNCTION: .zi-mirror-using-svn [[[
-# Used to clone subdirectories from Github. If in update mode (see $2), then invokes `svn update',
-# in normal mode invokes `svn checkout --non-interactive -q <URL>'. In test mode only
-# compares remote and local revision and outputs true if update is needed.
+# Used to clone subdirectories from Github.
+# If in update mode (see $2), then invokes `svn update',
+# in normal mode invokes `svn checkout --non-interactive -q <URL>'.
+# In test mode only compares remote and local revision and outputs true if update is needed.
 #
 # $1 - URL
 # $2 - mode, "" - normal, "-u" - update, "-t" - test
@@ -941,8 +936,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   # a forced download (i.e.: the medium doesn't allow to peek update)
   #
   # The below inherits the flag if it's an update call (i.e.: -u given),
-  # otherwise it sets it to 2 – a new download is treated like a full
-  # update.
+  # otherwise it sets it to 2 – a new download is treated like a full update.
   ZI[annex-multi-flag:pull-active]=${${${(M)update:#-u}:+${ZI[annex-multi-flag:pull-active]}}:-2}
   (
     if [[ $url = (http|https|ftp|ftps|scp)://* ]] {
@@ -1261,8 +1255,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   [[ -o ksharrays ]] && correct=1
   opts=( -u ) # for z-a-readurl
 
-  # Create a local copy of OPTS, basically
-  # for z-a-readurl annex
+  # Create a local copy of OPTS,
+  # basically for z-a-readurl annex
   local -A ice_opts
   ice_opts=( "${(kv)OPTS[@]}" )
   local -A OPTS
@@ -1358,10 +1352,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   local -A matchstr
   matchstr=(
-    i386      "((386|686|linux32|x86*(#e))~*x86_64*)"
-    i686      "((386|686|linux32|x86*(#e))~*x86_64*)"
-    x86_64    "(x86_64|amd64|intel|linux64|linux_amd64)"
-    amd64     "(x86_64|amd64|intel|linux64|linux_amd64)"
+    i386      "((ia32|amd32|386|686|linux32|x86*(#e))~*x86(-|_)64*)"
+    i686      "((ia32|amd32|386|686|linux32|x86*(#e))~*x86(-|_)64*)"
+    ia32      "((ia32|amd32|386|686|linux32|x86*(#e))~*x86(-|_)64*)"
+    amd32     "((ia32|amd32|386|686|linux32|x86*(#e))~*x86(-|_)64*)"
+    x86_64    "(amd64|x86(-|_)64|intel|intel64|linux64|linux_amd64)"
+    amd64     "(amd64|x86(-|_)64|intel|intel64|linux64|linux_amd64)"
     aarch64   "(aarch64|arm64|arm64v8|armv8|armv8l|arm64v8l)"
     aarch64-2 "arm"
     linux     "(linux|linux-gnu|linux-musl)"
@@ -1371,7 +1367,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     msys      "(windows|msys|cygwin|[-_]win|win64|win32)"
     mingw     "(windows|msys|cygwin|[-_]win|win64|win32)"
     armv7l    "(arm7|armv7)"
-    armv7l-2  "arm7"
+    armv7l-2  "arm"
     armv6l    "(arm6|armv6)"
     armv6l-2  "arm"
     armv5l    "(arm5|armv5)"

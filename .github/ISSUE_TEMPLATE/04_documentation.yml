@@ -1,6 +1,6 @@
 name: 📚 Documentation
-description: Report an issue related to documentation
-labels: [dependencies 📦]
+description: The issue related to documentation
+labels: [documentation 📝]
 title: "docs: "
 body:
   - type: markdown

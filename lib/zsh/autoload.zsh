@@ -627,9 +627,9 @@ ZI[EXTENDED_GLOB]=""
   emulate -LR zsh
   setopt extendedglob typesetsilent warncreateglobal
   [[ $1 = -q ]] && +zi-message "{info2}Updating »»» ❮ ZI ❯ {…}{rst}"
-  local nl=$'\n' escape=$'\x1b['
+  local nl=$'\n' escape=$'\x1b[' current_branch=$(command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
-  (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout HEAD &>/dev/null && command git fetch --quiet && \
+  (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
   lines=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset || %b' ..FETCH_HEAD)"} )
   if (( ${#lines} > 0 )); then
     # Remove the (origin/master ...) segments, to expect only tags to appear
@@ -646,9 +646,9 @@ ZI[EXTENDED_GLOB]=""
     builtin print
   fi
   if [[ $1 != -q ]] {
-    command git pull --no-stat --ff-only origin main
+    command git pull --no-stat --ff-only origin $current_branch
   } else {
-    command git pull --no-stat --quiet --ff-only origin main
+    command git pull --no-stat --quiet --ff-only origin $current_branch
   }
   )
   if [[ $1 != -q ]] {

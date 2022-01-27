@@ -8,6 +8,9 @@
 - name: "documentation 📝"
   color: 0052cc
   description: "Solely about the documentation of the project."
+- name: "i18n 🌐"
+  color: "0052cc"
+  description: "Internationalization"
 - name: "enhancement ✨"
   color: 006b75
   description: "Enhancement of the code, not introducing new features."
@@ -61,6 +64,9 @@
 - name: "help-wanted 👥"
   color: 832Aeb
   description: "We need some extra helping hands or expertise in order to resolve this!"
+- name: "community 👥"
+  color: 832Aeb
+  description: "Related with the community or organization"
 - name: "feature-request 💡"
   color: 0e8a16
   description: "Suggests new feature."

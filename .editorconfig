@@ -1,5 +1,23 @@
+# Space or Tabs?
+# https://stackoverflow.com/questions/35649847/objective-reasons-for-using-spaces-instead-of-tabs-for-indentation
+# https://stackoverflow.com/questions/12093748/how-to-use-tabs-instead-of-spaces-in-a-shell-script
+#
+# 1. What happens when I press the Tab key in my text editor?
+# 2. What happens when I request my editor to indent one or more lines?
+# 3. What happens when I view a file containing U+0009 HORIZONTAL TAB characters?
+#
+# Answers:
+#
+# 1. Pressing the Tab key should indent the current line (or selected lines) one additional level.
+# 2. As a secondary alternative, I can also tolerate an editor that,
+#    like Emacs, uses this key for a context-sensitive fix-my-indentation command.
+# 3. Indenting one or more lines should follow the reigning convention, if consensus is sufficiently strong; otherwise,
+#    I greatly prefer 2-space indentation at each level. U+0009 characters should shift subsequent characters to the next tab stop.
+#
 # Note: VIM users should use alternate marks [[[ and ]]] as the original ones can confuse nested substitutions, e.g.: ${${${VAR}}}
-# # Space or Tabs? https://stackoverflow.com/questions/35649847/objective-reasons-for-using-spaces-instead-of-tabs-for-indentation
+#
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 
 root = true
 
@@ -7,24 +25,46 @@ root = true
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
+trim_trailing_whitespace = true
 
 [*.{md,rst}]
+insert_final_newline = false
 trim_trailing_whitespace = false
-
-[*.{yml,yaml}]
-indent_style = space
-tab_width = 2
 
 [*.{sh,bash,zsh,fish}]
 indent_style = space
+indent_size = 2
 tab_width = 2
-trim_trailing_whitespace = true
+
+[Makefile]
+indent_style = tab
+indent_size = 4
+
+[*.{xml,json}]
+indent_style = space
+indent_size = 2
+
+[*.{css,less}]
+indent_style = space
+indent_size = 2
 
 [*.{js,jsx,html,sass}]
 indent_style = tab
-indent_size = 4
-trim_trailing_whitespace = true
+indent_size = 2
 
-[ChangeLog]
+[*.{py,rb}]
+indent_style = space
+indent_size = 4
+
+[*.{go,java,scala,groovy,kotlin}]
 indent_style = tab
-indent_size = 8
+indent_size = 4
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+[CHANGELOG.md]
+indent_style = tab
+indent_size = 4

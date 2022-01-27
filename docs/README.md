@@ -5,18 +5,19 @@
 ❮ ZI ❯
   </h1><div align="center">
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE) [![Version][ver-badge]][ver-link] 
-[![Tweet][twitter-badge]][twitter-link] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://open.vscode.dev/z-shell/zi) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](../LICENSE) [![Version][ver-badge]][ver-link]
+[![Tweet][twitter-badge]][twitter-acc] [![Visual Studio Code](https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff)](https://open.vscode.dev/z-shell/zi) [![Vim](https://img.shields.io/badge/--019733?logo=vim)](https://github.com/z-shell/zi-vim-syntax/)
 
 <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a>
 · <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
 · <a href="https://github.com/z-shell/zi/discussions">《 Ask a Question 》</a>
+
 </div>
 
 <details open="open">
 <summary>Table of Contents</summary>
 
-- 💡 [Wiki Pages](https://z-shell.pages.dev/docs/intro)
+- 💡 Wiki Pages: [ [en](https://z-shell.pages.dev) ] [ [ja](https://z-shell.pages.dev/ja) ]
   - [Installation](https://z-shell.pages.dev/docs/getting_started/installation)
   - [Search](https://z-shell.pages.dev/search/)
 - [Roadmap](#roadmap)
@@ -33,7 +34,7 @@
 
 <h3><div align="center">
 
-**ZI is a fast and feature-rich plugin manager for [Zsh](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).**
+**A Swiss Army Knife for [Zsh](https://zsh.sourceforge.io/) - [Unix shell](https://en.wikipedia.org/wiki/Unix_shell).**
 
 </div></h3>
 
@@ -55,9 +56,10 @@
 
 - Capabilities: [0fuUpiPs](https://z-shell.github.io/docs/zsh/Zsh-Plugin-Standard.html#pmspec)
 
-## 💡 [Wiki Pages](https://z-shell.pages.dev/docs/intro)
+## 💡 Wiki Pages: [ [en](https://z-shell.pages.dev) ] [ [ja](https://z-shell.pages.dev/ja) ]
 
 ### [Installation](https://z-shell.pages.dev/docs/getting_started/installation)
+
 ### [Search](https://z-shell.pages.dev/search/)
 
 ## Roadmap
@@ -83,6 +85,11 @@ If you want to say **thank you** or/and support active development of Z-Shell ZI
 - Write interesting articles about the project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or your personal blog.
 
 Together, we can make Z-Shell ZI **better**!
+
+<!-- ### 🥇 Contributors -->
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Security
 
@@ -121,4 +128,5 @@ Reach out to the maintainers at one of the following places:
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg
 [ver-link]: https://github.com/z-shell/zi/releases
 [twitter-badge]: https://badgen.net/badge/icon/twitter?icon=twitter&label
-[twitter-link]: https://twitter.com/intent/tweet?text=Interactive%20feature-rich%20plugin%20manager&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell
+[twitter-acc]: https://twitter.com/zshell_zi
+[twitter-link]: https://twitter.com/intent/tweet?text=A%20Swiss%20Army%20Knife%20for%20Zsh%20-%20Unix%20shell%20%20@zshell_zi&url=https://github.com/z-shell/zi&hashtags=zsh,zi,zshell

@@ -5,7 +5,7 @@ Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in
 
 ## Knowledge Base
 
-- [ZI Wiki](https://github.com/z-shell/zi/wiki)
+- [ZI Wiki](https://z-shell.pages.dev)
 - [Zsh Plugin Standard](https://z-shell.github.io/docs/zsh/Zsh-Plugin-Standard.html)
 - [Zsh Native Scripting Handbook](https://z-shell.github.io/docs/zsh/Zsh-Native-Scripting-Handbook.html)
 
@@ -19,90 +19,6 @@ in case you are stuck:
 - [How to create a Pull Request](https://opensource.com/article/19/7/create-pull-request-github)
 - [Getting started with Git and GitHub](https://towardsdatascience.com/getting-started-with-git-and-github-6fcd0f2d4ac6)
 - [Learn GitHub from Scratch](https://lab.github.com/githubtraining/introduction-to-github)
-
-## Development environment setup
-
-**Notes:**
-
-- Any files to support prefered editor should be collaborated and respected across repositories. (e.g. [.editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2)).
-- [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) - parses Zsh and Bash scripts.
-
-### Clean Pull Request guidelines
-
-Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
-
-- Create a personal fork of the project on Github.
-- Clone the fork on your local machine. Your remote repo on Github is called `origin`.
-  - `git clone https://github.com/{YOUR-USERNAME}/zi`
-- Add the original repository as a remote called `upstream`.
-  - `git remote add upstream https://github.com/z-shell/zi.git`
-- If you created your fork a while ago be sure to pull upstream changes into your local repository.
-- Create a new branch to work on! Branch from `develop` if it exists, else from `main`.
-- Implement/fix your feature, comment your code.
-- Follow the code style of the project, including indentation.
-- If there is related tests please run them.
-- Write or adapt tests as needed.
-- Add or change the documentation as needed.
-- Squash your commits into a single commit with git's [interactive rebase](https://help.github.com/articles/interactive-rebase). Create a new branch if necessary.
-- Push your branch to your fork on Github, the remote `origin`.
-- From your fork open a pull request in the correct branch. Target the project's `develop` branch if there is one, else go for `main`!
-- Once the pull request is approved and merged you can pull the changes from `upstream` to your local repo and delete
-  your extra branch(es).
-
-> Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code. ([examples](https://www.google.com/search?q=english+"present+tense+example"))
-
-## Commit messages
-
-- Use the Present Tense ("Add feature" not "Added feature").
-- Use the Imperative Mood ("Move file to..." not "Moves file to...").
-- Limit the subject line to 50 characters
-- Wrap the body at 72 characters
-- Reference issues and pull requests, where possible.
-
-- Be creative with emojies
-  - :tada: `:tada:` Initial commit
-  - :art: `:art:` when improving the format/structure of the code
-  - :racehorse: `:racehorse:` when improving performance
-  - :books: `:books:` when writing docs
-  - :pencil2: `:pencil2:` when fixing typos
-  - :bug: `:bug:` when fixing a bug
-  - :fire: `:fire:` when removing code or files
-  - :green_heart: `:green_heart:` when fixing the CI build
-  - :white_check_mark: `:white_check_mark:` when adding tests
-  - :lock: `:lock:` when dealing with security
-  - :heavy_plus_sign: `:heavy_plus_sign:` when adding new dependencies
-  - :arrow_up: `:arrow_up:` when upgrading dependencies
-  - :arrow_down: `:arrow_down:` when downgrading dependencies
-  - :shirt: `:shirt:` when removing linter warnings
-  - :construction: `:construction:` work in progress
-  - :sparkles: `:sparkles:` when adding feature
-  - :lipstick: `:lipstick:` when improving UI
-  - :gem: `:gem:` new release
-  - :rocket: `:rocket:` Anything related to Deployments/DevOps
-
-## Issues and feature requests
-
-You've found a bug in the source code, a mistake in the documentation or maybe you'd like a new feature?Take a look at [GitHub Discussions](https://github.com/z-shell/zi/discussions) to see if it's already being discussed. You can help us by [submitting an issue on GitHub](https://github.com/z-shell/zi/issues). Before you create an issue, make sure to search the issue archive -- your issue may have already been addressed!
-
-Please try to create bug reports that are:
-
-- _Reproducible._ Include steps to reproduce the problem.
-- _Specific._ Include as much detail as possible: which version, what environment, etc.
-- _Unique._ Do not duplicate existing opened issues.
-- _Scoped to a Single Bug._ One bug per report.
-
-**Even better: Submit a pull request with a fix or new feature!**
-
-### How to submit a Pull Request
-
-1. Search our repository for open or closed
-   [Pull Requests](https://github.com/z-shell/zi/pulls)
-   that relate to your submission. You don't want to duplicate effort.
-2. Fork the project
-3. Create your feature branch (`git checkout -b feat/amazing_feature`)
-4. Commit your changes (`git commit -m 'feat: add amazing_feature'`) Z-Shell ZI uses [conventional commits](https://www.conventionalcommits.org), so please follow the specification in your commit messages.
-5. Push to the branch (`git push origin feat/amazing_feature`)
-6. [Open a Pull Request](https://github.com/z-shell/zi/compare?expand=1)
 
 ## Submitting Contribution
 
@@ -122,7 +38,7 @@ Below you will find the process and workflow used to review and merge your chang
 ```bash
 git clone https://github.com/<your-username>/<repo-name>
 cd <repo-name>
-git remote add upstream https://github.com/<upstream-owner>/<repo-name>
+git remote add upstream https://github.com/z-shell/<repo-name>
 ```
 
 - If you have already forked the project, update your copy before working.
@@ -182,25 +98,99 @@ git push -u origin Branch_Name
 - Go to your repository in browser and click on compare and pull requests.
   Then add a title and description to your pull request that explains your contribution.
 
-### Note : Do not add images, rather 👇
+## Recommendations
 
-- We plan to remove all the images and screenshots from our repository and link them to markdown files.
+- Any files to support prefered editor should be collaborated and respected across organization repositories e.g: [editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
+- Commets [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) which parses Zsh and Bash scripts.
+- Get familiar with [Conventional commits](https://www.conventionalcommits.org) and [ZenHub](https://go.zenhub.com).
 
-  #### How to do that?
+### Issues and feature requests
 
-  - You can do that by hosting all you images and screenshots to any images hosting sites such as [imgur](https://imgur.com/), [imgbb](https://imgbb.com/), [postimages](https://postimages.org/).
-  - Then link your uploaded images to README files.
+You've found a bug in the source code, a mistake in the documentation or maybe you'd like a new feature?Take a look at [GitHub Discussions](https://github.com/z-shell/zi/discussions) to see if it's already being discussed. You can help us by [submitting an issue on GitHub](https://github.com/z-shell/zi/issues). Before you create an issue, make sure to search the issue archive -- your issue may have already been addressed!
+
+Please try to create bug reports that are:
+
+- _Reproducible._ Include steps to reproduce the problem.
+- _Specific._ Include as much detail as possible: which version, what environment, etc.
+- _Unique._ Do not duplicate existing opened issues.
+- _Scoped to a Single Bug._ One bug per report.
+
+**Even better: Submit a pull request with a fix or new feature!**
+
+### How to submit a Pull Request
+
+1. Search our repository for open or closed
+   [Pull Requests](https://github.com/z-shell/zi/pulls)
+   that relate to your submission. You don't want to duplicate effort.
+2. Fork the project
+3. Create your feature branch (`git checkout -b feat/amazing_feature`)
+4. Commit your changes (`git commit -m 'feat: add amazing_feature'`) Z-Shell ZI uses [conventional commits](https://www.conventionalcommits.org), so please follow the specification in your commit messages.
+5. Push to the branch (`git push origin feat/amazing_feature`)
+6. [Open a Pull Request](https://github.com/z-shell/zi/compare?expand=1)
+
+#### Clean Pull Request
+
+Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
+
+- Create a personal fork of the project on Github.
+- Clone the fork on your local machine. Your remote repo on Github is called `origin`.
+  - `git clone https://github.com/{YOUR-USERNAME}/zi`
+- Add the original repository as a remote called `upstream`.
+  - `git remote add upstream https://github.com/z-shell/zi.git`
+- If you created your fork a while ago be sure to pull upstream changes into your local repository.
+- Create a new branch to work on! Branch from `develop` if it exists, else from `main`.
+- Implement/fix your feature, comment your code.
+- Follow the code style of the project, including indentation.
+- If there is related tests please run them.
+- Write or adapt tests as needed.
+- Add or change the documentation as needed.
+- Squash your commits into a single commit with git's [interactive rebase](https://help.github.com/articles/interactive-rebase). Create a new branch if necessary.
+- Push your branch to your fork on Github, the remote `origin`.
+- From your fork open a pull request in the correct branch. Target the project's `develop` branch if there is one, else go for `main`!
+- Once the pull request is approved and merged you can pull the changes from `upstream` to your local repo and delete
+  your extra branch(es).
+
+> Always write your commit messages in the present tense. Your commit message should describe what the commit, when applied, does to the code – not what you did to the code. ([examples](https://www.google.com/search?q=english+"present+tense+example"))
+
+### Commit messages
+
+- Use the Present Tense ("Add feature" not "Added feature").
+- Use the Imperative Mood ("Move file to..." not "Moves file to...").
+- Limit the subject line to 50 characters
+- Wrap the body at 72 characters
+- Reference issues and pull requests, where possible.
+
+- Be creative with emojies
+  - :tada: `:tada:` Initial commit
+  - :art: `:art:` when improving the format/structure of the code
+  - :racehorse: `:racehorse:` when improving performance
+  - :books: `:books:` when writing docs
+  - :pencil2: `:pencil2:` when fixing typos
+  - :bug: `:bug:` when fixing a bug
+  - :fire: `:fire:` when removing code or files
+  - :green_heart: `:green_heart:` when fixing the CI build
+  - :white_check_mark: `:white_check_mark:` when adding tests
+  - :lock: `:lock:` when dealing with security
+  - :heavy_plus_sign: `:heavy_plus_sign:` when adding new dependencies
+  - :arrow_up: `:arrow_up:` when upgrading dependencies
+  - :arrow_down: `:arrow_down:` when downgrading dependencies
+  - :shirt: `:shirt:` when removing linter warnings
+  - :construction: `:construction:` work in progress
+  - :sparkles: `:sparkles:` when adding feature
+  - :lipstick: `:lipstick:` when improving UI
+  - :gem: `:gem:` new release
+  - :rocket: `:rocket:` Anything related to Deployments/DevOps
+
+### Do not add images, rather 👇
+
+Instead of adding non-essential images to repository link them to markdown files.
+
+#### How to do that?
+
+- You can do that by hosting all you images and screenshots to any images hosting sites such as [imgur](https://imgur.com/), [imgbb](https://imgbb.com/), [postimages](https://postimages.org/).
+- Then link your uploaded images to README files.
 
 ## Community membership
-
-This section outlines the various responsibilities of contributor roles in
-Z-shell. Responsibilities for most roles are scoped to these subprojects.
-
-| Role     | Responsibilities                        | Requirements                                                       | Defined by                                                |
-| -------- | --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
-| Member   | Active contributor in the community     | Sponsored by 2 reviewers or multiple contributions to the project  | Z-shell GitHub org member                                 |
-| Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [Reviewers](.../github/CODEOWNERS.md) file reviewer entry |
-| Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [Approvers](../github/CODEOWNERS.md) file approver entry  |
 
 ### New contributors
 
@@ -208,25 +198,30 @@ New contributors should be welcomed to the community by existing members,
 helped with PR workflow, and directed to relevant documentation and
 communication channels.
 
-### Established community members
-
-Established community members are expected to demonstrate their adherence to the
-principles in this document, familiarity with project organization, roles,
-policies, procedures, conventions, etc., and technical and/or writing ability.
-Role-specific expectations, responsibilities, and requirements are enumerated
-below.
-
 ### Member
 
 Members are continuously active contributors in the community. They can have
-issues and PRs assigned to them, and pre-submit tests are automatically run for their PRs.
-Members are expected to remain active contributors to the community.
+issues and PRs assigned to them, and pre-submit tests are automatically run for their PRs. Members are expected to remain active contributors to the community.
 
-**Defined by:** Member of the Z-shell GitHub organization
+### Established community members
+
+Established community members are expected to demonstrate their adherence to the principles in this document.
+Familiarity with project organization, roles, policies, procedures, conventions, etc., and technical and/or writing ability.
+Role-specific expectations, responsibilities, and requirements are enumerated
+below.
 
 ### Requirements
 
-- Enabled two-factor authentication on their GitHub account
-- Actively contributing to 1 or more repositories.
-- **[Membership request](https://github.com/z-shell/community/issues/new?assignees=&labels=&template=member_application.md&title=REQUEST%3A+New+member+for+%3Cyour-GH-handle%3E+of+%3Cz-shell+property%3E) against the z-shell/org repo**
-  - Ensure your sponsors if any are @mentioned on the issue
+- Enabled two-factor authentication on their GitHub account.
+- Actively contributing to 1 or more repositories altenatively ensure your sponsors are @mentioned on the issue.
+
+This section outlines the various responsibilities of contributor roles in
+Z-shell. Responsibilities for most roles are scoped to these subprojects.
+
+| Role     | Responsibilities                        | Requirements                                                       | Defined by                                                |
+| -------- | --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
+| Member   | Active contributor in the community     | Sponsored by reviewers or multiple contributions to the project    | Z-shell GitHub org member                                 |
+| Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [CODEOWNERS](../github/CODEOWNERS.md) file reviewer entry |
+| Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [CODEOWNERS](../github/CODEOWNERS.md) file approver entry |
+
+[**Membership request**](https://github.com/z-shell/zi/issues/new?assignees=&labels=&template=05_membership.yml&title=REQUEST%3A+New+member+for+%3Cyour-GH-handle%3E+of+%3Cz-shell+property%3E)

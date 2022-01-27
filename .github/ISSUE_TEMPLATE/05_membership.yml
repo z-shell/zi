@@ -1,0 +1,32 @@
+name: 👥 Community Membership Request
+description: Request memeber privileges on a @z-shell organiztion
+labels: ["community 👥"]
+title: "team: "
+body:
+  - type: textarea
+    attributes:
+      label: Username
+      description: GitHub username for the membership.
+    validations:
+      required: true
+
+- type: checkboxes
+  id: download
+  attributes:
+    label: "Property you'd like to moderate"
+    options:
+      - ZI
+      - Annexes
+      - Plugins
+      - Packages
+      - Community
+      - Documentation
+  validations:
+    required: true
+
+  - type: textarea
+    attributes:
+      label: Membership request
+      description: Please describe your request motivation and role in a organization.
+    validations:
+      required: true

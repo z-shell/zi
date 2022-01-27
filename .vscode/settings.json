@@ -1,0 +1,14 @@
+{
+  "conventionalCommits.scopes": [
+    "core",
+    "docs",
+    "general",
+    "workspace"
+  ],
+  "markdownlint.config": {
+    "default": true,
+    "MD003": false,
+    "MD033": false,
+    "no-hard-tabs": false
+  }
+}

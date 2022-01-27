@@ -17,9 +17,9 @@ body:
       label: "Property you'd like to moderate"
       options:
         - ZI
-        - Annexes
+        - Annexes 
         - Plugins
-        - Packages
+        - Packges
         - Community
         - Documentation
     validations:

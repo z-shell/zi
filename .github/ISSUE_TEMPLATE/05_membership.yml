@@ -10,6 +10,7 @@ body:
       description: GitHub username for the membership.
     validations:
       required: true
+    attributes:
 
   - type: dropdown
     attributes:

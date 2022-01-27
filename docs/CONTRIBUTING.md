@@ -101,7 +101,7 @@ git push -u origin Branch_Name
 ## Recommendations
 
 - Any files to support prefered editor should be collaborated and respected across organization repositories e.g: [editorconfig](https://gist.github.com/ss-o/1e8d9f3a710f78330a09ccc47ef6ddb2).
-- Commets [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) which parses Zsh and Bash scripts.
+- Write comments extensively as we use: [Doxygen For Shell Scripts](https://github.com/z-shell/zsdoc) which parses Zsh and Bash scripts.
 - Get familiar with [Conventional commits](https://www.conventionalcommits.org) and [ZenHub](https://go.zenhub.com).
 
 ### Issues and feature requests
@@ -221,7 +221,7 @@ Z-shell. Responsibilities for most roles are scoped to these subprojects.
 | Role     | Responsibilities                        | Requirements                                                       | Defined by                                                |
 | -------- | --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
 | Member   | Active contributor in the community     | Sponsored by reviewers or multiple contributions to the project    | Z-shell GitHub org member                                 |
-| Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [CODEOWNERS](../github/CODEOWNERS.md) file reviewer entry |
-| Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [CODEOWNERS](../github/CODEOWNERS.md) file approver entry |
+| Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [CODEOWNERS](../.github/CODEOWNERS) file reviewer entry |
+| Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [CODEOWNERS](../.github/CODEOWNERS) file approver entry |
 
 [**Membership request**](https://github.com/z-shell/zi/issues/new?assignees=&labels=&template=05_membership.yml&title=team%3A+new+member+request)

@@ -11,19 +11,18 @@ body:
     validations:
       required: true
 
-  - type: checkboxes
-    id: download
+  - type: dropdown
     attributes:
-      label: "Property you'd like to moderate"
+      label: Property you'd like to moderate
       options:
-        - ZI
-        - Annexes
-        - Plugins
-        - Packages
-        - Community
-        - Documentation
+      - General
+      - Annexes
+      - Plugins
+      - Packges
+      - Community
+      - Documentation
     validations:
-      required: true
+        required: true
 
   - type: textarea
     attributes:

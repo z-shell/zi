@@ -10,18 +10,19 @@ body:
       description: GitHub username for the membership.
     validations:
       required: true
+    attributes:
 
-  - type: checkboxes
+  - type: dropdown
     id: download
     attributes:
-      label: "Property you'd like to moderate"
-      options:
-        - ZI
-        - Annexes 
-        - Plugins
-        - Packges
-        - Community
-        - Documentation
+    label: "Property you'd like to moderate"
+    options:
+    - ZI
+    - Annexes 
+    - Plugins
+    - Packges
+    - Community
+    - Documentation
     validations:
       required: true
 

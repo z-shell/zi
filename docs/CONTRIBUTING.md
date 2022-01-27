@@ -224,4 +224,4 @@ Z-shell. Responsibilities for most roles are scoped to these subprojects.
 | Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [CODEOWNERS](../github/CODEOWNERS.md) file reviewer entry |
 | Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [CODEOWNERS](../github/CODEOWNERS.md) file approver entry |
 
-[**Membership request**](https://github.com/z-shell/zi/issues/new?assignees=&labels=&template=05_membership.yml&title=REQUEST%3A+New+member+for+%3Cyour-GH-handle%3E+of+%3Cz-shell+property%3E)
+[**Membership request**](https://github.com/z-shell/zi/issues/new?assignees=&labels=&template=05_membership.yml&title=team%3A+new+member+request)

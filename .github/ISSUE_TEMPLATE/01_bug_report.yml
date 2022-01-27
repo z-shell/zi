@@ -19,7 +19,7 @@ body:
       required: true
 
   - type: textarea
-    id: description
+    id: expected
     attributes:
       label: Expected behavior
       description: "Please describe the expected behavior"
@@ -27,7 +27,7 @@ body:
       required: true
 
   - type: textarea
-    id: description
+    id: current
     attributes:
       label: Current behavior
       description: "Please describe how the bug manifests"

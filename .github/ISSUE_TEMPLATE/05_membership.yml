@@ -4,12 +4,34 @@ labels: ["community 👥"]
 title: "team: "
 
 body:
-  - type: textarea
+  - type: input
     attributes:
       label: Username
-      description: GitHub username for the membership.
+      description: GitHub username for the membership request.
+      placeholder: "@username"
     validations:
       required: true
+
+<<<<<<< HEAD
+  - type: dropdown
+    attributes:
+      label: Property you'd like to moderate
+      options:
+      - General
+      - Annexes
+      - Plugins
+      - Packges
+      - Community
+      - Documentation
+    validations:
+=======
+  - type: input
+    attributes:
+      label: Sponsors
+      description: GitHub usernames of sponsors.
+      placeholder: "@sponsor1, @sponsor2"
+    validations:
+      required: false
 
   - type: dropdown
     attributes:
@@ -22,6 +44,7 @@ body:
       - Community
       - Documentation
     validations:
+>>>>>>> issues
         required: true
 
   - type: textarea

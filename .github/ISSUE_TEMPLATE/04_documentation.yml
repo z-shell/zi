@@ -1,6 +1,6 @@
-name: 📚 Documentation
+name: "📚 Documentation"
 description: The issue related to documentation
-labels: [documentation 📝]
+labels: ["documentation 📝"]
 title: "docs: "
 body:
   - type: markdown

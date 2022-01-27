@@ -1,5 +1,5 @@
 ---
-name: 👻 Stale
+name: 🧹 Clean up stale issues and PRs
 
 on:
   schedule:

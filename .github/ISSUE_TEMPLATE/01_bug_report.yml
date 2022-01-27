@@ -1,6 +1,6 @@
 name: "🐞 Bug report"
 description: File a bug report
-labels: ["bug 🐞"]
+labels: ["bug 🐞", "triage 📑"]
 title: "bug: "
 body:
   - type: markdown
@@ -13,8 +13,16 @@ body:
     attributes:
       label: Environment
       description: >
-        Your environment details with: echo "${OSTYPE}|$(uname -m)|${ZSH_VERSION}"
-      placeholder: "linux-gnu|x86_64|5.8"
+        Please describe your environment e.g: echo "OSTYPE=${OSTYPE} CPUTYPE=$(uname -m) / MACHINE_TYPE=$MACHTYPE ZSH_VERSION=${ZSH_VERSION}"
+      placeholder: "OSTYPE=linux-gnu CPUTYPE=x86_64 / MACHINE_TYPE=x86_64 ZSH_VERSION=5.8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Expected behavior
+      description: "Please describe the expected behavior"
     validations:
       required: true
 
@@ -22,7 +30,7 @@ body:
     id: description
     attributes:
       label: Current behavior
-      description: "Describe how the bug manifests"
+      description: "Please describe how the bug manifests"
     validations:
       required: true
 

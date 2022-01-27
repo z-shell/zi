@@ -11,20 +11,7 @@ body:
       placeholder: "@username"
     validations:
       required: true
-
-<<<<<<< HEAD
-  - type: dropdown
-    attributes:
-      label: Property you'd like to moderate
-      options:
-      - General
-      - Annexes
-      - Plugins
-      - Packges
-      - Community
-      - Documentation
-    validations:
-=======
+      
   - type: input
     attributes:
       label: Sponsors
@@ -44,7 +31,6 @@ body:
       - Community
       - Documentation
     validations:
->>>>>>> issues
         required: true
 
   - type: textarea

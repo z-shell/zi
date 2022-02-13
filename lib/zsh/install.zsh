@@ -179,8 +179,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   +zi-message "{info3}Package{ehi}:{rst} {pid}$pkg{rst}. Selected" "profile{ehi}:{rst} {hi}$profile{rst}. \
   Available profiles:${${${(M)profile:#default}:+$lhi_hl}:-$profile_hl}" "${(pj:$pro_sep:)profiles[@]}{rst}."
   if [[ $profile != *bgn* && -n ${(M)profiles[@]:#*bgn*} ]] {
-    +zi-message "{note}Note:{rst} The {apo}\`{profile}bgn{glob}*{apo}\`{rst}" "profiles are the recommended (if available). \
-    (They expose the binaries provided by the package without {slight}altering/cluttering{rst} the {var}\$PATH{rst} environment variable)."
+    +zi-message "{note}Note:{rst} The {apo}\`{profile}bgn{glob}*{apo}\`{rst}" "profiles are recommended (if available)." \
+    "They provide binaries without {slight}altering/cluttering{rst} the  {var}\$PATH{rst} environment variable."
   }
 
   ICE[required]=${ICE[required]:-$ICE[requires]}

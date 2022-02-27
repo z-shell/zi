@@ -117,12 +117,21 @@ Reach out to the maintainers at one of the following places:
 - [GitHub Discussions](https://github.com/z-shell/zi/discussions)
 - Contact options listed on [this GitHub profile](https://github.com/z-shell)
 
-## Supporters
+## Project Support
 
 <div align="center">
-<a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" width="160" height="80" /></a>
-<a href="https://cloudflare.com"><img src="images/cloudflare_shell_logo.png" alt="Cloudflare" width="160" height="80" /></a>
-<a href="https://www.linode.com/?r=33649c0c3c30a16fbf06261c564753bd14e4b36e"><img src="images/linode-z-shell.png" alt="Linode" width="160" height="80" /></a>
+  <p><a href="https://cloudflare.com">
+    <img src="https://space.ss-o.workers.dev/img/brand/cloudflare/cf-logo-v-white.png" alt="Cloudflare" height="60" />
+  </a>
+  <a href="digitalclouds.crowdin.com">
+    <img src="https://space.ss-o.workers.dev/img/brand/crowdin/localization-at-dark-rounded@2x.png" alt="Crowdin" height="60" />
+  </a>
+  <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
+    <img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" height="60" />
+  </a></p>
+<!--  <a href="https://www.linode.com/?r=33649c0c3c30a16fbf06261c564753bd14e4b36e">
+    <img src="images/linode-z-shell.png" alt="Linode" height="60" />
+  </a> -->
 </div>
 
 [ver-badge]: https://img.shields.io/github/tag/z-shell/zi.svg

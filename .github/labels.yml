@@ -11,6 +11,9 @@
 - name: "i18n 🌐"
   color: "0052cc"
   description: "Internationalization"
+- name: "l10n 🗣"
+  color: "0052cc"
+  description: "Localization"
 - name: "enhancement ✨"
   color: 006b75
   description: "Enhancement of the code, not introducing new features."
@@ -34,14 +37,17 @@
   description: "Work that improves the continuous integration."
 - name: "dependencies 📦"
   color: fbca04
+  description: "Change in project Javascript dependencies."
+- name: "javasrcipt 📦"
+  color: fbca04
   description: "Change in project dependencies."
 - name: "submodules ⚙️"
   color: fbca04
   description: "Change in project dependencies."
 
-- name: "in-progress ⚡"
+- name: "fix ⚡"
   color: f510f4
-  description: "Issue is currently being worked on by a developer."
+  description: "Has been fixed and is therefore considered resolved."
 - name: "triage 📑"
   color: fbca04
   description: "The issue is awaiting investigation."
@@ -58,15 +64,15 @@
 - name: "invalid ⚠️"
   color: 0b467f
   description: "This is off-topic or incorrect."
-- name: "beginner-friendly 💕"
-  color: 0e8a16
+- name: "beginner-friendly"
+  color: 5319E7
+  description: "Beginner friendy to people wanting to contribute to this project."
+- name: "good first issue"
+  color: 5319E7
   description: "Good first issue for people wanting to contribute to this project."
-- name: "help-wanted 👥"
-  color: 832Aeb
+- name: "help-wanted"
+  color: 5319E7
   description: "We need some extra helping hands or expertise in order to resolve this!"
-- name: "community 👥"
-  color: 832Aeb
-  description: "Related with the community or organization"
 - name: "feature-request 💡"
   color: 0e8a16
   description: "Suggests new feature."
@@ -76,7 +82,7 @@
 - name: "resolved ☑️"
   color: 0e8a16
   description: "The issue has been fixed and is therefore considered resolved."
-#- name: "priority-hight 🔥"
+#- name: "Breaking Changes 🔥"
 #  color: ee0701
 #  description: "Must be addressed as soon as possible."
 #- name: "priority-medium 📌"
@@ -95,7 +101,6 @@
 - name: "package 📦"
   color: 3e16f3
   description: "Related with package"
-
 #- name: "major 🔺"
 #  color: b60205
 #  description: "This PR causes a major bump in the version number."

@@ -40,16 +40,8 @@ tab_width = 2
 indent_style = tab
 indent_size = 4
 
-[*.{xml,json}]
-indent_style = space
-indent_size = 2
-
 [*.{css,less}]
 indent_style = space
-indent_size = 2
-
-[*.{js,jsx,html,sass}]
-indent_style = tab
 indent_size = 2
 
 [*.{py,rb}]
@@ -60,10 +52,10 @@ indent_size = 4
 indent_style = tab
 indent_size = 4
 
-[*.{yml,yaml}]
+[*.{js,jsx,html,xml,sass,json,yml,yaml,toml}]
+charset = utf-8
 indent_style = space
 indent_size = 2
-tab_width = 2
 
 [CHANGELOG.md]
 indent_style = tab

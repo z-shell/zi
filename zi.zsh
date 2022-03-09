@@ -274,7 +274,6 @@ builtin setopt noaliases
         # Apply workaround
         func=$func:t
       fi
-      # TODO: #43 Requires futher investigation as some function parts commented out.
       if [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
         builtin autoload ${opts[@]} "$PLUGIN_DIR/$func"
         retval=$?
@@ -1709,7 +1708,7 @@ builtin setopt noaliases
   # $ (...) - vertical tab 0xB ↔ 13 in the system octagonal connected back carriage (015).
   local nl=$'\n' vertical=$'\013' carriager=$'\015'
   REPLY=${REPLY//$nl/$vertical$carriager}
-# TODO: #44 Unknown reason for commenting this out. Requires further investigation.
+# TODO: Unknown reason for commenting this out. Requires further investigation.
 #    REPLY+="x(${3}…)"
 } # ]]]
 # FUNCTION: +zi-message. [[[
@@ -1824,7 +1823,7 @@ return retval
     ${(@)${(A@kons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
-  # TODO #45 Snippet's dir computation…
+  # TODO Snippet's dir computation…
   if [[ ! -d $___path ]] {
     if ! .zi-get-object-path snippet "${id_as//\//---}"; then
       return 1

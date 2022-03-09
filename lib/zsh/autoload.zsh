@@ -2847,16 +2847,20 @@ EOF
 } # ]]]
 # FUNCTION: .zi-ls [[[
 .zi-ls() {
-  (( ${+commands[tree]} )) || {
+  if (( ${+commands[tree]} )); then
+    ZI[TREE]="${commands[tree]} -L 3 -C --charset utf-8"
+  elif (( ${+commands[exa]} )); then
+    ZI[TREE]="${commands[exa]} --color=always -T -l -L3"
+  else
     builtin print "${ZI[col-error]}No \`tree' program, it is required by the subcommand \`ls\'${ZI[col-rst]}"
     builtin print "Download from: http://mama.indstate.edu/users/ice/tree/"
     builtin print "It is also available probably in all distributions and Homebrew, as package \`tree'"
-  }
+  fi
   (
     builtin cd -q "${ZI[SNIPPETS_DIR]}"
-    local tree_cmd="$commands[tree]"
     local -a list
-    list=( "${(f@)"$(LANG=en_US.utf-8 $tree_cmd -L 3 --charset utf-8)"}" )
+    local -x LANG=en_US.utf-8
+    list=( "${(f@)"$(${=ZI[TREE]})"}" )
     # Oh-My-Zsh single file
     list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--raw--master(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
     # Oh-My-Zsh SVN
@@ -2867,7 +2871,7 @@ EOF
     list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--trunk(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](SVN)$ZI[col-rst] ${match[1]}}" )
     # First-level names
     list=( "${list[@]//(#b)(#s)(│   └──|    └──|    ├──|│   ├──) (*)/${match[1]} $ZI[col-p]${match[2]}$ZI[col-rst]}" )
-    list[-1]+=", located at ZI[SNIPPETS_DIR], i.e. ${ZI[SNIPPETS_DIR]}"
+    list[-1]+=", at ZI[SNIPPETS_DIR] - (${ZI[SNIPPETS_DIR]})"
     builtin print -rl -- "${list[@]}"
   )
 } # ]]]

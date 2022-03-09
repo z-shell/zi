@@ -218,9 +218,9 @@ below.
 This section outlines the various responsibilities of contributor roles in
 Z-shell. Responsibilities for most roles are scoped to these subprojects.
 
-| Role     | Responsibilities                        | Requirements                                                       | Defined by                                                |
-| -------- | --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
-| Member   | Active contributor in the community     | Sponsored by reviewers or multiple contributions to the project    | Z-shell GitHub org member                                 |
+| Role     | Responsibilities                        | Requirements                                                       | Defined by                                              |
+| -------- | --------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------- |
+| Member   | Active contributor in the community     | Sponsored by reviewers or multiple contributions to the project    | Z-shell GitHub org member                               |
 | Reviewer | Review contributions from other members | History of review and authorship in a subproject                   | [CODEOWNERS](../.github/CODEOWNERS) file reviewer entry |
 | Approver | Contributions acceptance approval       | Highly experienced active reviewer and contributor to a subproject | [CODEOWNERS](../.github/CODEOWNERS) file approver entry |
 

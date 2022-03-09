@@ -1,10 +1,5 @@
 {
-  "conventionalCommits.scopes": [
-    "core",
-    "docs",
-    "general",
-    "workspace"
-  ],
+  "conventionalCommits.scopes": ["core", "docs", "general", "workspace"],
   "markdownlint.config": {
     "default": true,
     "MD003": false,

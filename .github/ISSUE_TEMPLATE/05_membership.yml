@@ -1,5 +1,5 @@
 name: "👥 Community Membership Request"
-description: Request memeber privileges on a @z-shell organiztion.
+description: Request membership @z-shell organiztion.
 labels: ["community 👥"]
 title: "team: "
 
@@ -11,7 +11,7 @@ body:
       placeholder: "@username"
     validations:
       required: true
-      
+
   - type: input
     attributes:
       label: Sponsors
@@ -24,14 +24,14 @@ body:
     attributes:
       label: Property you'd like to moderate
       options:
-      - General
-      - Annexes
-      - Plugins
-      - Packges
-      - Community
-      - Documentation
+        - General
+        - Annexes
+        - Plugins
+        - Packges
+        - Community
+        - Documentation
     validations:
-        required: true
+      required: true
 
   - type: textarea
     attributes:

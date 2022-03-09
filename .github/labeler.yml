@@ -1,6 +1,7 @@
 documentation 📝:
   - any: ["**/*.md"]
 maintenance 📈:
-  - any: [".github/CODEOWNERS", ".github/*.md", ".github/*.yml", ".github/*.json"]
+  - any:
+      [".github/CODEOWNERS", ".github/*.md", ".github/*.yml", ".github/*.json"]
 ci 🤖:
   - any: [".github/workflows/*.yml", ".all-contributorsrc"]

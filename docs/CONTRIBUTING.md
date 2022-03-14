@@ -1,5 +1,7 @@
 # Contributing Guidelines
 
+## Document moved to [community](https://github.com/z-shell/community/blob/main/docs/project/CONTRIBUTING.md) repository.
+
 When contributing, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 

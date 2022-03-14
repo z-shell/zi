@@ -4,7 +4,7 @@
 # Reviewers:
 # 1. @z-shell
 
-* @ss-o @z-shell
+* @z-shell/team
 
 # Order is important; the last matching pattern takes the most precedence.
 #*.sh    @z-shell
@@ -22,4 +22,4 @@
 #lib/ @z-shell
 
 # In this example, @z-shell owns any file in the `.github` directory in the root of your repository.
-#/.github/ @z-shell
+/.github/ @ss-o

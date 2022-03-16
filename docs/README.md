@@ -46,6 +46,8 @@
 
   <tr align="center">
     <td>
+      <img align="center" src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/zw/indepth.repository.svg"
+        width="80%" height="auto" />
       <img align="center" src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.svg" width="80%"
         height="auto" />
       <img align="center" src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.projects.svg"
@@ -83,19 +85,16 @@
           src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.dev.tag.zsh.rss.svg" width="80%"
           height="auto" /></a>
     </td>
+      <tr align="center">
+    <th>
+      <a href="https://asciinema.org/a/459358" target="_blank"><img src="https://asciinema.org/a/459358.svg" /></a>
+    </th>
   </tr>
-  <tr align="center">
-    <td>
-      <a title="ZI" target="_self" href="https://github.com/z-shell/zi">
-        <img align="center" src="https://repobeats.axiom.co/api/embed/1e1afffc6a6daa806a91f70670672f8cb537f52f.svg"
-          width="80%" height="auto" />
-      </a>
-    </td>
-  </tr>
+</tr>
   <tr align="left">
     <td>
       <div>
-
+        
 ## Roadmap
 
 See the [open issues](https://github.com/z-shell/zi/issues) for a list of proposed features (and known

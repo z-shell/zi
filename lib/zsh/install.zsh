@@ -135,8 +135,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   pkgjson="$(<$tmpfile)"
 
   if [[ -z $pkgjson ]]; then
-    +zi-message "{u-warn}Error{b-warn}:{error} the package {apo}\`{pid}$id_as{apo}\`"\
-      "{error}couldn't be found.{rst}"
+    +zi-message "{u-warn}Error{b-warn}:{error} the package {apo}\`{pid}$id_as{apo}\`" "{error}couldn't be found.{rst}"
     return 1
   fi
 
@@ -172,22 +171,16 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     }
   } else {
     # Assumption: the default profile is the first in the table (see another color).
-    +zi-message "{u-warn}Error{b-warn}:{error} the profile {apo}\`{hi}$profile{apo}\`" \
-      "{error}couldn't be found, aborting. Available profiles are:" \
-      "{lhi}${(pj:$epro_sep:)profiles[@]}{error}.{rst}"
+    +zi-message "{u-warn}Error{b-warn}:{error} the profile {apo}\`{hi}$profile{apo}\`" "{error}couldn't be found, aborting. \
+    Available profiles are:" "{lhi}${(pj:$epro_sep:)profiles[@]}{error}.{rst}"
     return 1
   }
 
-  +zi-message "{info3}Package{ehi}:{rst} {pid}$pkg{rst}. Selected" \
-    "profile{ehi}:{rst} {hi}$profile{rst}. Available" \
-    "profiles:${${${(M)profile:#default}:+$lhi_hl}:-$profile_hl}" \
-    "${(pj:$pro_sep:)profiles[@]}{rst}."
+  +zi-message "{info3}Package{ehi}:{rst} {pid}$pkg{rst}. Selected" "profile{ehi}:{rst} {hi}$profile{rst}. \
+  Available profiles:${${${(M)profile:#default}:+$lhi_hl}:-$profile_hl}" "${(pj:$pro_sep:)profiles[@]}{rst}."
   if [[ $profile != *bgn* && -n ${(M)profiles[@]:#*bgn*} ]] {
-    +zi-message "{note}Note:{rst} The {apo}\`{profile}bgn{glob}*{apo}\`{rst}" \
-      "profiles (if any are available) are the recommended ones (the reason" \
-      "is that they expose the binaries provided by the package without" \
-      "altering (i.e.: {slight}cluttering{rst}{…}) the {var}\$PATH{rst}" \
-      "environment variable)."
+    +zi-message "{note}Note:{rst} The {apo}\`{profile}bgn{glob}*{apo}\`{rst}" "profiles are recommended (if available)." \
+    "They provide binaries without {slight}altering/cluttering{rst} the  {var}\$PATH{rst} environment variable."
   }
 
   ICE[required]=${ICE[required]:-$ICE[requires]}
@@ -205,12 +198,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           +zi-message -n "{error}package {pid}$pkg{error} "
         fi
         +zi-message '{error}requires the {apo}`{annex}'${namemap[$required]}'{apo}`' \
-          "{error}annex, which is currently not installed." \
-          "{nl}{nl}If you'd like to install it, you can visit its homepage:" \
+          "{error}annex, which is currently not installed." "{nl}{nl}If you'd like to install it, you can visit its homepage:" \
           "{nl}– {url}https://github.com/z-shell/z-a-${(L)namemap[$required]}{rst}" "{nl}for instructions."
         (( ${#profiles[@]:#$profile} > 0 )) && \
           +zi-message "{nl}Other available profiles are:" "{profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
-
         return 1
       fi
     else
@@ -221,13 +212,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         else
           +zi-message -n "{error}package {pid}$pkg{error} "
         fi
-        +zi-message '{error}requires a {apo}`{cmd}'$required'{apo}`{error}' \
-          "command to be available in {var}\$PATH{error}.{rst}" \
-          "{nl}{error}The package cannot be installed unless the" \
-          "command will be available."
+        +zi-message '{error}requires a {apo}`{cmd}'$required'{apo}`{error}' "command to be available in {var}\$PATH{error}.{rst}" \
+          "{nl}{error}The package cannot be installed unless the" "command will be available."
         (( ${#profiles[@]:#$profile} > 0 )) && \
-          +zi-message "{nl}Other available profiles are:" \
-            "{profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
+          +zi-message "{nl}Other available profiles are: {profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
         return 1
       fi
     fi
@@ -260,8 +248,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       local fname="${${URL%%\?*}:t}"
 
       command mkdir -p $dir || {
-        +zi-message "{u-warn}Error{b-warn}:{error} Couldn't create directory:" \
-          "{dir}$dir{error}, aborting.{rst}"
+        +zi-message "{u-warn}Error{b-warn}:{error} Couldn't create directory:" "{dir}$dir{error}, aborting.{rst}"
         return 1
       }
       builtin cd -q $dir || return 1
@@ -272,8 +259,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         if { ! .zi-download-file-stdout "$URL" 1 1 >! "$fname" } {
           command rm -f "$fname"
           +zi-message "Download of the file {apo}\`{file}$fname{apo}\`{rst}" \
-            "failed. No available download tool? One of:" \
-            "{cmd}${(pj:$tool_sep:)${=:-curl wget lftp lynx}}{rst}."
+            "failed. No available download tool? One of:" "{cmd}${(pj:$tool_sep:)${=:-curl wget lftp lynx}}{rst}."
 
           return 1
         }
@@ -321,17 +307,19 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   local -A sites
   sites=(
-    github    github.com
-    gh        github.com
-    bitbucket bitbucket.org
-    bb        bitbucket.org
-    gitlab    gitlab.com
-    gl        gitlab.com
-    notabug   notabug.org
-    nb        notabug.org
-    github-rel github.com/$remote_url_path/releases
-    gh-r      github.com/$remote_url_path/releases
-    cygwin    cygwin
+    ge          gitee.com
+    gitee       gitee.com
+    github      github.com
+    gh          github.com
+    gitlab      gitlab.com
+    gl          gitlab.com
+    notabug     notabug.org
+    nb          notabug.org
+    bitbucket   bitbucket.org
+    bb          bitbucket.org
+    github-rel  github.com/$remote_url_path/releases
+    gh-r        github.com/$remote_url_path/releases
+    cygwin      cygwin
   )
 
   ZI[annex-multi-flag:pull-active]=${${${(M)update:#-u}:+${ZI[annex-multi-flag:pull-active]}}:-2}
@@ -534,8 +522,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local c cfile bkpfile
   # The plugin == . is a semi-hack/trick to handle `creinstall .' properly
   [[ $user == % || ( -z $user && $plugin == . ) ]] && \
-    completions=( "${plugin}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) ) || \
-    completions=( "${ZI[PLUGINS_DIR]}/${id_as//\//---}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) )
+  completions=( "${plugin}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) ) || \
+  completions=( "${ZI[PLUGINS_DIR]}/${id_as//\//---}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) )
   already_symlinked=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc(DN) )
   backup_comps=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
 
@@ -566,11 +554,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   if (( quiet == 1 && (${#INSTALLED_COMPS} || ${#SKIPPED_COMPS}) )) {
     +zi-message "{msg}Installed {num}${#INSTALLED_COMPS}" \
-      "{msg}completions. They are stored in{var}" \
-      "\$INSTALLED_COMPS{msg} array."
+      "{msg}completions. They are stored in{var}" "\$INSTALLED_COMPS{msg} array."
     if (( ${#SKIPPED_COMPS} )) {
-      +zi-message "{msg}Skipped installing" \
-        "{num}${#SKIPPED_COMPS}{msg} completions." \
+      +zi-message "{msg}Skipped installing" "{num}${#SKIPPED_COMPS}{msg} completions." \
         "They are stored in {var}\$SKIPPED_COMPS{msg} array."
     }
   }
@@ -943,8 +929,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # URL
       (
         () { setopt localoptions noautopushd; builtin cd -q "$local_dir"; } || return 4
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "Downloading {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" \
-        (with Subversion)"}:-" (with curl, wget, lftp)"}{…}"
+        (( !OPTS[opt_-q,--quiet] )) && \
+        +zi-message "Downloading {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" (with Subversion)"}:-" (with curl, wget, lftp)"}{…}"
 
         if (( ${+ICE[svn]} )) {
           if [[ $update = -u ]] {
@@ -1282,9 +1268,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   if (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) {
     ICE=( "${(kv)ICE[@]}" "${tmp[@]}" )
   } elif [[ -n ${ZI_SICE[$id_as]} ]] {
-    +zi-message "{error}WARNING:{msg2} Inconsistency #3" \
-      "occurred, please report the string: \`{obj}${ZI_SICE[$id_as]}{msg2}' to the" \
-      "GitHub issues page: {obj}https://github.com/z-shell/zi/issues/{msg2}.{rst}"
+    +zi-message "{error}WARNING:{msg2} Inconsistency #3 occurred, please report the string: \`{obj}${ZI_SICE[$id_as]}{msg2}' to the" \
+    "GitHub issues page: {obj}https://github.com/z-shell/zi/issues/{msg2}.{rst}"
   }
   id_as=${ICE[id-as]:-$id_as}
 
@@ -1458,7 +1443,9 @@ ziextract() {
   emulate -LR zsh
   setopt extendedglob typesetsilent noshortloops # warncreateglobal
 
-  if (( $+commands[file] != 1 )) { +zi-message "{error}ziextract:{msg2} The {obj}file{msg2} command is required for recognizing the type of data to be processed.{rst}"; return 1; }
+  if (( $+commands[file] != 1 )) { +zi-message "{error}ziextract:{msg2} The {obj}file{msg2} command is required for recognizing the type of data to be processed.{rst}"
+    return 1
+  }
   local -a opt_move opt_move2 opt_norm opt_auto opt_nobkp
   zparseopts -D -E -move=opt_move -move2=opt_move2 -norm=opt_norm -auto=opt_auto -nobkp=opt_nobkp || \
   { +zi-message "{error}ziextract:{msg2} Incorrect options given to" "\`{pre}ziextract{msg2}' (available are: {meta}--auto{msg2}," \
@@ -1475,7 +1462,7 @@ ziextract() {
     # First try known file extensions
     local -a files
     integer ret_val
-    files=( (#i)**/*.(zip|rar|7z|tgz|tbz2|tar.gz|tar.bz2|tar.7z|txz|tar.xz|gz|xz|tar|dmg|exe)~(*/*|.(_backup|git))/*(-.DN) )
+    files=( (#i)**/*.(zip|rar|7z|tgz|tbz|tbz2|tar.gz|tar.bz2|tar.7z|txz|tar.xz|gz|xz|tar|dmg|exe)~(*/*|.(_backup|git))/*(-.DN) )
     for file ( $files ) {
       ziextract "$file" $opt_move $opt_move2 $opt_norm $opt_nobkp ${${${#files}:#1}:+--nobkp}
       ret_val+=$?
@@ -1570,7 +1557,7 @@ ziextract() {
     ((#i)*.rar)
       →zi-extract() { →zi-check unrar "$file" || return 1; command unrar x "$file"; }
       ;;
-    ((#i)*.tar.bz2|(#i)*.tbz2)
+    ((#i)*.tar.bz2|(#i)*.tbz|(#i)*.tbz2)
       →zi-extract() { →zi-check bzip2 "$file" || return 1; command bzip2 -dc "$file" | command tar -xf -; }
       ;;
     ((#i)*.tar.gz|(#i)*.tgz)
@@ -1644,9 +1631,8 @@ ziextract() {
         command hdiutil detach $attached_vol
 
         if (( retval )) {
-          +zi-message "{error}ziextract:{msg2} WARNING:{msg}" \
-              "problem occurred when attempted to copy the files" \
-              "from the mounted image: \`{obj}${file}{msg}'.{rst}"
+          +zi-message "{error}ziextract:{msg2} WARNING:{msg} problem occurred when attempted to copy the files" \
+          "from the mounted image: \`{obj}${file}{msg}'.{rst}"
         }
         return $retval
       }

@@ -1500,7 +1500,7 @@ ziextract() {
               fname=${file2%:*} desc=${file2##*:}
               local type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
               if [[ $type != $type2 && $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar) ]] {
-                # TODO: If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
+                # TODO: #115 If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
                 [[ $fname != $infname && $norm -eq 0 ]] && command rm -f "$infname"
                 (( !OPTS[opt_-q,--quiet] )) && \
                   +zi-message "{pre}ziextract:{info2} Note:{rst}" "detected a {obj}${type2}{rst} archive in the" " file {file}${fname}{rst}."

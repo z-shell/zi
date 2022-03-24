@@ -967,7 +967,7 @@ integer keys_size=${#keys}
         if (( found_idx || found_idx2 ))
         then
           # Skip multiple loads of the same plugin
-          # TODO: #56 Fully handle multiple plugin loads
+          # TODO: #113 Fully handle multiple plugin loads
           if [[ "$oth_uspl2" != "$uspl2" ]]; then
             to_process_plugin="$oth_uspl2"
             break # Only the first one is needed
@@ -1131,7 +1131,7 @@ fpath=( "${new[@]}" )
         [[ ${(tP)k} == *-readonly(|-*) ]] && continue
         # Don't unset arrays managed by add-zsh-hook,
         # also ignore a few special parameters
-        # TODO: #55 remember and remove hooks
+        # TODO: #108 remember and remove hooks
         case "$k" in
           (chpwd_functions|precmd_functions|preexec_functions|periodic_functions|zshaddhistory_functions|zshexit_functions|zsh_directory_name_functions)
             continue
@@ -1645,11 +1645,12 @@ fi
     .zi-update-or-status-all "$1" restart
     return $?
   }
+  integer retval
   if (( OPTS[opt_-p,--parallel] )) && [[ $1 = update ]] {
     (( !OPTS[opt_-q,--quiet] )) && \
       +zi-message '{info2}Parallel Update Starts Now{…}{rst}'
     .zi-update-all-parallel
-    integer retval=$?
+    retval=$?
     .zi-compinit 1 1 &>/dev/null
     rehash
     if (( !OPTS[opt_-q,--quiet] )) {
@@ -1743,7 +1744,7 @@ fi
       # The continue may cause the tail of processes to
       # fall-through to the following plugins-specific `wait'
       # Should happen only in a very special conditions
-      # TODO handle this
+      # TODO #114 handle this
       [[ ! -f ${snip:h}/url ]] && continue
       [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
       counter+=1
@@ -2145,7 +2146,7 @@ fi
     [[ "${#unpacked[1]}" -gt "$longest" ]] && longest="${#unpacked[1]}"
   done
   for c in "${packs[@]}"; do
-    unpacked=( "${(Q@)${(z@)c}}" ) # TODO: ${(Q)${(z@)c}[@]} ?
+    unpacked=( "${(Q@)${(z@)c}}" ) # TODO: #112 ${(Q)${(z@)c}[@]} ?
     .zi-any-colorify-as-uspl2 "$unpacked[2]"
     builtin print -n "${(r:longest+1:: :)unpacked[1]} $REPLY"
 
@@ -2847,16 +2848,20 @@ EOF
 } # ]]]
 # FUNCTION: .zi-ls [[[
 .zi-ls() {
-  (( ${+commands[tree]} )) || {
+  if (( ${+commands[tree]} )); then
+    ZI[TREE]="${commands[tree]} -L 3 -C --charset utf-8"
+  elif (( ${+commands[exa]} )); then
+    ZI[TREE]="${commands[exa]} --color=always -T -l -L3"
+  else
     builtin print "${ZI[col-error]}No \`tree' program, it is required by the subcommand \`ls\'${ZI[col-rst]}"
     builtin print "Download from: http://mama.indstate.edu/users/ice/tree/"
     builtin print "It is also available probably in all distributions and Homebrew, as package \`tree'"
-  }
+  fi
   (
     builtin cd -q "${ZI[SNIPPETS_DIR]}"
-    local tree_cmd="$commands[tree]"
     local -a list
-    list=( "${(f@)"$(LANG=en_US.utf-8 $tree_cmd -L 3 --charset utf-8)"}" )
+    local -x LANG=en_US.utf-8
+    list=( "${(f@)"$(${=ZI[TREE]})"}" )
     # Oh-My-Zsh single file
     list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--raw--master(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
     # Oh-My-Zsh SVN
@@ -2867,7 +2872,7 @@ EOF
     list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--trunk(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](SVN)$ZI[col-rst] ${match[1]}}" )
     # First-level names
     list=( "${list[@]//(#b)(#s)(│   └──|    └──|    ├──|│   ├──) (*)/${match[1]} $ZI[col-p]${match[2]}$ZI[col-rst]}" )
-    list[-1]+=", located at ZI[SNIPPETS_DIR], i.e. ${ZI[SNIPPETS_DIR]}"
+    list[-1]+=", at ZI[SNIPPETS_DIR] - (${ZI[SNIPPETS_DIR]})"
     builtin print -rl -- "${list[@]}"
   )
 } # ]]]

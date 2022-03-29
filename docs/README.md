@@ -11,14 +11,15 @@
     A Swiss Army Knife for <a href="https://zsh.sourceforge.io/">Zsh</a> -
     <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell</a>
   </h2>
-<a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a> ·
-<a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a> · <a href="https://github.com/z-shell/community/discussions/">《 Ask a Question 》</a>
+ <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a> ·
+ <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a> · <a href="https://github.com/z-shell/community/discussions/">《 Ask a Question 》</a>
 <h3>
-  <a href="https://z.digitalclouds.dev/search/">《 💡 Search Wiki 》</a>
-  <a href="https://z.digitalclouds.dev/docs/getting_started/installation">《 ⚡️ Install 》</a>
-  <a href="https://digitalclouds.crowdin.com/z-shell/">《 🌐 Localize 》</a>
-  </h3>
-  </td>
+  <a href="https://github.com/z-shell/community/discussions/">《❔》Ask a Question </a>
+  <a href="https://z.digitalclouds.dev/search/">《💡》Search Wiki </a>
+  <a href="https://z.digitalclouds.dev/docs/getting_started/installation/">《⚡️》 Install</a>
+  <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">《💜》Join </a>
+  <a href="https://digitalclouds.crowdin.com/z-shell/">《🌐》Localize </a>
+</h3>
 </tr>
 <tr>
 <td align="center">
@@ -47,19 +48,19 @@
   <td align="center">
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/zi/indepth.repository.svg"
+    src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi/indepth.svg"
     width="80%"
     height="auto"
   />
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.svg"
+    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/metrics.svg"
     width="80%"
     height="auto"
   />
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.projects.svg"
+    src="https://github.com/z-shell/.github/raw/main/metrics/plugin/projects/projects.svg"
     width="80%"
     height="auto"
   />
@@ -70,7 +71,7 @@
 <a title="ZI WIKI" target="_self" href="https://github.com/z-shell/zw">
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.pagespeed.detailed.svg"
+    src="https://github.com/z-shell/.github/raw/main/metrics/plugin/pagespeed/detailed.svg"
     width="80%"
     height="auto"
   />
@@ -79,14 +80,6 @@
 </tr>
 <tr>
 <td align="center">
-<a title="Community Discussions" target="_self" href="https://github.com/z-shell/community/discussions">
-  <img
-    align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.discussions.svg"
-    width="80%"
-    height="auto"
-  />
-</a>
 <a title="ZI" target="_self" href="https://twitter.com/zshell_zi">
   <img
     align="center"
@@ -119,7 +112,7 @@
 </td>
 </tr>
 <tr>
-  <td align="left">
+  <td align="left"><div>
 
 ## Roadmap
 
@@ -178,7 +171,7 @@ The original setup of this repository is by [@ss-o](https://github.com/ss-o).
 For a full list of all authors and contributors, see [the contributors
 page](https://github.com/z-shell/zi/contributors).
 
-  </td>
+  <div></td>
 </tr>
 <tr>
 <td align="center"><h2 align="left">Credits</h2>

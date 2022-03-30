@@ -11,7 +11,6 @@
   if [[ $0 != example-script || -n $ZSH_SCRIPT ]]; then
 # #̶ =̶=̶=̶ =̶=̶=̶ =̶=̶=̶ #̶
 # 𝟘 - https://z.digitalclouds.dev/community/zsh_plugin_standard
-#
 # Standardized $0 Handling - [ zero-handling ]
   0=${${ZERO:-${0:#$ZSH_ARGZERO}}:-${(%):-%N}}
   0=${${(M)0##/*}:-$PWD/$0}

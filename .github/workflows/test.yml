@@ -1,0 +1,10 @@
+---
+name: '♻️ Test ZI'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  labels:
+    name: '♻️ Sync labels'
+    uses: z-shell/zd/.github/workflows/test.yml@main

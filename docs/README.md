@@ -29,7 +29,7 @@
   <a title="Releases" target="_self" href="https://github.com/z-shell/zi/releases">
     <img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" />
   </a>
-  <a title="License" target="_self" href="https://github.com/z-shell/zi/blob/main/LICENSE/">
+  <a title="License" target="_self" href="https://github.com/z-shell/zi/blob/main/LICENSE">
     <img align="center" src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Project License" />
   </a>
   <a title="VIM" target="_self" href="https://github.com/z-shell/zi-vim-syntax/">
@@ -48,7 +48,7 @@
   <td align="center">
   <img
     align="center"
-    src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi/indepth.svg"
+    src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg"
     width="80%"
     height="auto"
   />
@@ -83,7 +83,7 @@
 <a title="ZI" target="_self" href="https://twitter.com/zshell_zi">
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.tweets.svg"
+    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/tweets/tweets.svg"
     width="80%"
     height="auto"
   />
@@ -91,7 +91,7 @@
 <a href="https://dev.to/z-shell/">
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.dev.zshell.rss.svg"
+    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/rss/dev.zshell.rss.svg"
     width="80%"
     height="auto"
   />
@@ -99,7 +99,7 @@
 <a href="https://dev.to/tag/zsh/">
   <img
     align="center"
-    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin.dev.tag.zsh.rss.svg"
+    src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/rss/dev.tag.zsh.rss.svg"
     width="80%"
     height="auto"
   />
@@ -176,12 +176,12 @@ page](https://github.com/z-shell/zi/contributors).
 <tr>
 <td align="center"><h2 align="left">Credits</h2>
   <a href="https://cloudflare.com">
-    <img src="https://space.ss-o.workers.dev/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" height="60" /></a>
+    <img src="https://space.ss-o.workers.dev/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" height="35" /></a>
       <a href="https://digitalclouds.crowdin.com">
-    <img src="https://space.ss-o.workers.dev/img/brand/crowdin/localization-at-dark-rounded@2x.png" alt="Crowdin" height="60" />
+    <img src="https://space.ss-o.workers.dev/img/brand/crowdin/localization-at-dark-rounded@2x.png" alt="Crowdin" height="35" />
   </a>
   <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
-    <img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" height="60" />
+    <img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" height="35" />
   </a>
 </td>
 </tr>

@@ -1,11 +1,9 @@
-<table align="justify" margin-left="auto" margin-right="auto">
+<table style="width:100%;height:auto">
  <tr><td align="center">
   <h1><a title="❮ ZI ❯" target="_self" href="https://github.com/z-shell/zi">
-  <img
+  <img style="width:60px;height:60px"
     src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg"
-    alt="Logo"
-    width="80"
-    height="80" /></a>❮ ZI ❯
+    alt="Logo" /></a>❮ ZI ❯
   </h1>
   <h2>
     A Swiss Army Knife for <a href="https://zsh.sourceforge.io/">Zsh</a> -
@@ -18,12 +16,10 @@
   <a href="https://z.digitalclouds.dev/search/">《💡》Search Wiki </a>
   <a href="https://z.digitalclouds.dev/docs/getting_started/installation/">《⚡️》 Install</a>
   <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">《💜》Join </a>
-  <a href="https://digitalclouds.crowdin.com/z-shell/">《🌐》Localize </a>
+  <a href="https://crowdin.digitalclouds.dev/z-shell/">《🌐》Localize </a>
 </h3>
-</tr>
-<tr>
-<td align="center">
-  <a title="Crowdin" target="_self" href="https://digitalclouds.crowdin.com/z-shell">
+</tr><tr><td align="center">
+  <a title="Crowdin" target="_self" href="https://crowdin.digitalclouds.dev/z-shell">
     <img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" />
   </a>
   <a title="Releases" target="_self" href="https://github.com/z-shell/zi/releases">
@@ -36,83 +32,51 @@
     <img align="center" src="https://img.shields.io/badge/--019733?logo=vim" alt="VIM" />
   </a>
   <a title="ZI" target="_self" href="https://open.vscode.dev/z-shell/zi/">
-    <img
-      align="center"
-      src="https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff"
-      alt="Visual Studio Code"
-    />
+   <img align="center"
+        src="https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff" alt="Visual Studio Code" />
   </a>
-</td>
-</tr>
-<tr>
-  <td align="center">
-  <img
-    align="center"
+ </td></tr>
+<tr><td align="center">
+  <img align="center" style="width:80%;height:auto"
     src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg"
-    width="80%"
-    height="auto"
   />
-  <img
-    align="center"
+  <img align="center" style="width:80%;height:auto"
     src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/metrics.svg"
-    width="80%"
-    height="auto"
   />
-  <img
-    align="center"
+  <img align="center" style="width:80%;height:auto"
     src="https://github.com/z-shell/.github/raw/main/metrics/plugin/projects/projects.svg"
-    width="80%"
-    height="auto"
   />
   </td>
 </tr>
 <tr>
 <td align="center">
 <a title="ZI WIKI" target="_self" href="https://github.com/z-shell/zw">
-  <img
-    align="center"
+ <imgn align="center" style="width:80%;height:auto"
     src="https://github.com/z-shell/.github/raw/main/metrics/plugin/pagespeed/detailed.svg"
-    width="80%"
-    height="auto"
-  />
+ />
 </a>
-</td>
-</tr>
-<tr>
-<td align="center">
+</td></tr>
+<tr><td align="center">
 <a title="ZI" target="_self" href="https://twitter.com/zshell_zi">
-  <img
-    align="center"
+ <img align="center" style="width:80%;height:auto"
     src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/tweets/tweets.svg"
-    width="80%"
-    height="auto"
-  />
-</a>
-<a href="https://dev.to/z-shell/">
-  <img
-    align="center"
+ />
+ </a>
+ <a href="https://dev.to/z-shell/">
+  <img align="center" style="width:80%;height:auto"
     src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/rss/dev.zshell.rss.svg"
-    width="80%"
-    height="auto"
   />
 </a>
 <a href="https://dev.to/tag/zsh/">
-  <img
-    align="center"
+ <img align="center" style="width:80%;height:auto"
     src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/rss/dev.tag.zsh.rss.svg"
-    width="80%"
-    height="auto"
   />
 </a>
-</td>
-</tr>
-<tr>
-<td align="center">
-  <a href="https://asciinema.org/a/459358" target="_blank"><img src="https://asciinema.org/a/459358.svg" /></a>
-</td>
-</tr>
-<tr>
-  <td align="left"><div>
+</td></tr>
+<tr><td align="center">
+ <a href="https://asciinema.org/a/459358" target="_blank"><img style="width:100%;height:auto" src="https://asciinema.org/a/459358.svg" /></a>
+</td></tr>
+<tr><td align="left"><div>
 
 ## Roadmap
 
@@ -174,13 +138,13 @@ page](https://github.com/z-shell/zi/contributors).
   <div></td>
 </tr>
 <tr><td align="center"><h2 align="left">Credits</h2>
- <a href="https://cloudflare.com">
+ <a href="https://cloudflare.com" rel="nofollow">
   <img style="width:140;height:35px" src="https://space.ss-o.workers.dev/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" />
  </a>
  <a href="https://crowdin.com/?utm_source=badge&utm_medium=referral&utm_campaign=badge-add-on" rel="nofollow">
   <img style="width:140;height:35px" src="https://space.ss-o.workers.dev/img/brand/crowdin/localization-at-dark-rounded@2x.png" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x,https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x"alt="Crowdin | Agile localization for tech companies" />
  </a>
- <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
+ <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge" rel="nofollow">
   <img style="width:140;height:35px" src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" />
  </a>
  </td></tr>

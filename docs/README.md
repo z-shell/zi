@@ -139,13 +139,13 @@ page](https://github.com/z-shell/zi/contributors).
 </tr>
 <tr><td align="center"><h2 align="left">Credits</h2>
  <a href="https://cloudflare.com" rel="nofollow">
-  <img style="width:140;height:35px" src="https://space.ss-o.workers.dev/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" />
+  <img style="width:140;height:40px" src="https://space.ss-o.workers.dev/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" />
  </a>
  <a href="https://crowdin.com/?utm_source=badge&utm_medium=referral&utm_campaign=badge-add-on" rel="nofollow">
-  <img style="width:140;height:35px" src="https://space.ss-o.workers.dev/img/brand/crowdin/localization-at-dark-rounded@2x.png" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x,https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x"alt="Crowdin | Agile localization for tech companies" />
+  <img style="width:140;height:40px" src="https://space.ss-o.workers.dev/img/brand/crowdin/localization-at-dark-rounded@2x.png" srcset="https://badges.crowdin.net/badge/light/crowdin-on-dark.png 1x,https://badges.crowdin.net/badge/light/crowdin-on-dark@2x.png 2x"alt="Crowdin | Agile localization for tech companies" />
  </a>
  <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge" rel="nofollow">
-  <img style="width:140;height:35px" src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" />
+  <img style="width:140;height:40px" src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" />
  </a>
  </td></tr>
 </table>

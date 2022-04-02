@@ -12,7 +12,6 @@
  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a> ·
  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a> · <a href="https://github.com/z-shell/community/discussions/">《 Ask a Question 》</a>
 <h3>
-  <a href="https://github.com/z-shell/community/discussions/">《❔》Ask a Question </a>
   <a href="https://z.digitalclouds.dev/search/">《💡》Search Wiki </a>
   <a href="https://z.digitalclouds.dev/docs/getting_started/installation/">《⚡️》 Install</a>
   <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">《💜》Join </a>

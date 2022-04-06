@@ -9,8 +9,10 @@
     A Swiss Army Knife for <a href="https://zsh.sourceforge.io/">Zsh</a> -
     <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell</a>
   </h2>
+<h3>
  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue 》</a> ·
- <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a> · <a href="https://github.com/z-shell/community/discussions/">《 Ask a Question 》</a>
+ <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a> · <a href="https://github.com/orgs/z-shell/discussions">《 Ask a Question 》</a>
+</h3>
 <h3>
   <a href="https://z.digitalclouds.dev/search/">《💡》Search Wiki </a>
   <a href="https://z.digitalclouds.dev/docs/getting_started/installation/">《⚡️》 Install</a>

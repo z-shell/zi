@@ -21,7 +21,7 @@ body:
     attributes:
       label: Have you read the Contributing Guidelines?
       options:
-        - label: I have read the [Contributing Guidelines](https://github.com/z-shell/zi/blob/main/docs/CONTRIBUTING.md).
+        - label: I have read the [CONTRIBUTING.md](https://github.com/z-shell/zi/blob/main/docs/CONTRIBUTING.md).
           required: true
 
   - type: textarea

@@ -2,6 +2,3 @@
 * text=auto
 *.md diff=markdown
 *.zsh text eol=lf diff=zsh
-∧* text eol=lf diff=zsh 
-\.za-* text eol=lf diff=zsh
-*.zi text eol=lf diff=zsh

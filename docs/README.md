@@ -23,6 +23,9 @@
   <a title="Crowdin" target="_self" href="https://crowdin.digitalclouds.dev/z-shell">
     <img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" />
   </a>
+   <a title="Gitter" target="_self" href="https://gitter.im/z-shell/zi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
+    <img align="center" src="https://badges.gitter.im/z-shell/zi.svg" />
+  </a>
   <a title="Releases" target="_self" href="https://github.com/z-shell/zi/releases">
     <img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" />
   </a>

@@ -4,7 +4,7 @@
 
 The current tip-of-tree, absolute latest cutting edge build. Usually functional, though sometimes we accidentally break things.
 
-## `dev` or `develop`
+## `next`, `dev`, `develop`
 
 The latest not fully-tested build.
 

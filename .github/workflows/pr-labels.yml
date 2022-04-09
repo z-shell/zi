@@ -1,28 +1,11 @@
 ---
-name: 🏷️ Verify PR Labels
+name: '🏷️ Verify PR Labels'
 
 on:
-  workflow_dispatch:
   pull_request_target:
     types: ["opened", "labeled", "unlabeled", "synchronize"]
 
 jobs:
-  pr_labels:
-    name: 🏭 Verify PR Labels
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🏷 Verify PR has a valid label
-        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          pull-request-number: "${{ github.event.pull_request.number }}"
-          valid-labels: >
-            "breaking-change 💥, bug 🐞, i18n 🌐, l10n 🗣, documentation 📝, enhancement ✨, security 🛡️, refactor ♻️,
-            performance 🚀, new-feature 🎉, triage 📑, maintenance 📈, ci 🤖, fix ⚡, dependencies 📦, submodules ⚙️,
-            annex 💠, plugin 🧿, package 📦"
-
-          invalid-labels: >
-            "Q&A ✍️, stale 👻, no-stale 🔒, locked ‼️, resolved ☑️, feature-request 💡, help-wanted, beginner-friendly
-            💕, priority-low 🔖, invalid ⚠️"
-
-          disable-reviews: true
+  labels:
+    name: '🏷️ Verify PR Labels'
+    uses: z-shell/.github/.github/workflows/pr-labels.yml@main

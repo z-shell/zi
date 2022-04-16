@@ -2987,27 +2987,26 @@ EOF
   ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
     +zi-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
     +zi-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
-    if [[ -f Makefile ]] {
-      if [[ "$1" = "--clean" ]] {
+    if [[ -f Makefile ]]; then
+      if [[ "$1" = "--clean" ]]; then
         noglob +zi-message {p}-- make distclean --{rst}
-        make -s distclean
+        make distclean
         ((1))
-      } else {
-        noglob +zi-message {p}-- make clean --{rst}
-        make -s clean
-      }
-    }
-    if CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp; then
-      noglob +zi-message  {p}-- ./configure --{rst}
-      if command make -s; then
-        noglob +zi-message {p}-- make --{rst}
-        [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
-        noglob +zi-message "{info}Module has been built correctly.{rst}"
-        .zi-module info
       else
-        noglob +zi-message  "{error}Module didn't build.{rst}"
-        .zi-module info --link
+        noglob +zi-message {p}-- make clean --{rst}
+        make clean
       fi
+    fi
+    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp
+    noglob +zi-message  {p}-- ./configure --{rst} 
+    if command make -s; then
+      noglob +zi-message {p}-- make --{rst}
+      [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
+      noglob +zi-message "{info}Module has been built correctly.{rst}"
+      .zi-module info
+    else
+      noglob +zi-message  "{error}Module didn't build.{rst}"
+      .zi-module info --link
     fi
     builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
   )

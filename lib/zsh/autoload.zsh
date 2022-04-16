@@ -2934,7 +2934,7 @@ EOF
 # defined in zi.zsh, to not make this file longer than it's needed.
 .zi-module() {
   if [[ "$1" = "build" ]]; then
-    autoload -z is-at-least
+    builtin autoload -Uz is-at-least
     if is-at-least 5.8.1; then
       .zi-build-module "${@[2,-1]}"
     else
@@ -3033,7 +3033,9 @@ EOF
 ❯ env-whitelist [-v|-h] – Specify names or paterns of variables left unchanged during an unload
 ❯ bindkeys              – Lists bindkeys
 ❯ man                   – Manual
+
 ${ZI[col-info]}❮ ZI ❯ WIKI${ZI[col-rst]}: ${ZI[col-p]}https://z.digitalclouds.dev${ZI[col-rst]}
+
 ${ZI[col-pname]}Available sub-commands${ZI[col-rst]}:"
   integer idx
   local type key

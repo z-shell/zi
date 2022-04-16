@@ -2998,17 +2998,17 @@ EOF
       }
     }
     noglob +zi-message  {p}-- ./configure --{rst}
-    [[ $(CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp) ]] && {
+    if CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp 2>/dev/null; then
       noglob +zi-message {p}-- make --{rst}
-      if [[ $(make -s) ]] {
+      if command make -s 2>/dev/null; then
         [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
         noglob +zi-message "{info}Module has been built correctly.{rst}"
         .zi-module info
-      } else {
+      else
         noglob +zi-message  "{error}Module didn't build.{rst}"
         .zi-module info --link
-      }
-    }
+      fi
+    fi
     builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
   )
 }

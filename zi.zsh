@@ -52,10 +52,6 @@ if [[ -z ${ZI[HOME_DIR]} ]]; then
     ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
   else
     ZI[HOME_DIR]="${HOME}/.zi"
-      if [[ ! -d ${ZI[HOME_DIR]} ]]; then
-        builtin print -P "%F{196}Could not establish ZI[HOME_DIR] location. It should point to the default home location of ❮ ZI ❯%f"
-        return 1
-      fi
   fi
 fi
 

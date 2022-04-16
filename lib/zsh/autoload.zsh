@@ -3027,7 +3027,7 @@ EOF
 ❯ analytics             – Analytics
 ❯ control               – Control options
 ❯ self-update           – Self update and compile
-❯ module                – Manage zpmod (binary Zsh module)
+❯ module help           – Manage zpmod (binary Zsh module)
 ❯ compinit              – Refresh completions
 ❯ cdreplay [-q]         – Replay compdefs (run after compinit)
 ❯ cdclear  [-q]         – Clear compdef replay list

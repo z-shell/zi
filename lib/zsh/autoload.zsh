@@ -2997,10 +2997,10 @@ EOF
         make -s clean
       }
     }
-    noglob +zi-message  {p}-- ./configure --{rst}
-    if CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp 2>/dev/null; then
-      noglob +zi-message {p}-- make --{rst}
-      if command make -s 2>/dev/null; then
+    if CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp; then
+      noglob +zi-message  {p}-- ./configure --{rst}
+      if command make -s; then
+        noglob +zi-message {p}-- make --{rst}
         [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
         noglob +zi-message "{info}Module has been built correctly.{rst}"
         .zi-module info

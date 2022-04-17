@@ -475,16 +475,16 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   [[ 0 = ${+ICE[nocompletions]} && ${ICE[as]} != null && ${+ICE[null]} -eq 0 ]] && \
     .zi-install-completions "$id_as" "" "0"
 
-  if [[ -e ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ]] {
+  if [[ -e ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ]]; then
     typeset -ga INSTALLED_COMPS SKIPPED_COMPS
     { INSTALLED_COMPS=( "${(@f)$(<${TMPDIR:-/tmp}/zi.installed_comps.$$.lst)}" ) } 2>/dev/null
     { SKIPPED_COMPS=( "${(@f)$(<${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst)}" ) } 2>/dev/null
-  }
+  fi
 
-  if [[ -e ${TMPDIR:-/tmp}/zi.compiled.$$.lst ]] {
+  if [[ -e ${TMPDIR:-/tmp}/zi.compiled.$$.lst ]]; then
     typeset -ga ADD_COMPILED
     { ADD_COMPILED=( "${(@f)$(<${TMPDIR:-/tmp}/zi.compiled.$$.lst)}" ) } 2>/dev/null
-  }
+  fi
 
   # After any download – rehash the command table this will miss the as"program" binaries
   # as their PATH gets extended - and it is done later. It will however work for sbin'' ice.
@@ -536,9 +536,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   for c in "${completions[@]}"; do
     cfile="${c:t}"
     bkpfile="${cfile#_}"
-    if [[ ( -z ${already_symlinked[(r)*/$cfile]} || $reinstall = 1 ) &&
-      -z ${backup_comps[(r)*/$bkpfile]}
-    ]]; then
+    if [[ ( -z ${already_symlinked[(r)*/$cfile]} || $reinstall = 1 ) && -z ${backup_comps[(r)*/$bkpfile]} ]]; then
       if [[ $reinstall = 1 ]]; then
         # Remove old files
         command rm -f "${ZI[COMPLETIONS_DIR]}/$cfile" "${ZI[COMPLETIONS_DIR]}/$bkpfile"
@@ -715,15 +713,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   setopt localoptions extendedglob warncreateglobal
   local url="$1" update="$2" directory="$3"
 
-  (( ${+commands[svn]} )) || \
-    builtin print -Pr -- "${ZI[col-error]}Warning:%f%b Subversion not found" ", please install it to use \`${ZI[col-obj]}svn%f%b' ice."
+  (( ${+commands[svn]} )) || +zi-message "{error}Warning{rst}: Subversion not found," \
+  "please install it to use {obj}svn{rst} ice."
 
   if [[ "$update" = "-t" ]]; then
     ( () { setopt localoptions noautopushd; builtin cd -q "$directory"; }
       local -a out1 out2
       out1=( "${(f@)"$(LANG=C svn info -r HEAD)"}" )
       out2=( "${(f@)"$(LANG=C svn info)"}" )
-
       out1=( "${(M)out1[@]:#Revision:*}" )
       out2=( "${(M)out2[@]:#Revision:*}" )
       [[ "${out1[1]##[^0-9]##}" != "${out2[1]##[^0-9]##}" ]] && return 0

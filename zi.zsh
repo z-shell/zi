@@ -1,3 +1,6 @@
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
 # Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
 #
 # Main state variables.
@@ -18,11 +21,11 @@ unset ZINIT
 # Common values.
 #
 # ICES List
-ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|unload|blockf|pick|bpick|src|as|\
-ver|silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|cloneonly|make|service|trackbinds|\
-multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|\
-countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
-subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
+ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|unload|blockf|pick|bpick|src|as|ver|\
+silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|cloneonly|make|service|trackbinds|multisrc|\
+compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|countdown|\
+ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|subscribe|extract|\
+param|opts|autoload|subst|install|pullopts|debug|null|binary"
 
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
@@ -84,7 +87,7 @@ ZI[LEFTAR]=";:^[[D;:^[OD;:\\e[D;:\\eOD;:${termcap[kl]/$'\e'/^\[};:${terminfo[kcu
 
 builtin autoload -Uz is-at-least
 is-at-least 5.1 && ZI[NEW_AUTOLOAD]=1 || ZI[NEW_AUTOLOAD]=0
-#is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
+is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
 
 # Parameters - temporary substituting of functions. [[[
 ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
@@ -220,7 +223,7 @@ builtin setopt noaliases
   # The name comes from the fact that they are the selected fpath elements → so just "items".
   local -a fpath_elements
   fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
-  # Add a function subdirectory to items, if any (this action is according to the Plug Standard version 1.07 and later).
+  # Function subdirectory: https://z.digitalclouds.dev/community/zsh_plugin_standard#funtions-directory
   [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
 
   if (( ${+opts[(r)-X]} )); then
@@ -2532,8 +2535,8 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
           ;;
         (creinstall)
           (( ${+functions[.zi-install-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-          # Installs completions for plugin. Enables them all. It's a
-          # reinstallation, thus every obstacle gets overwritten or removed.
+          # Installs completions for plugin.
+          # Enables them all. It is a reinstallation, thus every obstacle gets overwritten or removed.
           [[ $2 = -[qQ] ]] && { 5=$2; shift; }
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
           [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "Initializing completion ({func}compinit{rst}){…}"
@@ -2728,7 +2731,7 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
   [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT)"
   [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST)"
   if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
-    +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" "of the❮ ZI ❯module has been requested… {hi}Building{rst}…"
+    +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" "of the ❮ ZI ❯ module has been requested… {hi}Building{rst}…"
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" distclean &>/dev/null
     .zi-module build &>/dev/null

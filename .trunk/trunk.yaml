@@ -1,0 +1,23 @@
+version: 0.1
+cli:
+  version: 0.10.0-beta
+repo:
+  repo:
+    host: github.com
+    owner: z-shell
+    name: zi
+lint:
+  enabled:
+    - actionlint@1.6.12
+    - gitleaks@8.7.0
+    - hadolint@2.10.0
+    - markdownlint@0.31.1
+    - prettier@2.6.2
+    - shfmt@3.4.0
+  ignore:
+    - linters: [ALL]
+      paths:
+        - lib/**
+    - linters: [actionlint]
+      paths:
+        - .github/workflows/sync-labels.yml

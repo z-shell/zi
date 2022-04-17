@@ -1,6 +1,4 @@
-# Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
-
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
 #
 # Main state variables.
 #
@@ -17,15 +15,15 @@ ZI=( "${(kv)ZINIT[@]}" "${(kv)ZI[@]}" )
 unset ZINIT
 
 #
-# Common needed values.
+# Common values.
 #
-
 # ICES List
 ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|unload|blockf|pick|bpick|src|as|\
 ver|silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|cloneonly|make|service|trackbinds|\
 multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|\
 countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
 subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
+
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|notify|reset"
@@ -37,6 +35,7 @@ ZI[ZERO]="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 : ${ZI[BIN_DIR]:="${ZI[ZERO]:h}"}
 [[ ${ZI[BIN_DIR]} = \~* ]] && ZI[BIN_DIR]=${~ZI[BIN_DIR]}
 ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
+
 # Check if ZI[BIN_DIR] is established correctly.
 if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
   builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
@@ -46,18 +45,14 @@ fi
 # HOME_DIR setup.
 if [[ -z ${ZI[HOME_DIR]} ]]; then
   if [[ -d ${HOME}/.zi ]]; then
-  ZI[HOME_DIR]="${HOME}/.zi"
+    ZI[HOME_DIR]="${HOME}/.zi"
   elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
-  ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
+    ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
   elif [[ -d ${XDG_DATA_HOME:-$HOME}/.zi ]]; then
-  ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
+    ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
   else
-  ZI[HOME_DIR]="${HOME}/.zi"
+    ZI[HOME_DIR]="${HOME}/.zi"
   fi
-fi
-if [[ ! -d ${ZI[HOME_DIR]} ]]; then
-  builtin print -P "%F{196}Could not establish ZI[HOME_DIR] location. It should point to the default home location of ❮ ZI ❯%f"
-  return 1
 fi
 
 # ❮ ZI ❯ Home directories setup.
@@ -71,7 +66,7 @@ typeset -g ZPFX
 : ${ZI[MAN_DIR]:=${ZPFX}/man}
 : ${ZI[ALIASES_OPT]::=${${options[aliases]:#off}:+1}}
 
-ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}   ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
+ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]} ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
 ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 
 export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0fuUpiPs
@@ -889,7 +884,7 @@ builtin setopt noaliases
 # FUNCTION: .zi-register-plugin. [[[
 # Adds the plugin to ZI_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
-# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard).
+# https://z.digitalclouds.dev/community/zsh_plugin_standard).
 .zi-register-plugin() {
   local uspl2="$1" mode="$2" teleid="$3"
   integer ret=0
@@ -1007,7 +1002,7 @@ builtin setopt noaliases
 } # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
-# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard
+# https://z.digitalclouds.dev/community/zsh_plugin_standard
 @zsh-plugin-run-on-unload() {
   ICE[ps-on-unload]="${(j.; .)@}"
   .zi-pack-ice "$id_as" ""
@@ -2680,7 +2675,7 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 # ]]]
 # Compatibility functions. [[[
-#zinit() { zi "$@"; }
+zplugin() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }

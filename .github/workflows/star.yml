@@ -1,0 +1,15 @@
+---
+name: "⭐ Add"
+on:
+  watch:  
+jobs:
+  add-star:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: |
+        echo -e "\nA :star: from [@${{github.actor}}](https://github.com/${{github.actor}})" >> .github/stars.md     
+    - uses: elstudio/actions-js-build/commit@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PUSH_BRANCH: 'main'

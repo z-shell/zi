@@ -1,12 +1,12 @@
 ---
-name: '♻️ Sync Labels'
+name: "♻️ Sync Labels"
 
 on:
   schedule:
-    - cron: '22 2 * * 2'
+    - cron: "22 2 * * 2"
   workflow_dispatch:
 
 jobs:
   labels:
-    name: '♻️ Sync labels'
+    name: "♻️ Sync labels"
     uses: z-shell/.github/.github/workflows/sync-labels.yml@main

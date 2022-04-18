@@ -1,3 +1,6 @@
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
 # Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
 
@@ -2931,28 +2934,37 @@ EOF
 # defined in zi.zsh, to not make this file longer than it's needed.
 .zi-module() {
   if [[ "$1" = "build" ]]; then
-    .zi-build-module "${@[2,-1]}"
+    builtin autoload -Uz is-at-least
+    if is-at-least 5.8.1; then
+      .zi-build-module "${@[2,-1]}"
+    else
+      +zi-message "{warn}Zsh version{rst} {obj}5.8.1{warn} or higher required{rst}"
+      return 1
+    fi
   elif [[ "$1" = "info" ]]; then
     if [[ "$2" = "--link" ]]; then
-      builtin print -r "You can copy the error messages and submit"
-      builtin print -r "error-report at: https://github.com/z-shell/zpmod/issues"
+      +zi-message "You can copy the error messages and submit{rst}"
+      +zi-message "{info2}error-report at: {obj}https://github.com/z-shell/zpmod/issues{rst}"
     else
-      builtin print -r "To load the module, add following 2 lines to .zshrc, at top:"
-      builtin print -r "    module_path+=( ${ZI[ZMODULES_DIR]}/zpmod/Src )"
-      builtin print -r "    zmodload zi/zpmod"
-      builtin print -r ""
-      builtin print -r "After loading, use command \`zpmod' to communicate with the module."
-      builtin print -r "See \`zpmod -h' for more information."
+      +zi-message "To load the module, add following 2 lines to .zshrc, at top:{nl}" \
+      "{nl}" \
+      "{p}    module_path+=( \"${ZI[ZMODULES_DIR]}/zpmod/Src\" ){rst}{nl}" \
+      "{p}    zmodload zi/zpmod{rst}{nl}" \
+      "{nl}" \
+      "After loading, use command \`zpmod' to communicate with the module.{nl}" \
+      "{info2}See \`zpmod -h' for more information.{rst}"
     fi
   elif [[ "$1" = (help|usage) ]]; then
-    builtin print -r "Usage: zi module {build|info|help} [options]"
-    builtin print -r "       zi module build [--clean]"
-    builtin print -r "       zi module info [--link]"
-    builtin print -r ""
-    builtin print -r "To start using the ❮ ZI ❯ Zsh module run: \`zi module build'"
-    builtin print -r "and follow the instructions. Option --clean causes \`make distclean'"
-    builtin print -r "to be run. To display the instructions on loading the module, run:"
-    builtin print -r "\`zi module info'."
+    +zi-message "{info2}Usage{rst}{obj}:{rst}{nl}" \
+    "{p}zi module{rst} {info}{build|info|help}{rst} {p}[options]{rst}{nl}" \
+    "{p}zi module{rst} {info}build{rst} {p}[--clean]{rst}{nl}" \
+    "{p}zi module{rst} {info}info{rst} {p}[--link]{rst}{nl}" \
+    "{nl}" \
+    "To start using the ❮ ZI ❯ Zsh module run{rst}{obj}:{rst}{nl}" \
+    "{p}zi module{rst} {info}build{rst}{nl}" \
+    "Append {p}--clean{rst} to run {cmd}make distclean{rst}{nl}" \
+    "To display the instructions on loading the module, run{rst}{obj}:{rst}{nl}" \
+    "{p}zi module info{rst}."
   fi
 } # ]]]
 # FUNCTION: .zi-build-module [[[
@@ -2967,36 +2979,35 @@ EOF
       mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"
       chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
     fi
-    command git clone "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {
-      builtin print "${ZI[col-error]}Failed to clone module repo${ZI[col-rst]}"
+    command git clone --progress "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {
+      +zi-message "{error}Failed to clone module repository{rst}"
       return 1
     }
   fi
   ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
     +zi-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
     +zi-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
-    if [[ -f Makefile ]] {
-      if [[ "$1" = "--clean" ]] {
+    if [[ -f Makefile ]]; then
+      if [[ "$1" = "--clean" ]]; then
         noglob +zi-message {p}-- make distclean --{rst}
         make distclean
         ((1))
-      } else {
+      else
         noglob +zi-message {p}-- make clean --{rst}
         make clean
-      }
-    }
+      fi
+    fi
     noglob +zi-message  {p}-- ./configure --{rst}
-    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp && {
-      noglob +zi-message {p}-- make --{rst}
-      if { make } {
-        [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
-        noglob +zi-message "{info}Module has been built correctly.{rst}"
-        .zi-module info
-      } else {
-        noglob +zi-message  "{error}Module didn't build.{rst} "
-        .zi-module info --link
-      }
-    }
+    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp     
+    noglob +zi-message {p}-- make --{rst}
+    if command make -s; then
+      [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
+      noglob +zi-message "{info}Module has been built correctly.{rst}"
+      .zi-module info
+    else
+      noglob +zi-message  "{error}Module didn't build.{rst}"
+      .zi-module info --link
+    fi
     builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
   )
 }
@@ -3011,21 +3022,21 @@ EOF
 #
 # User-action entry point.
 .zi-help() {
-  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Usage${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-❯ analytics                     – ❮ ZI ❯ Analytics
-❯ control                       – ❮ ZI ❯ Control options
-❯ self-update                   – ❮ ZI ❯ Self update and compile
-❯ compinit                      – Refresh completions
-❯ cdreplay [-q]                 – Replay compdefs (to be done after compinit), -q – quiet
-❯ cdclear  [-q]                 – Clear compdef replay list, -q – quiet
-❯ bindkeys                      – Lists bindkeys
-❯ module                        – Manage zpmod (binary Zsh module), see \`zi module help'
-❯ env-whitelist [-v|-h] {env..} – Specify names or paterns of variables left unchanged during an unload. -v – verbose
-❯ man                           – Manual
-❯ help                          – Help
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}Available sub-commands${ZI[col-rst]}:"
+  builtin print -r -- "${ZI[col-pname]}❮ ZI ❯ Usage${ZI[col-rst]}:
+❯ analytics             – Analytics
+❯ control               – Control options
+❯ self-update           – Self update and compile
+❯ module help           – Manage zpmod (binary Zsh module)
+❯ compinit              – Refresh completions
+❯ cdreplay [-q]         – Replay compdefs (run after compinit)
+❯ cdclear  [-q]         – Clear compdef replay list
+❯ env-whitelist [-v|-h] – Specify names or paterns of variables left unchanged during an unload
+❯ bindkeys              – Lists bindkeys
+❯ man                   – Manual
+
+${ZI[col-info]}❮ ZI ❯ WIKI${ZI[col-rst]}: ${ZI[col-p]}https://z.digitalclouds.dev${ZI[col-rst]}
+
+${ZI[col-pname]}Available sub-commands${ZI[col-rst]}:"
   integer idx
   local type key
   local -a arr
@@ -3040,22 +3051,21 @@ ${ZI[col-p]}Available sub-commands${ZI[col-rst]}:"
   done
 local -a ice_order
 ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-  builtin print -r -- "${ZI[col-p]}Available ice-modifiers:${ZI[col-rst]}
-${ice_order[*]}"
+  builtin print -r -- "${ZI[col-pname]}Available ice-modifiers${ZI[col-rst]}:"
+  +zi-message "${ice_order[*]}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
 # Shows ❮ ZI ❯ analytics.
 #
 # User-action entry point.
 .zi-analytics-menu() {
-  builtin print -r -- "${ZI[col-p]}❮ ZI ❯ Analytics${ZI[col-rst]}:
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-❯ cd             ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
-❯ status         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
-❯ report         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
-❯ glance         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Look at plugin's source (pygmentize, {,source-}highlight)
-❯ stress         ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – Test plugin for compatibility with set of options
-❯ changes        ${ZI[col-pname]}[plugin]${ZI[col-rst]}     – View plugin's git log
+  builtin print -r -- "${ZI[col-pname]}❮ ZI ❯ Analytics${ZI[col-rst]}:
+❯ cd             ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
+❯ status         ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
+❯ report         ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
+❯ glance         ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Look at plugin's source (pygmentize, {,source-}highlight)
+❯ stress         ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Test plugin for compatibility with set of options
+❯ changes        ${ZI[col-p]}[plugin]${ZI[col-rst]}     – View plugin's git log
 ❯ recently       ${ZI[col-info]}[time]${ZI[col-rst]}       – Show plugins that changed recently, argument is e.g. 1 month 2 days
 ❯ times [-s] [-m] [-a]        – Statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – loading moments, -a – show both
 ❯ zstatus                     – Overall ❮ ZI ❯ status
@@ -3069,34 +3079,31 @@ ${ice_order[*]}"
 ❯ clist|completions           – List completions in use
 ❯ cdlist                      – Show compdef replay list
 ❯ csearch                     – Search for available completions from any plugin
-❯ ls                          – List snippets in formatted and colorized manner
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+❯ ls                          – List snippets in formatted and colorized manner"
 } # ]]]
 # FUNCTION: .zi-control-menu [[[
 # Shows control options.
 #
 # User-action entry point.
 .zi-control-menu() {
-  builtin print -r -- "»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
-${ZI[col-p]}❮ ZI ❯ Control${ZI[col-rst]}:
-❯ update  [-q]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
-❯ load           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
-❯ light   [-b]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
-❯ unload         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Unload plugin; -q – quiet
-❯ snippet [-f]   ${ZI[col-pname]}{url}${ZI[col-rst]}          – Source local or remote file (by direct URL), -f: force – don't use cache
+  builtin print -r -- "${ZI[col-pname]}❮ ZI ❯ Control${ZI[col-rst]}:
+❯ update  [-q]   ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
+❯ load           ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
+❯ light   [-b]   ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
+❯ unload         ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Unload plugin; -q – quiet
+❯ snippet [-f]   ${ZI[col-p]}{url}${ZI[col-rst]}          – Source local or remote file (by direct URL), -f: force – don't use cache
 ❯ cdisable       ${ZI[col-info]}[cname]${ZI[col-rst]}        – Disable completion \`cname'
 ❯ cenable        ${ZI[col-info]}[cname]${ZI[col-rst]}        – Enable completion \`cname'
-❯ delete         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
-❯ create         ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Create plugin (also together with Github repository)
-❯ edit           ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Edit plugin's file with \$EDITOR
-❯ recall         ${ZI[col-pname]}[plugin]${ZI[col-rst]}|URL   – Fetch saved ice modifiers and construct \`zi ice ...' command
-❯ add-fpath      ${ZI[col-pname]}[plugin]${ZI[col-rst]}|DIR   – Adds given plugin directory to \$fpath; second argument is appended to the directory path; use -f/--front to prepend instead.
-❯ compile        ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Compile plugin (or all plugins if --all passed)
-❯ uncompile      ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Remove compiled version of plugin (or of all plugins if --all passed)
-❯ creinstall     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Install completions for plugin, can also receive absolute local path; -q – quiet
-❯ cuninstall     ${ZI[col-pname]}[plugin]${ZI[col-rst]}       – Uninstall completions for plugin
-❯ run     [-l]   ${ZI[col-pname]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
+❯ delete         ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL   – Remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
+❯ create         ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Create plugin (also together with Github repository)
+❯ edit           ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Edit plugin's file with \$EDITOR
+❯ recall         ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL   – Fetch saved ice modifiers and construct \`zi ice ...' command
+❯ add-fpath      ${ZI[col-p]}[plugin]${ZI[col-rst]}|DIR   – Adds given plugin directory to \$fpath; second argument is appended to the directory path; use -f/--front to prepend instead.
+❯ compile        ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Compile plugin (or all plugins if --all passed)
+❯ uncompile      ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Remove compiled version of plugin (or of all plugins if --all passed)
+❯ creinstall     ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Install completions for plugin, can also receive absolute local path; -q – quiet
+❯ cuninstall     ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Uninstall completions for plugin
+❯ run     [-l]   ${ZI[col-p]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
 ❯ ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, e.g. from\"gitlab\"
-❯ srv        ${ZI[col-pname]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z-Shell
-»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»"
+❯ srv        ${ZI[col-p]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z Shell"
 } # ]]]

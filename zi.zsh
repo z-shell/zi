@@ -21,6 +21,7 @@ unset ZINIT
 # Common values.
 #
 # ICES List
+
 ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|unload|blockf|pick|bpick|src|as|ver|\
 silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|cloneonly|make|service|trackbinds|multisrc|\
 compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|countdown|\

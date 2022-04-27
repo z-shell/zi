@@ -116,11 +116,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-get-package [[[
 .zi-get-package() {
   emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
-  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson \
-    tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123} URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
-
+  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123}
+  local URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
   local pro_sep="{rst}, {profile}" epro_sep="{error}, {profile}" tool_sep="{rst}, {cmd}" lhi_hl="{lhi}" profile_hl="{profile}"
 
   trap "rmdir ${(qqq)local_path} 2>/dev/null; return 1" INT TERM QUIT HUP
@@ -137,20 +136,16 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   pkgjson="$(<$tmpfile)"
 
-  if [[ -z $pkgjson ]]; then
-    +zi-message "{u-warn}Error{b-warn}:{error} the package {apo}\`{pid}$id_as{apo}\`" "{error}couldn't be found.{rst}"
+  if [[ -z $pkgjson ]] {
+    +zi-message "{u-warn}Error{b-warn}:{error} the package {apo}\`{pid}$id_as{apo}\` {error}couldn't be found.{rst}"
     return 1
-  fi
+  }
 
   local -A Strings
   .zi-parse-json "$pkgjson" "plugin-info" Strings
-
   local -A jsondata1
   jsondata1=( ${(@Q)${(@z)Strings[2/1]}} )
-  local user=${jsondata1[user]} plugin=${jsondata1[plugin]} \
-    url=${jsondata1[url]} message=${jsondata1[message]} \
-    required=${jsondata1[required]:-${jsondata1[requires]}}
-
+  local user=${jsondata1[user]} plugin=${jsondata1[plugin]} url=${jsondata1[url]} message=${jsondata1[message]} required=${jsondata1[required]:-${jsondata1[requires]}}
   local -a profiles
   local key value
   integer pos
@@ -174,8 +169,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     }
   } else {
     # Assumption: the default profile is the first in the table (see another color).
-    +zi-message "{u-warn}Error{b-warn}:{error} the profile {apo}\`{hi}$profile{apo}\`" "{error}couldn't be found, aborting. \
-    Available profiles are:" "{lhi}${(pj:$epro_sep:)profiles[@]}{error}.{rst}"
+    +zi-message "{u-warn}Error{b-warn}:{error} the profile {apo}\`{hi}$profile{apo}\` {error}couldn't be found, aborting. Available profiles are: {lhi}${(pj:$epro_sep:)profiles[@]}{error}.{rst}"
     return 1
   }
 
@@ -203,8 +197,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         +zi-message '{error}requires the {apo}`{annex}'${namemap[$required]}'{apo}`' \
           "{error}annex, which is currently not installed." "{nl}{nl}If you'd like to install it, you can visit its homepage:" \
           "{nl}– {url}https://github.com/z-shell/z-a-${(L)namemap[$required]}{rst}" "{nl}for instructions."
-        (( ${#profiles[@]:#$profile} > 0 )) && \
-          +zi-message "{nl}Other available profiles are:" "{profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
+        (( ${#profiles[@]:#$profile} > 0 )) && +zi-message "{nl}Other available profiles are:" "{profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
         return 1
       fi
     else
@@ -217,8 +210,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         fi
         +zi-message '{error}requires a {apo}`{cmd}'$required'{apo}`{error}' "command to be available in {var}\$PATH{error}.{rst}" \
           "{nl}{error}The package cannot be installed unless the" "command will be available."
-        (( ${#profiles[@]:#$profile} > 0 )) && \
-          +zi-message "{nl}Other available profiles are: {profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
+        (( ${#profiles[@]:#$profile} > 0 )) && +zi-message "{nl}Other available profiles are: {profile}${(pj:$pro_sep:)${profiles[@]:#$profile}}{rst}."
         return 1
       fi
     fi
@@ -232,8 +224,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     +zi-message "{nl}You can download the" "annex from its homepage at {url}https://github.com/z-shell/z-a-patch-dl{rst}."
   }
 
-  [[ -n ${jsondata1[message]} ]] && \
-    +zi-message "{info}${jsondata1[message]}{rst}"
+  [[ -n ${jsondata1[message]} ]] && +zi-message "{info}${jsondata1[message]}{rst}"
 
   if (( ${+ICE[is-snippet]} )) {
     reply=( "" "$url" )
@@ -251,7 +242,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       local fname="${${URL%%\?*}:t}"
 
       command mkdir -p $dir || {
-        +zi-message "{u-warn}Error{b-warn}:{error} Couldn't create directory:" "{dir}$dir{error}, aborting.{rst}"
+        +zi-message "{u-warn}Error{b-warn}:{error} Couldn't create directory: {dir}$dir{error}, aborting.{rst}"
         return 1
       }
       builtin cd -q $dir || return 1
@@ -261,9 +252,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       if { ! .zi-download-file-stdout "$URL" 0 1 >! "$fname" } {
         if { ! .zi-download-file-stdout "$URL" 1 1 >! "$fname" } {
           command rm -f "$fname"
-          +zi-message "Download of the file {apo}\`{file}$fname{apo}\`{rst}" \
-            "failed. No available download tool? One of:" "{cmd}${(pj:$tool_sep:)${=:-curl wget lftp lynx}}{rst}."
-
+          +zi-message "Download of the file {apo}\`{file}$fname{apo}\`{rst} failed. No available download tool? One of:" "{cmd}${(pj:$tool_sep:)${=:-curl wget lftp lynx}}{rst}."
           return 1
         }
       }
@@ -299,8 +288,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local user=$1 plugin=$2 id_as=$3 remote_url_path=${1:+$1/}$2 local_path tpe=$4 update=$5 version=$6
 
   if .zi-get-object-path plugin "$id_as" && [[ -z $update ]] {
-    +zi-message "{u-warn}ERROR{b-warn}:{error} A plugin named {pid}$id_as{error}" \
-        "already exists, aborting."
+    +zi-message "{u-warn}ERROR{b-warn}:{error} A plugin named {pid}$id_as{error} already exists, aborting."
     return 1
   }
   local_path=$REPLY
@@ -1730,9 +1718,10 @@ ziextract() {
   setopt extendedglob warncreateglobal typesetsilent
   local tpe=$1 extract=$2 local_dir=$3
   (
-    builtin cd -q "$local_dir" || { +zi-message "{error}ERROR:{msg2} The path of the $tpe" "(\`{file}$local_dir{msg2}') isn't accessible.{rst}"
-        return 1
-      }
+    builtin cd -q "$local_dir" || {
+      +zi-message "{error}ERROR:{msg2} The path of the $tpe" "(\`{file}$local_dir{msg2}') isn't accessible.{rst}"
+      return 1
+    }
     local -a files
     files=( ${(@)${(@s: :)${extract##(\!-|-\!|\!|-)}}//(#b)(((#s)|([^\\])[\\]([\\][\\])#)|((#s)|([^\\])([\\][\\])#)) /${match[2]:+$match[3]$match[4] }${match[5]:+$match[6]${(l:${#match[7]}/2::\\:):-} }} )
     if [[ ${#files} -eq 0 && -n ${extract##(\!-|-\!|\!|-)} ]] {
@@ -1744,8 +1733,7 @@ ziextract() {
     local file
     for file ( "${files[@]}" ) {
       [[ -z $extract ]] && local auto2=--auto
-      ziextract ${${(M)extract:#(\!|-)##}:+--auto} $auto2 $file ${${(MS)extract[1,2]##-}:+--norm} \
-        ${${(MS)extract[1,2]##\!}:+--move} ${${(MS)extract[1,2]##\!\!}:+--move2} ${${${#files}:#1}:+--nobkp}
+      ziextract ${${(M)extract:#(\!|-)##}:+--auto} $auto2 $file ${${(MS)extract[1,2]##-}:+--norm} ${${(MS)extract[1,2]##\!}:+--move} ${${(MS)extract[1,2]##\!\!}:+--move2} ${${${#files}:#1}:+--nobkp}
     }
   )
 }
@@ -1764,7 +1752,7 @@ zpextract() { ziextract "$@"; }
 # FUNCTION: .zi-get-cygwin-package [[[
 .zi-get-cygwin-package() {
   emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
   REPLY=
 
@@ -1888,87 +1876,82 @@ zimv() {
 # ]]]
 # FUNCTION: ∞zi-reset-opt-hook [[[
 ∞zi-reset-hook() {
-# File
-if [[ "$1" = plugin ]] {
-  local type="$1" user="$2" plugin="$3" id_as="$4" dir="${5#%}" hook="$6"
-} else {
-  local type="$1" url="$2" id_as="$3" dir="${4#%}" hook="$5"
-}
-if (( ( OPTS[opt_-r,--reset] && ZI[-r/--reset-opt-hook-has-been-run] == 0 ) || ( ${+ICE[reset]} && ZI[-r/--reset-opt-hook-has-been-run] == 1 )
-)) {
-  if (( ZI[-r/--reset-opt-hook-has-been-run] )) {
-    local msg_bit="{meta}reset{msg2} ice given{pre}" option=
+  # File
+  if [[ "$1" = plugin ]] {
+    local type="$1" user="$2" plugin="$3" id_as="$4" dir="${5#%}" hook="$6"
   } else {
-    local msg_bit="{meta2}-r/--reset{msg2} given to \`{meta}update{pre}'" option=1
+    local type="$1" url="$2" id_as="$3" dir="${4#%}" hook="$5"
   }
-  if [[ $type == snippet ]] {
-    if (( $+ICE[svn] )) {
-      if [[ $skip_pull -eq 0 && -d $filename/.svn ]] {
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository ($msg_bit) with command: {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
-        command svn revert --recursive $filename/.
-      }
+  if (( ( OPTS[opt_-r,--reset] && ZI[-r/--reset-opt-hook-has-been-run] == 0 ) || ( ${+ICE[reset]} && ZI[-r/--reset-opt-hook-has-been-run] == 1 ) )) {
+    if (( ZI[-r/--reset-opt-hook-has-been-run] )) {
+      local msg_bit="{meta}reset{msg2} ice given{pre}" option=
     } else {
-      if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
-        if (( !OPTS[opt_-q,--quiet] )) {
-          if [[ -f $local_dir/$dirname/$filename ]] {
-            if [[ -n $option || -z $ICE[reset] ]] {
-              +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2} {…}{rst}"
-            } else {
-              +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2}," \
-                "with the supplied code: {data2}$ICE[reset]{msg2} {…}{rst}"
-            }
-            if (( option )) {
-              command rm -f "$local_dir/$dirname/$filename"
-            } else {
-              eval "${ICE[reset]:-rm -f \"$local_dir/$dirname/$filename\"}"
-            }
-          } else {
-            +zi-message "{pre}reset ($msg_bit):{msg2} The file {file}$filename{msg2} is already deleted {…}{rst}"
-            if [[ -n $ICE[reset] && ! -n $option ]] {
-              +zi-message "{pre}reset ($msg_bit):{msg2} (skipped running the provided reset-code:" \
-                "{data2}$ICE[reset]{msg2}){rst}"
-            }
-          }
+      local msg_bit="{meta2}-r/--reset{msg2} given to \`{meta}update{pre}'" option=1
+    }
+    if [[ $type == snippet ]] {
+      if (( $+ICE[svn] )) {
+        if [[ $skip_pull -eq 0 && -d $filename/.svn ]] {
+          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository ($msg_bit) with command: {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
+          command svn revert --recursive $filename/.
         }
       } else {
+        if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
+          if (( !OPTS[opt_-q,--quiet] )) {
+            if [[ -f $local_dir/$dirname/$filename ]] {
+              if [[ -n $option || -z $ICE[reset] ]] {
+                +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2} {…}{rst}"
+              } else {
+                +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2}, with the supplied code: {data2}$ICE[reset]{msg2} {…}{rst}"
+              }
+              if (( option )) {
+                command rm -f "$local_dir/$dirname/$filename"
+              } else {
+                eval "${ICE[reset]:-rm -f \"$local_dir/$dirname/$filename\"}"
+              }
+            } else {
+              +zi-message "{pre}reset ($msg_bit):{msg2} The file {file}$filename{msg2} is already deleted {…}{rst}"
+              if [[ -n $ICE[reset] && ! -n $option ]] {
+                +zi-message "{pre}reset ($msg_bit):{msg2} (skipped running the provided reset-code:" "{data2}$ICE[reset]{msg2}){rst}"
+              }
+            }
+          }
+        } else {
           [[ -f $local_dir/$dirname/$filename ]] && \
-            +zi-message "{pre}reset ($msg_bit): {msg2}Skipping the removal of {file}$filename{msg2}" \
-              "as there is no new copy scheduled for download.{rst}" || \
-            +zi-message "{pre}reset ($msg_bit): {msg2}The file {file}$filename{msg2} is already deleted" \
-              "and {ehi}no new download is being scheduled.{rst}"
+            +zi-message "{pre}reset ($msg_bit): {msg2}Skipping the removal of {file}$filename{msg2} as there is no new copy scheduled for download.{rst}" || \
+            +zi-message "{pre}reset ($msg_bit): {msg2}The file {file}$filename{msg2} is already deleted and {ehi}no new download is being scheduled.{rst}"
+        }
       }
-    }
-  } elif [[ $type == plugin ]] {
-    if (( is_release && !skip_pull )) {
-      if (( option )) {
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*"
-        builtin eval command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)
-      } else {
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}${ICE[reset]:-rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*}"
-        builtin eval ${ICE[reset]:-command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)}
-      }
-    } elif (( !skip_pull )) {
-      if (( option )) {
-        +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} git reset --hard HEAD {…}"
-        command git reset --hard HEAD
-      } else {
-        +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} ${ICE[reset]:-git reset --hard HEAD} {…}"
-        builtin eval "${ICE[reset]:-git reset --hard HEAD}"
+    } elif [[ $type == plugin ]] {
+      if (( is_release && !skip_pull )) {
+        if (( option )) {
+          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*"
+          builtin eval command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)
+        } else {
+          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}${ICE[reset]:-rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*}"
+          builtin eval ${ICE[reset]:-command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)}
+        }
+      } elif (( !skip_pull )) {
+        if (( option )) {
+          +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} git reset --hard HEAD {…}"
+          command git reset --hard HEAD
+        } else {
+          +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} ${ICE[reset]:-git reset --hard HEAD} {…}"
+          builtin eval "${ICE[reset]:-git reset --hard HEAD}"
+        }
       }
     }
   }
-}
 
-if (( OPTS[opt_-r,--reset] )) {
-  if (( ZI[-r/--reset-opt-hook-has-been-run] == 1 )) {
-    ZI[-r/--reset-opt-hook-has-been-run]=0
+  if (( OPTS[opt_-r,--reset] )) {
+    if (( ZI[-r/--reset-opt-hook-has-been-run] == 1 )) {
+      ZI[-r/--reset-opt-hook-has-been-run]=0
+    } else {
+      ZI[-r/--reset-opt-hook-has-been-run]=1
+    }
   } else {
+    # If there's no -r/--reset, pretend that it already has been served.
     ZI[-r/--reset-opt-hook-has-been-run]=1
   }
-} else {
-  # If there's no -r/--reset, pretend that it already has been served.
-  ZI[-r/--reset-opt-hook-has-been-run]=1
-}
 } # ]]]
 # FUNCTION: ∞zi-make-ee-hook [[[
 ∞zi-make-ee-hook() {

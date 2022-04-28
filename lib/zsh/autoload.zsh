@@ -868,10 +868,10 @@ if (( empty != 1 )); then
     # Internal options
     [[ "$k" = "physical" ]] && continue
     if [[ "${opts[$k]}" = "on" ]]; then
-      (( quiet )) || builtin print "Setting option $k"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Setting option $k"
       builtin setopt "$k"
     else
-      (( quiet )) || builtin print "Unsetting option $k"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Unsetting option $k"
       builtin unsetopt "$k"
     fi
   done
@@ -896,34 +896,34 @@ for nv in "${(Oa)aname_avalue[@]}"; do
   local nv_arr3="${(Q)nv_arr[3-correct]}"
   if [[ "$nv_arr3" = "-s" ]]; then
     if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || builtin print "Restoring ${ZI[col-info]}suffix${ZI[col-rst]} alias ${nv_arr1}=${nv_arr2}"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring {info}suffix{rst} alias ${nv_arr1}=${nv_arr2}"
       alias "$nv_arr1" &> /dev/null && unalias -s -- "$nv_arr1"
       alias -s -- "${nv_arr1}=${nv_arr2}"
     else
       (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        builtin print "Removing ${ZI[col-info]}suffix${ZI[col-rst]} alias ${nv_arr1}"
+        +zi-message "[ {p}¤{rst} ] Removing {info}suffix{rst} alias ${nv_arr1}"
         unalias -s -- "$nv_arr1"
       }
     fi
   elif [[ "$nv_arr3" = "-g" ]]; then
     if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || builtin print "Restoring ${ZI[col-info]}global${ZI[col-rst]} alias ${nv_arr1}=${nv_arr2}"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring {info}global{rst} alias ${nv_arr1}=${nv_arr2}"
       alias "$nv_arr1" &> /dev/null && unalias -g -- "$nv_arr1"
       alias -g -- "${nv_arr1}=${nv_arr2}"
     else
       (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        builtin print "Removing ${ZI[col-info]}global${ZI[col-rst]} alias ${nv_arr1}"
+        +zi-message "[ {p}¤{rst} ] Removing {info}global{rst} alias ${nv_arr1}"
         unalias -- "${(q)nv_arr1}"
       }
     fi
   else
     if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || builtin print "Restoring alias ${nv_arr1}=${nv_arr2}"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring alias ${nv_arr1}=${nv_arr2}"
       alias "$nv_arr1" &> /dev/null && unalias -- "$nv_arr1"
       alias -- "${nv_arr1}=${nv_arr2}"
     else
       (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        builtin print "Removing alias ${nv_arr1}"
+        +zi-message "[ {p}¤{rst} ] Removing alias ${nv_arr1}"
         unalias -- "$nv_arr1"
       }
     fi
@@ -1065,7 +1065,7 @@ local f
 for f in "${(on)func[@]}"; do
   [[ -z "$f" ]] && continue
   f="${(Q)f}"
-  (( quiet )) || builtin print "Deleting function $f"
+  (( quiet )) || +zi-message "[ {p}¤{rst} ] Deleting function $f"
   (( ${+functions[$f]} )) && unfunction -- "$f"
   (( ${+precmd_functions} )) && precmd_functions=( ${precmd_functions[@]:#$f} )
   (( ${+preexec_functions} )) && preexec_functions=( ${preexec_functions[@]:#$f} )
@@ -1089,8 +1089,8 @@ for p in "${path[@]}"; do
   if [[ -z "${elem[(r)${(q)p}]}" ]] {
     new+=( "$p" )
   } else {
-    (( quiet )) || builtin print "Removing PATH element ${ZI[col-info]}$p${ZI[col-rst]}"
-    [[ -d "$p" ]] || (( quiet )) || builtin print "${ZI[col-error]}Warning:${ZI[col-rst]} it didn't exist on disk"
+    (( quiet )) || +zi-message "[ {p}¤{rst} ] Removing {pname}PATH{rst} element {info}$p{rst}"
+    [[ -d "$p" ]] || (( quiet )) || +zi-message "[ {error}✖{rst} ] {error}Warning:{rst} it didn't exist on disk"
   }
 done
 path=( "${new[@]}" )
@@ -1101,8 +1101,8 @@ for p ( "${fpath[@]}" ) {
   if [[ -z "${elem[(r)${(q)p}]}" ]] {
     new+=( "$p" )
   } else {
-    (( quiet )) || builtin print "Removing FPATH element ${ZI[col-info]}$p${ZI[col-rst]}"
-    [[ -d "$p" ]] || (( quiet )) || builtin print "${ZI[col-error]}Warning:${ZI[col-rst]} it didn't exist on disk"
+    (( quiet )) || +zi-message "[ {p}¤{rst} ] Removing {pname}FPATH{rst} element {info}$p{rst}"
+    [[ -d "$p" ]] || (( quiet )) || +zi-message "[ {error}✖{rst} ] {error}Warning:{rst} it didn't exist on disk"
   }
 }
 fpath=( "${new[@]}" )
@@ -1174,13 +1174,13 @@ fpath=( "${new[@]}" )
 
 if [[ "$uspl2" = "_dtrace/_dtrace" ]]; then
   .zi-clear-debug-report
-  (( quiet )) || builtin print "dtrace report saved to \$LASTREPORT"
+  (( quiet )) || +zi-message "[ {info}✔{rst} ] dtrace report saved to \$LASTREPORT"
 else
-  (( quiet )) || builtin print "Unregistering plugin $uspl2col"
+  (( quiet )) || +zi-message "[ {info}✔{rst} ] Unregistering plugin $uspl2col"
   .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
   zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
   .zi-clear-report-for "$user" "$plugin"
-  (( quiet )) || builtin print "Plugin's report saved to \$LASTREPORT"
+  (( quiet )) || +zi-message "[ {info}✔{rst} ] Plugin's report saved to \$LASTREPORT"
 fi
 
 } # ]]]
@@ -1221,30 +1221,30 @@ fi
   REPLY=""
   .zi-diff-functions-compute "$uspl2"
   .zi-format-functions "$uspl2"
-  [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}Functions created:${ZI[col-rst]}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Functions created:{rst}"$'\n'"$REPLY"
   # Print report gathered via $options-diffing
   REPLY=""
   .zi-diff-options-compute "$uspl2"
   .zi-format-options "$uspl2"
-  [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}Options changed:${ZI[col-rst]}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Options changed:{rst}"$'\n'"$REPLY"
   # Print report gathered via environment diffing
   REPLY=""
   .zi-diff-env-compute "$uspl2"
   .zi-format-env "$uspl2" "1"
-  [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}PATH elements added:${ZI[col-rst]}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}PATH elements added:{rst}"$'\n'"$REPLY"
   REPLY=""
   .zi-format-env "$uspl2" "2"
-  [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}FPATH elements added:${ZI[col-rst]}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}FPATH elements added:{rst}"$'\n'"$REPLY"
   # Print report gathered via parameter diffing
   .zi-diff-parameter-compute "$uspl2"
   .zi-format-parameter "$uspl2"
-  [[ -n "$REPLY" ]] && builtin print "${ZI[col-p]}Variables added or redefined:${ZI[col-rst]}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Variables added or redefined:{rst}"$'\n'"$REPLY"
   # Print what completions plugin has
   .zi-find-completions-of-plugin "$user" "$plugin"
   typeset -a completions
   completions=( "${reply[@]}" )
   if [[ "${#completions[@]}" -ge "1" ]]; then
-    builtin print "${ZI[col-p]}Completions:${ZI[col-rst]}"
+    +zi-message "{p}Completions:{rst}"
     .zi-check-which-completions-are-installed "${completions[@]}"
     typeset -a installed
     installed=( "${reply[@]}" )
@@ -1304,7 +1304,7 @@ fi
   # Deliver and withdraw the `m` function when finished.
   .zi-set-m-func set
   trap ".zi-set-m-func unset" EXIT
-  integer retval was_snippet
+  integer retval hook_rc was_snippet
   .zi-two-paths "$2${${2:#(%|/)*}:+${3:+/}}$3"
   if [[ -d ${reply[-4]} || -d ${reply[-2]} ]]; then
     .zi-update-or-status-snippet "$1" "$2${${2:#(%|/)*}:+${3:+/}}$3"
@@ -1317,7 +1317,7 @@ fi
   if (( was_snippet )) {
     .zi-exists-physically "$user" "$plugin" || return $retval
     .zi-any-colorify-as-uspl2 "$2" "$3"
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{msg2}Updating also \`$REPLY{rst}{msg2}'" "plugin (already updated a snippet of the same name){…}{rst}"
+    (( !OPTS[opt_-q,--quiet] )) && +zi-message "[ {p}¤{rst} ] {msg2}Updating also \`$REPLY{rst}{msg2}' plugin (already updated a snippet of the same name){…}{rst}"
   } else {
     .zi-exists-physically-message "$user" "$plugin" || return 1
   }
@@ -1345,8 +1345,7 @@ fi
   )
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-    "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" ${${key##(zi|z-annex) hook:}%% <->} update || \
-      return $(( 10 - $? ))
+    "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" ${${key##(zi|z-annex) hook:}%% <->} update || return $(( 10 - $? ))
   done
   # Check if repository has a remote set, if it is _local
   if [[ -f $local_dir/.git/config ]]; then
@@ -1355,8 +1354,7 @@ fi
     if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]]; then
       (( !OPTS[opt_-q,--quiet] )) && {
         .zi-any-colorify-as-uspl2 "$id_as"
-        [[ $id_as = _local/* ]] && builtin print -r -- "Skipping local plugin $REPLY" || \
-          builtin print -r -- "$REPLY doesn't have a remote set, will not fetch"
+        [[ $id_as = _local/* ]] && +zi-message "[ {p}¤{rst} ] {info2}Skipping local plugin $REPLY{rst}" || +zi-message "[ {p}¤{rst} ] {info2} $REPLY doesn't have a remote set, will not fetch{rst}"
       }
       return 1
     fi
@@ -1396,7 +1394,7 @@ fi
         }
       }
       if (( ZI[annex-multi-flag:pull-active] <= 1 && !OPTS[opt_-q,--quiet] )) {
-        builtin print -- "\rBinary release already up to date (version: $version)"
+        +zi-message "[ {info}✔{rst} ] Binary{rst}: {obj2}$version{rst} is latest release{rst}"
       }
     }
     if (( 1 )) {
@@ -1405,8 +1403,7 @@ fi
           .zi-any-colorify-as-uspl2 "$id_as"
           (( ZI[first-plugin-mark] )) && {
             ZI[first-plugin-mark]=0
-          } || builtin print
-          builtin print "\rUpdating $REPLY"
+          } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
         }
         ICE=( "${(kv)ice[@]}" )
         # Run annexes' atpull hooks (the before atpull-ice ones).
@@ -1419,13 +1416,19 @@ fi
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:bin
+          hook_rc=$?
+          # Effectively return the last != 0 rc
+          [[ "$hook_rc" -ne 0 ]] && {
+            retval="$hook_rc"
+            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+          }
         done
         if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
           if ! .zi-setup-plugin-dir "$user" "$plugin" "$id_as" release -u $version; then
             ZI[annex-multi-flag:pull-active]=0
           fi
           if (( OPTS[opt_-q,--quiet] != 1 )) {
-            builtin print
+            +zi-message
           }
         }
         ICE=()
@@ -1440,25 +1443,21 @@ fi
       ( builtin cd -q "$local_dir" || return 1
       integer had_output=0
       local IFS=$'\n'
-      command git fetch --quiet && \
-        command git log --color --date=short --pretty=format:'%Cgreen%cd %h %Creset%s%n' ..FETCH_HEAD | \
-        while read line; do
-          [[ -n ${line%%[[:space:]]##} ]] && {
-            [[ $had_output -eq 0 ]] && {
-              had_output=1
-              if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-                .zi-any-colorify-as-uspl2 "$id_as"
-                (( ZI[first-plugin-mark] )) && {
+      command git fetch --quiet && command git log --color --date=short --pretty=format:'%Cgreen%cd %h %Creset%s%n' ..FETCH_HEAD | \
+      while read line; do
+        [[ -n ${line%%[[:space:]]##} ]] && {
+          [[ $had_output -eq 0 ]] && {
+            had_output=1
+            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+              .zi-any-colorify-as-uspl2 "$id_as"
+              (( ZI[first-plugin-mark] )) && {
                 ZI[first-plugin-mark]=0
-              } || builtin print
-              builtin print "Updating $REPLY"
+              } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
             }
           }
-          builtin print $line
+          +zi-message $line
         }
-        done | \
-        command tee .zi_lastupd | \
-        .zi-pager &
+      done | command tee .zi_lastupd | .zi-pager &
       integer pager_pid=$!
       { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
       { wait $pager_pid; } > /dev/null 2>&1
@@ -1475,8 +1474,7 @@ fi
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || builtin print
-            builtin print "\rUpdating $REPLY"
+            } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
           }
         } else {
           ZI[annex-multi-flag:pull-active]=0
@@ -1484,16 +1482,22 @@ fi
       }
       if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
         ICE=( "${(kv)ice[@]}" )
-          # Run annexes' atpull hooks (the before atpull-ice ones).
-          # The regular Git-plugins block.
-          reply=(
-            ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-            ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-            ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
-          )
+        # Run annexes' atpull hooks (the before atpull-ice ones).
+        # The regular Git-plugins block.
+        reply=(
+          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
+          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+        )
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
           "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
+          hook_rc=$?
+          # Effectively return the last != 0 rc
+          [[ "$hook_rc" -ne 0 ]] && {
+            retval="$hook_rc"
+            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+          }
         done
         ICE=()
         (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command egrep -v '(FETCH_HEAD|up.to.date\.|From.*://)'
@@ -1533,6 +1537,12 @@ fi
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update
+        hook_rc="$?"
+        # Effectively return the last != 0 rc
+        [[ "$hook_rc" -ne 0 ]] && {
+          retval="$hook_rc"
+          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+        }
       done
       # Run annexes' atpull hooks (the after atpull-ice ones).
       # Block common for Git and gh-r plugins.
@@ -1544,6 +1554,12 @@ fi
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
         "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update
+        hook_rc="$?"
+        # Effectively return the last != 0 rc
+        [[ "$hook_rc" -ne 0 ]] && {
+          retval="$hook_rc"
+          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+        }
       done
       ICE=()
     }
@@ -1561,6 +1577,12 @@ fi
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
     "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:$ZI[annex-multi-flag:pull-active]
+    hook_rc=$?
+    # Effectively return the last != 0 rc
+    [[ "$hook_rc" -ne 0 ]] && {
+      retval="$hook_rc"
+      builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+    }
   done
   ICE=()
   typeset -ga INSTALLED_EXECS
@@ -1726,7 +1748,7 @@ fi
   done
   .zi-compinit 1 1 &>/dev/null
   if (( !OPTS[opt_-q,--quiet] )) {
-    +zi-message "{msg2}The update took {obj}${SECONDS}{msg2} seconds{rst}"
+    +zi-message "{msg2}The update took {obj2}${SECONDS}{msg2} seconds{rst}"
   }
   return "$retval"
 } # ]]]
@@ -2998,7 +3020,7 @@ EOF
       fi
     fi
     noglob +zi-message  {p}-- ./configure --{rst}
-    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp     
+    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp
     noglob +zi-message {p}-- make --{rst}
     if command make -s; then
       [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}

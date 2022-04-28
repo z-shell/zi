@@ -326,8 +326,7 @@ builtin setopt noaliases
   emulate -LR zsh
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
 
-  is-at-least 5.3 && \
-  .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q+)@}}" || .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q)@}}"
+  is-at-least 5.3 && .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q+)@}}" || .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q)@}}"
 
   # Remember to perform the actual bindkey call.
   typeset -a pos
@@ -1351,10 +1350,12 @@ builtin setopt noaliases
       zle && { builtin print; zle .reset-prompt; }
       return 1
     }
-    if ! .zi-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"; then
+    .zi-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"
+    local rc="$?"
+    if [[ "$rc" -ne 0 ]]; then
       zle && { builtin print; zle .reset-prompt; }
-      return 1
-    fi
+    return "$rc"
+  fi
     zle && ___rst=1
   }
   ZI_SICE[$___id_as]=
@@ -2532,7 +2533,7 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
           ;;
         (creinstall)
           (( ${+functions[.zi-install-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-          # Installs completions for plugin. Enables them all. It's a
+          # Installs completions for plugin. Enables them all. It is a
           # reinstallation, thus every obstacle gets overwritten or removed.
           [[ $2 = -[qQ] ]] && { 5=$2; shift; }
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
@@ -2664,9 +2665,7 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {
-  :zi-tmp-subst-autoload -Uz \
-  ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
-  ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
+  :zi-tmp-subst-autoload -Uz ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
 } # ]]]
 # FUNCTION: zi-turbo. [[[
 # With zi-turbo first argument is a wait time and suffix, i.e. "0a".
@@ -2675,7 +2674,7 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 # ]]]
 # Compatibility functions. [[[
-zplugin() { zi "$@"; }
+#zplugin() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
 zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
@@ -2698,7 +2697,7 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zpl=zi zplg=zi zini=zi zinit=zi
+builtin alias zpl=zi zplg=zi zini=zi zinit=zi zplugin=zi
 
 .zi-prepare-home
 
@@ -2728,7 +2727,7 @@ if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
   [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT)"
   [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST)"
   if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
-    +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" "of the❮ ZI ❯module has been requested… {hi}Building{rst}…"
+    +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" "of the ❮ ZI ❯ module has been requested… {hi}Building{rst}…"
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" distclean &>/dev/null
     .zi-module build &>/dev/null

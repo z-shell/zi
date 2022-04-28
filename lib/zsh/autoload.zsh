@@ -1174,13 +1174,13 @@ fpath=( "${new[@]}" )
 
 if [[ "$uspl2" = "_dtrace/_dtrace" ]]; then
   .zi-clear-debug-report
-  (( quiet )) || builtin print "dtrace report saved to \$LASTREPORT"
+  (( quiet )) || +zi-message "[ {info}✔{rst} ] dtrace report saved to \$LASTREPORT"
 else
-  (( quiet )) || builtin print "Unregistering plugin $uspl2col"
+  (( quiet )) || +zi-message "[ {info}✔{rst} ] Unregistering plugin $uspl2col"
   .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
   zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
   .zi-clear-report-for "$user" "$plugin"
-  (( quiet )) || builtin print "Plugin's report saved to \$LASTREPORT"
+  (( quiet )) || +zi-message "[ {info}✔{rst} ] Plugin's report saved to \$LASTREPORT"
 fi
 
 } # ]]]
@@ -1221,24 +1221,24 @@ fi
   REPLY=""
   .zi-diff-functions-compute "$uspl2"
   .zi-format-functions "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Functions created:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Functions created:{rst}"$'\n'"$REPLY"
   # Print report gathered via $options-diffing
   REPLY=""
   .zi-diff-options-compute "$uspl2"
   .zi-format-options "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Options changed:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Options changed:{rst}"$'\n'"$REPLY"
   # Print report gathered via environment diffing
   REPLY=""
   .zi-diff-env-compute "$uspl2"
   .zi-format-env "$uspl2" "1"
-  [[ -n "$REPLY" ]] && +zi-message "{p}PATH elements added:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}PATH elements added:{rst}"$'\n'"$REPLY"
   REPLY=""
   .zi-format-env "$uspl2" "2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}FPATH elements added:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}FPATH elements added:{rst}"$'\n'"$REPLY"
   # Print report gathered via parameter diffing
   .zi-diff-parameter-compute "$uspl2"
   .zi-format-parameter "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Variables added or redefined:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Variables added or redefined:{rst}"$'\n'"$REPLY"
   # Print what completions plugin has
   .zi-find-completions-of-plugin "$user" "$plugin"
   typeset -a completions
@@ -1317,7 +1317,7 @@ fi
   if (( was_snippet )) {
     .zi-exists-physically "$user" "$plugin" || return $retval
     .zi-any-colorify-as-uspl2 "$2" "$3"
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{msg2}Updating also \`$REPLY{rst}{msg2}'" "plugin (already updated a snippet of the same name){…}{rst}"
+    (( !OPTS[opt_-q,--quiet] )) && +zi-message "[ {p}¤{rst} ] {msg2}Updating also \`$REPLY{rst}{msg2}' plugin (already updated a snippet of the same name){…}{rst}"
   } else {
     .zi-exists-physically-message "$user" "$plugin" || return 1
   }
@@ -1354,7 +1354,7 @@ fi
     if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]]; then
       (( !OPTS[opt_-q,--quiet] )) && {
         .zi-any-colorify-as-uspl2 "$id_as"
-        [[ $id_as = _local/* ]] && +zi-message "{info2}Skipping local plugin $REPLY{rst}" || +zi-message "{info2} $REPLY doesn't have a remote set, will not fetch{rst}"
+        [[ $id_as = _local/* ]] && +zi-message "[ {p}¤{rst} ] {info2}Skipping local plugin $REPLY{rst}" || +zi-message "[ {p}¤{rst} ] {info2} $REPLY doesn't have a remote set, will not fetch{rst}"
       }
       return 1
     fi

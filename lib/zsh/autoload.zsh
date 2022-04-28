@@ -868,10 +868,10 @@ if (( empty != 1 )); then
     # Internal options
     [[ "$k" = "physical" ]] && continue
     if [[ "${opts[$k]}" = "on" ]]; then
-      (( quiet )) || builtin print "Setting option $k"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Setting option $k"
       builtin setopt "$k"
     else
-      (( quiet )) || builtin print "Unsetting option $k"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Unsetting option $k"
       builtin unsetopt "$k"
     fi
   done
@@ -896,34 +896,34 @@ for nv in "${(Oa)aname_avalue[@]}"; do
   local nv_arr3="${(Q)nv_arr[3-correct]}"
   if [[ "$nv_arr3" = "-s" ]]; then
     if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || builtin print "Restoring ${ZI[col-info]}suffix${ZI[col-rst]} alias ${nv_arr1}=${nv_arr2}"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring {info}suffix{rst} alias ${nv_arr1}=${nv_arr2}"
       alias "$nv_arr1" &> /dev/null && unalias -s -- "$nv_arr1"
       alias -s -- "${nv_arr1}=${nv_arr2}"
     else
       (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        builtin print "Removing ${ZI[col-info]}suffix${ZI[col-rst]} alias ${nv_arr1}"
+        +zi-message "[ {p}¤{rst} ] Removing {info}suffix{rst} alias ${nv_arr1}"
         unalias -s -- "$nv_arr1"
       }
     fi
   elif [[ "$nv_arr3" = "-g" ]]; then
     if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || builtin print "Restoring ${ZI[col-info]}global${ZI[col-rst]} alias ${nv_arr1}=${nv_arr2}"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring {info}global{rst} alias ${nv_arr1}=${nv_arr2}"
       alias "$nv_arr1" &> /dev/null && unalias -g -- "$nv_arr1"
       alias -g -- "${nv_arr1}=${nv_arr2}"
     else
       (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        builtin print "Removing ${ZI[col-info]}global${ZI[col-rst]} alias ${nv_arr1}"
+        +zi-message "[ {p}¤{rst} ] Removing {info}global{rst} alias ${nv_arr1}"
         unalias -- "${(q)nv_arr1}"
       }
     fi
   else
     if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || builtin print "Restoring alias ${nv_arr1}=${nv_arr2}"
+      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring alias ${nv_arr1}=${nv_arr2}"
       alias "$nv_arr1" &> /dev/null && unalias -- "$nv_arr1"
       alias -- "${nv_arr1}=${nv_arr2}"
     else
       (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        builtin print "Removing alias ${nv_arr1}"
+        +zi-message "[ {p}¤{rst} ] Removing alias ${nv_arr1}"
         unalias -- "$nv_arr1"
       }
     fi
@@ -1065,7 +1065,7 @@ local f
 for f in "${(on)func[@]}"; do
   [[ -z "$f" ]] && continue
   f="${(Q)f}"
-  (( quiet )) || builtin print "Deleting function $f"
+  (( quiet )) || +zi-message "[ {p}¤{rst} ] Deleting function $f"
   (( ${+functions[$f]} )) && unfunction -- "$f"
   (( ${+precmd_functions} )) && precmd_functions=( ${precmd_functions[@]:#$f} )
   (( ${+preexec_functions} )) && preexec_functions=( ${preexec_functions[@]:#$f} )
@@ -1089,8 +1089,8 @@ for p in "${path[@]}"; do
   if [[ -z "${elem[(r)${(q)p}]}" ]] {
     new+=( "$p" )
   } else {
-    (( quiet )) || builtin print "Removing PATH element ${ZI[col-info]}$p${ZI[col-rst]}"
-    [[ -d "$p" ]] || (( quiet )) || builtin print "${ZI[col-error]}Warning:${ZI[col-rst]} it didn't exist on disk"
+    (( quiet )) || +zi-message "[ {p}¤{rst} ] Removing {pname}PATH{rst} element {info}$p{rst}"
+    [[ -d "$p" ]] || (( quiet )) || +zi-message "[ {error}✖{rst} ] {error}Warning:{rst} it didn't exist on disk"
   }
 done
 path=( "${new[@]}" )
@@ -1101,8 +1101,8 @@ for p ( "${fpath[@]}" ) {
   if [[ -z "${elem[(r)${(q)p}]}" ]] {
     new+=( "$p" )
   } else {
-    (( quiet )) || builtin print "Removing FPATH element ${ZI[col-info]}$p${ZI[col-rst]}"
-    [[ -d "$p" ]] || (( quiet )) || builtin print "${ZI[col-error]}Warning:${ZI[col-rst]} it didn't exist on disk"
+    (( quiet )) || +zi-message "[ {p}¤{rst} ] Removing {pname}FPATH{rst} element {info}$p{rst}"
+    [[ -d "$p" ]] || (( quiet )) || +zi-message "[ {error}✖{rst} ] {error}Warning:{rst} it didn't exist on disk"
   }
 }
 fpath=( "${new[@]}" )
@@ -1394,7 +1394,7 @@ fi
         }
       }
       if (( ZI[annex-multi-flag:pull-active] <= 1 && !OPTS[opt_-q,--quiet] )) {
-        +zi-message "{info2}Binary release version{rst}: {obj2}$version{info2} is the latest{rst}"
+        +zi-message "[ {info}✔{rst} ] Binary{rst}: {obj2}$version{rst} is latest release{rst}"
       }
     }
     if (( 1 )) {
@@ -1403,7 +1403,7 @@ fi
           .zi-any-colorify-as-uspl2 "$id_as"
           (( ZI[first-plugin-mark] )) && {
             ZI[first-plugin-mark]=0
-          } || +zi-message "{nl}{info2}Updating $REPLY{rst}"
+          } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
         }
         ICE=( "${(kv)ice[@]}" )
         # Run annexes' atpull hooks (the before atpull-ice ones).
@@ -1428,7 +1428,7 @@ fi
             ZI[annex-multi-flag:pull-active]=0
           fi
           if (( OPTS[opt_-q,--quiet] != 1 )) {
-            +zi-message "{nl}"
+            +zi-message
           }
         }
         ICE=()
@@ -1452,7 +1452,7 @@ fi
               .zi-any-colorify-as-uspl2 "$id_as"
               (( ZI[first-plugin-mark] )) && {
                 ZI[first-plugin-mark]=0
-              } || +zi-message "{nl}{info2}Updating $REPLY{rst}"
+              } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
             }
           }
           +zi-message $line
@@ -1474,7 +1474,7 @@ fi
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}{info2}Updating $REPLY{rst}"
+            } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
           }
         } else {
           ZI[annex-multi-flag:pull-active]=0

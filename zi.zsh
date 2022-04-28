@@ -84,7 +84,7 @@ ZI[LEFTAR]=";:^[[D;:^[OD;:\\e[D;:\\eOD;:${termcap[kl]/$'\e'/^\[};:${terminfo[kcu
 
 builtin autoload -Uz is-at-least
 is-at-least 5.1 && ZI[NEW_AUTOLOAD]=1 || ZI[NEW_AUTOLOAD]=0
-is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
+#is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
 
 # Parameters - temporary substituting of functions. [[[
 ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
@@ -326,8 +326,7 @@ builtin setopt noaliases
   emulate -LR zsh
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
 
-  is-at-least 5.3 && \
-  .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q+)@}}" || .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q)@}}"
+  is-at-least 5.3 && .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q+)@}}" || .zi-add-report "${ZI[CUR_USPL2]}" "Bindkey ${(j: :)${(q)@}}"
 
   # Remember to perform the actual bindkey call.
   typeset -a pos

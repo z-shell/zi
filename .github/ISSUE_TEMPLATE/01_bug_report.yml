@@ -13,7 +13,8 @@ body:
       label: Environment
       description: >
         Please describe your environment e.g: echo "OSTYPE=${OSTYPE} CPUTYPE=$(uname -m) / MACHINE_TYPE=$MACHTYPE ZSH_VERSION=${ZSH_VERSION}"
-        > It may contain any additional information.
+        
+        It may contain any additional information which would help to reproduce the issue.
       placeholder: "OSTYPE=linux-gnu CPUTYPE=x86_64 / MACHINE_TYPE=x86_64 ZSH_VERSION=5.8"
     validations:
       required: true
@@ -52,6 +53,26 @@ body:
       description: "List any other information that is relevant to your issue. For reports and stats run `zi analytics`"
     validations:
       required: true
+  - type: checkboxes
+    attributes:
+      label: Self-service
+      description: |
+        If you feel like you could contribute to this issue, please check the box below. This would tell us and other people looking for contributions that someone's working on it.
+        If you do check this box, please send a pull request within 7 days so we can still delegate this to someone else.
+      options:
+        - label: I'd be willing to address this documentation request myself.
+  - type: checkboxes
+    attributes:
+      label: Have you read the Contributing Guidelines?
+      options:
+        - label: I have read the [Contributing Guidelines](https://github.com/z-shell/community/blob/main/docs/CONTRIBUTING_GUIDELINES.md).
+          required: true
+  - type: checkboxes
+    attributes:
+      label: Are you familiar with Contributor Covenant Code of Conduct?
+      options:
+        - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
+          required: true      
   - type: input
     id: contact
     attributes:

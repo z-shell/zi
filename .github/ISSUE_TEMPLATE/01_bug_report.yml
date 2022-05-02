@@ -1,23 +1,22 @@
 name: "🐞 Bug report"
 description: File a bug report
+title: "[bug]: "
 labels: ["bug 🐞", "triage 📑"]
-title: "bug: "
 body:
   - type: markdown
     attributes:
       value: |
         First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are greatly appreciated.
-
   - type: input
     id: environment
     attributes:
       label: Environment
       description: >
         Please describe your environment e.g: echo "OSTYPE=${OSTYPE} CPUTYPE=$(uname -m) / MACHINE_TYPE=$MACHTYPE ZSH_VERSION=${ZSH_VERSION}"
+        > It may contain any additional information.
       placeholder: "OSTYPE=linux-gnu CPUTYPE=x86_64 / MACHINE_TYPE=x86_64 ZSH_VERSION=5.8"
     validations:
       required: true
-
   - type: textarea
     id: expected
     attributes:
@@ -25,7 +24,6 @@ body:
       description: "Please describe the expected behavior"
     validations:
       required: true
-
   - type: textarea
     id: current
     attributes:
@@ -33,7 +31,6 @@ body:
       description: "Please describe how the bug manifests"
     validations:
       required: true
-
   - type: textarea
     id: reproduce
     attributes:
@@ -41,7 +38,6 @@ body:
       description: "Explain the steps required to duplicate the issue"
     validations:
       required: true
-
   - type: textarea
     id: code-snippet
     attributes:
@@ -49,7 +45,6 @@ body:
       description: "Please insert your zshrc or just a short code snippet in concern"
     validations:
       required: true
-
   - type: textarea
     id: additional
     attributes:
@@ -57,3 +52,11 @@ body:
       description: "List any other information that is relevant to your issue. For reports and stats run `zi analytics`"
     validations:
       required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false

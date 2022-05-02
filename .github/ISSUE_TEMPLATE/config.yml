@@ -1,6 +1,21 @@
 ---
 blank_issues_enabled: false
 contact_links:
-  - name: Z-Shell Zi Community Support
-    url: https://github.com/z-shell/zi/discussions
+  - name: ZI Wiki
+    url: https://z.digitalclouds.dev
+    about: Knowledge base.
+  - name: Community Discussions
+    url: https://github.com/orgs/z-shell/discussions
     about: Please ask and answer questions here.
+  - name: Slack Workspace
+    url: https://join.slack.com/t/z-shell/shared_invite/zt-16twpopd2-p08ROUeT2aGZ5njJwysawA
+    about: Join to ask and answer questions or collaborate.
+  - name: Crowdin Translations
+    url: https://digitalclouds.crowdin.com/z-shell
+    about: Join to participate in translations.
+  - name: Z-Shell Portfolio
+    url: https://github.zshell.dev/
+    about: Z-Shell organization portfolio and governance.
+    
+    
+    

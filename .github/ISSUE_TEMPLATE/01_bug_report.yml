@@ -13,7 +13,7 @@ body:
       label: Environment
       description: >
         Please describe your environment e.g: echo "OSTYPE=${OSTYPE} CPUTYPE=$(uname -m) / MACHINE_TYPE=$MACHTYPE ZSH_VERSION=${ZSH_VERSION}"
-        
+
         It may contain any additional information which would help to reproduce the issue.
       placeholder: "OSTYPE=linux-gnu CPUTYPE=x86_64 / MACHINE_TYPE=x86_64 ZSH_VERSION=5.8"
     validations:
@@ -72,7 +72,7 @@ body:
       label: Are you familiar with Contributor Covenant Code of Conduct?
       options:
         - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
-          required: true      
+          required: true
   - type: input
     id: contact
     attributes:

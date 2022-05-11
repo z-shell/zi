@@ -1,7 +1,15 @@
 documentation 📝:
-  - any: ["**/*.md"]
+- any: ['**/*.md', '!.github/ISSUE_TEMPLATE/*']
 maintenance 📈:
-  - any:
-      [".github/CODEOWNERS", ".github/*.md", ".github/*.yml", ".github/*.json"]
+  - any: ['.github/**/*', '!.github/workflows/*']
+  - '*.code-workspace'
+  - '.vscode**'
+  - '.trunk/**'
+enhancement ✨:
+  - 'functions/**'
+  - 'src/**'
+  - 'lib/**'
+i18n 🌐:
+  - 'i18n/**'
 ci 🤖:
-  - any: [".github/workflows/*.yml", ".all-contributorsrc"]
+  - '.github/workflows/*'

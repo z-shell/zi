@@ -55,7 +55,7 @@ if [[ -z ${ZI[HOME_DIR]} ]]; then
   fi
 fi
 
-# ❮ ZI ❯ Home directories setup.
+# ❮ ZI ❯ Home directories.
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}
@@ -69,13 +69,16 @@ typeset -g ZPFX
 ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]} ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
 ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 
-export ZPFX=${~ZPFX} ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}" PMSPEC=0fuUpiPs
+export ZPFX=${~ZPFX} ZCDR="${ZCDR:-${XDG_CONFIG_HOME:-$HOME/.config}/zi}" PMSPEC=0fuUpiPs \
+ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}"
+
 [[ -z ${path[(re)$ZPFX/bin]} ]] && [[ -d "$ZPFX/bin" ]] && path=( "$ZPFX/bin" "${path[@]}" )
 [[ -z ${path[(re)$ZPFX/sbin]} ]] && [[ -d "$ZPFX/sbin" ]] && path=( "$ZPFX/sbin" "${path[@]}" )
 [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
-[[ ! -d $ZSH_CACHE_DIR ]] && command mkdir -p "$ZSH_CACHE_DIR"
 [[ -n ${ZI[ZCOMPDUMP_PATH]} ]] && ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
 [[ ! -d ${~ZI[MAN_DIR]} ]] && command mkdir -p ${~ZI[MAN_DIR]}/man{1..9}
+[[ ! -d $ZSH_CACHE_DIR ]] && command mkdir -p "$ZSH_CACHE_DIR"
+[[ ! -d $ZCDR ]] && command mkdir -p "$ZCDR"
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"
 ZI[DOWNAR]=";:^[[B;:^[OB;:\\e[B;:\\eOB;:${termcap[kd]/$'\e'/^\[};:${terminfo[kcud1]/$'\e'/^\[};:"

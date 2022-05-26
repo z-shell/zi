@@ -1,7 +1,9 @@
 name: "📚 Documentation"
-description: The issue related to documentation
+description: The issue request for changes indocumentation
+title: "[docs]: "
 labels: ["documentation 📝"]
-title: "docs: "
+assignees:
+  - ss-o
 body:
   - type: markdown
     attributes:
@@ -10,27 +12,31 @@ body:
 
         - Elaborating on a particular topic;
         - Updating external links;
-        - anything else that doesn't require touching the codebase itself.
+        - Anything else that doesn't require touching the codebase itself.
 
         If you followed the documentation but things don't work, take some time to consider if it's the documentation or the code that's wrong. In the latter, prefer using the "bug" template.
 
         You may proceed directly to sending a pull request without filing this issue, and we can improve on your work.
         If you think some of the requirements above are not met, or if you are not able to contribute yourself, the issue is still welcomed.
 
-  - type: checkboxes
-    attributes:
-      label: Have you read the Contributing Guidelines?
-      options:
-        - label: I have read the [Contributing Guidelines](https://github.com/z-shell/zi/blob/main/docs/CONTRIBUTING.md).
-          required: true
-
   - type: textarea
+    id: request-info
     attributes:
       label: Description
-      description: A clear and concise description of what the issue is.
+      description: Tell us, what can be done better or a clear and concise description of what the issue is.
     validations:
       required: true
-
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: Select the area that is associated with this issue.
+      multiple: true
+      options:
+        - ZI (this repository)
+        - Annexes
+        - Plugins
+        - Packages
+        - Other
   - type: checkboxes
     attributes:
       label: Self-service
@@ -39,3 +45,23 @@ body:
         If you do check this box, please send a pull request within 7 days so we can still delegate this to someone else.
       options:
         - label: I'd be willing to address this documentation request myself.
+  - type: checkboxes
+    attributes:
+      label: Have you read the Contributing Guidelines?
+      options:
+        - label: I have read the [Contributing Guidelines](https://github.com/z-shell/community/blob/main/docs/CONTRIBUTING_GUIDELINES.md).
+          required: true
+  - type: checkboxes
+    attributes:
+      label: Are you familiar with Contributor Covenant Code of Conduct?
+      options:
+        - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
+          required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false

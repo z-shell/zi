@@ -1,4 +1,5 @@
 #compdef zi
+# shellcheck disable=SC2034,SC2039,SC2059,SC2086,SC2129,SC2181,SC2296,SC2170,SC2128,SC2206,SC1036,SC2039,SC2068,SC2076,SC2155,SC2162,SC2181,SC2201,SC2207,SC2208,SC2236,SC2255,SC2270,SC2273,SC2274,SC2275,SC2276,SC2277,SC2278,SC2279,SC2280,SC2281,SC2282,SC2283,SC2284,SC2285,SC2286,SC2287,SC2288,SC2289,SC2290,SC2291,SC2292,SC2293,SC2294,SC2295,SC2296,SC2297,SC2298,SC2299,SC2300,SC2301,SC2302,SC2303,SC2304,SC2305,SC2306,SC2307,SC2308,SC2309,SC2310,SC2311,SC2312,SC2313,SC2314,SC2315,SC2316,SC2317,SC2318,SC2319,SC2320,SC2321,SC2322,SC2323,SC2324,SC2325,SC2326,SC2327,SC2328,SC2329,SC2330,SC2331,SC2332,SC2333,SC2334,SC2335,SC2336,SC2337,SC2338,SC2339,SC2340,SC2341,SC2342,SC2343,SC2344,SC2345,SC2346,SC2347,SC2348,SC2349,SC2350,SC2351,SC2352,SC2353,SC2354,SC2355,SC2356,SC2357,SC2358,SC2359,SC2360,SC2361,SC2362,SC2363,SC2364,SC2365,SC2366,SC2367,SC2368,SC2369,SC2370,SC2371,SC2372,SC2373,SC2374,SC2375,SC2376,SC2377,SC2378,SC2379,SC2380,SC2381,SC2382,SC2383,SC2384,SC2203,SC2168,SC2154
 
 setopt localoptions warncreateglobal typesetsilent
 
@@ -7,74 +8,77 @@ local -a expl
 
 typeset -a commands
 commands=(
-  analytics:'Show ❮ ZI ❯ Analytics'
-  control:'❮ ZI ❯ Control commands'
-  zstatus:'Checks ❮ ZI ❯ Status'
-  times:'Statistics on plugin loading times'
-  self-update:'Updates and Compile ❮ ZI ❯'
-  help:'Usage Information'
-  man:'Manpage'
-  load:'Load plugin'
-  delete:'Delete plugin'
-  unload:'Unload plugin'
-  snippet:"Source (or add to PATH with --command) local or remote file (-f: force - don't use cache)"
-  update:'Git update plugin (or all plugins and snippets if --all passed)'
-  status:'Git status for plugin (or all plugins if --all passed)'
-  report:'Show plugin'"'"'s report (or all plugins'"'"' if --all passed)'
-  loaded:'Show what plugins are loaded'
-  list:'Show what plugins are loaded'
-  ls:'List snippets in formatted and colorized manner'
-  cd:"Go into plugin's directory"
-  create:'Create plugin (also together with Github repository)'
+  analytics:"Statistics, benchmarks and information"
+  subcmds:"Shows subcommands registered by annex"
+  icemods:"Shows ice-modifiers registered by annex"
+  zstatus:"Check and provide status information"
+  times:"Statistics on plugin loading times"
+  self-update:"Updates and compiles ❮ ZI ❯"
+  help:"Usage information"
+  man:"Manpage"
+  load:"Load plugin"
+  light:"Light load plugin"
+  delete:"Delete plugin"
+  unload:"Unload plugin"
+  snippet:"Source (or add to PATH with --command) local or remote file (-f: force - do not use cache)"
+  update:"Git update plugin (or all plugins and snippets if --all passed)"
+  status:"Git status for plugin (or all plugins if --all passed)"
+  report:"Show plugins report (or all plugins if --all passed)"
+  loaded:"Show loaded plugins"
+  list:"List loaded plugins"
+  ls:"List snippets in formatted and colorized manner"
+  cd:"Go into plugin directory"
+  create:"Create plugin (also together with Github repository)"
   edit:"Edit plugin's file with \$EDITOR"
-  glance:"Look at plugin's source (pygmentize, {,source-}highlight)"
-  stress:'Test plugin for compatibility with set of options'
-  changes:"View plugin's git log"
+  glance:"View the plugin source"
+  stress:"Test the plugin for compatibility with set of options"
+  changes:"View the plugin git log"
   recently:"Show plugins that changed recently, argument is e.g. 1 month 2 days"
-  clist:'List completions in use'
-  cclear:'Clear stray and improper completions'
-  completions:'List completions in use'
-  cdisable:'Disable completion'
-  cenable:'Enable completion'
-  creinstall:'Install completions for plugin'
-  cuninstall:'Uninstall completions for plugin'
-  csearch:'Search for available completions from any plugin'
-  compinit:'Refresh installed completions'
+  clist:"List completions in use"
+  cclear:"Clear stray and improper completions"
+  completions:"List completions in use"
+  cdisable:"Disable completion"
+  cenable:"Enable completion"
+  creinstall:"Install completions for plugin"
+  cuninstall:"Uninstall completions for plugin"
+  csearch:"Search for available completions from any plugin"
+  compinit:"Refresh installed completions"
   dtrace:"Start tracking what's going on in session"
   dstart:"Start tracking what's going on in session"
   dstop:"Stop tracking what's going on in session"
-  dunload:'Revert changes recorded between dstart and dstop'
+  dunload:"Revert changes recorded between dstart and dstop"
   dreport:"Report what was going on in session"
-  dclear:'Clear report of what was going on in session'
-  compile:'Compile plugin (or all plugins if --all passed)'
-  uncompile:'Remove compiled version of plugin (or of all plugins if --all passed)'
-  compiled:'Show which plugins are compiled'
-  cdlist:'Show compdef replay list'
-  cdreplay:'Replay compdefs (to be done after compinit)'
-  cdclear:'Clear compdef replay list'
-  srv:'Control a service, command can be: stop,start,restart,next,quit; `next'' moves the service to another Zshell'
-  recall:'Fetch saved ice modifiers and construct `zi ice ...'' command'
-  bindkeys:'Lists bindkeys set up by each plugin'
-  module:'Manage binary Zsh module shipped with ❮ ZI ❯, see `zi module help'''
+  dclear:"Clear report of what was going on in session"
+  compile:"Compile plugin (or all plugins if --all passed)"
+  uncompile:"Remove compiled version of plugin (or of all plugins if --all passed)"
+  compiled:"Show which plugins are compiled"
+  cdlist:"Show compdef replay list"
+  cdreplay:"Replay compdefs (to be done after compinit)"
+  cdclear:"Clear compdef replay list"
+  srv:"Control a service, command can be: stop,start,restart,next,quit; next'' moves the service to another Zshell"
+  recall:"Fetch saved ice modifiers and construct 'zi ice ...' command"
+  bindkeys:"Lists bindkeys set up by each plugin"
+  module:"Manage binary Zsh module, see 'zi module help' for more info"
   run:"Execute code inside plugin's folder"
-  env-whitelist:'Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose'
-  add-fpath:'Add plugin folder to $fpath'
+  env-whitelist:"Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose"
+  add-fpath:"Add plugin folder to $fpath"
 )
 
-_arguments -C \
-  '1: :->command'\
-  '*: :->argument' && ret=0
+_arguments -C '1: :->command' '*: :->argument' && ret=0
 
 case $state in
   command)
-    _describe -t commands "❮ ZI ❯ commands" commands && ret=0
+    _describe -t commands "❮ ZI ❯ commands:" commands && ret=0
     ;;
     argument)
-      case $words[2] in
+      case ${words[2]} in
         help)
           _message "Hit enter to get usage information" && ret=0
           ;;
-        control)
+        subcmds)
+          _message "Hit enter to get commands list" && ret=0
+          ;;
+        icemods)
           _message "Hit enter to get commands list" && ret=0
           ;;
         analytics)
@@ -104,7 +108,7 @@ case $state in
           plugins=( "${plugins[@]:#_local/zi}" )
           plugins=( "${plugins[@]:#custom}" )
           local -a opts
-          if [[ $words[2] = run ]]; then
+          if [[ ${words[2]} = run ]]; then
             opts=( -l )
           else
             opts=( -f --front )
@@ -122,17 +126,16 @@ case $state in
           local -a snippets snippets_alreadyld
           local sni
           snippets=( "${ZI[SNIPPETS_DIR]}"/*/._zi(D/:h) )
-          snippets=( ${snippets[@]#${ZI[SNIPPETS_DIR]}/} )
-          snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
-          snippets=( ${snippets[@]/--//} )
-          for sni ( ${snippets[@]} ) {
-            if [[ -n ${ZI_SNIPPETS[$sni]} ]]; then
-              snippets_alreadyld+=( $sni )
-              snippets=( ${snippets[@]:#$sni} )
+          snippets=( "${snippets[@]#${ZI[SNIPPETS_DIR]}/}" )
+          snippets=( "${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://}" )
+          snippets=( "${snippets[@]/--//}" )
+          for sni in "${snippets[@]}"; do
+            if [[ -n "${ZI_SNIPPETS[$sni]}" ]]; then
+              snippets_alreadyld+=( "${sni}" )
+              snippets=( "${snippets[@]:#$sni}" )
             fi
-          }
-          _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' 'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' \
-          'plugins:-- Plugin --:compadd -a - plugins' && ret=0
+          done
+          _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' 'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' 'plugins:-- Plugin --:compadd -a - plugins' && ret=0
           ;;
         unload|report)
           typeset -a plugins absolute normal
@@ -142,7 +145,7 @@ case $state in
           absolute=( "${absolute[@]/\%\/\//%/}" )
           local hm="${HOME%/}"
           absolute=( "${absolute[@]/$hm/HOME}" )
-          plugins=( $normal $absolute )
+          plugins=( "${normal}" "${absolute}" )
           _wanted plugins expl "-- Plugin --" compadd "$@" -a - plugins && ret=0
           ;;
         all-reports)
@@ -177,35 +180,34 @@ case $state in
           typeset -a plugins completions
           local p c user plugin
           for p in "${ZI[PLUGINS_DIR]}"/*; do
-            completions=( "$p"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|_zsh_highlight*|/zsdoc/*)(DN) )
+            completions=( "${p}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|_zsh_highlight*|/zsdoc/*)(DN) )
             for c in "${completions[@]}"; do
               p="${p:t}"
               user="${p%%---*}"
               plugin="${p#*---}"
-              [[ "$user" = "$plugin" && "${user}---${plugin}" != "$p" ]] && user=""
-              plugins+=( "${user:+$user/}$plugin" )
+              [[ "${user}" = "${plugin}" && "${user}---${plugin}" != "${p}" ]] && user=""
+              plugins+=( "${user:+${user}/}${plugin}" )
               break
             done
           done
           _wanted plugins expl "-- Plugin --" compadd "$@" -a - plugins && ret=0
           ;;
         cuninstall)
-          # We must iterate each plugin and check if
-          # it has completions that are installed
+          # We must iterate each plugin and check if it has completions that are installed
           typeset -a plugins completions
           local p c user plugin cfile bkpfile
           for p in "${ZI[PLUGINS_DIR]}"/*; do
-            completions=( "$p"/**/_[^_.][^.]#(N) )
+            completions=( "${p}"/**/_[^_.][^.]#(N) )
             for c in "${completions[@]}"; do
               cfile="${c:t}"
               bkpfile="${cfile#_}"
               # Completion installed, either enabled or disabled?
-              if [[ -e "${ZI[COMPLETIONS_DIR]}"/"$cfile" || -e "${ZI[COMPLETIONS_DIR]}"/"$bkpfile" ]]; then
+              if [[ -e "${ZI[COMPLETIONS_DIR]}"/"${cfile}" || -e "${ZI[COMPLETIONS_DIR]}"/"${bkpfile}" ]]; then
                 p="${p:t}"
                 user="${p%%---*}"
                 plugin="${p#*---}"
-                [[ "$user" = "$plugin" && "${user}---${plugin}" != "$p" ]] && user=""
-                plugins+=( "${user:+$user/}$plugin" )
+                [[ "${user}" = "${plugin}" && "${user}---${plugin}" != "${p}" ]] && user=""
+                plugins+=( "${user:+${user}/}${plugin}" )
                 break
               fi
             done
@@ -219,17 +221,16 @@ case $state in
           local -a snippets snippets_alreadyld
           local sni
           snippets=( "${ZI[SNIPPETS_DIR]}"/**/._zi(D/:h) )
-          snippets=( ${snippets[@]#${ZI[SNIPPETS_DIR]}/} )
-          snippets=( ${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://} )
-          snippets=( ${snippets[@]/--//} )
-          for sni ( ${snippets[@]} ) {
+          snippets=( "${snippets[@]#${ZI[SNIPPETS_DIR]}/}" )
+          snippets=( "${snippets[@]/(#b)(http|https|ftp|ftps|scp)--/${match[1]}://}" )
+          snippets=( "${snippets[@]/--//}" )
+          for sni in "${snippets[@]}"; do
             if [[ -n ${ZI_SNIPPETS[$sni]} ]]; then
-              snippets_alreadyld+=( $sni )
-              snippets=( ${snippets[@]:#$sni} )
+              snippets_alreadyld+=( "${sni}" )
+              snippets=( "${snippets[@]:#$sni}" )
             fi
-          }
-          _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' 'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' \
-          'files:-- File --:_files' && ret=0
+          done
+          _alternative 'dsnippets:-- Downloaded Snippet --:compadd -a - snippets' 'lsnippets:-- Already Loaded Snippet --:compadd -a - snippets_alreadyld' 'files:-- File --:_files' && ret=0
           ;;
         dstart|dtrace)
           _message "Hit enter to start tracking this session" && ret=0
@@ -254,13 +255,13 @@ case $state in
           plugins=( "${ZI[PLUGINS_DIR]}"/*(N) )
           typeset -a show_plugins p matches
           for p in "${plugins[@]}"; do
-            matches=( $p/*.zwc(N) )
+            matches=( "${p}"/*.zwc(N) )
             if [ "$#matches" -ne "0" ]; then
               p="${p:t}"
-              [ "$p" = "_local---zi" ] && continue
-              [ "$p" = "custom" ] && continue
+              [ "${p}" = "_local---zi" ] && continue
+              [ "${p}" = "custom" ] && continue
               p="${p//---//}"
-              show_plugins+=( "$p" )
+              show_plugins+=( "${p}" )
             fi
           done
           _wanted show_plugins expl "-- Plugin --" compadd "$@" -a - show_plugins && ret=0

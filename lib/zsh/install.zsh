@@ -332,7 +332,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       .zi-any-colorify-as-uspl2 "$user" "$plugin"
       local pid_hl='{pid}' id_msg_part=" (at label{ehi}:{rst} {id-as}$id_as{rst}{…})"
       (( $+ICE[pack] )) && local infix_m="({b}{ice}pack{apo}''{rst}) "
-      +zi-message "{nl}Downloading $infix_m{pid}$user${user:+/}$plugin{…}${${${id_as:#$user/$plugin}}:+$id_msg_part}"
+      +zi-message "{nl}Downloading{ehi}:{rst} $infix_m{pid}$user${user:+/}$plugin{…}${${${id_as:#$user/$plugin}}:+$id_msg_part}"
     }
 
     local site
@@ -811,7 +811,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     first=${reply[-1]}
     local fname=${first#$pdir_path/}
 
-    +zi-message -n "{note}Note:{rst} Compiling{ehi}:{rst} {b}{file}$fname{rst}{…}"
+    +zi-message -n "Compiling{ehi}:{rst} {b}{file}$fname{rst}{…}"
     if [[ -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} ]] {
       () {
         builtin emulate -LR zsh -o extendedglob
@@ -819,7 +819,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           +zi-message "{msg2}Warning:{rst} Compilation failed. Don't worry, the plugin will work also without compilation."
           +zi-message "{msg2}Warning:{rst} Consider submitting an error report to ❮ ZI ❯ or to the plugin's author."
         } else {
-          +zi-message " {ok}OK{rst}."
+          +zi-message " {info}✔{rst}"
         }
         # Try to catch possible additional file
         zcompile -U "${${first%.plugin.zsh}%.zsh-theme}.zsh" 2>/dev/null

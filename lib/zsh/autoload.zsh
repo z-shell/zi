@@ -15,7 +15,7 @@ ZI[EXTENDED_GLOB]=""
 # Removes the plugin from ZI_REGISTERED_PLUGINS array and from the
 # zsh_loaded_plugins array (managed according to the plugin standard)
 .zi-unregister-plugin() {
-  .zi-any-to-user-plugin "$1" "$2"
+  .zi-any-to-user-plugin "${1}" "${2}"
   local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" teleid="$3"
   # If not found, the index will be length+1
   ZI_REGISTERED_PLUGINS[${ZI_REGISTERED_PLUGINS[(i)$uspl2]}]=()
@@ -29,7 +29,7 @@ ZI[EXTENDED_GLOB]=""
 #
 # $1 - user/plugin
 .zi-diff-functions-compute() {
-  local uspl2="$1"
+  local uspl2="${1}"
   # Cannot run diff if *_BEFORE or *_AFTER variable is not set
   # Following is paranoid for *_BEFORE and *_AFTER being only spaces
   builtin setopt localoptions extendedglob nokshglob noksharrays
@@ -58,7 +58,7 @@ ZI[EXTENDED_GLOB]=""
 #
 # $1 - user/plugin
 .zi-diff-options-compute() {
-  local uspl2="$1"
+  local uspl2="${1}"
   # Cannot run diff if *_BEFORE or *_AFTER variable is not set
   # Following is paranoid for *_BEFORE and *_AFTER being only spaces
   builtin setopt localoptions extendedglob nokshglob noksharrays
@@ -1541,7 +1541,7 @@ fi
         # Effectively return the last != 0 rc
         [[ "$hook_rc" -ne 0 ]] && {
           retval="$hook_rc"
-          builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+          +zi-message "{warn}Warning{ehi}:{rst} {obj}${arr[5]}{warn} hook returned with {obj}${hook_rc}{rst}"
         }
       done
       # Run annexes' atpull hooks (the after atpull-ice ones).
@@ -2293,38 +2293,38 @@ fi
 #
 # $1 - e.g. "_mkdir" or "mkdir"
 .zi-cenable() {
-  local c="$1"
+  local c="${1}"
   c="${c#_}"
   local cfile="${ZI[COMPLETIONS_DIR]}/_${c}"
-  local bkpfile="${cfile:h}/$c"
-  if [[ ! -e "$cfile" && ! -e "$bkpfile" ]]; then
-    builtin print "${ZI[col-error]}No such completion \`$c'${ZI[col-rst]}"
+  local bkpfile="${cfile:h}/${c}"
+  if [[ ! -e "${cfile}" && ! -e "${bkpfile}" ]]; then
+    +zi-message "{error}No such completion{ehi}:{error} ${c}{rst}"
     return 1
   fi
   # Check if there is no backup file
   # This is treated as if the completion is already enabled
-  if [[ ! -e "$bkpfile" ]]; then
-    builtin print "Completion ${ZI[col-info]}$c${ZI[col-rst]} already enabled"
-    .zi-check-comp-consistency "$cfile" "$bkpfile" 0
+  if [[ ! -e "${bkpfile}" ]]; then
+    +zi-message "Completion {info}${c}{rst} already enabled"
+    .zi-check-comp-consistency "${cfile}" "${bkpfile}" 0
     return 1
   fi
 
   # Disabled, but completion file already exists?
-  if [[ -e "$cfile" ]]; then
-    builtin print "${ZI[col-error]}Warning: completion's file \`${cfile:t}' exists, will overwrite${ZI[col-rst]}"
-    builtin print "${ZI[col-error]}Completion is actually enabled and will re-enable it again${ZI[col-rst]}"
-    .zi-check-comp-consistency "$cfile" "$bkpfile" 1
-    command rm -f "$cfile"
+  if [[ -e "${cfile}" ]]; then
+    +zi-message "{error}Warning{ehi}: {warn}completion's file {file}${cfile:t}{warn} exists, overwritting…{rst}"
+    +zi-message "{error}Completion is enabled, re-enabling…{rst}"
+    .zi-check-comp-consistency "${cfile}" "${bkpfile}" 1
+    command rm -f "${cfile}"
   else
-    .zi-check-comp-consistency "$cfile" "$bkpfile" 0
+    .zi-check-comp-consistency "${cfile}" "${bkpfile}" 0
   fi
   # Enable
-  command mv "$bkpfile" "$cfile" # move completion's backup file created when disabling
+  command mv "${bkpfile}" "${cfile}" # move completion's backup file created when disabling
   # Prepare readlink command for establishing completion's owner
   .zi-prepare-readlink
   # Get completion's owning plugin
-  .zi-get-completion-owner-uspl2col "$cfile" "$REPLY"
-  builtin print "Enabled ${ZI[col-info]}$c${ZI[col-rst]} completion belonging to $REPLY"
+  .zi-get-completion-owner-uspl2col "${cfile}" "${REPLY}"
+  +zi-message "Enabled {info}${c}{rst} completion belonging to{ehi}:{rst} $REPLY"
   return 0
 } # ]]]
 # FUNCTION: .zi-cdisable [[[
@@ -2334,38 +2334,36 @@ fi
 #
 # $1 - e.g. "_mkdir" or "mkdir"
 .zi-cdisable() {
-  local c="$1"
+  local c="${1}"
   c="${c#_}"
   local cfile="${ZI[COMPLETIONS_DIR]}/_${c}"
-  local bkpfile="${cfile:h}/$c"
-
-  if [[ ! -e "$cfile" && ! -e "$bkpfile" ]]; then
-    builtin print "${ZI[col-error]}No such completion \`$c'${ZI[col-rst]}"
+  local bkpfile="${cfile:h}/${c}"
+  if [[ ! -e "${cfile}" && ! -e "${bkpfile}" ]]; then
+    +zi-message "{error}No such completion {info}${c}{rst}"
     return 1
   fi
   # Check if it's already disabled
   # Not existing "$cfile" says that
-  if [[ ! -e "$cfile" ]]; then
-    builtin print "Completion ${ZI[col-info]}$c${ZI[col-rst]} already disabled"
-    .zi-check-comp-consistency "$cfile" "$bkpfile" 0
+  if [[ ! -e "${cfile}" ]]; then
+    +zi-message "Completion {info}${c}{rst} already disabled"
+    .zi-check-comp-consistency "${cfile}" "${bkpfile}" 0
     return 1
   fi
   # No disable, but bkpfile exists?
-  if [[ -e "$bkpfile" ]]; then
-    builtin print "${ZI[col-error]}Warning: completion's backup file \`${bkpfile:t}' already exists, will overwrite${ZI[col-rst]}"
-    .zi-check-comp-consistency "$cfile" "$bkpfile" 1
-    command rm -f "$bkpfile"
+  if [[ -e "${bkpfile}" ]]; then
+    +zi-message "{error}Warning: {warn}completion's backup file {file}${bkpfile:t}{warn} already exists, overwritting…{rst}"
+    .zi-check-comp-consistency "${cfile}" "${bkpfile}" 1
+    command rm -f "${bkpfile}"
   else
-    .zi-check-comp-consistency "$cfile" "$bkpfile" 0
+    .zi-check-comp-consistency "${cfile}" "${bkpfile}" 0
   fi
   # Disable
-  command mv "$cfile" "$bkpfile"
+  command mv "${cfile}" "${bkpfile}"
   # Prepare readlink command for establishing completion's owner
   .zi-prepare-readlink
   # Get completion's owning plugin
-  .zi-get-completion-owner-uspl2col "$bkpfile" "$REPLY"
-  builtin print "Disabled ${ZI[col-info]}$c${ZI[col-rst]} completion belonging to $REPLY"
-
+  .zi-get-completion-owner-uspl2col "${bkpfile}" "${REPLY}"
+  +zi-message "Disabled {info}${c}{rst} completion belonging to{ehi}:{rst} ${REPLY}"
   return 0
 } # ]]]
 
@@ -2380,7 +2378,7 @@ fi
   builtin emulate -LR zsh
   builtin setopt extendedglob warncreateglobal typesetsilent rcquotes
 
-  .zi-get-path "$1" "$2" && {
+  .zi-get-path "${1}" "${2}" && {
     if [[ -e $REPLY ]]; then
       builtin pushd $REPLY
     else
@@ -2434,9 +2432,9 @@ fi
   # -a/--all given?
   if (( OPTS[opt_-a,--all] )); then
     .zi-confirm "Prune all plugins in \`${ZI[PLUGINS_DIR]}'"\
-"and snippets in \`${ZI[SNIPPETS_DIR]}'?" \
-"command rm -rf ${${ZI[PLUGINS_DIR]%%[/[:space:]]##}:-${TMPDIR:-${TMPDIR:-/tmp}}/abcEFG312}/*~*/_local---zi(ND) "\
-"${${ZI[SNIPPETS_DIR]%%[/[:space:]]##}:-${TMPDIR:-${TMPDIR:-/tmp}}/abcEFG312}/*~*/plugins(ND)"
+    "and snippets in \`${ZI[SNIPPETS_DIR]}'?" \
+    "command rm -rf ${${ZI[PLUGINS_DIR]%%[/[:space:]]##}:-${TMPDIR:-${TMPDIR:-/tmp}}/abcEFG312}/*~*/_local---zi(ND) "\
+    "${${ZI[SNIPPETS_DIR]%%[/[:space:]]##}:-${TMPDIR:-${TMPDIR:-/tmp}}/abcEFG312}/*~*/plugins(ND)"
     return $?
   fi
   # -c/--clean given?
@@ -2659,15 +2657,15 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   builtin cd -q "${ZI[PLUGINS_DIR]}"
 
   if [[ "$user" != "_local" && -n "$user" ]]; then
-    builtin print "${ZI[col-info]}Creating Github repository${ZI[col-rst]}"
+    +zi-message "{info}Creating Github repository{rst}"
     if [[ $isorg = (y|yes) ]]; then
       curl --silent -u "$user" https://api.github.com/orgs/$org/repos -d '{"name":"'"$plugin"'"}' >/dev/null
     else
       curl --silent -u "$user" https://api.github.com/user/repos -d '{"name":"'"$plugin"'"}' >/dev/null
     fi
     command git clone "https://github.com/${${${(M)isorg:#(y|yes)}:+$org}:-$user}/${plugin}.git" "${${${(M)isorg:#(y|yes)}:+$org}:-$user}---${plugin//\//---}" || {
-      builtin print "${ZI[col-error]}Creation of remote repository $uspl2col ${ZI[col-error]}failed${ZI[col-rst]}"
-      builtin print "${ZI[col-error]}Bad credentials?${ZI[col-rst]}"
+      +zi-message "{error}Creation of remote repository $uspl2col {error}failed{rst}"
+      +zi-message "{error}Bad credentials?{rst}"
       return 1
     }
     builtin cd -q "${${${(M)isorg:#(y|yes)}:+$org}:-$user}---${plugin//\//---}"
@@ -2686,31 +2684,35 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 
   command cat >! "${plugin:t}.plugin.zsh" <<EOF
 # -*- mode: sh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
-
+# vim:ft=zsh:tw=120:sw=2:sts=2:et:foldmarker=[[[,]]]
+#
+# Use alternate marks [[[ and ]]] as the original ones can confuse nested
+# substitutions, e.g.: ${${${VAR}}}
+#
 # Copyright (c) $year $user_name
+#
+# https://z.digitalclouds.dev/community/zsh_plugin_standard
+# Standardized $0 Handling
 
-# According to the Zsh Plugin Standard:
-# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard
+0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
+0="${${(M)0:#/*}:-$PWD/$0}"
 
-0=\${\${ZERO:-\${0:#\$ZSH_ARGZERO}}:-\${(%):-%N}}
-0=\${\${(M)0:#/*}:-\$PWD/\$0}
+# https://z.digitalclouds.dev/community/zsh_plugin_standard#funtions-directory
+# Functions directory
 
-# Then \${0:h} to get plugin's directory
-
-if [[ \${zsh_loaded_plugins[-1]} != */${plugin:t} && -z \${fpath[(r)\${0:h}]} ]] {
-  fpath+=( "\${0:h}" )
+if [[ $PMSPEC != *f* ]] {
+  fpath+=( "${0:h}/functions" )
 }
 
-# Standard hash for plugins, to not pollute the namespace
+# https://z.digitalclouds.dev/community/zsh_plugin_standard/#standard-plugins-hash
+# Standard Plugins Hash
+
 typeset -gA Plugins
 Plugins[${${(U)plugin:t}//-/_}_DIR]="\${0:h}"
 
 autoload -Uz example-script
 
-# Use alternate vim marks [[[ and ]]] as the original ones can
-# confuse nested substitutions, e.g.: \${\${\${VAR}}}
-
-# vim:ft=zsh:tw=120:sw=2:sts=2:et:foldmarker=[[[,]]]
+# Made with love by Z-Shell Community
 EOF
 
   command cat >>! .git/config <<EOF
@@ -2722,24 +2724,27 @@ EOF
 EOF
 
   builtin print -r -- "*.zsh  diff=zsh" >! .gitattributes
+  builtin print -r -- "*za-   diff=zsh" >! .gitattributes
+  builtin print -r -- "*z-a-  diff=zsh" >! .gitattributes
   builtin print -r -- "*.md   diff=markdown" >! .gitattributes
   builtin print -r -- "# $plugin" >! "README.md"
   command cp -vf "${ZI[BIN_DIR]}/LICENSE" LICENSE
+  command cp -vf "${ZI[BIN_DIR]}/.editorconfig" .editorconfig
   command cp -vf "${ZI[BIN_DIR]}/lib/templates/zsh.gitignore" .gitignore
-  command cp -vf "${ZI[BIN_DIR]}/lib/templates/example-script" .
-
-  command sed -i -e "s/MY_PLUGIN_DIR/${${(U)plugin:t}//-/_}_DIR/g" example-script
-  command sed -i -e "s/USER_NAME/$user_name/g" example-script
-  command sed -i -e "s/YEAR/$year/g" example-script
+  command mkdir -pv functions
+  command cp -vf "${ZI[BIN_DIR]}/lib/templates/example-script" functions/example-script
+  command sed -i -e "s/MY_PLUGIN_DIR/${${(U)plugin:t}//-/_}_DIR/g" functions/example-script
+  command sed -i -e "s/USER_NAME/$user_name/g" functions/example-script
+  command sed -i -e "s/YEAR/$year/g" functions/example-script
 
   if [[ "$user" != "_local" && -n "$user" ]]; then
-    builtin print "Remote repository $uspl2col set up as origin."
-    builtin print "You're in plugin's local folder, the files aren't added to git."
-    builtin print "Your next step after commiting will be:"
-    builtin print "git push -u origin master (or \`… -u origin main')"
+    +zi-message "{ok}Remote repository $uspl2col set up as origin{ehi}:{rst}"
+    +zi-message "You're in plugin's local folder, the files aren't added to git.{rst}{nl}"
+    +zi-message "{ok}Your next step after commiting will be{ehi}:{rst}"
+    +zi-message "git push -u origin master (or '… -u origin main'){rst}"
   else
-    builtin print "Created local $uspl2col plugin."
-    builtin print "You're in plugin's repository folder, the files aren't added to git."
+    +zi-message "{ok}Created local $uspl2col plugin.{rst}"
+    +zi-message "You're in plugin's repository folder, the files aren't added to git.{rst}"
   fi
 } # ]]]
 # FUNCTION: .zi-glance [[[
@@ -2751,13 +2756,11 @@ EOF
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-glance() {
-  .zi-any-to-user-plugin "$1" "$2"
+  .zi-any-to-user-plugin "${1}" "${2}"
   local user="${reply[-2]}" plugin="${reply[-1]}"
-
-  .zi-exists-physically-message "$user" "$plugin" || return 1
-
-  .zi-first "$1" "$2" || {
-    builtin print "${ZI[col-error]}No source file found, cannot glance${ZI[col-rst]}"
+  .zi-exists-physically-message "${user}" "${plugin}" || return 1
+  .zi-first "${1}" "${2}" || {
+    +zi-message "{error}No source file found, cannot glance{rst}"
     return 1
   }
   local fname="${reply[-1]}"
@@ -2766,20 +2769,20 @@ EOF
   [[ "$TERM" = xterm* || "$TERM" = "screen" ]] && has_256_colors=1
   {
     if (( ${+commands[pygmentize]} )); then
-      builtin print "Glancing with ${ZI[col-info]}pygmentize${ZI[col-rst]}"
-      pygmentize -l bash -g "$fname"
+      +zi-message "Glancing with{ehi}: {info}pygmentize{rst}"
+      pygmentize -l bash -g "${fname}"
     elif (( ${+commands[highlight]} )); then
-      builtin print "Glancing with ${ZI[col-info]}highlight${ZI[col-rst]}"
+      +zi-message "Glancing with{ehi}: {info}highlight{rst}"
       if (( has_256_colors )); then
-        highlight -q --force -S sh -O xterm256 "$fname"
+        highlight -q --force -S sh -O xterm256 "${fname}"
       else
-        highlight -q --force -S sh -O ansi "$fname"
+        highlight -q --force -S sh -O ansi "${fname}"
       fi
     elif (( ${+commands[source-highlight]} )); then
-      builtin print "Glancing with ${ZI[col-info]}source-highlight${ZI[col-rst]}"
-      source-highlight -fesc --failsafe -s zsh -o STDOUT -i "$fname"
+      +zi-message "Glancing with{ehi}: {info}source-highlight{rst}"
+      source-highlight -fesc --failsafe -s zsh -o STDOUT -i "${fname}"
     else
-      cat "$fname"
+      cat "${fname}"
     fi
   } | {
     if [[ -t 1 ]]; then
@@ -2798,23 +2801,21 @@ EOF
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-edit() {
   local -A ICE2
-  local local_dir filename is_snippet the_id="$1${${1:#(%|/)*}:+${2:+/}}$2"
-
-  .zi-compute-ice "$the_id" "pack" ICE2 local_dir filename is_snippet || return 1
-
+  local local_dir filename is_snippet the_id="${1}${${1:#(%|/)*}:+${2:+/}}${2}"
+  .zi-compute-ice "${the_id}" "pack" ICE2 local_dir filename is_snippet || return 1
   ICE2[teleid]="${ICE2[teleid]:-${ICE2[id-as]}}"
   if (( is_snippet )); then
-    if [[ ! -e "$local_dir" ]]; then
-      builtin print "No such snippet"
+    if [[ ! -e "${local_dir}" ]]; then
+      +zi-message "No such snippet"
       return 1
     fi
   else
-    if [[ ! -e "$local_dir" ]]; then
-      builtin print -r -- "No such plugin or snippet"
+    if [[ ! -e "${local_dir}" ]]; then
+      +zi-message "No such plugin or snippet"
       return 1
     fi
   fi
-  "${EDITOR:-code}" "$local_dir"
+  "${EDITOR:-code}" "${local_dir}"
   return 0
 } # ]]]
 # FUNCTION: .zi-stress [[[
@@ -2827,12 +2828,12 @@ EOF
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-stress() {
-  .zi-any-to-user-plugin "$1" "$2"
+  .zi-any-to-user-plugin "${1}" "${2}"
   local user="${reply[-2]}" plugin="${reply[-1]}"
-  .zi-exists-physically-message "$user" "$plugin" || return 1
-  .zi-first "$1" "$2" || {
-  builtin print "${ZI[col-error]}No source file found, cannot stress${ZI[col-rst]}"
-  return 1
+  .zi-exists-physically-message "${user}" "${plugin}" || return 1
+  .zi-first "${1}" "${2}" || {
+    +zi-message "{error}No source file found, not able to run the {opt}stress-test{rst}"
+    return 1
   }
   local pdir_path="${reply[-2]}" fname="${reply[-1]}"
   integer compiled=1
@@ -2847,11 +2848,11 @@ EOF
   builtin unsetopt shglob kshglob
   for i in "${ZI_STRESS_TEST_OPTIONS[@]}"; do
     builtin setopt "$i"
-    builtin print -n "Stress-testing ${fname:t} for option $i "
+    +zi-message -n "{info2}Stress-testing{ehi}:{rst} ${fname:t} for option{ehi}:{rst} $i "
       zcompile -UR "$fname" 2>/dev/null && {
-      builtin print "[${ZI[col-success]}Success${ZI[col-rst]}]"
+      +zi-message "[{info}Success{rst}]"
     } || {
-      builtin print "[${ZI[col-failure]}Fail${ZI[col-rst]}]"
+      +zi-message "[{failure}Fail{rst}]"
     }
     builtin unsetopt "$i"
   done
@@ -2865,10 +2866,10 @@ EOF
 #
 # User-action entry point.
 .zi-list-compdef-replay() {
-  builtin print "Recorded compdefs:"
+  +zi-message "Recorded compdefs:"
   local cdf
   for cdf in "${ZI_COMPDEF_REPLAY[@]}"; do
-  builtin print "compdef ${(Q)cdf}"
+  +zi-message "compdef ${(Q)cdf}"
   done
 } # ]]]
 # FUNCTION: .zi-ls [[[
@@ -2878,9 +2879,9 @@ EOF
   elif (( ${+commands[exa]} )); then
     ZI[TREE]="${commands[exa]} --color=always -T -l -L3"
   else
-    builtin print "${ZI[col-error]}No \`tree' program, it is required by the subcommand \`ls\'${ZI[col-rst]}"
-    builtin print "Download from: http://mama.indstate.edu/users/ice/tree/"
-    builtin print "It is also available probably in all distributions and Homebrew, as package \`tree'"
+    +zi-message "{error}Program {cmd}tree{rst} not found, it is required by the subcommand {cmd}ls{rst}"
+    +zi-message "{warn}Download from{ehi}: {url}http://mama.indstate.edu/users/ice/tree/{rst}"
+    +zi-message "{warn}From most distributions and Homebrew available as package{ehi}: {cmd}tree{rst}"
   fi
   (
     builtin cd -q "${ZI[SNIPPETS_DIR]}"
@@ -2898,7 +2899,7 @@ EOF
     # First-level names
     list=( "${list[@]//(#b)(#s)(│   └──|    └──|    ├──|│   ├──) (*)/${match[1]} $ZI[col-p]${match[2]}$ZI[col-rst]}" )
     list[-1]+=", at ZI[SNIPPETS_DIR] - (${ZI[SNIPPETS_DIR]})"
-    builtin print -rl -- "${list[@]}"
+    +zi-message -l "${list[@]}"
   )
 } # ]]]
 # FUNCTION: .zi-get-path [[[
@@ -2977,7 +2978,7 @@ EOF
       "{info2}See \`zpmod -h' for more information.{rst}"
     fi
   elif [[ "$1" = (help|usage) ]]; then
-    +zi-message "{info2}Usage{rst}{obj}:{rst}{nl}" \
+    +zi-message "{info}Usage{ehi}:{rst}{nl}" \
     "{p}zi module{rst} {info}{build|info|help}{rst} {p}[options]{rst}{nl}" \
     "{p}zi module{rst} {info}build{rst} {p}[--clean]{rst}{nl}" \
     "{p}zi module{rst} {info}info{rst} {p}[--link]{rst}{nl}" \
@@ -3044,21 +3045,71 @@ EOF
 #
 # User-action entry point.
 .zi-help() {
-  builtin print -r -- "${ZI[col-pname]}❮ ZI ❯ Usage${ZI[col-rst]}:
-❯ analytics             – Analytics
-❯ control               – Control options
-❯ self-update           – Self update and compile
-❯ module help           – Manage zpmod (binary Zsh module)
-❯ compinit              – Refresh completions
-❯ cdreplay [-q]         – Replay compdefs (run after compinit)
-❯ cdclear  [-q]         – Clear compdef replay list
-❯ env-whitelist [-v|-h] – Specify names or paterns of variables left unchanged during an unload
-❯ bindkeys              – Lists bindkeys
-❯ man                   – Manual
-
-${ZI[col-info]}❮ ZI ❯ WIKI${ZI[col-rst]}: ${ZI[col-p]}https://z.digitalclouds.dev${ZI[col-rst]}
-
-${ZI[col-pname]}Available sub-commands${ZI[col-rst]}:"
+  +zi-message "{info}- ❮ ZI ❯ Usage{ehi}:{rst}"
+  +zi-message "❯ analytics     - Statistics, benchmarks and information"
+  +zi-message "❯ subcmds       - Subcommands registered by annex"
+  +zi-message "❯ icemods       - All registerted ice-modifiers (zi internal/registered by annex)"
+  +zi-message "❯ self-update   - Self update and compile"
+  +zi-message "❯ compinit      – Refresh completions"
+  +zi-message "❯ cdreplay      {opt}[-q]{rst} – Replay compdefs (run after compinit)"
+  +zi-message "❯ cdclear       {opt}[-q]{rst} – Clear compdef replay list"
+  +zi-message "❯ env-whitelist {opt}[-v][-h]{rst} – Specify names or paterns of variables left unchanged during an unload"
+  +zi-message "❯ snippet       {opt}[-f] {p}[snippet]|{url}URL{rst} – Source local or remote file"
+  +zi-message "❯ delete        {opt}[--all][--clean] {p}[plugin]|{url}URL{rst} – Remove plugin or snippet from disk"
+  +zi-message "❯ update        {opt}[-L][-s][-v][-q][-r][-p] {p}[plugin]|{url}URL{rst} – Git update plugins or snippets"
+  +zi-message "❯ load          {opt}[-b] {p}[plugin]{rst} – Load plugin or absolute local path"
+  +zi-message "❯ unload        {opt}[-q] {p}[plugin]{rst} – Unload plugin"
+  +zi-message "❯ light         {opt}[-b] {p}[plugin]{rst}{msg}   – Load plugins without reporting/tracking"
+  +zi-message "❯ add-fpath     {opt}[-f] {p}[plugin]|{dir}DIR{rst} – Append directory to \$fpath; use -f to prepend instead"
+  +zi-message "❯ run           {opt}[-l] {p}[plugin]|{cmd}CMD{rst} – Runs command in the given plugin's directory"
+  +zi-message "❯ compile       {opt}[--all] {p}[plugin]{rst} – Compile plugins"
+  +zi-message "❯ uncompile     {opt}[--all] {p}[plugin]{rst} – Remove compiled version of plugins."
+  +zi-message "❯ cdisable      {p}[name]{rst} – Disable completion"
+  +zi-message "❯ cenable       {p}[name]{rst} – Enable completion"
+  +zi-message "❯ creinstall    {p}[plugin]{rst} – Install completions for plugin, can also receive absolute local path"
+  +zi-message "❯ cuninstall    {p}[plugin]{rst} – Uninstall completions for plugin"
+  +zi-message "❯ recall        {p}[plugin]|{url}URL{rst} – Fetch saved ice modifiers and construct command"
+  +zi-message "❯ srv           {p}[service]|{cmd}CMD{rst} – Control a service: stop,start,restart,next,quit"
+  +zi-message "❯ create        {p}[plugin]{rst} – Create plugin"
+  +zi-message "❯ edit          {p}[plugin]{rst} – Edit plugin's file with \$EDITOR{nl}"
+  +zi-message "{info}- ❮ ZI ❯ WIKI{ehi}: {url}https://z.digitalclouds.dev{rst}{nl}"
+} # ]]]
+# FUNCTION: .zi-analytics-menu [[[
+# Statistics, benchmarks and information.
+#
+# User-action entry point.
+.zi-analytics-menu() {
+  +zi-message "{info}- ❮ ZI ❯ Analytics{ehi}:{rst}"
+  +zi-message "❯ compiled          – List plugins that are compiled"
+  +zi-message "❯ zstatus           – Overall status"
+  +zi-message "❯ module help       – Manage zpmod"
+  +zi-message "❯ dtrace|dstart     – Start tracking what's going on in session"
+  +zi-message "❯ dstop             – Stop tracking what's going on in session"
+  +zi-message "❯ dreport           – Report what was going on in session"
+  +zi-message "❯ dunload           – Revert changes recorded between dstart and dstop"
+  +zi-message "❯ dclear            – Clear report of what was going on in session"
+  +zi-message "❯ bindkeys          – List bindkeys"
+  +zi-message "❯ clist|completions – List completions in use"
+  +zi-message "❯ cdlist            – Show compdef replay list"
+  +zi-message "❯ csearch           – Search for available completions from any plugin"
+  +zi-message "❯ man               – Show manual"
+  +zi-message "❯ ls                – List snippets in formatted and colorized manner"
+  +zi-message "❯ status            {opt}[--all] {p}[plugin]|{url}URL{rst} – Git status for plugin or svn status for snippet"
+  +zi-message "❯ report            {opt}[--all] {p}[plugin]{rst} – Show reports"
+  +zi-message "❯ times             {opt}[-s][-m][-a]{rst} – Statistics on plugin load times, sorted in order of loading"
+  +zi-message "❯ glance            {p}[plugin]{rst} – Look at plugin's source"
+  +zi-message "❯ stress            {p}[plugin]{rst} – Test plugin for compatibility with set of options"
+  +zi-message "❯ changes           {p}[plugin]{rst} – View plugin's git log"
+  +zi-message "❯ recently          {p}[time]{rst} – Show plugins that changed recently (e.g.: 1 month 2 days)"
+  +zi-message "❯ cd                {p}[plugin]{rst} – Enter plugin's directory; also support snippets, if feed with URL"
+  +zi-message "❯ loaded|lists      {p}[keyword]{rst} – Show what plugins are loaded (filter: keyword)"
+} # ]]]
+# FUNCTION: .zi-registered-subcommands [[[
+# Shows subcommands registered by annex.
+#
+# User-action entry point.
+.zi-registered-subcommands() {
+  +zi-message "{info}- Registered subcommands{ehi}:{rst}"
   integer idx
   local type key
   local -a arr
@@ -3068,64 +3119,18 @@ ${ZI[col-pname]}Available sub-commands${ZI[col-rst]}:"
       [[ -z "$key" || "$key" != "z-annex $type:"* ]] && continue
       arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
       (( ${+functions[${arr[6]}]} )) && { "${arr[6]}"; ((1)); } || \
-        { builtin print -rl -- "(Couldn't find the help-handler \`${arr[6]}' of the z-annex \`${arr[3]}')"; }
+        { +zi-message -l "(Couldn't find the help-handler \`${arr[6]}' of the z-annex \`${arr[3]}')"; }
     done
   done
-local -a ice_order
-ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-  builtin print -r -- "${ZI[col-pname]}Available ice-modifiers${ZI[col-rst]}:"
+} # ]]]
+# FUNCTION: .zi-registered-ice-mods [[[
+# Shows all registerted ice-modifiers.
+# Internal and registered by annex.
+#
+# User-action entry point.
+.zi-registered-ice-mods() {
+  +zi-message "{info}- Registered ice-modifiers{ehi}:{rst}"
+  local -a ice_order
+  ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
   +zi-message "${ice_order[*]}"
-} # ]]]
-# FUNCTION: .zi-analytics-menu [[[
-# Shows ❮ ZI ❯ analytics.
-#
-# User-action entry point.
-.zi-analytics-menu() {
-  builtin print -r -- "${ZI[col-pname]}❮ ZI ❯ Analytics${ZI[col-rst]}:
-❯ cd             ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Enter plugin's directory; also support snippets, if feed with URL
-❯ status         ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL – Git status for plugin or svn status for snippet; – accepts --all
-❯ report         ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Show plugin's report; – accepts --all
-❯ glance         ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Look at plugin's source (pygmentize, {,source-}highlight)
-❯ stress         ${ZI[col-p]}[plugin]${ZI[col-rst]}     – Test plugin for compatibility with set of options
-❯ changes        ${ZI[col-p]}[plugin]${ZI[col-rst]}     – View plugin's git log
-❯ recently       ${ZI[col-info]}[time]${ZI[col-rst]}       – Show plugins that changed recently, argument is e.g. 1 month 2 days
-❯ times [-s] [-m] [-a]        – Statistics on plugin load times, sorted in order of loading; -s – use seconds instead of milliseconds, -m – loading moments, -a – show both
-❯ zstatus                     – Overall ❮ ZI ❯ status
-❯ dtrace|dstart               – Start tracking what's going on in session
-❯ dstop                       – Stop tracking what's going on in session
-❯ dreport                     – Report what was going on in session
-❯ dunload                     – Revert changes recorded between dstart and dstop
-❯ dclear                      – Clear report of what was going on in session
-❯ loaded|list {keyword}       – Show what plugins are loaded (filter with \'keyword')
-❯ compiled                    – List plugins that are compiled
-❯ clist|completions           – List completions in use
-❯ cdlist                      – Show compdef replay list
-❯ csearch                     – Search for available completions from any plugin
-❯ ls                          – List snippets in formatted and colorized manner"
-} # ]]]
-# FUNCTION: .zi-control-menu [[[
-# Shows control options.
-#
-# User-action entry point.
-.zi-control-menu() {
-  builtin print -r -- "${ZI[col-pname]}❮ ZI ❯ Control${ZI[col-rst]}:
-❯ update  [-q]   ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL   – Git update plugin or snippet; – accepts --all; -q/--quiet; -r/--reset causes to run 'git reset --hard' or 'svn revert'
-❯ load           ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Load plugin, can also receive absolute local path
-❯ light   [-b]   ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Light plugin load, without reporting/tracking (-b – do track but bindkey-calls only)
-❯ unload         ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Unload plugin; -q – quiet
-❯ snippet [-f]   ${ZI[col-p]}{url}${ZI[col-rst]}          – Source local or remote file (by direct URL), -f: force – don't use cache
-❯ cdisable       ${ZI[col-info]}[cname]${ZI[col-rst]}        – Disable completion \`cname'
-❯ cenable        ${ZI[col-info]}[cname]${ZI[col-rst]}        – Enable completion \`cname'
-❯ delete         ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL   – Remove plugin or snippet from disk (good to forget wrongly passed ice-mods); --all – purge, --clean – delete plugins and snippets that are not loaded
-❯ create         ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Create plugin (also together with Github repository)
-❯ edit           ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Edit plugin's file with \$EDITOR
-❯ recall         ${ZI[col-p]}[plugin]${ZI[col-rst]}|URL   – Fetch saved ice modifiers and construct \`zi ice ...' command
-❯ add-fpath      ${ZI[col-p]}[plugin]${ZI[col-rst]}|DIR   – Adds given plugin directory to \$fpath; second argument is appended to the directory path; use -f/--front to prepend instead.
-❯ compile        ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Compile plugin (or all plugins if --all passed)
-❯ uncompile      ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Remove compiled version of plugin (or of all plugins if --all passed)
-❯ creinstall     ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Install completions for plugin, can also receive absolute local path; -q – quiet
-❯ cuninstall     ${ZI[col-p]}[plugin]${ZI[col-rst]}       – Uninstall completions for plugin
-❯ run     [-l]   ${ZI[col-p]}[plugin]${ZI[col-rst]}|CMD   – Runs command in the given plugin's directory; if -l given then plugin should be skipped – the option will cause the previous plugin to be reused
-❯ ice ${ZI[col-pname]}<ice specification>${ZI[col-rst]}       – Add ICE to next command, e.g. from\"gitlab\"
-❯ srv        ${ZI[col-p]}{service-id}${ZI[col-rst]}|CMD   – Control a service, command can be: stop,start,restart,next,quit; \`next' moves the service to another Z Shell"
 } # ]]]

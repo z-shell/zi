@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD041 -->
 <table style="width:100%;height:auto">
  <tr><td align="center">
   <h1><a title="❮ ZI ❯" target="_self" href="https://github.com/z-shell/zi">

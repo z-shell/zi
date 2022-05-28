@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
+# Copyright (c) 2021-present Z-Shell Community.
 #
 # Main state variables.
 #
@@ -1606,8 +1606,7 @@ builtin setopt noaliases
   [[ $1 = <-> && ( ${#} = 1 || ( $2 = (hup|nval|err) && ${#} = 2 ) ) ]] && { zle && {
     local alltext text IFS=$'\n' nl=$'\n'
     repeat 25; do read -r -u"$1" text; alltext+="${text:+$text$nl}"; done
-    [[ $alltext = @rst$nl ]] && { builtin zle reset-prompt; ((1)); } || \
-      { [[ -n $alltext ]] && builtin zle -M "$alltext"; }
+    [[ $alltext = @rst$nl ]] && { builtin zle reset-prompt; ((1)); } || { [[ -n $alltext ]] && builtin zle -M "$alltext"; }
   }
   builtin zle -F "$1"; exec {1}<&-
   return 0
@@ -1618,6 +1617,28 @@ builtin setopt noaliases
   command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
   builtin zle -F "$THEFD" +zi-deploy-message
 } # ]]]
+# FUNCTION: .zi-formatter-dbg. [[[
+# Usage example:
+# +zi-message "Installed {pid}$1{dbg} with [id-as:$id_as]"
+# +zi-message "Compdef replay{dbg} [compdefs: $count]"
+#
+# Common issues with debug messages:
+#  - minor code pollution
+#  - may require high maintenance
+# The {dbg} solves the above.
+#
+# If it encounters a tag {*} it first looks for a function .zi-formatter-*.
+# If found calls "{*}...{..." - the first tag on the second tag which substitutes the captured stdout.
+#
+# Function .zi-formatter-dbg will substitute empty text if:
+# ZI[DEBUG] != 1, and primary text is in opposite case.
+.zi-formatter-dbg() {
+  builtin emulate -L zsh -o extendedglob
+  REPLY=
+  if (( ZI[DEBUG] )); then
+    REPLY=$1
+  fi
+} # ]]]
 # FUNCTION: .zi-formatter-pid. [[[
 .zi-formatter-pid() {
   builtin emulate -L zsh -o extendedglob
@@ -1627,7 +1648,7 @@ builtin setopt noaliases
   # Trim leading/trailing whitespace
   1=${1//((#s)[[:space:]]##|[[:space:]]##(#e))/}
   ((${+functions[.zi-first]})) || source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
-  .zi-any-colorify-as-uspl2 "$1";
+  .zi-any-colorify-as-uspl2 "${1}";
   # Replace at least one character with an unbreakable space,
   # because extreme whitespace is lost due to implementation problems ...
   pbz=${pbz/[[:blank:]]/ }
@@ -1662,20 +1683,15 @@ builtin setopt noaliases
     # The advanced coloring if recognized the format…
     match[9]=${match[9]//\//"%F{227}%B"/"%F{81}%b"}
     if [[ -n $match[4] ]]; then
-      REPLY="$(builtin print -Pr -- %F{220}$match[1]%F{227}$match[2]\
-%B%F{82}$match[5]\
-%B%F{227}.\
-%B%F{183}$match[6]%f%b)" # … this ·case· ends at: trailing component of the with-dot domain …
+      REPLY="$(builtin print -Pr -- %F{220}$match[1]%F{227}$match[2]%B%F{82}$match[5]%B%F{227}.%B%F{183}$match[6]%f%b)" # … this ·case· ends at: trailing component of the with-dot domain …
     else
-      REPLY="$(builtin print -Pr -- %F{220}$match[1]%F{227}$match[2]\
-%B%F{82}$match[7]%f%b)" # … this ·case· ends at: no-dot domain …
+      REPLY="$(builtin print -Pr -- %F{220}$match[1]%F{227}$match[2]%B%F{82}$match[7]%f%b)" # … this ·case· ends at: no-dot domain …
     fi
     # Is there any file-path part in the URL?
     if [[ -n $match[9] ]]; then
-      REPLY+="$(print -Pr -- \
-%F{227}%B/%F{81}%b$match[9]%f%b)" # … append it. This ends the URL.
+      REPLY+="$(print -Pr -- %F{227}%B/%F{81}%b$match[9]%f%b)" # … append it. This ends the URL.
     fi
-#endif
+  #endif
   } else {
     # …revert to the basic if not…
     REPLY=$ZI[col-url]$1$ZI[col-rst]
@@ -1684,21 +1700,21 @@ builtin setopt noaliases
 # FUNCTION: +zi-message-formatter [[[
 .zi-main-message-formatter() {
   if [[ -z $1 && -z $2 && -z $3 ]]; then
-  REPLY=""
-  return
+    REPLY=""
+    return
   fi
   local append influx in_prepend
   if [[ $2 == (b|u|it|st|nb|nu|nit|nst) ]]; then
-  # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
-  append=$ZI[col-$2]
+    # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
+    append=$ZI[col-$2]
   elif [[ $2 == (…|ndsh|mdsh|mmdsh|-…|lr|) || -z $2 || -z $ZI[col-$2] ]]; then
-  # Resume previous escape code, if stored.
-  if [[ $ZI[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
-    in_prepend=$ZI[col-$ZI[__last-formatter-code]]
-    influx=$ZI[col-$ZI[__last-formatter-code]]
+    # Resume previous escape code, if stored.
+    if [[ $ZI[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
+      in_prepend=$ZI[col-$ZI[__last-formatter-code]]
+      influx=$ZI[col-$ZI[__last-formatter-code]]
     fi
   else
-  # End of escaping logic
+    # End of escaping logic
     append=$ZI[col-rst]
   fi
   # Construct the text.
@@ -1707,7 +1723,6 @@ builtin setopt noaliases
   # $ (...) - vertical tab 0xB ↔ 13 in the system octagonal connected back carriage (015).
   local nl=$'\n' vertical=$'\013' carriager=$'\015'
   REPLY=${REPLY//$nl/$vertical$carriager}
-# TODO: Unknown reason for commenting this out. Requires further investigation.
 #    REPLY+="x(${3}…)"
 } # ]]]
 # FUNCTION: +zi-message. [[[
@@ -1719,17 +1734,14 @@ builtin setopt noaliases
   ZI[__last-formatter-code]=
   msg=${${(j: :)${@:#--}}//\%/%%}
 
-# First try a dedicated formatter, marking its empty output with ←→, then
-# the general formatter and in the end filter-out the ←→ from the message.
-msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]\
-${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; \
-  builtin print -rn -- "$REPLY"
-)${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+$match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
+  # First try a dedicated formatter, marking its empty output with ←→, then
+  # the general formatter and in the end filter-out the ←→ from the message.
+  msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; builtin print -rn -- "$REPLY")${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+$match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
+  [[ -z $msg ]] && return
   # Reset color attributes at the end of the message.
   msg=$msg$ZI[col-rst]
   # Output the processed message:
-  builtin print -Pr ${opt:#--} -- $msg
-
+  builtin print -Pr ${opt:#--} -- ${msg}
   # Needed to properly end a message with {nl}.
   if [[ -n ${opt:#*n*} || -z $opt ]]; then
     print -n $'\015'
@@ -1738,13 +1750,11 @@ ${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]";
 # FUNCTION: +zi-prehelp-usage-message. [[[
 +zi-prehelp-usage-message() {
   builtin emulate -LR zsh -o extendedglob
-  local cmd=$1 allowed=$2 sep="$ZI[col-msg2], $ZI[col-ehi]" \
-    sep2="$ZI[col-msg2], $ZI[col-opt]" bcol
-
+  local cmd=$1 allowed=$2 sep="$ZI[col-msg2], $ZI[col-ehi]" sep2="$ZI[col-msg2], $ZI[col-opt]" bcol
   # -h/--help given?
   if (( OPTS[opt_-h,--help] )) {
     # Yes – a help message:
-    +zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" "the available {b-lhi}options{ehi}:{rst}"
+    +zi-message "{info}Help for{ehi}:{rst} {apo}\`{cmd}${cmd}{apo}\`{b-lhi} subcommand{ehi}:{rst}"
     local opt
     for opt ( ${(kos:|:)allowed} ) {
       [[ $opt == --* ]] && continue
@@ -1763,17 +1773,11 @@ ${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]";
     "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}{…} Aborting.{rst}"
   } else {
     local -a cmds
-    cmds=( load snippet update delete )
+    cmds=( for load snippet update delete )
     local bcol="{$cmd}" sep="${ZI[col-rst]}${ZI[col-$cmd]}\`, \`${ZI[col-cmd]}"
-    +zi-message "$bcol(it should be one of, e.g.{ehi}:" \
-    "{nb}$bcol\`{cmd}${(pj:$sep:)cmds}$bcol\`," \
-    "{cmd}{…}$bcol, e.g.{ehi}: {nb}$bcol\`{lhi}zi {b}{cmd}load" \
-    "{pid}username/reponame$bcol\`) or a {b}{hi}for{nb}$bcol-based" \
-    "command body (i.e.{ehi}:{rst}$bcol e.g.{ehi}: {rst}$bcol\`{lhi}zi" \
-      "{…}{b}ice-spec{nb}{…} {hi}for{nb}{lhi} {…}({b}plugin" \
-      "{nb}or{b} snippet) {pname}ID-1 ID-2 {-…} {lhi}{…}$bcol\`)." \
-    "See \`{cmd}help$bcol\` for a more detailed usage information and" \
-    "the list of the {cmd}subcommands$bcol.{rst}"
+    +zi-message "${bcol}{ehi}: {nb}${bcol}{cmd}${(pj:$sep:)cmds}${bcol}, {cmd}${bcol}, e.g.{ehi}:" \
+    "{nb}${bcol}{lhi}zi {b}{cmd}load {pid}username/reponame${bcol}{rst}." \
+    "See {cmd}help${bcol} {rst}of the {cmd}subcommand{rst} for the detailed usage information{rst}."
   }
 }
 # ]]]
@@ -1782,11 +1786,6 @@ ${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]";
   builtin emulate -LR zsh -o extendedglob
   reply=( "${(@)${@[2,-1]//([  $'\t']##|(#s))(#b)(${(~j.|.)${(@s.|.)___opt_map[$1]}})(#B)([  $'\t']##|(#e))/${OPTS[${___opt_map[${match[1]}]%%:*}]::=1}ß←↓→}:#1ß←↓→}" )
 } # ]]]
-
-#
-# Ice support.
-#
-
 # FUNCTION: .zi-ice. [[[
 # Parses ICE specification, puts the result into ICE global hash. The ice-spec is valid for
 # next command only (i.e. it "melts"), but it can then stick to plugin and activate e.g. at update.
@@ -1879,16 +1878,12 @@ return retval
     ___action="${(M)ICE[load]#\!}load"
   elif [[ -n ${ICE[unload]#\!} && -n $(( ___s=0 )) && $___pass = 2 && -n ${ZI_REGISTERED_PLUGINS[(r)$___id_as]} ]] && eval "${ICE[unload]#\!}"; then
     ___action="${(M)ICE[unload]#\!}remove"
-  elif [[ -n ${ICE[subscribe]#\!} && -n $(( ___s=0 )) && $___pass = 3 ]] && \
-    { local -a fts_arr
-    eval "fts_arr=( ${ICE[subscribe]}(DNms-$(( EPOCHSECONDS - ZI[fts-${ICE[subscribe]}] ))) ); (( \${#fts_arr} ))" && \
-      { ZI[fts-${ICE[subscribe]}]="$EPOCHSECONDS"; ___s=${+ICE[once]}; } || \
-      (( 0 ))
-    }
+  elif [[ -n ${ICE[subscribe]#\!} && -n $(( ___s=0 )) && $___pass = 3 ]] && { local -a fts_arr
+    eval "fts_arr=( ${ICE[subscribe]}(DNms-$(( EPOCHSECONDS - ZI[fts-${ICE[subscribe]}] ))) ); (( \${#fts_arr} ))" && { ZI[fts-${ICE[subscribe]}]="$EPOCHSECONDS"; ___s=${+ICE[once]}; } || (( 0 ))
+  }
   then
     ___action="${(M)ICE[subscribe]#\!}load"
   fi
-
   if [[ $___action = *load ]]; then
     if [[ $___tpe = p ]]; then
       .zi-load "${(@)=___id}" "" "$___mode"; (( ___retval += $? ))
@@ -1904,18 +1899,14 @@ return retval
     [[ $___tpe = p ]] && .zi-unload "$___id_as" "" -q
     (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )) && zle && zle -M "Unloaded $___id_as"
   fi
-
   [[ ${REPLY::=$___action} = \!* ]] && zle && zle .reset-prompt
-
   return ___s
 } # ]]]
-
 # FUNCTION: .zi-submit-turbo. [[[
-# If `zi load`, `zi light` or `zi snippet`  will be
-# preceded with `wait', `load', `unload' or `on-update-of`/`subscribe'
-# ice-mods then the plugin or snipped is to be loaded in turbo-mode,
-# and this function adds it to internal data structures, so that
-# @zi-scheduler can run (load, unload) this as a task.
+# If `zi load`, `zi light` or `zi snippet` will be preceded with:
+# `wait', `load', `unload' or `on-update-of`/`subscribe' ice-mods.
+# The plugin or snipped is to be loaded in turbo-mode, and this function adds it to
+# internal data structures, so that @zi-scheduler can run (load, unload) this as a task.
 .zi-submit-turbo() {
   local tpe="$1" mode="$2" opt_uspl2="$3" opt_plugin="$4"
 
@@ -1925,8 +1916,8 @@ return retval
   ZI[fts-${ICE[subscribe]}]="${ICE[subscribe]:+$EPOCHSECONDS}"
 
   [[ $tpe = s* ]] && \
-    local id="${${opt_plugin:+$opt_plugin}:-$opt_uspl2}" || \
-    local id="${${opt_plugin:+$opt_uspl2${${opt_uspl2:#%*}:+/}$opt_plugin}:-$opt_uspl2}"
+  local id="${${opt_plugin:+$opt_plugin}:-$opt_uspl2}" || \
+  local id="${${opt_plugin:+$opt_uspl2${${opt_uspl2:#%*}:+/}$opt_plugin}:-$opt_uspl2}"
 
   if [[ ${${ICE[wait]}%%[^0-9]([^0-9]|)([^0-9]|)([^0-9]|)} = (\!|.|)<-> ]]; then
     ZI_TASKS+=( "$EPOCHSECONDS+${${ICE[wait]#(\!|.)}%%[^0-9]([^0-9]|)([^0-9]|)([^0-9]|)}+${${${(M)ICE[wait]%a}:+1}:-${${${(M)ICE[wait]%b}:+2}:-${${${(M)ICE[wait]%c}:+3}:-1}}} $tpe ${ZI[WAIT_IDX]} ${mode:-_} ${(q)id} ${opt_plugin:+${(q)opt_uspl2}}" )
@@ -2063,11 +2054,6 @@ return retval
 
   [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
 } # ]]]
-
-#
-# Exposed functions.
-#
-
 # FUNCTION: zi. [[[
 # Main function directly exposed to user, obtains subcommand and its arguments, has completion.
 zi() {
@@ -2078,7 +2064,8 @@ zi() {
 
   integer ___retval ___retval2 ___correct
   local -a match mbegin mend
-  local MATCH cmd ___q="\`" ___q2="'" IFS=$' \t\n\0'; integer MBEGIN MEND
+  local MATCH cmd ___q="\`" ___q2="'" IFS=$' \t\n\0'
+  integer MBEGIN MEND
 
   # An annex's subcommand might use the reply vars.
   match=( ${ZI_EXTS[(I)z-annex subcommand:$1]} )
@@ -2128,12 +2115,12 @@ zi() {
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
-    times         "-h|--help|-m|-s"
+    times         "-h|--help|-m|-s|-a"
     light         "-h|--help|-b"
     snippet       "-h|--help|-f|--force|--command|-x"
   )
 
-  cmd="$1"
+  cmd="${1}"
   if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
@@ -2143,14 +2130,9 @@ zi() {
       fi
     fi
   fi
-
   reply=( ${ZI_EXTS[(I)z-annex subcommand:*]} )
 
-  [[ -n $1 && $1 != (-h|--help|help|analytics|control|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|\
-update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|cclear|\
-cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|uncompile|\
-compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run\
-${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snippet) ]] && {
+  [[ -n $1 && $1 != (-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snippet) ]] && {
     integer ___error
     if [[ $1 = (load|light|snippet) ]] {
       integer  ___is_snippet
@@ -2204,7 +2186,7 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
           ICE=( "${___ices[@]}" "${(kv)ZI_ICES[@]}" )
           ZI_ICE=( "${(kv)ICE[@]}" ) ZI_ICES=()
           integer ___msgs=${+ICE[debug]}
-          (( ___msgs )) && +zi-message "{pre}zi-main:{faint} Processing {pname}$1{faint}{…}{rst}"
+          (( ___msgs )) && +zi-message "{pre}zi-main:{faint} Processing {pname}${1}{faint}{…}{rst}"
           # Delete up to the final space to get the previously-processed ID.
           ZI[annex-exposed-processed-IDs]+="${___id:+ $___id}"
           # Strip the ID-qualifier (`@') and GitHub domain from the ID.
@@ -2325,7 +2307,6 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
               ___had_cloneonly=${+ICE[cloneonly]}
               ICE[cloneonly]=""
             }
-
             (( ___is_snippet )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${ICE[light-mode]+light}:-${OPTS[(I)-b]:+light-b}}"
 
             .zi-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
@@ -2361,7 +2342,7 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
     if (( ___error )) {
       () {
         emulate -LR zsh -o extendedglob
-        +zi-message -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
+        +zi-message -n "{u-warn}Error{ehi}:{rst} No plugin or snippet ID given"
         if [[ -n $___last_ice ]] {
           +zi-message -n " (the last recognized ice was: {ice}"\
           "${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
@@ -2376,16 +2357,16 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
     }
   }
 
-  case "$1" in
+  case "${1}" in
     (ice)
       shift
       .zi-ice "$@"
       ;;
     (cdreplay)
-      .zi-compdef-replay "$2"; ___retval=$?
+      .zi-compdef-replay "${2}"; ___retval=$?
       ;;
     (cdclear)
-      .zi-compdef-clear "$2"
+      .zi-compdef-clear "${2}"
       ;;
     (add-fpath)
       .zi-add-fpath "${@[2-correct,-1]}"
@@ -2408,7 +2389,6 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
       shift
       .zi-parse-opts env-whitelist "$@"
       builtin set -- "${reply[@]}"
-
       if (( $# == 0 )) {
         ZI[ENV-WHITELIST]=
         (( OPTS[opt_-v,--verbose] )) && +zi-message "{msg2}Cleared the parameter whitelist.{rst}"
@@ -2488,12 +2468,12 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
           ;;
         (loaded|list)
           # Show list of loaded plugins.
-          .zi-show-registered-plugins "$2"
+          .zi-show-registered-plugins "${2}"
           ;;
         (clist|completions)
           # Show installed, enabled or disabled, completions.
           # Detect stray and improper ones.
-          .zi-show-completions "$2"
+          .zi-show-completions "${2}"
           ;;
         (cclear)
           # Delete stray and improper completions.
@@ -2521,8 +2501,7 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
             builtin print "Argument needed, try: help"; ___retval=1
           else
             local ___f="_${2#_}"
-            # Enable completion given by completion function name
-            # with or without leading _, e.g. cp, _cp.
+            # Enable completion given by completion function name with or without leading _, e.g. cp, _cp.
             if .zi-cenable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
@@ -2536,8 +2515,8 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
           ;;
         (creinstall)
           (( ${+functions[.zi-install-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-          # Installs completions for plugin. Enables them all. It is a
-          # reinstallation, thus every obstacle gets overwritten or removed.
+          # Installs completions for plugin. Enables them all.
+          # It is reinstallation, thus every obstacle gets overwritten or removed.
           [[ $2 = -[qQ] ]] && { 5=$2; shift; }
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
           [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "Initializing completion ({func}compinit{rst}){…}"
@@ -2604,8 +2583,11 @@ ${reply:+|${(~j:|:)"${reply[@]#z-annex subcommand:}"}}) || $1 = (load|light|snip
           shift
           .zi-recently "$@"; ___retval=$?
           ;;
-        (control)
-          .zi-control-menu
+        (subcmds)
+          .zi-registered-subcommands
+          ;;
+        (icemods)
+          .zi-registered-ice-mods
           ;;
         (analytics)
           .zi-analytics-menu

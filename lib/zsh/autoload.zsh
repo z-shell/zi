@@ -1855,14 +1855,15 @@ fi
   builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
 
   local infoc="${ZI[col-info2]}"
-
-  +zi-message "{slight}Home directory{ehi}: {tab}{tab}{tab}{tab}{tab}{tab}{tab}{dir}${ZI[HOME_DIR]}{rst}"
-  +zi-message "{slight}Binary directory{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[BIN_DIR]}{rst}"
-  +zi-message "{slight}Plugin directory{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[PLUGINS_DIR]}{rst}"
-  +zi-message "{slight}Snippet directory{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SNIPPETS_DIR]}{rst}"
-  +zi-message "{slight}Service directory{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SERVICES_DIR]}{rst}"
-  +zi-message "{slight}Modules directory{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
-  +zi-message "{slight}Completions directory{ehi}:{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
+  +zi-message "{info}Directories set{ehi}: "
+  +zi-message "{msg}Home{ehi}: {tab}{tab}{tab}{tab}{tab}{tab}{tab}{dir}${ZI[HOME_DIR]}{rst}"
+  +zi-message "{msg}Binary{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[BIN_DIR]}{rst}"
+  +zi-message "{msg}Plugin{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "{msg}Snippet{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "{msg}Service{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "{msg}Modules{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
+  +zi-message "{msg}User-land{ehi}: {tab}{tab}{dir}${ZPFX}{rst}"
+  +zi-message "{msg}Completions{ehi}:{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "{info}Loaded plugins{ehi}: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
   # Count light-loaded plugins
@@ -1898,11 +1899,11 @@ fi
   completions=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
   +zi-message "{info}Disabled completions{ehi}: {num}${#completions[@]}{rst}"
   # Number of completions existing in all plugins
-  completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/tests/*|/zsdoc/*|*.ps1)(DN) )
+  completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/test*|/zsdoc/*|*.ps1)(DN) )
   +zi-message "{info}Completions available overall{ehi}: {num}${#completions[@]}{rst}"
   # Enumerate snippets loaded
   # }, ${infoc}{rst}", j:, :, {msg}"$'\e[0m, +zi-message h
-  +zi-message -n "{info}Snippets loaded{ehi}: "
+  +zi-message -n "{info}Snippets loaded{ehi}: {nl}"
   local sni
   for sni in ${(onv)ZI_SNIPPETS[@]}; do
     +zi-message -n "{url}${sni% <[^>]#>}{rst} ${(M)sni%<[^>]##>}, "

@@ -61,7 +61,7 @@ commands=(
   module:"Manage binary Zsh module, see 'zi module help' for more info"
   run:"Execute code inside plugin's folder"
   env-whitelist:"Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose"
-  add-fpath:"Add plugin folder to $fpath"
+  add-fpath:"Add plugin folder to \$fpath"
 )
 
 _arguments -C '1: :->command' '*: :->argument' && ret=0

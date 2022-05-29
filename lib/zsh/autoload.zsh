@@ -1856,12 +1856,12 @@ fi
 
   local infoc="${ZI[col-info2]}"
 
-  +zi-message "{slight}Home directory{ehi}:       {tab}{tab}{tab}{tab}{tab}{tab}{tab}{dir}${ZI[HOME_DIR]}{rst}"
-  +zi-message "{slight}Binary directory{ehi}:     {tab}{tab}{tab}{tab}{tab}{dir}${ZI[BIN_DIR]}{rst}"
-  +zi-message "{slight}Plugin directory{ehi}:     {tab}{tab}{tab}{tab}{tab}{dir}${ZI[PLUGINS_DIR]}{rst}"
-  +zi-message "{slight}Snippet directory{ehi}:    {tab}{tab}{tab}{tab}{dir}${ZI[SNIPPETS_DIR]}{rst}"
-  +zi-message "{slight}Service directory{ehi}:    {tab}{tab}{tab}{tab}{dir}${ZI[SERVICES_DIR]}{rst}"
-  +zi-message "{slight}Modules directory{ehi}:    {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
+  +zi-message "{slight}Home directory{ehi}: {tab}{tab}{tab}{tab}{tab}{tab}{tab}{dir}${ZI[HOME_DIR]}{rst}"
+  +zi-message "{slight}Binary directory{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[BIN_DIR]}{rst}"
+  +zi-message "{slight}Plugin directory{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "{slight}Snippet directory{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "{slight}Service directory{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "{slight}Modules directory{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
   +zi-message "{slight}Completions directory{ehi}:{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "{info}Loaded plugins{ehi}: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
@@ -1872,11 +1872,11 @@ fi
     [[ "$s" = 1 ]] && (( light ++ ))
   done
   # Without _zlocal/zi
-  +zi-message "{info}Light loaded: {num}$(( light - 1 )){rst}"
+  +zi-message "{info}Light loaded{ehi}: {num}$(( light - 1 )){rst}"
   # Downloaded plugins, without _zlocal/zi, custom
   typeset -a plugins
   plugins=( "${ZI[PLUGINS_DIR]}"/*(DN) )
-  +zi-message "{info}Downloaded plugins: {num}$(( ${#plugins} - 1 )){rst}"
+  +zi-message "{info}Downloaded plugins{ehi}: {num}$(( ${#plugins} - 1 )){rst}"
   # Number of compiled plugins
   typeset -a matches m
   integer count=0
@@ -1889,20 +1889,20 @@ fi
       cur_plugin="$uspl1"
     fi
   done
-  +zi-message "{info}Compiled plugins: {num}$count{rst}"
+  +zi-message "{info}Compiled plugins{ehi}: {num}$count{rst}"
   # Number of enabled completions, with _zlocal/zi
   typeset -a completions
   completions=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc(DN) )
-  +zi-message "{info}Enabled completions: {num}${#completions[@]}{rst}"
+  +zi-message "{info}Enabled completions{ehi}: {num}${#completions[@]}{rst}"
   # Number of disabled completions, with _zlocal/zi
   completions=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
-  +zi-message "{info}Disabled completions: {num}${#completions[@]}{rst}"
+  +zi-message "{info}Disabled completions{ehi}: {num}${#completions[@]}{rst}"
   # Number of completions existing in all plugins
   completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/tests/*|/zsdoc/*|*.ps1)(DN) )
-  +zi-message "{info}Completions available overall: {num}${#completions[@]}{rst}"
+  +zi-message "{info}Completions available overall{ehi}: {num}${#completions[@]}{rst}"
   # Enumerate snippets loaded
   # }, ${infoc}{rst}", j:, :, {msg}"$'\e[0m, +zi-message h
-  +zi-message -n "{info}Snippets loaded: "
+  +zi-message -n "{info}Snippets loaded{ehi}: "
   local sni
   for sni in ${(onv)ZI_SNIPPETS[@]}; do
     +zi-message -n "{url}${sni% <[^>]#>}{rst} ${(M)sni%<[^>]##>}, "
@@ -2170,7 +2170,7 @@ fi
     [[ "${#unpacked[1]}" -gt "$longest" ]] && longest="${#unpacked[1]}"
   done
   for c in "${packs[@]}"; do
-    unpacked=( "${(Q@)${(z@)c}}" ) # TODO: #112 ${(Q)${(z@)c}[@]} ?
+    unpacked=( "${(Q)${(z@)c}[@]}" )
     .zi-any-colorify-as-uspl2 "$unpacked[2]"
     builtin print -n "${(r:longest+1:: :)unpacked[1]} $REPLY"
 
@@ -2222,10 +2222,10 @@ fi
       [[ ! -f "$cpath" ]] && stray=1
     fi
     if (( unknown == 1 || stray == 1 )); then
-      builtin print -n "Removing completion: ${(r:longest+1:: :)c} $REPLY"
-      (( disabled )) && builtin print -n " ${ZI[col-error]}[disabled]${ZI[col-rst]}"
-      (( unknown )) && builtin print -n " ${ZI[col-error]}[unknown file]${ZI[col-rst]}"
-      (( stray )) && builtin print -n " ${ZI[col-error]}[stray]${ZI[col-rst]}"
+      +zi-message -n "Removing completion{ehi}:{rst} ${(r:longest+1:: :)c} $REPLY"
+      (( disabled )) && +zi-message -n " {error}[disabled]{col-rst]}"
+      (( unknown )) && +zi-message -n " {error}[unknown file]{rst}"
+      (( stray )) && +zi-message -n " {error}[stray]{rst}"
       builtin print
       command rm -f "$cpath"
     fi

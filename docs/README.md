@@ -1,51 +1,45 @@
 <div align="justify"><table style="width: 100%; height: auto">
-  <tr>
-    <td align="center">
-      <h1>
-        <a target="_self" href="https://github.com/z-shell/zi">
-          <img
-            style="width: 60px; height: 60px"
-            src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg"
-            alt="❮ ZI ❯ Logo"
-          /> </a
-        >❮ ZI ❯
-      </h1>
-      <h2>
-        A Swiss Army Knife for <a href="https://zsh.sourceforge.io/">Zsh</a> -
-        <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell</a>
-      </h2>
-      <h3>
-        <a
-          href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+"
-          >《 Report an issue 》</a
-        >
+<tr><td align="center">
+<h1><a target="_self" href="https://github.com/z-shell/zi">
+  <img style="width: 60px; height: 60px" src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" 
+       alt="❮ ZI ❯ Logo" /></a>❮ ZI ❯</h1><h2> A Swiss Army Knife for <a href="https://zsh.sourceforge.io/">Zsh</a> -
+  <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell</a></h2><p>
+  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+">《 Report an issue </a>
         ·
-        <a
-          href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+"
-          >《 Request a Feature 》</a
-        >
+  <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+">《 Request a Feature 》</a>
         ·
-        <a href="https://github.com/orgs/z-shell/discussions"
-          >《 Ask a Question 》</a
-        >
-      </h3>
-      <h3>
-        <a href="https://z.digitalclouds.dev/search/">《💡》Search Wiki </a>
-        <a href="https://z.digitalclouds.dev/docs/getting_started/installation/"
-          >《⚡️》 Install</a
-        >
-        <a
-          href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+"
-          >《💜》Join
-        </a>
-        <a href="https://crowdin.digitalclouds.dev/z-shell/">《🌐》Localize </a>
-      </h3>
-    </td>
-  </tr>
-
-  <tr>
-    <td align="center">
-      <a
+  <a href="https://github.com/orgs/z-shell/discussions">《 Ask a Question 》</a></p>
+  <a href="https://z.digitalclouds.dev/search/">《💡》Search Wiki </a>
+  <a href="https://z.digitalclouds.dev/docs/getting_started/installation/">《⚡️》 Install</a>
+  <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">《💜》Join</a>
+  <a href="https://crowdin.digitalclouds.dev/z-shell/">《🌐》Localize </a></td></tr>
+  <tr><td align="center">
+    <p><a target="_self" href="https://github.com/z-shell/status/actions?query=workflow%3A%22Uptime+CI%22">
+      <img align="center" src="https://github.com/z-shell/status/workflows/Uptime%20CI/badge.svg" alt="Uptime CI"/>
+      </a>
+      <a target="_self" href="https://github.com/z-shell/status/actions?query=workflow%3A%22Response+Time+CI%22">
+        <img
+          align="center"
+          src="https://github.com/z-shell/status/workflows/Response%20Time%20CI/badge.svg"
+          alt="Response Time CI"
+        />
+      </a>
+      <a target="_self" href="https://github.com/z-shell/status/actions?query=workflow%3A%22Graphs+CI%22">
+        <img
+          align="center"
+          src="https://github.com/z-shell/status/workflows/Graphs%20CI/badge.svg"
+          alt="Graphs CI"
+        />
+      </a>
+      <a target="_self" href="https://github.com/z-shell/uptime-status/actions?query=workflow%3A%22Summary+CI%22">
+        <img
+          align="center"
+          src="https://github.com/z-shell/status/workflows/Summary%20CI/badge.svg"
+          alt="Summary CI"
+        />
+      </a>
+      </p>
+    <a
         title="Crowdin"
         target="_self"
         href="https://crowdin.digitalclouds.dev/z-shell"
@@ -102,8 +96,10 @@
           alt="Visual Studio Code"
         />
       </a>
+      <p/>
     </td>
   </tr>
+  
   <tr>
     <td align="center">
       <img

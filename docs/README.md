@@ -152,7 +152,7 @@
           style="width: 80%; height: auto"
           src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/rss/dev.tag.zsh.rss.svg"
         />
-      </a> --?
+      </a> -->
     </td>
   </tr>
   <tr>
@@ -184,8 +184,9 @@
         <p> If you want to say **thank you** or/and support the active development.</p>
         <p> - Add a <a href="https://github.com/z-shell/zi">GitHub Star</a> to the project, and
         follow <a href="https://github.com/z-shell">Z-Shell</a> organization. </p>
-        <p> - Write interesting articles about the project on:</p>
-        <p> - <a href="https://dev.to/">Dev.to</a>, <a href="https://medium.com/">Mediu.com</a>, <a href="https://community.ops.io/zsh">Community.ops.io</a>, <a href="https://www.reddit.com/r/zsh/">Reddit</a>, <a href="https://twitter.com/zshell_zi">Twitter</a> or your blog and let us know to share your post, especially if it's in other languages. Participate in the community by showing the <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">interst</a> to the project, as it may bring us together, then great things may happen. If you would like to participate, but are not sure about what and how - do not hesitate to contact us so we can discuss the situation 👍. We've all been there, we all had to start from something - together is much easier, just need to do the first step 🚀. </p>
+        <p> - Write interesting articles about the project on: <br />
+        <a href="https://dev.to/">Dev.to</a>, <a href="https://medium.com/">Medium.com</a>, <a href="https://news.ycombinator.com/news">Hacker News</a>, <a href="https://community.ops.io/zsh">Community.ops.io</a>, <a href="https://www.reddit.com/r/zsh/">Reddit</a>, <a href="https://twitter.com/zshell_zi">Twitter</a> or your blog. Let us know so can share your post, especially if it's in other languages or some interesting zshrc configurations </p>
+        <p> Participate in the community by showing the <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">interst</a> to the project, as it may bring us together, then great things may happen. If you would like to participate, but are not sure about what and how - do not hesitate to contact us so we can discuss the situation 👍. We've all been there, we all had to start from something - together is much easier, just need to do the first step 🚀. </p>
         <hr />
         <h2 align="left">Security</h2>
         <p> - Z-Shell ZI follows good practices of security, but 100% security cannot be assured.</p>

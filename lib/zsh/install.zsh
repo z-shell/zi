@@ -1475,16 +1475,16 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - url
 # $2 - file
 ziextract() {
-  emulate -LR zsh
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   setopt extendedglob typesetsilent noshortloops # warncreateglobal
 
-  if (( $+commands[file] != 1 )) { +zi-message "{error}ziextract:{msg2} The {obj}file{msg2} command is required for recognizing the type of data to be processed.{rst}"
+  if (( $+commands[file] != 1 )) { +zi-message "{annex}ziextract{ehi}:{error} The {cmd}file{error} command is required for recognizing the type of data to be processed{rst}"
     return 1
   }
   local -a opt_move opt_move2 opt_norm opt_auto opt_nobkp
   zparseopts -D -E -move=opt_move -move2=opt_move2 -norm=opt_norm -auto=opt_auto -nobkp=opt_nobkp || \
-  { +zi-message "{error}ziextract:{msg2} Incorrect options given to" "\`{pre}ziextract{msg2}' (available are: {meta}--auto{msg2}," \
-  "{meta}--move{msg2}, {meta}--move2{msg2}, {meta}--norm{msg2}," "{meta}--nobkp{msg2}).{rst}"; return 1; }
+  { +zi-message "{annex}ziextract{ehi}:{error} Incorrect options given to" "\`{annex}ziextract{error}' {rst}({p}available are{ehi}: {opt}--auto{msg2}," \
+  "{opt}--move{msg2}, {opt}--move2{msg2}, {opt}--norm{msg2}, {opt}--nobkp{rst})"; return 1; }
 
   local file="$1" ext="$2"
   integer move=${${${(M)${#opt_move}:#0}:+0}:-1} \
@@ -1515,7 +1515,7 @@ ziextract() {
         type=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
         if [[ $type = (zip|rar|xz|7-zip|gzip|bzip2|tar|exe|pe32) ]] {
           (( !OPTS[opt_-q,--quiet] )) && \
-            +zi-message "{pre}ziextract:{info2} Note:{rst}" "detected a {meta}$type{rst} archive in the file" "{file}$fname{rst}."
+          +zi-message "{annex}ziextract{ehi}:{note} Detected a {obj2}$type{note} archive in the file {file}$fname{rst}"
           ziextract "$fname" "$type" $opt_move $opt_move2 $opt_norm --norm ${${${#archives}:#1}:+--nobkp}
           integer iret_val=$?
           ret_val+=iret_val
@@ -1538,7 +1538,7 @@ ziextract() {
                 # TODO: #115 If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
                 [[ $fname != $infname && $norm -eq 0 ]] && command rm -f "$infname"
                 (( !OPTS[opt_-q,--quiet] )) && \
-                  +zi-message "{pre}ziextract:{info2} Note:{rst}" "detected a {obj}${type2}{rst} archive in the" " file {file}${fname}{rst}."
+                +zi-message "{annex}ziextract{ehi}:{note} Detected a {obj2}${type2}{note} archive in the file {file}${fname}{rst}"
                 ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm ${${${#archives}:#1}:+--nobkp}
                 ret_val+=$?
                 stage2_processed+=( $fname )
@@ -1556,11 +1556,11 @@ ziextract() {
   }
 
   if [[ -z $file ]] {
-    +zi-message "{error}ziextract:{msg2} ERROR:{msg} argument" "needed (the file to extract) or the {meta}--auto{msg} option."
+    +zi-message "{annex}ziextract{ehi}:{error} Argument required for {file}file{error} to extract or the {opt}--auto{error} option{rst}"
     return 1
   }
   if [[ ! -e $file ]] {
-    +zi-message "{error}ziextract:{msg2} ERROR:{msg}" "the file \`{meta}${file}{msg}' doesn't exist.{rst}"
+    +zi-message "{annex}ziextract{ehi}:{error} The {file}file{error} \`{pname}${file}{error}' does not exist{rst}"
     return 1
   }
   if (( !nobkp )) {
@@ -1571,7 +1571,7 @@ ziextract() {
 
   .zi-extract-wrapper() {
     local file="$1" fun="$2" retval
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}ziextract:{msg} Unpacking the files from: \`{obj}$file{msg}'{…}{rst}"
+    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{annex}ziextract{ehi}:{rst} Unpacking the files from: \`{file}$file{rst}'{…}{rst}"
     $fun; retval=$?
     if (( retval == 0 )) {
       local -a files
@@ -1581,9 +1581,7 @@ ziextract() {
     return $retval
   }
 
-  →zi-check() { (( ${+commands[$1]} )) || +zi-message "{error}ziextract:{msg2} Error:{msg} No command {data}$1{msg}," \
-    "it is required to unpack {file}$2{rst}."
-  }
+  →zi-check() { (( ${+commands[$1]} )) || +zi-message "{annex}ziextract{ehi}:{error} No command {cmd}$1{msg2},{error} it is required to unpack {file}$2{rst}"; }
 
   case "${${ext:+.$ext}:-$file}" in
     ((#i)*.zip)
@@ -1666,8 +1664,7 @@ ziextract() {
         command hdiutil detach $attached_vol
 
         if (( retval )) {
-          +zi-message "{error}ziextract:{msg2} WARNING:{msg} problem occurred when attempted to copy the files" \
-          "from the mounted image: \`{obj}${file}{msg}'.{rst}"
+          +zi-message "{annex}ziextract{ehi}:{warn} Problem occurred when attempted to copy the files from the mounted image{ehi}:{rst} \`{file}${file}{rst}'"
         }
         return $retval
       }
@@ -1688,11 +1685,11 @@ ziextract() {
 
   if [[ $(typeset -f + →zi-extract) == "→zi-extract" ]] {
     .zi-extract-wrapper "$file" →zi-extract || {
-      +zi-message -n "{error}ziextract:{msg2} WARNING:{msg} extraction of the archive \`{file}${file}{msg}' had problems"
+      +zi-message -n "{annex}ziextract{ehi}:{warn} Problem occurred while extracting \`{file}${file}{warn}'{rst}"
       local -a bfiles
       bfiles=( ._backup/*(DN) )
       if (( ${#bfiles} && !nobkp )) {
-        +zi-message -n ", restoring the previous version of the plugin/snippet"
+        +zi-message -n ", restoring the previous version of the {pname}plugin{ehi}/{apo}snippet{rst}"
         command mv ._backup/*(DN) . 2>/dev/null
       }
       +zi-message ".{rst}"
@@ -1718,21 +1715,21 @@ ziextract() {
     command chmod a+x "${execs[@]}"
     if (( !OPTS[opt_-q,--quiet] )) {
       if (( ${#execs} == 1 )); then
-          +zi-message "{pre}ziextract:{rst}" "Successfully extracted and assigned +x chmod to the file:" "\`{obj}${execs[1]}{rst}'."
+        +zi-message "{annex}ziextract{ehi}:{rst} Successfully extracted and assigned {b}{opt}+x{rst} chmod to the file{ehi}:{rst}" "\`{file}${execs[1]}{rst}'"
       else
         local sep="$ZI[col-rst],$ZI[col-obj] "
         if (( ${#execs} > 7 )) {
-          +zi-message "{pre}ziextract:{rst} Successfully" "extracted and marked executable the appropriate files" "({obj}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
-            "in \`{file}$file{rst}'. All the extracted" "{obj}${#execs}{rst} executables are" "available in the {msg2}INSTALLED_EXECS{rst}" "array."
+          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files" "({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
+            "in \`{file}$file{rst}'. All the extracted" "{obj2}${#execs}{rst} executables are available in the {var}INSTALLED_EXECS{rst} array"
         } else {
-          +zi-message "{pre}ziextract:{rst} Successfully" "extracted and marked executable the appropriate files" \
-            "({obj}${(pj:$sep:)${execs[@]:t}}{rst}) contained" "in \`{file}$file{rst}'."
+          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files" \
+            "({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained" "in \`{file}$file{rst}'"
         }
       fi
     }
   } elif (( warning )) {
-    +zi-message "{pre}ziextract:" "{error}WARNING: {msg}didn't recognize the archive" "type of \`{obj}${file}{msg}'" \
-      "${ext:+/ {obj2}${ext}{msg} }" "(no extraction has been done).%f%b"
+    +zi-message "{annex}ziextract{ehi}:" "{error}Did not recognize the archive" "type of \`{file}${file}{rst}'" \
+      "${ext:+/ {obj2}${ext}{rst} }" "{rst}({p}no extraction has been done{rst})"
   }
 
   if (( move | move2 )) {

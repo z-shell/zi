@@ -2690,10 +2690,10 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 # Copyright (c) $year $user_name
 
 # According to the Zsh Plugin Standard:
-# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard
+# https://z.digitalclouds.dev/community/zsh_plugin_standard
 
-0=\${\${ZERO:-\${0:#\$ZSH_ARGZERO}}:-\${(%):-%N}}
-0=\${\${(M)0:#/*}:-\$PWD/\$0}
+0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
+0="${${(M)0:#/*}:-$PWD/$0}"
 
 # Then \${0:h} to get plugin's directory
 
@@ -2757,7 +2757,7 @@ EOF
   .zi-exists-physically-message "$user" "$plugin" || return 1
 
   .zi-first "$1" "$2" || {
-    builtin print "${ZI[col-error]}No source file found, cannot glance${ZI[col-rst]}"
+    +zi-message "{error}No source file found, cannot glance{rst}"
     return 1
   }
   local fname="${reply[-1]}"
@@ -2766,17 +2766,17 @@ EOF
   [[ "$TERM" = xterm* || "$TERM" = "screen" ]] && has_256_colors=1
   {
     if (( ${+commands[pygmentize]} )); then
-      builtin print "Glancing with ${ZI[col-info]}pygmentize${ZI[col-rst]}"
+      +zi-message "Glancing with {info}pygmentize{rst}"
       pygmentize -l bash -g "$fname"
     elif (( ${+commands[highlight]} )); then
-      builtin print "Glancing with ${ZI[col-info]}highlight${ZI[col-rst]}"
+      +zi-message "Glancing with {info}highlight{rst}"
       if (( has_256_colors )); then
         highlight -q --force -S sh -O xterm256 "$fname"
       else
         highlight -q --force -S sh -O ansi "$fname"
       fi
     elif (( ${+commands[source-highlight]} )); then
-      builtin print "Glancing with ${ZI[col-info]}source-highlight${ZI[col-rst]}"
+      +zi-message "Glancing with {info}source-highlight{rst}"
       source-highlight -fesc --failsafe -s zsh -o STDOUT -i "$fname"
     else
       cat "$fname"

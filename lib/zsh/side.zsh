@@ -2,7 +2,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
 
 # FUNCTION: .zi-exists-physically [[[
 # Checks if directory of given plugin exists in PLUGIN_DIR.
@@ -16,7 +16,7 @@
   if [[ ${reply[-2]} = % ]]; then
     [[ -d ${reply[-1]} ]] && return 0 || return 1
   else
-  [[ -d ${ZI[PLUGINS_DIR]}/${reply[-2]:+${reply[-2]}---}${reply[-1]//\//---} ]] && return 0 || return 1
+    [[ -d ${ZI[PLUGINS_DIR]}/${reply[-2]:+${reply[-2]}---}${reply[-1]//\//---} ]] && return 0 || return 1
   fi
 } # ]]]
 # FUNCTION: .zi-exists-physically-message [[[
@@ -27,7 +27,7 @@
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-exists-physically-message() {
-  builtin emulate -LR zsh
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
   if ! .zi-exists-physically "$1" "$2"; then
     .zi-any-to-user-plugin "$1" "$2"
@@ -115,8 +115,8 @@
 # Obtains a snippet URL without specification if it is an SVN URL (points to directory) or regular URL (points to file),
 # returns 2 possible paths for further examination
 .zi-two-paths() {
-  emulate -LR zsh
-  setopt extendedglob typesetsilent warncreateglobal noshortloops
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob typesetsilent warncreateglobal noshortloops
 
   local url=$1 url1 url2 local_dirA dirnameA svn_dirA local_dirB dirnameB
   local -a fileB_there
@@ -155,8 +155,8 @@
 # $5 - name of output string parameter, to hold filename ("filename")
 # $6 - name of output string parameter, to hold is-snippet 0/1-bool ("is_snippet")
 .zi-compute-ice() {
-  emulate -LR zsh
-  setopt extendedglob typesetsilent warncreateglobal noshortloops
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob typesetsilent warncreateglobal noshortloops
 
   local ___URL="${1%/}" ___pack="$2" ___is_snippet=0
   local ___var_name1="${3:-ZI_ICE}" ___var_name2="${4:-local_dir}" ___var_name3="${5:-filename}" ___var_name4="${6:-is_snippet}"
@@ -344,7 +344,7 @@
 # sucessfully reaches 0, or 1 if Ctrl-C will be pressed.
 .zi-countdown() {
   (( !${+ICE[countdown]} )) && return 0
-  emulate -L zsh -o extendedglob
+  builtin emulate -L zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
   trap "+zi-message \"{ehi}ABORTING, the ice {ice}$ice{ehi} not ran{rst}\"; return 1" INT
   local count=5 tpe="$1" ice
   ice="${ICE[$tpe]}"

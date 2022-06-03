@@ -9,8 +9,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-parse-json [[[
 # Retrievies the ice-list from given profile from the JSON of the package.json.
 .zi-parse-json() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent
 
   local -A ___pos_to_level ___level_to_pos ___pair_map ___final_pairs ___Strings ___Counts
   local ___input=$1 ___workbuf=$1 ___key=$2 ___varname=$3 ___style ___quoting
@@ -115,8 +115,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # ]]]
 # FUNCTION: .zi-get-package [[[
 .zi-get-package() {
-  emulate -LR zsh
-  setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
   local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123}
   local URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
@@ -253,7 +253,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       if { ! .zi-download-file-stdout "$URL" 0 1 >! "$fname" } {
         if { ! .zi-download-file-stdout "$URL" 1 1 >! "$fname" } {
           command rm -f "$fname"
-          +zi-message "Download of the file {apo}\`{file}$fname{apo}\`{rst} failed. No available download tool? One of:" "{cmd}${(pj:$tool_sep:)${=:-curl wget lftp lynx}}{rst}."
+          +zi-message "Download of the file {apo}\`{file}$fname{apo}\`{rst} failed. No available download tool? One of{ehi}:{rst}" "{cmd}${(pj:$tool_sep:)${=:-curl wget lftp lynx}}{rst}."
           return 1
         }
       }
@@ -283,8 +283,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - user
 # $2 - plugin
 .zi-setup-plugin-dir() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal noshortloops rcquotes
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal noshortloops rcquotes
 
   local user=$1 plugin=$2 id_as=$3 remote_url_path=${1:+$1/}$2 local_path tpe=$4 update=$5 version=$6
 
@@ -351,7 +351,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       command mkdir -p "$local_path"
       [[ -d "$local_path" ]] || return 1
       (
-        () { setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
+        () { builtin setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
         integer count
 
         for REPLY ( $reply ) {
@@ -389,7 +389,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       command mkdir -p "$local_path/._zi"
       [[ -d "$local_path" ]] || return 1
       (
-        () { setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
+        () { builtin setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
         .zi-get-cygwin-package "$remote_url_path" || return 1
         builtin print -r -- $REPLY >! ._zi/is_release
         ziextract "$REPLY"
@@ -503,8 +503,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - plugin (only when $1 - i.e. user - given)
 # $3 - if 1, then reinstall, otherwise only install completions that aren't there
 .zi-install-completions() {
-  builtin emulate -LR zsh
-  setopt nullglob extendedglob warncreateglobal typesetsilent noshortloops
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt nullglob extendedglob warncreateglobal typesetsilent noshortloops
 
   local id_as=$1${2:+${${${(M)1:#%}:+$2}:-/$2}}
   local reinstall=${3:-0} quiet=${${4:+1}:-0}
@@ -579,8 +579,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # No arguments.
 .zi-compinit() {
   [[ -n ${OPTS[opt_-p,--parallel]} && $1 != 1 ]] && return
-
-  emulate -LR zsh
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt nullglob extendedglob warncreateglobal typesetsilent
 
   integer use_C=$2
@@ -618,9 +617,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # Used by snippet loading.
 .zi-download-file-stdout() {
   local url="$1" restart="$2" progress="${(M)3:#1}"
-
-  emulate -LR zsh
-  setopt localtraps extendedglob
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt localtraps extendedglob
 
   if (( restart )) {
     (( ${path[(I)/usr/local/bin]} )) || {
@@ -671,7 +669,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local url="$1" IFS line header
   local -a cmd
 
-  setopt localoptions localtraps
+  builtin setopt localoptions localtraps
 
   (( !${path[(I)/usr/local/bin]} )) && {
     path+=( "/usr/local/bin" );
@@ -713,14 +711,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - mode, "" - normal, "-u" - update, "-t" - test
 # $3 - subdirectory (not path) with working copy, needed for -t and -u
 .zi-mirror-using-svn() {
-  setopt localoptions extendedglob warncreateglobal
+  builtin setopt localoptions extendedglob warncreateglobal
   local url="$1" update="$2" directory="$3"
 
   (( ${+commands[svn]} )) || \
     builtin print -Pr -- "${ZI[col-error]}Warning:%f%b Subversion not found" ", please install it to use \`${ZI[col-obj]}svn%f%b' ice."
 
   if [[ "$update" = "-t" ]]; then
-    ( () { setopt localoptions noautopushd; builtin cd -q "$directory"; }
+    ( () { builtin setopt localoptions noautopushd; builtin cd -q "$directory"; }
       local -a out1 out2
       out1=( "${(f@)"$(LANG=C svn info -r HEAD)"}" )
       out2=( "${(f@)"$(LANG=C svn info)"}" )
@@ -733,7 +731,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     return $?
   fi
   if [[ "$update" = "-u" && -d "$directory" && -d "$directory/.svn" ]]; then
-    ( () { setopt localoptions noautopushd; builtin cd -q "$directory"; }
+    ( () { builtin setopt localoptions noautopushd; builtin cd -q "$directory"; }
     command svn update
     return $? )
   else
@@ -748,8 +746,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 #
 # $1 - completion function name, e.g. "_cp"; can also be "cp"
 .zi-forget-completion() {
-  emulate -LR zsh
-  setopt extendedglob typesetsilent warncreateglobal
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob typesetsilent warncreateglobal
 
   local f="$1" quiet="$2"
 
@@ -775,7 +773,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-compile-plugin() {
-  builtin emulate -LR zsh
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
   local id_as=$1${2:+${${${(M)1:#%}:+$2}:-/$2}} first plugin_dir filename is_snippet
@@ -841,7 +839,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       integer retval
       for first in $list; do
         () {
-          builtin emulate -LR zsh -o extendedglob
+          builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
           zcompile -U "$first"; retval+=$?
         }
       done
@@ -863,8 +861,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # with Subversion – when svn-ICE is active. Github supports Subversion protocol and allows
 # to clone subdirectories. This is used to provide a layer of support for Oh-My-Zsh and Prezto.
 .zi-download-snippet() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent
 
   local save_url=$1 url=$2 id_as=$3 local_dir=$4 dirname=$5 filename=$6 update=$7
 
@@ -928,7 +926,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     if [[ $url = (http|https|ftp|ftps|scp)://* ]] {
       # URL
       (
-        () { setopt localoptions noautopushd; builtin cd -q "$local_dir"; } || return 4
+        () { builtin setopt localoptions noautopushd; builtin cd -q "$local_dir"; } || return 4
         (( !OPTS[opt_-q,--quiet] )) && \
         +zi-message "Downloading {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" (with Subversion)"}:-" (with curl, wget, lftp)"}{…}"
 
@@ -986,7 +984,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             fi
             if [[ -e ${list[1]} && ${list[1]} != */dev/null && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && ${+ICE[nocompile]} -eq 0 ]] {
               () {
-                builtin emulate -LR zsh -o extendedglob
+                builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
                 zcompile -U "${list[1]}" &>/dev/null || \
                   +zi-message "{u-warn}Warning{b-warn}:{rst} couldn't compile {apo}\`{file}${list[1]}{apo}\`{rst}."
               }
@@ -1075,7 +1073,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         fi
         if [[ -e $file_path && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && $file_path != */dev/null && ${+ICE[nocompile]} -eq 0 ]] {
           () {
-            builtin emulate -LR zsh -o extendedglob
+            builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
             if ! zcompile -U "$file_path" 2>/dev/null; then
               builtin print -r "Couldn't compile \`${file_path:t}', it MIGHT be wrongly downloaded"
               builtin print -r "(snippet URL points to a directory instead of a file?"
@@ -1267,8 +1265,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # ]]]
 # FUNCTION: .zi-update-snippet [[[
 .zi-update-snippet() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
   local -a tmp opts
   local url=$1
@@ -1358,8 +1356,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # Gets version string of latest release of given Github package.
 # Connects to Github releases page.
 .zi-get-latest-gh-r-url-part() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent noshortloops
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
 
   REPLY=
   local user=$1 plugin=$2 urlpart=$3
@@ -1476,14 +1474,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - file
 ziextract() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  setopt extendedglob typesetsilent noshortloops # warncreateglobal
+  builtin setopt extendedglob typesetsilent noshortloops # warncreateglobal
 
-  if (( $+commands[file] != 1 )) { +zi-message "{annex}ziextract{ehi}:{error} The {cmd}file{error} command is required for recognizing the type of data to be processed{rst}"
+  if (( $+commands[file] != 1 )) { +zi-message "{annex}ziextract{ehi}:{rst} {error}The {cmd}file{error} command is required for recognizing the type of data to be processed{rst}"
     return 1
   }
   local -a opt_move opt_move2 opt_norm opt_auto opt_nobkp
   zparseopts -D -E -move=opt_move -move2=opt_move2 -norm=opt_norm -auto=opt_auto -nobkp=opt_nobkp || \
-  { +zi-message "{annex}ziextract{ehi}:{error} Incorrect options given to" "\`{annex}ziextract{error}' {rst}({p}available are{ehi}: {opt}--auto{msg2}," \
+  { +zi-message "{annex}ziextract{ehi}:{error} Incorrect options given to" "\`{annex}ziextract{error}' {rst}({p}available are{ehi}:{rst} {opt}--auto{msg2}," \
   "{opt}--move{msg2}, {opt}--move2{msg2}, {opt}--norm{msg2}, {opt}--nobkp{rst})"; return 1; }
 
   local file="$1" ext="$2"
@@ -1515,7 +1513,7 @@ ziextract() {
         type=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
         if [[ $type = (zip|rar|xz|7-zip|gzip|bzip2|tar|exe|pe32) ]] {
           (( !OPTS[opt_-q,--quiet] )) && \
-          +zi-message "{annex}ziextract{ehi}:{note} Detected a {obj2}$type{note} archive in the file {file}$fname{rst}"
+          +zi-message "{annex}ziextract{ehi}:{rst} {note}Detected a {obj2}$type{note} archive in the file{ehi}:{rst} {file}$fname{rst}"
           ziextract "$fname" "$type" $opt_move $opt_move2 $opt_norm --norm ${${${#archives}:#1}:+--nobkp}
           integer iret_val=$?
           ret_val+=iret_val
@@ -1538,7 +1536,7 @@ ziextract() {
                 # TODO: #115 If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
                 [[ $fname != $infname && $norm -eq 0 ]] && command rm -f "$infname"
                 (( !OPTS[opt_-q,--quiet] )) && \
-                +zi-message "{annex}ziextract{ehi}:{note} Detected a {obj2}${type2}{note} archive in the file {file}${fname}{rst}"
+                +zi-message "{annex}ziextract{ehi}:{rst} {note}Detected a {obj2}${type2}{note} archive in the file{ehi}:{rst} {file}${fname}{rst}"
                 ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm ${${${#archives}:#1}:+--nobkp}
                 ret_val+=$?
                 stage2_processed+=( $fname )
@@ -1556,11 +1554,11 @@ ziextract() {
   }
 
   if [[ -z $file ]] {
-    +zi-message "{annex}ziextract{ehi}:{error} Argument required for {file}file{error} to extract or the {opt}--auto{error} option{rst}"
+    +zi-message "{annex}ziextract{ehi}:{rst} {error}Argument required for {file}file{error} to extract or the {opt}--auto{error} option{rst}"
     return 1
   }
   if [[ ! -e $file ]] {
-    +zi-message "{annex}ziextract{ehi}:{error} The {file}file{error} \`{pname}${file}{error}' does not exist{rst}"
+    +zi-message "{annex}ziextract{ehi}:{rst} {error} The {file}file{error} \`{pname}${file}{error}' does not exist{rst}"
     return 1
   }
   if (( !nobkp )) {
@@ -1571,7 +1569,7 @@ ziextract() {
 
   .zi-extract-wrapper() {
     local file="$1" fun="$2" retval
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{annex}ziextract{ehi}:{rst} Unpacking the files from: \`{file}$file{rst}'{…}{rst}"
+    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{annex}ziextract{ehi}:{rst} Unpacking the files from{ehi}:{rst} \`{file}$file{rst}'{…}{rst}"
     $fun; retval=$?
     if (( retval == 0 )) {
       local -a files
@@ -1581,7 +1579,7 @@ ziextract() {
     return $retval
   }
 
-  →zi-check() { (( ${+commands[$1]} )) || +zi-message "{annex}ziextract{ehi}:{error} No command {cmd}$1{msg2},{error} it is required to unpack {file}$2{rst}"; }
+  →zi-check() { (( ${+commands[$1]} )) || +zi-message "{annex}ziextract{ehi}:{rst} {error}No command {cmd}$1{msg2},{error} it is required to unpack {file}$2{rst}"; }
 
   case "${${ext:+.$ext}:-$file}" in
     ((#i)*.zip)
@@ -1719,11 +1717,10 @@ ziextract() {
       else
         local sep="$ZI[col-rst],$ZI[col-obj] "
         if (( ${#execs} > 7 )) {
-          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files" "({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
+          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files{ehi}:{rst}" "({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
             "in \`{file}$file{rst}'. All the extracted" "{obj2}${#execs}{rst} executables are available in the {var}INSTALLED_EXECS{rst} array"
         } else {
-          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files" \
-            "({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained" "in \`{file}$file{rst}'"
+          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files{ehi}:{rst}" "({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained" "in \`{file}$file{rst}'"
         }
       fi
     }
@@ -1754,8 +1751,8 @@ ziextract() {
 } # ]]]
 # FUNCTION: .zi-extract() [[[
 .zi-extract() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent
   local tpe=$1 extract=$2 local_dir=$3
   (
     builtin cd -q "$local_dir" || {
@@ -1793,8 +1790,8 @@ zpextract() { ziextract "$@"; }
 } # ]]]
 # FUNCTION: .zi-get-cygwin-package [[[
 .zi-get-cygwin-package() {
-  emulate -LR zsh
-  setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
   REPLY=
 
@@ -1879,8 +1876,8 @@ zpextract() { ziextract "$@"; }
 # ]]]
 # FUNCTION zicp [[[
 zicp() {
-  emulate -LR zsh
-  setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
   local -a mbegin mend match
   local cmd=cp
@@ -2038,13 +2035,13 @@ zimv() {
     local ___oldcd=$PWD
     (( ${+ICE[nocd]} == 0 )) && {
       () {
-        setopt localoptions noautopushd
+        builtin setopt localoptions noautopushd
         builtin cd -q "$dir"
       }
     }
     eval "$atclone"
     rc="$?"
-    () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
+    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
   }
   return "$rc"
 } # ]]]
@@ -2068,7 +2065,7 @@ zimv() {
   @zi-substitute from to
   local -a mv_args=("-f")
   local -a afr
-    ( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+    ( () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
       afr=( ${~from}(DN) )
 
       if (( ! ${#afr} )) {
@@ -2099,7 +2096,7 @@ zimv() {
   @zi-substitute from to
 
   local -a afr
-  ( () { setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+  ( () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
     afr=( ${~from}(DN) )
     if (( ${#afr} )) {
       if (( !OPTS[opt_-q,--quiet] )) {
@@ -2121,8 +2118,8 @@ zimv() {
     # Compile plugin
     if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
       () {
-        emulate -LR zsh
-        setopt extendedglob warncreateglobal
+        builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+        builtin setopt extendedglob warncreateglobal
         if [[ $tpe == snippet ]] {
           .zi-compile-plugin "%$dir" ""
         } else {
@@ -2144,11 +2141,11 @@ zimv() {
   .zi-countdown atpull && {
     local ___oldcd=$PWD
     (( ${+ICE[nocd]} == 0 )) && {
-      () { setopt localoptions noautopushd; builtin cd -q "$dir"; }
+      () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; }
     }
     .zi-at-eval "$atpull" "$ICE[atclone]"
     rc="$?"
-    () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
+    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
   }
   return "$rc"
 } # ]]]
@@ -2164,11 +2161,11 @@ zimv() {
   .zi-countdown atpull && {
     local ___oldcd=$PWD
     (( ${+ICE[nocd]} == 0 )) && {
-      () { setopt localoptions noautopushd; builtin cd -q "$dir"; }
+      () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; }
     }
     .zi-at-eval "$atpull" $ICE[atclone]
     rc="$?"
-    () { setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
+    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
   }
   return "$rc"
 } # ]]]

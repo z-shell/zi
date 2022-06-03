@@ -168,39 +168,36 @@
     <tr>
       <td align="left">
       <hr />
-        <h2>Roadmap</h2>
-        <p><a href="https://github.com/z-shell/zi/issues">See the open issues</a> for a list of proposed features or subjects that needs the support. </p>
-        <p><a href="https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc">Top Feature Requests</a> - add your votes using the 👍 reaction) </p>
-        <p><a href="https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc">Top issues</a> - add your votes using the 👍 reaction </p>
-        <p><a href="https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug">Newest issues</a>
-        <hr />
-        <h2 align="left">Contributing</h2>
-        <p> Work in progress Contributions are what make the open-source community
-        such an amazing place to learn, inspire, and create. Any contributions you
-        make will benefit everybody else and are <bold>greatly appreciated</bold> and our
-        <bold>target</bold> to support each other. Please read <a href="https://github.com/z-shell/community/blob/main/docs/project/CONTRIBUTING.md">our contribution guidelines"</a> before you start. Thank you for being involved! </p>
-        <hr />
-        <h2 align="left">Project assistance</h2>
-        <p> If you want to say **thank you** or/and support the active development.</p>
-        <p> - Add a <a href="https://github.com/z-shell/zi">GitHub Star</a> to the project, and
-        follow <a href="https://github.com/z-shell">Z-Shell</a> organization. </p>
-        <p> - Write interesting articles about the project on: <br />
-        <a href="https://dev.to/">Dev.to</a>, <a href="https://medium.com/">Medium.com</a>, <a href="https://news.ycombinator.com/news">Hacker News</a>, <a href="https://community.ops.io/zsh">Community.ops.io</a>, <a href="https://www.reddit.com/r/zsh/">Reddit</a>, <a href="https://twitter.com/zshell_zi">Twitter</a> or your blog. Let us know so can share your post, especially if it's in other languages or some interesting zshrc configurations </p>
-        <p> Participate in the community by showing the <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">interst</a> to the project, as it may bring us together, then great things may happen. If you would like to participate, but are not sure about what and how - do not hesitate to contact us so we can discuss the situation 👍. We've all been there, we all had to start from something - together is much easier, just need to do the first step 🚀. </p>
-        <hr />
-        <h2 align="left">Security</h2>
-        <p> - Z-Shell ZI follows good practices of security, but 100% security cannot be assured.</p>
-        <p> - Z-Shell ZI is provided <bold>"as is"</bold> without any <bold>warranty</bold>. Use at your own risk. </p>
-        <p> - For more information and to report security issues, please refer to our <a href="https://github.com/z-shell/zi/blob/main/docs/SECURITY.md">security documentation</a>.</p>
-        <hr />
-        <h2 align="left">Acknowledgements</h2>
-        <p> The <a href="https://github.com/z-shell">Z-Shell</a> organization was created to recover the <a href="https://github.com/zdharma">Zdharma</a> organization which was deleted by the owner for an unknown reason. It took a lot of time and offer for all those who liked the project and were depending on it don't want to depend on an unreliable source. </p>
-        <p> <a href="https://github.com/z-shell/zi">ZI</a>, formerly known as zplugin, zinit, is an open-source community project released under the <a href="https://github.com/z-shell/zi/blob/main/LICENSE">MIT License</a>.</p>
-        <hr />
-        <h2 align="left">Authors & contributors</h2>
-        <p> Check the list of authors and contributors in this <a href="https://github.com/z-shell/zi/contributors">repository</a> and also all other repositories under <a href="https://github.com/z-shell">Z-Shell</a> organization. We will inlclude all showning the interest or dedicated their time to take a part. </p>
-    </td>
-  </tr>
+ <h2>Roadmap</h2>
+ <p><a href="https://github.com/z-shell/zi/issues">See the open issues</a> for a list of proposed features or subjects that needs the support</p>
+ <p><a href="https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc">Top feature requests</a> - add your votes using the 👍 reaction) </p>
+ <p><a href="https://github.com/z-shell/zi/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Areactions-%2B1-desc">Top issues</a> - add your votes using the 👍 reaction </p>
+ <p><a href="https://github.com/z-shell/zi/issues?q=is%3Aopen+is%3Aissue+label%3Abug">Newest issues</a>
+<hr />
+ <h2 align="left">Contributing</h2>
+ <p> Work in progress Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you
+make will benefit everybody else and are <b>greatly appreciated</b> and our <b>target</b> to support each other. Please read <a href="https://github.com/z-shell/community/blob/main/docs/project/CONTRIBUTING.md">our contribution guidelines"</a> before you start. Thank you for being involved! </p>
+<hr />
+ <h2 align="left">Project assistance</h2>
+ <p> If you want to say <b>thank you</b> or/and support the active development.</p>
+ <p> - Add a <a href="https://github.com/z-shell/zi">GitHub Star</a> to the project, and follow <a href="https://github.com/z-shell">Z-Shell</a> organization. </p>
+ <p> - Write interesting articles about the project on: <br />
+  <a href="https://dev.to/">Dev.to</a>, <a href="https://medium.com/">Medium.com</a>, <a href="https://news.ycombinator.com/news">Hacker News</a>, <a href="https://community.ops.io/zsh">Community.ops.io</a>, <a href="https://www.reddit.com/r/zsh/">Reddit</a>, <a href="https://twitter.com/zshell_zi">Twitter</a> or your blog. Let us know so can share your post, especially if it's in other languages or some interesting zshrc configurations </p>
+ <p> Participate in the community by showing the <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">interst</a> to the project, as it may bring us together, then great things may happen. If you would like to participate, but are not sure about what and how - do not hesitate to contact us so we can discuss the situation 👍. We've all been there, we all had to start from something - together is much easier, just need to do the first step 🚀. </p>
+ <hr />
+ <h2 align="left">Security</h2>
+ <p> - Z-Shell ZI follows good practices of security, but 100% security cannot be assured.</p>
+ <p> - Z-Shell ZI is provided <bold>"as is"</bold> without any <bold>warranty</bold>. Use at your own risk. </p>
+ <p> - For more information and to report security issues, please refer to our <a href="https://github.com/z-shell/zi/blob/main/docs/SECURITY.md">security documentation</a>.</p>
+ <hr />
+ <h2 align="left">Acknowledgements</h2>
+ <p> The <a href="https://github.com/z-shell">Z-Shell</a> organization was created to recover the <a href="https://github.com/zdharma">Zdharma</a> organization which was deleted by the owner for an unknown reason. It took a lot of time and offer for all those who liked the project and were depending on it don't want to depend on an unreliable source. </p>
+ <p> <a href="https://github.com/z-shell/zi">ZI</a>, formerly known as zplugin, zinit, is an open-source community project released under the <a href="https://github.com/z-shell/zi/blob/main/LICENSE">MIT License</a>.</p>
+<hr />
+<h2 align="left">Authors & contributors</h2>
+ <p> Check the list of authors and contributors in this <a href="https://github.com/z-shell/zi/contributors">repository</a> and also all other repositories under <a href="https://github.com/z-shell">Z-Shell</a> organization. We will inlclude all showning the interest or dedicated their time to take a part.
+ </p>
+ </td></tr>
   <tr>
     <td align="center">
       <h2 align="left">Credits</h2>

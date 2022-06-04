@@ -630,7 +630,7 @@ ZI[EXTENDED_GLOB]=""
 .zi-self-update() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent warncreateglobal
-  [[ $1 = -q ]] && +zi-message "{info2}Updating »»» ❮ ZI ❯ {…}{rst}"
+  [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}ZI{rst} ❯ {…}"
   local nl=$'\n' escape=$'\x1b[' current_branch=$(command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
   (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
@@ -723,394 +723,394 @@ ZI[EXTENDED_GLOB]=""
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-unload() {
-.zi-any-to-user-plugin "$1" "$2"
-local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" user="${reply[-2]}" plugin="${reply[-1]}" quiet="${${3:+1}:-0}"
-local k
-.zi-any-colorify-as-uspl2 "$uspl2"
-(( quiet )) || builtin print -r -- "${ZI[col-bar]}---${ZI[col-rst]} Unloading plugin: $REPLY ${ZI[col-bar]}---${ZI[col-rst]}"
-local ___dir
-[[ "$user" = "%" ]] && ___dir="$plugin" || ___dir="${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}"
-# KSH_ARRAYS immunity
-integer correct=0
-[[ -o "KSH_ARRAYS" ]] && correct=1
-# Allow unload for debug user
-if [[ "$uspl2" != "_dtrace/_dtrace" ]]; then
-  .zi-exists-message "$1" "$2" || return 1
-fi
-.zi-any-colorify-as-uspl2 "$1" "$2"
-local uspl2col="$REPLY"
-# Store report of the plugin in variable LASTREPORT
-typeset -g LASTREPORT
-LASTREPORT=`.zi-show-report "$1" "$2"`
-
-#
-# Call the Zsh Plugin's Standard *_plugin_unload function
-#
-
-(( ${+functions[${plugin}_plugin_unload]} )) && ${plugin}_plugin_unload
-
-#
-# Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
-#
-
-local -a tmp
-local -A sice
-tmp=( "${(z@)ZI_SICE[$uspl2]}" )
-(( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
-if [[ -n ${sice[ps-on-unload]} ]]; then
-  (( quiet )) || builtin print -r "Running plugin's provided unload code: ${ZI[col-info]}${sice[ps-on-unload][1,50]}${sice[ps-on-unload][51]:+…}${ZI[col-rst]}"
-  local ___oldcd="$PWD"
-  () { builtin setopt localoptions noautopushd; builtin cd -q "$___dir"; }
-  eval "${sice[ps-on-unload]}"
-  () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
-fi
-
-#
-# 1. Delete done bindkeys
-#
-
-typeset -a string_widget
-string_widget=( "${(z)ZI[BINDKEYS__$uspl2]}" )
-local sw
-for sw in "${(Oa)string_widget[@]}"; do
-  [[ -z "$sw" ]] && continue
-  # Remove one level of quoting to split using (z)
-  sw="${(Q)sw}"
-  typeset -a sw_arr
-  sw_arr=( "${(z)sw}" )
-  # Remove one level of quoting to pass to bindkey
-  local sw_arr1="${(Q)sw_arr[1-correct]}" # Keys
-  local sw_arr2="${(Q)sw_arr[2-correct]}" # Widget
-  local sw_arr3="${(Q)sw_arr[3-correct]}" # Optional previous-bound widget
-  local sw_arr4="${(Q)sw_arr[4-correct]}" # Optional -M or -A or -N
-  local sw_arr5="${(Q)sw_arr[5-correct]}" # Optional map name
-  local sw_arr6="${(Q)sw_arr[6-correct]}" # Optional -R (not with -A, -N)
-  if [[ "$sw_arr4" = "-M" && "$sw_arr6" != "-R" ]]; then
-    if [[ -n "$sw_arr3" ]]; then
-      () {
-        builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
-        (( quiet )) || builtin print -r "Restoring bindkey ${${(q)sw_arr1}//(#m)\\[\^\?\]\[\)\(\'\"\}\{\`]/${MATCH#\\}} $sw_arr3 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
-      }
-      bindkey -M "$sw_arr5" "$sw_arr1" "$sw_arr3"
-    else
-      (( quiet )) || builtin print -r "Deleting bindkey ${(q)sw_arr1} $sw_arr2 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
-      bindkey -M "$sw_arr5" -r "$sw_arr1"
-    fi
-  elif [[ "$sw_arr4" = "-M" && "$sw_arr6" = "-R" ]]; then
-    if [[ -n "$sw_arr3" ]]; then
-      (( quiet )) || builtin print -r "Restoring ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr3 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
-      bindkey -RM "$sw_arr5" "$sw_arr1" "$sw_arr3"
-    else
-      (( quiet )) || builtin print -r "Deleting ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr2 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
-      bindkey -M "$sw_arr5" -Rr "$sw_arr1"
-    fi
-  elif [[ "$sw_arr4" != "-M" && "$sw_arr6" = "-R" ]]; then
-    if [[ -n "$sw_arr3" ]]; then
-      (( quiet )) || builtin print -r "Restoring ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr3"
-      bindkey -R "$sw_arr1" "$sw_arr3"
-    else
-      (( quiet )) || builtin print -r "Deleting ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr2"
-      bindkey -Rr "$sw_arr1"
-    fi
-  elif [[ "$sw_arr4" = "-A" ]]; then
-    (( quiet )) || builtin print -r "Linking backup-\`main' keymap \`$sw_arr5' back to \`main'"
-    bindkey -A "$sw_arr5" "main"
-  elif [[ "$sw_arr4" = "-N" ]]; then
-    (( quiet )) || builtin print -r "Deleting keymap \`$sw_arr5'"
-    bindkey -D "$sw_arr5"
-  else
-    if [[ -n "$sw_arr3" ]]; then
-      () {
-        builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
-        (( quiet )) || builtin print -r "Restoring bindkey ${${(q)sw_arr1}//(#m)\\[\^\?\]\[\)\(\'\"\}\{\`]/${MATCH#\\}} $sw_arr3"
-      }
-      bindkey "$sw_arr1" "$sw_arr3"
-    else
-      (( quiet )) || builtin print -r "Deleting bindkey ${(q)sw_arr1} $sw_arr2"
-      bindkey -r "$sw_arr1"
-    fi
+  .zi-any-to-user-plugin "$1" "$2"
+  local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" user="${reply[-2]}" plugin="${reply[-1]}" quiet="${${3:+1}:-0}"
+  local k
+  .zi-any-colorify-as-uspl2 "$uspl2"
+  (( quiet )) || builtin print -r -- "${ZI[col-bar]}---${ZI[col-rst]} Unloading plugin: $REPLY ${ZI[col-bar]}---${ZI[col-rst]}"
+  local ___dir
+  [[ "$user" = "%" ]] && ___dir="$plugin" || ___dir="${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}"
+  # KSH_ARRAYS immunity
+  integer correct=0
+  [[ -o "KSH_ARRAYS" ]] && correct=1
+  # Allow unload for debug user
+  if [[ "$uspl2" != "_dtrace/_dtrace" ]]; then
+    .zi-exists-message "$1" "$2" || return 1
   fi
-done
+  .zi-any-colorify-as-uspl2 "$1" "$2"
+  local uspl2col="$REPLY"
+  # Store report of the plugin in variable LASTREPORT
+  typeset -g LASTREPORT
+  LASTREPORT=`.zi-show-report "$1" "$2"`
 
-#
-# 2. Delete created Zstyles
-#
+  #
+  # Call the Zsh Plugin's Standard *_plugin_unload function
+  #
 
-typeset -a pattern_style
-pattern_style=( "${(z)ZI[ZSTYLES__$uspl2]}" )
-local ps
-for ps in "${(Oa)pattern_style[@]}"; do
-  [[ -z "$ps" ]] && continue
-  # Remove one level of quoting to split using (z)
-  ps="${(Q)ps}"
-  typeset -a ps_arr
-  ps_arr=( "${(z)ps}" )
-  # Remove one level of quoting to pass to zstyle
-  local ps_arr1="${(Q)ps_arr[1-correct]}"
-  local ps_arr2="${(Q)ps_arr[2-correct]}"
-  (( quiet )) || builtin print "Deleting zstyle $ps_arr1 $ps_arr2"
-  zstyle -d "$ps_arr1" "$ps_arr2"
-done
+  (( ${+functions[${plugin}_plugin_unload]} )) && ${plugin}_plugin_unload
 
-#
-# 3. Restore changed options
-#
+  #
+  # Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+  #
 
-# Paranoid, don't want bad key/value pair error
-.zi-diff-options-compute "$uspl2"
-integer empty=0
-.zi-save-set-extendedglob
-[[ "${ZI[OPTIONS__$uspl2]}" != *[$'! \t']* ]] && empty=1
-.zi-restore-extendedglob
-if (( empty != 1 )); then
-  typeset -A opts
-  opts=( "${(z)ZI[OPTIONS__$uspl2]}" )
-  for k in "${(kon)opts[@]}"; do
-    # Internal options
-    [[ "$k" = "physical" ]] && continue
-    if [[ "${opts[$k]}" = "on" ]]; then
-      (( quiet )) || +zi-message "[ {p}¤{rst} ] Setting option $k"
-      builtin setopt "$k"
+  local -a tmp
+  local -A sice
+  tmp=( "${(z@)ZI_SICE[$uspl2]}" )
+  (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
+  if [[ -n ${sice[ps-on-unload]} ]]; then
+    (( quiet )) || builtin print -r "Running plugin's provided unload code: ${ZI[col-info]}${sice[ps-on-unload][1,50]}${sice[ps-on-unload][51]:+…}${ZI[col-rst]}"
+    local ___oldcd="$PWD"
+    () { builtin setopt localoptions noautopushd; builtin cd -q "$___dir"; }
+    eval "${sice[ps-on-unload]}"
+    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
+  fi
+
+  #
+  # 1. Delete done bindkeys
+  #
+
+  typeset -a string_widget
+  string_widget=( "${(z)ZI[BINDKEYS__$uspl2]}" )
+  local sw
+  for sw in "${(Oa)string_widget[@]}"; do
+    [[ -z "$sw" ]] && continue
+    # Remove one level of quoting to split using (z)
+    sw="${(Q)sw}"
+    typeset -a sw_arr
+    sw_arr=( "${(z)sw}" )
+    # Remove one level of quoting to pass to bindkey
+    local sw_arr1="${(Q)sw_arr[1-correct]}" # Keys
+    local sw_arr2="${(Q)sw_arr[2-correct]}" # Widget
+    local sw_arr3="${(Q)sw_arr[3-correct]}" # Optional previous-bound widget
+    local sw_arr4="${(Q)sw_arr[4-correct]}" # Optional -M or -A or -N
+    local sw_arr5="${(Q)sw_arr[5-correct]}" # Optional map name
+    local sw_arr6="${(Q)sw_arr[6-correct]}" # Optional -R (not with -A, -N)
+    if [[ "$sw_arr4" = "-M" && "$sw_arr6" != "-R" ]]; then
+      if [[ -n "$sw_arr3" ]]; then
+        () {
+          builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+          (( quiet )) || builtin print -r "Restoring bindkey ${${(q)sw_arr1}//(#m)\\[\^\?\]\[\)\(\'\"\}\{\`]/${MATCH#\\}} $sw_arr3 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
+        }
+        bindkey -M "$sw_arr5" "$sw_arr1" "$sw_arr3"
+      else
+        (( quiet )) || builtin print -r "Deleting bindkey ${(q)sw_arr1} $sw_arr2 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
+        bindkey -M "$sw_arr5" -r "$sw_arr1"
+      fi
+    elif [[ "$sw_arr4" = "-M" && "$sw_arr6" = "-R" ]]; then
+      if [[ -n "$sw_arr3" ]]; then
+        (( quiet )) || builtin print -r "Restoring ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr3 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
+        bindkey -RM "$sw_arr5" "$sw_arr1" "$sw_arr3"
+      else
+        (( quiet )) || builtin print -r "Deleting ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr2 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
+        bindkey -M "$sw_arr5" -Rr "$sw_arr1"
+      fi
+    elif [[ "$sw_arr4" != "-M" && "$sw_arr6" = "-R" ]]; then
+      if [[ -n "$sw_arr3" ]]; then
+        (( quiet )) || builtin print -r "Restoring ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr3"
+        bindkey -R "$sw_arr1" "$sw_arr3"
+      else
+        (( quiet )) || builtin print -r "Deleting ${ZI[col-info]}range${ZI[col-rst]} bindkey ${(q)sw_arr1} $sw_arr2"
+        bindkey -Rr "$sw_arr1"
+      fi
+    elif [[ "$sw_arr4" = "-A" ]]; then
+      (( quiet )) || builtin print -r "Linking backup-\`main' keymap \`$sw_arr5' back to \`main'"
+      bindkey -A "$sw_arr5" "main"
+    elif [[ "$sw_arr4" = "-N" ]]; then
+      (( quiet )) || builtin print -r "Deleting keymap \`$sw_arr5'"
+      bindkey -D "$sw_arr5"
     else
-      (( quiet )) || +zi-message "[ {p}¤{rst} ] Unsetting option $k"
-      builtin unsetopt "$k"
+      if [[ -n "$sw_arr3" ]]; then
+        () {
+          builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+          (( quiet )) || builtin print -r "Restoring bindkey ${${(q)sw_arr1}//(#m)\\[\^\?\]\[\)\(\'\"\}\{\`]/${MATCH#\\}} $sw_arr3"
+        }
+        bindkey "$sw_arr1" "$sw_arr3"
+      else
+        (( quiet )) || builtin print -r "Deleting bindkey ${(q)sw_arr1} $sw_arr2"
+        bindkey -r "$sw_arr1"
+      fi
     fi
   done
-fi
 
-#
-# 4. Delete aliases
-#
+  #
+  # 2. Delete created Zstyles
+  #
 
-typeset -a aname_avalue
-aname_avalue=( "${(z)ZI[ALIASES__$uspl2]}" )
-local nv
-for nv in "${(Oa)aname_avalue[@]}"; do
-  [[ -z "$nv" ]] && continue
-  # Remove one level of quoting to split using (z)
-  nv="${(Q)nv}"
-  typeset -a nv_arr
-  nv_arr=( "${(z)nv}" )
-  # Remove one level of quoting to pass to unalias
-  local nv_arr1="${(Q)nv_arr[1-correct]}"
-  local nv_arr2="${(Q)nv_arr[2-correct]}"
-  local nv_arr3="${(Q)nv_arr[3-correct]}"
-  if [[ "$nv_arr3" = "-s" ]]; then
-    if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring {info}suffix{rst} alias ${nv_arr1}=${nv_arr2}"
-      alias "$nv_arr1" &> /dev/null && unalias -s -- "$nv_arr1"
-      alias -s -- "${nv_arr1}=${nv_arr2}"
-    else
-      (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        +zi-message "[ {p}¤{rst} ] Removing {info}suffix{rst} alias ${nv_arr1}"
-        unalias -s -- "$nv_arr1"
-      }
-    fi
-  elif [[ "$nv_arr3" = "-g" ]]; then
-    if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring {info}global{rst} alias ${nv_arr1}=${nv_arr2}"
-      alias "$nv_arr1" &> /dev/null && unalias -g -- "$nv_arr1"
-      alias -g -- "${nv_arr1}=${nv_arr2}"
-    else
-      (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        +zi-message "[ {p}¤{rst} ] Removing {info}global{rst} alias ${nv_arr1}"
-        unalias -- "${(q)nv_arr1}"
-      }
-    fi
-  else
-    if [[ -n "$nv_arr2" ]]; then
-      (( quiet )) || +zi-message "[ {p}¤{rst} ] Restoring alias ${nv_arr1}=${nv_arr2}"
-      alias "$nv_arr1" &> /dev/null && unalias -- "$nv_arr1"
-      alias -- "${nv_arr1}=${nv_arr2}"
-    else
-      (( quiet )) || alias "$nv_arr1" &> /dev/null && {
-        +zi-message "[ {p}¤{rst} ] Removing alias ${nv_arr1}"
-        unalias -- "$nv_arr1"
-      }
-    fi
-  fi
-done
+  typeset -a pattern_style
+  pattern_style=( "${(z)ZI[ZSTYLES__$uspl2]}" )
+  local ps
+  for ps in "${(Oa)pattern_style[@]}"; do
+    [[ -z "$ps" ]] && continue
+    # Remove one level of quoting to split using (z)
+    ps="${(Q)ps}"
+    typeset -a ps_arr
+    ps_arr=( "${(z)ps}" )
+    # Remove one level of quoting to pass to zstyle
+    local ps_arr1="${(Q)ps_arr[1-correct]}"
+    local ps_arr2="${(Q)ps_arr[2-correct]}"
+    (( quiet )) || builtin print "Deleting zstyle $ps_arr1 $ps_arr2"
+    zstyle -d "$ps_arr1" "$ps_arr2"
+  done
 
-#
-# 5. Restore Zle state
-#
+  #
+  # 3. Restore changed options
+  #
 
-local -a keys
-keys=( "${(@on)ZI[(I)TIME_<->_*]}" )
-integer keys_size=${#keys}
-() {
-  builtin setopt localoptions extendedglob noksharrays typesetsilent
-  typeset -a restore_widgets skip_delete
-  local wid
-  restore_widgets=( "${(z)ZI[WIDGETS_SAVED__$uspl2]}" )
-  for wid in "${(Oa)restore_widgets[@]}"; do
-    [[ -z "$wid" ]] && continue
-    wid="${(Q)wid}"
-    typeset -a orig_saved
-    orig_saved=( "${(z)wid}" )
-    local tpe="${orig_saved[1]}"
-    local orig_saved1="${(Q)orig_saved[2]}" # Original widget
-    local comp_wid="${(Q)orig_saved[3]}"
-    local orig_saved2="${(Q)orig_saved[4]}" # Saved target function
-    local orig_saved3="${(Q)orig_saved[5]}" # Saved previous $widget's contents
-    local found_time_key="${keys[(r)TIME_<->_${uspl2//\//---}]}" to_process_plugin
-    integer found_time_idx=0 idx=0
-    to_process_plugin=""
-    [[ "$found_time_key" = (#b)TIME_(<->)_* ]] && found_time_idx="${match[1]}"
-    if (( found_time_idx )); then # Must be true
-      for (( idx = found_time_idx + 1; idx <= keys_size; ++ idx )); do
-        found_time_key="${keys[(r)TIME_${idx}_*]}"
-        local oth_uspl2=""
-        [[ "$found_time_key" = (#b)TIME_${idx}_(*) ]] && oth_uspl2="${match[1]//---//}"
-        local -a entry_splitted
-        entry_splitted=( "${(z@)ZI[WIDGETS_SAVED__$oth_uspl2]}" )
-        integer found_idx="${entry_splitted[(I)(-N|-C)\ $orig_saved1\\\ *]}"
-        local -a entry_splitted2
-        entry_splitted2=( "${(z@)ZI[BINDKEYS__$oth_uspl2]}" )
-        integer found_idx2="${entry_splitted2[(I)*\ $orig_saved1\ *]}"
-        if (( found_idx || found_idx2 ))
-        then
-          # Skip multiple loads of the same plugin
-          # TODO: #113 Fully handle multiple plugin loads
-          if [[ "$oth_uspl2" != "$uspl2" ]]; then
-            to_process_plugin="$oth_uspl2"
-            break # Only the first one is needed
-          fi
-        fi
-      done
-      if [[ -n "$to_process_plugin" ]]; then
-        if (( !found_idx && !found_idx2 )); then
-          (( quiet )) || builtin print "Problem (1) during handling of widget \`$orig_saved1' (contents: $orig_saved2)"
-          continue
-        fi
-        (( quiet )) || builtin print "Chaining widget \`$orig_saved1' to plugin $oth_uspl2"
-        local -a oth_orig_saved
-        if (( found_idx )) {
-          oth_orig_saved=( "${(z)${(Q)entry_splitted[found_idx]}}" )
-          local oth_fun="${oth_orig_saved[4]}"
-          # oth_orig_saved[2]="${(q)orig_saved2}" # not do this, because
-          # we don't want to call other plugin's function at any moment
-          oth_orig_saved[5]="${(q)orig_saved3}" # chain up the widget
-          entry_splitted[found_idx]="${(q)${(j: :)oth_orig_saved}}"
-          ZI[WIDGETS_SAVED__$oth_uspl2]="${(j: :)entry_splitted}"
-        } else {
-          oth_orig_saved=( "${(z)${(Q)entry_splitted2[found_idx2]}}" )
-          local oth_fun="${widgets[${oth_orig_saved[3]}]#*:}"
-        }
-        integer idx="${functions[$orig_saved2][(i)(#b)([^[:space:]]#${orig_saved1}[^[:space:]]#)]}"
-        if (( idx <= ${#functions[$orig_saved2]} ))
-        then
-          local prefix_X="${match[1]#\{}"
-          [[ $prefix_X != \$* ]] && prefix_X="${prefix_X%\}}"
-          idx="${functions[$oth_fun][(i)(#b)([^[:space:]]#${orig_saved1}[^[:space:]]#)]}"
-          if (( idx <= ${#functions[$oth_fun]} )); then
-            match[1]="${match[1]#\{}"
-            [[ ${match[1]} != \$* ]] && match[1]="${match[1]%\}}"
-            eval "local oth_prefix_uspl2_X=\"${match[1]}\""
-            if [[ "${widgets[$prefix_X]}" = builtin ]]; then
-              (( quiet )) || builtin print "Builtin-restoring widget \`$oth_prefix_uspl2_X' ($oth_uspl2)"
-              zle -A ".${prefix_X#.}" "$oth_prefix_uspl2_X"
-            elif [[ "${widgets[$prefix_X]}" = completion:* ]]; then
-              (( quiet )) || builtin print "Chain*-restoring widget \`$oth_prefix_uspl2_X' ($oth_uspl2)"
-              zle -C "$oth_prefix_uspl2_X" "${(@)${(@s.:.)${orig_saved3#user:}}[2,3]}"
-            else
-              (( quiet )) || builtin print "Chain-restoring widget \`$oth_prefix_uspl2_X' ($oth_uspl2)"
-              zle -N "$oth_prefix_uspl2_X" "${widgets[$prefix_X]#user:}"
-            fi
-          fi
-          # The alternate method
-          # skip_delete+=( "${match[1]}" )
-          # functions[$oth_fun]="${functions[$oth_fun]//[^\{[:space:]]#$orig_saved1/${match[1]}}"
-        fi
+  # Paranoid, don't want bad key/value pair error
+  .zi-diff-options-compute "$uspl2"
+  integer empty=0
+  .zi-save-set-extendedglob
+  [[ "${ZI[OPTIONS__$uspl2]}" != *[$'! \t']* ]] && empty=1
+  .zi-restore-extendedglob
+  if (( empty != 1 )); then
+    typeset -A opts
+    opts=( "${(z)ZI[OPTIONS__$uspl2]}" )
+    for k in "${(kon)opts[@]}"; do
+      # Internal options
+      [[ "$k" = "physical" ]] && continue
+      if [[ "${opts[$k]}" = "on" ]]; then
+        (( quiet )) || +zi-message "Setting option $k"
+        builtin setopt "$k"
       else
-        (( quiet )) || builtin print "Restoring Zle widget $orig_saved1"
-        if [[ "$orig_saved3" = builtin ]]; then
-          zle -A ".$orig_saved1" "$orig_saved1"
-        elif [[ "$orig_saved3" = completion:* ]]; then
-          zle -C "$orig_saved1" "${(@)${(@s.:.)${orig_saved3#user:}}[2,3]}"
-        else
-          zle -N "$orig_saved1" "${orig_saved3#user:}"
-        fi
+        (( quiet )) || +zi-message "Unsetting option $k"
+        builtin unsetopt "$k"
+      fi
+    done
+  fi
+
+  #
+  # 4. Delete aliases
+  #
+
+  typeset -a aname_avalue
+  aname_avalue=( "${(z)ZI[ALIASES__$uspl2]}" )
+  local nv
+  for nv in "${(Oa)aname_avalue[@]}"; do
+    [[ -z "$nv" ]] && continue
+    # Remove one level of quoting to split using (z)
+    nv="${(Q)nv}"
+    typeset -a nv_arr
+    nv_arr=( "${(z)nv}" )
+    # Remove one level of quoting to pass to unalias
+    local nv_arr1="${(Q)nv_arr[1-correct]}"
+    local nv_arr2="${(Q)nv_arr[2-correct]}"
+    local nv_arr3="${(Q)nv_arr[3-correct]}"
+    if [[ "$nv_arr3" = "-s" ]]; then
+      if [[ -n "$nv_arr2" ]]; then
+        (( quiet )) || +zi-message "Restoring {info}suffix{rst} alias ${nv_arr1}=${nv_arr2}"
+        alias "$nv_arr1" &> /dev/null && unalias -s -- "$nv_arr1"
+        alias -s -- "${nv_arr1}=${nv_arr2}"
+      else
+        (( quiet )) || alias "$nv_arr1" &> /dev/null && {
+          +zi-message "Removing {info}suffix{rst} alias ${nv_arr1}"
+          unalias -s -- "$nv_arr1"
+        }
+      fi
+    elif [[ "$nv_arr3" = "-g" ]]; then
+      if [[ -n "$nv_arr2" ]]; then
+        (( quiet )) || +zi-message "Restoring {info}global{rst} alias ${nv_arr1}=${nv_arr2}"
+        alias "$nv_arr1" &> /dev/null && unalias -g -- "$nv_arr1"
+        alias -g -- "${nv_arr1}=${nv_arr2}"
+      else
+        (( quiet )) || alias "$nv_arr1" &> /dev/null && {
+          +zi-message "Removing {info}global{rst} alias ${nv_arr1}"
+          unalias -- "${(q)nv_arr1}"
+        }
       fi
     else
-      (( quiet )) || builtin print "Problem (2) during handling of widget \`$orig_saved1' (contents: $orig_saved2)"
+      if [[ -n "$nv_arr2" ]]; then
+        (( quiet )) || +zi-message "Restoring alias ${nv_arr1}=${nv_arr2}"
+        alias "$nv_arr1" &> /dev/null && unalias -- "$nv_arr1"
+        alias -- "${nv_arr1}=${nv_arr2}"
+      else
+        (( quiet )) || alias "$nv_arr1" &> /dev/null && {
+          +zi-message "Removing alias ${nv_arr1}"
+          unalias -- "$nv_arr1"
+        }
+      fi
     fi
   done
-}
-typeset -a delete_widgets
-delete_widgets=( "${(z)ZI[WIDGETS_DELETE__$uspl2]}" )
-local wid
-for wid in "${(Oa)delete_widgets[@]}"; do
-  [[ -z "$wid" ]] && continue
-  wid="${(Q)wid}"
-  if [[ -n "${skip_delete[(r)$wid]}" ]]; then
-    builtin print "Would delete $wid"
-    continue
-  fi
-  if [[ "${ZI_ZLE_HOOKS_LIST[$wid]}" = "1" ]]; then
-    (( quiet )) || builtin print "Removing Zle hook \`$wid'"
-  else
-    (( quiet )) || builtin print "Removing Zle widget \`$wid'"
-  fi
-  zle -D "$wid"
-done
 
-#
-# 6. Unfunction
-#
+  #
+  # 5. Restore Zle state
+  #
 
-.zi-diff-functions-compute "$uspl2"
-typeset -a func
-func=( "${(z)ZI[FUNCTIONS__$uspl2]}" )
-local f
-for f in "${(on)func[@]}"; do
-  [[ -z "$f" ]] && continue
-  f="${(Q)f}"
-  (( quiet )) || +zi-message "[ {p}¤{rst} ] Deleting function $f"
-  (( ${+functions[$f]} )) && unfunction -- "$f"
-  (( ${+precmd_functions} )) && precmd_functions=( ${precmd_functions[@]:#$f} )
-  (( ${+preexec_functions} )) && preexec_functions=( ${preexec_functions[@]:#$f} )
-  (( ${+chpwd_functions} )) && chpwd_functions=( ${chpwd_functions[@]:#$f} )
-  (( ${+periodic_functions} )) && periodic_functions=( ${periodic_functions[@]:#$f} )
-  (( ${+zshaddhistory_functions} )) && zshaddhistory_functions=( ${zshaddhistory_functions[@]:#$f} )
-  (( ${+zshexit_functions} )) && zshexit_functions=( ${zshexit_functions[@]:#$f} )
-done
-
-#
-# 7. Clean up FPATH and PATH
-#
-
-.zi-diff-env-compute "$uspl2"
-
-# Have to iterate over $path elements and
-# skip those that were added by the plugin
-typeset -a new elem p
-elem=( "${(z)ZI[PATH__$uspl2]}" )
-for p in "${path[@]}"; do
-  if [[ -z "${elem[(r)${(q)p}]}" ]] {
-    new+=( "$p" )
-  } else {
-    (( quiet )) || +zi-message "[ {p}¤{rst} ] Removing {pname}PATH{rst} element {info}$p{rst}"
-    [[ -d "$p" ]] || (( quiet )) || +zi-message "[ {error}✖{rst} ] {error}Warning:{rst} it didn't exist on disk"
+  local -a keys
+  keys=( "${(@on)ZI[(I)TIME_<->_*]}" )
+  integer keys_size=${#keys}
+  () {
+    builtin setopt localoptions extendedglob noksharrays typesetsilent
+    typeset -a restore_widgets skip_delete
+    local wid
+    restore_widgets=( "${(z)ZI[WIDGETS_SAVED__$uspl2]}" )
+    for wid in "${(Oa)restore_widgets[@]}"; do
+      [[ -z "$wid" ]] && continue
+      wid="${(Q)wid}"
+      typeset -a orig_saved
+      orig_saved=( "${(z)wid}" )
+      local tpe="${orig_saved[1]}"
+      local orig_saved1="${(Q)orig_saved[2]}" # Original widget
+      local comp_wid="${(Q)orig_saved[3]}"
+      local orig_saved2="${(Q)orig_saved[4]}" # Saved target function
+      local orig_saved3="${(Q)orig_saved[5]}" # Saved previous $widget's contents
+      local found_time_key="${keys[(r)TIME_<->_${uspl2//\//---}]}" to_process_plugin
+      integer found_time_idx=0 idx=0
+      to_process_plugin=""
+      [[ "$found_time_key" = (#b)TIME_(<->)_* ]] && found_time_idx="${match[1]}"
+      if (( found_time_idx )); then # Must be true
+        for (( idx = found_time_idx + 1; idx <= keys_size; ++ idx )); do
+          found_time_key="${keys[(r)TIME_${idx}_*]}"
+          local oth_uspl2=""
+          [[ "$found_time_key" = (#b)TIME_${idx}_(*) ]] && oth_uspl2="${match[1]//---//}"
+          local -a entry_splitted
+          entry_splitted=( "${(z@)ZI[WIDGETS_SAVED__$oth_uspl2]}" )
+          integer found_idx="${entry_splitted[(I)(-N|-C)\ $orig_saved1\\\ *]}"
+          local -a entry_splitted2
+          entry_splitted2=( "${(z@)ZI[BINDKEYS__$oth_uspl2]}" )
+          integer found_idx2="${entry_splitted2[(I)*\ $orig_saved1\ *]}"
+          if (( found_idx || found_idx2 ))
+          then
+            # Skip multiple loads of the same plugin
+            # TODO: #113 Fully handle multiple plugin loads
+            if [[ "$oth_uspl2" != "$uspl2" ]]; then
+              to_process_plugin="$oth_uspl2"
+              break # Only the first one is needed
+            fi
+          fi
+        done
+        if [[ -n "$to_process_plugin" ]]; then
+          if (( !found_idx && !found_idx2 )); then
+            (( quiet )) || builtin print "Problem (1) during handling of widget \`$orig_saved1' (contents: $orig_saved2)"
+            continue
+          fi
+          (( quiet )) || builtin print "Chaining widget \`$orig_saved1' to plugin $oth_uspl2"
+          local -a oth_orig_saved
+          if (( found_idx )) {
+            oth_orig_saved=( "${(z)${(Q)entry_splitted[found_idx]}}" )
+            local oth_fun="${oth_orig_saved[4]}"
+            # oth_orig_saved[2]="${(q)orig_saved2}" # not do this, because
+            # we don't want to call other plugin's function at any moment
+            oth_orig_saved[5]="${(q)orig_saved3}" # chain up the widget
+            entry_splitted[found_idx]="${(q)${(j: :)oth_orig_saved}}"
+            ZI[WIDGETS_SAVED__$oth_uspl2]="${(j: :)entry_splitted}"
+          } else {
+            oth_orig_saved=( "${(z)${(Q)entry_splitted2[found_idx2]}}" )
+            local oth_fun="${widgets[${oth_orig_saved[3]}]#*:}"
+          }
+          integer idx="${functions[$orig_saved2][(i)(#b)([^[:space:]]#${orig_saved1}[^[:space:]]#)]}"
+          if (( idx <= ${#functions[$orig_saved2]} ))
+          then
+            local prefix_X="${match[1]#\{}"
+            [[ $prefix_X != \$* ]] && prefix_X="${prefix_X%\}}"
+            idx="${functions[$oth_fun][(i)(#b)([^[:space:]]#${orig_saved1}[^[:space:]]#)]}"
+            if (( idx <= ${#functions[$oth_fun]} )); then
+              match[1]="${match[1]#\{}"
+              [[ ${match[1]} != \$* ]] && match[1]="${match[1]%\}}"
+              eval "local oth_prefix_uspl2_X=\"${match[1]}\""
+              if [[ "${widgets[$prefix_X]}" = builtin ]]; then
+                (( quiet )) || builtin print "Builtin-restoring widget \`$oth_prefix_uspl2_X' ($oth_uspl2)"
+                zle -A ".${prefix_X#.}" "$oth_prefix_uspl2_X"
+              elif [[ "${widgets[$prefix_X]}" = completion:* ]]; then
+                (( quiet )) || builtin print "Chain*-restoring widget \`$oth_prefix_uspl2_X' ($oth_uspl2)"
+                zle -C "$oth_prefix_uspl2_X" "${(@)${(@s.:.)${orig_saved3#user:}}[2,3]}"
+              else
+                (( quiet )) || builtin print "Chain-restoring widget \`$oth_prefix_uspl2_X' ($oth_uspl2)"
+                zle -N "$oth_prefix_uspl2_X" "${widgets[$prefix_X]#user:}"
+              fi
+            fi
+            # The alternate method
+            # skip_delete+=( "${match[1]}" )
+            # functions[$oth_fun]="${functions[$oth_fun]//[^\{[:space:]]#$orig_saved1/${match[1]}}"
+          fi
+        else
+          (( quiet )) || builtin print "Restoring Zle widget $orig_saved1"
+          if [[ "$orig_saved3" = builtin ]]; then
+            zle -A ".$orig_saved1" "$orig_saved1"
+          elif [[ "$orig_saved3" = completion:* ]]; then
+            zle -C "$orig_saved1" "${(@)${(@s.:.)${orig_saved3#user:}}[2,3]}"
+          else
+            zle -N "$orig_saved1" "${orig_saved3#user:}"
+          fi
+        fi
+      else
+        (( quiet )) || builtin print "Problem (2) during handling of widget \`$orig_saved1' (contents: $orig_saved2)"
+      fi
+    done
   }
-done
-path=( "${new[@]}" )
-# The same for $fpath
-elem=( "${(z)ZI[FPATH__$uspl2]}" )
-new=( )
-for p ( "${fpath[@]}" ) {
-  if [[ -z "${elem[(r)${(q)p}]}" ]] {
-    new+=( "$p" )
-  } else {
-    (( quiet )) || +zi-message "[ {p}¤{rst} ] Removing {pname}FPATH{rst} element {info}$p{rst}"
-    [[ -d "$p" ]] || (( quiet )) || +zi-message "[ {error}✖{rst} ] {error}Warning:{rst} it didn't exist on disk"
-  }
-}
-fpath=( "${new[@]}" )
+  typeset -a delete_widgets
+  delete_widgets=( "${(z)ZI[WIDGETS_DELETE__$uspl2]}" )
+  local wid
+  for wid in "${(Oa)delete_widgets[@]}"; do
+    [[ -z "$wid" ]] && continue
+    wid="${(Q)wid}"
+    if [[ -n "${skip_delete[(r)$wid]}" ]]; then
+      builtin print "Would delete $wid"
+      continue
+    fi
+    if [[ "${ZI_ZLE_HOOKS_LIST[$wid]}" = "1" ]]; then
+      (( quiet )) || builtin print "Removing Zle hook \`$wid'"
+    else
+      (( quiet )) || builtin print "Removing Zle widget \`$wid'"
+    fi
+    zle -D "$wid"
+  done
 
-#
-# 8. Delete created variables
-#
+  #
+  # 6. Unfunction
+  #
+
+  .zi-diff-functions-compute "$uspl2"
+  typeset -a func
+  func=( "${(z)ZI[FUNCTIONS__$uspl2]}" )
+  local f
+  for f in "${(on)func[@]}"; do
+    [[ -z "$f" ]] && continue
+    f="${(Q)f}"
+    (( quiet )) || +zi-message "Deleting function $f"
+    (( ${+functions[$f]} )) && unfunction -- "$f"
+    (( ${+precmd_functions} )) && precmd_functions=( ${precmd_functions[@]:#$f} )
+    (( ${+preexec_functions} )) && preexec_functions=( ${preexec_functions[@]:#$f} )
+    (( ${+chpwd_functions} )) && chpwd_functions=( ${chpwd_functions[@]:#$f} )
+    (( ${+periodic_functions} )) && periodic_functions=( ${periodic_functions[@]:#$f} )
+    (( ${+zshaddhistory_functions} )) && zshaddhistory_functions=( ${zshaddhistory_functions[@]:#$f} )
+    (( ${+zshexit_functions} )) && zshexit_functions=( ${zshexit_functions[@]:#$f} )
+  done
+
+  #
+  # 7. Clean up FPATH and PATH
+  #
+
+  .zi-diff-env-compute "$uspl2"
+
+  # Have to iterate over $path elements and
+  # skip those that were added by the plugin
+  typeset -a new elem p
+  elem=( "${(z)ZI[PATH__$uspl2]}" )
+  for p in "${path[@]}"; do
+    if [[ -z "${elem[(r)${(q)p}]}" ]] {
+      new+=( "$p" )
+    } else {
+      (( quiet )) || +zi-message "Removing {pname}PATH{rst} element {info}$p{rst}"
+      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk"
+    }
+  done
+  path=( "${new[@]}" )
+  # The same for $fpath
+  elem=( "${(z)ZI[FPATH__$uspl2]}" )
+  new=( )
+  for p ( "${fpath[@]}" ) {
+    if [[ -z "${elem[(r)${(q)p}]}" ]] {
+      new+=( "$p" )
+    } else {
+      (( quiet )) || +zi-message "Removing {pname}FPATH{rst} element {info}$p{rst}"
+      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk"
+    }
+  }
+  fpath=( "${new[@]}" )
+
+  #
+  # 8. Delete created variables
+  #
 
   .zi-diff-parameter-compute "$uspl2"
   empty=0
@@ -1143,10 +1143,8 @@ fpath=( "${new[@]}" )
             continue;
             ;;
         esac
-        # Don't unset redefined variables, only newly defined
-        # "" means variable didn't exist before plugin load
-        # (didn't have a type).
-        # Do an exception for the prompt variables.
+        # Don't unset redefined variables, only newly defined "" means variable did not exist before plugin load
+        # (did not have a type). Do an exception for the prompt variables.
         if [[ $v1 = '""' || ( $k = (RPROMPT|RPS1|RPS2|PROMPT|PS1|PS2|PS3|PS4) && $v1 != $v2 ) ]]; then
           found=0
           for wl in "${whitelist[@]}"; do
@@ -1169,21 +1167,20 @@ fpath=( "${new[@]}" )
     done
   fi
 
-#
-# 9. Forget the plugin
-#
+  #
+  # 9. Forget the plugin
+  #
 
-if [[ "$uspl2" = "_dtrace/_dtrace" ]]; then
-  .zi-clear-debug-report
-  (( quiet )) || +zi-message "[ {info}✔{rst} ] dtrace report saved to \$LASTREPORT"
-else
-  (( quiet )) || +zi-message "[ {info}✔{rst} ] Unregistering plugin $uspl2col"
-  .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
-  zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
-  .zi-clear-report-for "$user" "$plugin"
-  (( quiet )) || +zi-message "[ {info}✔{rst} ] Plugin's report saved to \$LASTREPORT"
-fi
-
+  if [[ "$uspl2" = "_dtrace/_dtrace" ]]; then
+    .zi-clear-debug-report
+    (( quiet )) || +zi-message "dtrace report saved to \$LASTREPORT"
+  else
+    (( quiet )) || +zi-message "Unregistering plugin $uspl2col"
+    .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
+    zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
+    .zi-clear-report-for "$user" "$plugin"
+    (( quiet )) || +zi-message "Plugin's report saved to \$LASTREPORT"
+  fi
 } # ]]]
 # FUNCTION: .zi-show-report [[[
 # Displays report of the plugin given.
@@ -1222,24 +1219,24 @@ fi
   REPLY=""
   .zi-diff-functions-compute "$uspl2"
   .zi-format-functions "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Functions created:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}Functions created:{rst}"$'\n'"$REPLY"
   # Print report gathered via $options-diffing
   REPLY=""
   .zi-diff-options-compute "$uspl2"
   .zi-format-options "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Options changed:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}Options changed:{rst}"$'\n'"$REPLY"
   # Print report gathered via environment diffing
   REPLY=""
   .zi-diff-env-compute "$uspl2"
   .zi-format-env "$uspl2" "1"
-  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}PATH elements added:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}PATH elements added:{rst}"$'\n'"$REPLY"
   REPLY=""
   .zi-format-env "$uspl2" "2"
-  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}FPATH elements added:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}FPATH elements added:{rst}"$'\n'"$REPLY"
   # Print report gathered via parameter diffing
   .zi-diff-parameter-compute "$uspl2"
   .zi-format-parameter "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "[ {info}✔{rst} ] {p}Variables added or redefined:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}Variables added or redefined:{rst}"$'\n'"$REPLY"
   # Print what completions plugin has
   .zi-find-completions-of-plugin "$user" "$plugin"
   typeset -a completions
@@ -1318,7 +1315,7 @@ fi
   if (( was_snippet )) {
     .zi-exists-physically "$user" "$plugin" || return $retval
     .zi-any-colorify-as-uspl2 "$2" "$3"
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "[ {p}¤{rst} ] {msg2}Updating also \`$REPLY{rst}{msg2}' plugin (already updated a snippet of the same name){…}{rst}"
+    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{msg2}Updating also \`$REPLY{rst}{msg2}' plugin (already updated a snippet of the same name){…}{rst}"
   } else {
     .zi-exists-physically-message "$user" "$plugin" || return 1
   }
@@ -1355,7 +1352,7 @@ fi
     if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]]; then
       (( !OPTS[opt_-q,--quiet] )) && {
         .zi-any-colorify-as-uspl2 "$id_as"
-        [[ $id_as = _local/* ]] && +zi-message "[ {p}¤{rst} ] {info2}Skipping local plugin $REPLY{rst}" || +zi-message "[ {p}¤{rst} ] {info2} $REPLY doesn't have a remote set, will not fetch{rst}"
+        [[ $id_as = _local/* ]] && +zi-message "{info2}Skipping local plugin $REPLY{rst}" || +zi-message "{info2} $REPLY doesn't have a remote set, will not fetch{rst}"
       }
       return 1
     fi
@@ -1395,7 +1392,7 @@ fi
         }
       }
       if (( ZI[annex-multi-flag:pull-active] <= 1 && !OPTS[opt_-q,--quiet] )) {
-        +zi-message "[ {info}✔{rst} ] Binary{rst}: {obj2}$version{rst} is latest release{rst}"
+        +zi-message "Binary{ehi}:{rst} {b}{version}${version}{rst} is the latest {info}✔{rst}"
       }
     }
     if (( 1 )) {
@@ -1404,7 +1401,7 @@ fi
           .zi-any-colorify-as-uspl2 "$id_as"
           (( ZI[first-plugin-mark] )) && {
             ZI[first-plugin-mark]=0
-          } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
+          } || +zi-message "{nl}Updating $REPLY{rst}"
         }
         ICE=( "${(kv)ice[@]}" )
         # Run annexes' atpull hooks (the before atpull-ice ones).
@@ -1453,7 +1450,7 @@ fi
               .zi-any-colorify-as-uspl2 "$id_as"
               (( ZI[first-plugin-mark] )) && {
                 ZI[first-plugin-mark]=0
-              } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
+              } || +zi-message "{nl}Updating $REPLY{rst}"
             }
           }
           +zi-message $line
@@ -1475,7 +1472,7 @@ fi
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}[ {p}¤{rst} ] Updating $REPLY{rst}"
+            } || +zi-message "{nl}Updating $REPLY{rst}"
           }
         } else {
           ZI[annex-multi-flag:pull-active]=0
@@ -1680,7 +1677,7 @@ fi
     .zi-compinit 1 1 &>/dev/null
     rehash
     if (( !OPTS[opt_-q,--quiet] )) {
-      +zi-message "{ok}The update took {num}${SECONDS}{ok} seconds{rst}"
+      +zi-message "{info}The update took {num}${SECONDS}{info} seconds{rst}"
     }
     return $retval
   }

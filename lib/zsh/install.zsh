@@ -905,14 +905,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   command rm -f ${TMPDIR:-/tmp}/zi-execs.$$.lst ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zi.compiled.$$.lst
 
   if [[ ! -d $local_dir/$dirname ]]; then
-    local id_msg_part="{…} (at label{ehi}:{rst} {id-as}$id_as{rst})"
-    [[ $update != -u ]] && +zi-message "{nl}{info}Setting up snippet: {url}$sname{rst}${ICE[id-as]:+$id_msg_part}"
+    local id_msg_part="{…} ({p}at label{ehi}:{rst} {id-as}$id_as{rst})"
+    [[ $update != -u ]] && +zi-message "{nl}{apo}Snippet{ehi}:{rst} {url}$sname{rst}${ICE[id-as]:+$id_msg_part}"
     command mkdir -p "$local_dir"
   fi
 
   if [[ $update = -u && ${OPTS[opt_-q,--quiet]} != 1 ]]; then
-    local id_msg_part="{…} (identified as{ehi}:{rst} {id-as}$id_as{rst})"
-    +zi-message "{nl}{info2}Updating snippet: {url}$sname{rst}${ICE[id-as]:+$id_msg_part}"
+    local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
+    +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}$sname{rst}${ICE[id-as]:+$id_msg_part}"
   fi
 
   # A flag for the annexes. 0 – no new commits, 1 - run-atpull mode,
@@ -928,7 +928,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       (
         () { builtin setopt localoptions noautopushd; builtin cd -q "$local_dir"; } || return 4
         (( !OPTS[opt_-q,--quiet] )) && \
-        +zi-message "Downloading {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" (with Subversion)"}:-" (with curl, wget, lftp)"}{…}"
+        +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with Subversion{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
 
         if (( ${+ICE[svn]} )) {
           if [[ $update = -u ]] {
@@ -962,9 +962,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
               # Do the update
               # The condition is reversed on purpose – to show only the messages on an actual update
               if (( OPTS[opt_-q,--quiet] )); then
-                local id_msg_part="{…} (identified as{ehi}: {id-as}$id_as{rst})"
-                +zi-message "{nl}{info2}Updating snippet {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
-                +zi-message "Downloading {apo}\`{rst}$sname{apo}\`{rst} (with Subversion){…}"
+                local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
+                +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
+                +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with Subversion{rst}){…}"
               fi
               .zi-mirror-using-svn "$url" "-u" "$dirname" || return 4
             }

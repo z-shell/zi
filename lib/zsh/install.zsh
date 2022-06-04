@@ -398,13 +398,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       case ${ICE[proto]} in
         (|https|git|http|ftp|ftps|rsync|ssh)
           :zi-git-clone() {
-            command git clone --quiet --progress ${(s: :)ICE[cloneopts]---recursive} ${(s: :)ICE[depth]:+--depth ${ICE[depth]}} \
-              "${ICE[proto]:-https}://${site:-${ICE[from]:-github.com}}/$remote_url_path" "$local_path" \
-              --config transfer.fsckobjects=false --config receive.fsckobjects=false \
-              --config fetch.fsckobjects=false --config pull.rebase=false
-              integer retval=$?
-              unfunction :zi-git-clone
-              return $retval
+            command git clone --progress ${(s: :)ICE[cloneopts]---recursive} ${(s: :)ICE[depth]:+--depth ${ICE[depth]}} \
+            "${ICE[proto]:-https}://${site:-${ICE[from]:-github.com}}/$remote_url_path" "$local_path" \
+            --config transfer.fsckobjects=false --config receive.fsckobjects=false \
+            --config fetch.fsckobjects=false --config pull.rebase=false
+
+            integer retval=$?
+            unfunction :zi-git-clone
+            return $retval
           }
           :zi-git-clone |& { command ${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh || cat; }
           if (( pipestatus[1] == 141 )) {

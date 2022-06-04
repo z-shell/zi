@@ -11,16 +11,19 @@ if (( COLS < 10 )) {
 # Credit to molovo/revolver for the ideas
 typeset -ga progress_frames
 progress_frames=(
-  '0.2 ▹▹▹▹▹ ▸▹▹▹▹ ▹▸▹▹▹ ▹▹▸▹▹ ▹▹▹▸▹ ▹▹▹▹▸'
-  '0.2 ▁ ▃ ▄ ▅ ▆ ▇ ▆ ▅ ▄ ▃'
-  '0.2 ▏ ▎ ▍ ▌ ▋ ▊ ▉ ▊ ▋ ▌ ▍ ▎'
-  '0.2 ▖ ▘ ▝ ▗'
-  '0.2 ◢ ◣ ◤ ◥'
-  '0.2 ▌ ▀ ▐ ▄'
-  '0.2 ✶ ✸ ✹ ✺ ✹ ✷'
+  '0.08 ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏'
+  '0.08 ⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷'
+  '0.08 ⢹ ⢺ ⢼ ⣸ ⣇ ⡧ ⡗ ⡏'
+#  '0.2 ▹▹▹▹▹ ▸▹▹▹▹ ▹▸▹▹▹ ▹▹▸▹▹ ▹▹▹▸▹ ▹▹▹▹▸'
+#  '0.2 ▁ ▃ ▄ ▅ ▆ ▇ ▆ ▅ ▄ ▃'
+#  '0.2 ▏ ▎ ▍ ▌ ▋ ▊ ▉ ▊ ▋ ▌ ▍ ▎'
+#  '0.2 ▖ ▘ ▝ ▗'
+#  '0.2 ◢ ◣ ◤ ◥'
+#  '0.2 ▌ ▀ ▐ ▄'
+#  '0.2 ✶ ✸ ✹ ✺ ✹ ✷'
 )
 
-integer -g progress_style=$(( RANDOM % 7 + 1 )) cur_frame=1
+integer -g progress_style=$(( RANDOM % 2 + 1 )) cur_frame=1
 typeset -F SECONDS=0 last_time=0
 
 # Alpine Linux doesn't have tput; FreeBSD and Dragonfly BSD have termcap
@@ -37,9 +40,7 @@ if whence tput &> /dev/null; then
 fi
 
 if (( $+ZI_CNORM )); then
-  trap $ZI_CNORM EXIT
-  trap $ZI_CNORM INT
-  trap $ZI_CNORM TERM
+  trap $ZI_CNORM EXIT INT TERM
 fi
 
 local first=1
@@ -48,8 +49,7 @@ local first=1
 timeline() {
   local sp='▚▞'; sp="${sp:$2%2:1}"
   # Maximal width is 24 characters
-  local bar="$(print -f "%.$2s█%0$(($3-$2-1))s" "████████████████████████" "")"
-
+  local bar="$(print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓█████████████████████|" "")"
   local -a frames_splitted
   frames_splitted=( ${(@zQ)progress_frames[progress_style]} )
   if (( SECONDS - last_time >= frames_splitted[1] )) {
@@ -58,7 +58,7 @@ timeline() {
     last_time=$SECONDS
   }
   print -nr -- ${frames_splitted[cur_frame+1]}" "
-  print -nPr "%F{183}"
+  print -nPr "%F{165}"
   print -f "%s %s" "${bar// /░}" ""
   print -nPr "%f"
 }
@@ -68,9 +68,9 @@ timeline() {
 # $4 - receiving percentage
 # $5 - resolving percentage
 print_my_line() {
-  local col="%F{155}" col3="%F{155}" col4="%F{155}" col5="%F{155}"
-  [[ -n "${4#...}" && -z "${5#...}" ]] && col3="%F{81}"
-  [[ -n "${5#...}" ]] && col4="%F{81}"
+  local col="%F{200}" col3="%F{200}" col4="%F{200}" col5="%F{200}"
+  [[ -n "${4#...}" && -z "${5#...}" ]] && col3="%F{201}"
+  [[ -n "${5#...}" ]] && col4="%F{201}"
   if (( COLS >= 70 )) {
     print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
   } elif (( COLS >= 60 )) {
@@ -82,10 +82,10 @@ print_my_line() {
 }
 
 print_my_line_compress() {
-  local col="%F{155}" col3="%F{155}" col4="%F{155}" col5="%F{155}"
-  [[ -n "${4#...}" && -z "${5#...}" && -z "${6#...}" ]] && col3="%F{81}"
-  [[ -n "${5#...}" && -z "${6#...}" ]] && col4="%F{81}"
-  [[ -n "${6#...}" ]] && col5="%F{81}"
+  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{201}"
+  [[ -n "${4#...}" && -z "${5#...}" && -z "${6#...}" ]] && col3="%F{201}"
+  [[ -n "${5#...}" && -z "${6#...}" ]] && col4="%F{201}"
+  [[ -n "${6#...}" ]] && col5="%F{201}"
   if (( COLS >= 80 )) {
     print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3, ${col3}COMPR%f: $4%%${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
   } elif (( COLS >= 65 )) {
@@ -111,10 +111,10 @@ if [[ -n $TERM ]] {
 while read -r line; do
   (( ++ loop_count ))
   if [[ "$line" = "Cloning into"* ]]; then
-    print; print $line
+    print $line
     continue
   elif [[ "$line" = (#i)*user*name* || "$line" = (#i)*password* ]]; then
-    print; print $line
+    print $line
     continue
   elif [[ "$line" = remote:*~*(Counting|Total|Compressing|Enumerating)* || "$line" = fatal:* ]]; then
     print $line
@@ -156,17 +156,17 @@ while read -r line; do
   timeline "" $pr 11
     if (( have_5_compress )); then
       print_my_line_compress "${${${(M)have_1_counting:#1}:+$counting_1}:-...}" \
-                "${${${(M)have_2_total:#1}:+$total_packed_2}:-0}" \
-                "${${${(M)have_2_total:#1}:+$total_2}:-0}" \
-                "${${${(M)have_5_compress:#1}:+$compress_5}:-...}" \
-                "${${${(M)have_3_receiving:#1}:+$receiving_3}:-...}" \
-                "${${${(M)have_4_deltas:#1}:+$deltas_4}:-...}"
+      "${${${(M)have_2_total:#1}:+$total_packed_2}:-0}" \
+      "${${${(M)have_2_total:#1}:+$total_2}:-0}" \
+      "${${${(M)have_5_compress:#1}:+$compress_5}:-...}" \
+      "${${${(M)have_3_receiving:#1}:+$receiving_3}:-...}" \
+      "${${${(M)have_4_deltas:#1}:+$deltas_4}:-...}"
     else
       print_my_line "${${${(M)have_1_counting:#1}:+$counting_1}:-...}" \
-            "${${${(M)have_2_total:#1}:+$total_packed_2}:-0}" \
-            "${${${(M)have_2_total:#1}:+$total_2}:-0}" \
-            "${${${(M)have_3_receiving:#1}:+$receiving_3}:-...}" \
-            "${${${(M)have_4_deltas:#1}:+$deltas_4}:-...}"
+      "${${${(M)have_2_total:#1}:+$total_packed_2}:-0}" \
+      "${${${(M)have_2_total:#1}:+$total_2}:-0}" \
+      "${${${(M)have_3_receiving:#1}:+$receiving_3}:-...}" \
+      "${${${(M)have_4_deltas:#1}:+$deltas_4}:-...}"
     fi
   fi
 done

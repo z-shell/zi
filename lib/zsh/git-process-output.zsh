@@ -49,7 +49,7 @@ local first=1
 timeline() {
   local sp='▚▞'; sp="${sp:$2%2:1}"
   # Maximal width is 24 characters
-  local bar="$(print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓█████████████████████|" "")"
+  local bar="$(print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓█████████████████████" "")"
   local -a frames_splitted
   frames_splitted=( ${(@zQ)progress_frames[progress_style]} )
   if (( SECONDS - last_time >= frames_splitted[1] )) {

@@ -2,7 +2,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
+# Copyright (c) 2021 Z-Shell Community.
 
 builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col-error]}ERROR:%f%b Couldn't find ${ZI[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 ZI[EXTENDED_GLOB]=""
@@ -204,7 +204,7 @@ ZI[EXTENDED_GLOB]=""
 .zi-prepare-readlink() {
   REPLY=":"
   if type readlink 2>/dev/null 1>&2; then
-  REPLY="readlink"
+    REPLY="readlink"
   fi
 } # ]]]
 # FUNCTION: .zi-clear-report-for [[[
@@ -454,7 +454,7 @@ ZI[EXTENDED_GLOB]=""
 # $2 - readlink command (":" or "readlink")
 .zi-get-completion-owner-uspl2col() {
   # "cpath" "readline_cmd"
-  .zi-get-completion-owner "${1}" "${2}"
+  .zi-get-completion-owner "$1" "$2"
   .zi-any-colorify-as-uspl2 "$REPLY"
 } # ]]]
 # FUNCTION: .zi-find-completions-of-plugin [[[
@@ -465,7 +465,7 @@ ZI[EXTENDED_GLOB]=""
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-find-completions-of-plugin() {
   builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
-  .zi-any-to-user-plugin "${1}" "${2}"
+  .zi-any-to-user-plugin "$1" "$2"
   local user="${reply[-2]}" plugin="${reply[-1]}" uspl
   [[ "$user" = "%" ]] && uspl="${user}${plugin}" || uspl="${reply[-2]}${reply[-2]:+---}${reply[-1]//\//---}"
   reply=( "${ZI[PLUGINS_DIR]}/$uspl"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN) )
@@ -2989,6 +2989,37 @@ EOF
     "Append {p}--clean{rst} to run {cmd}make distclean{rst}{nl}" \
     "To display the instructions on loading the module, run{rst}{obj}:{rst}{nl}" \
     "{p}zi module info{rst}."
+  fi
+} # ]]]
+# FUNCTION: .zi-codeload [[[
+# Loads a code as local plugin from a specified user, repository and branch.
+# Code available at: ${ZI[PLUGINS_DIR]}/_local---config
+.zi-codeload() {
+  builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
+  local -a match mbegin mend reply got_code
+  local user="$2" repo="$3" branch="$4"
+
+  [[ -z "$user" || -z "$repo" || -z "$branch" ]] && {
+    +zi-message "Usage{ehi}:{rst} zi codeload {uname}<user>{rst} {pname}<repo>{rst} {id-as}<branch>{rst}"
+    return 1
+  }
+  [[ ! -d "${ZI[PLUGINS_DIR]}/_local---config" ]] && command mkdir -p "${ZI[PLUGINS_DIR]}/_local---config"
+  if (( $+commands[curl] )) || (( $+commands[tar] )); then
+    command curl -fsSL "https://codeload.github.com/${user}/${repo}/tar.gz/${branch}" | \
+    tar -xz -C "${ZI[PLUGINS_DIR]}/_local---config" --strip-components=3 "${repo}-${branch}/codeload/_local---config"
+    got_code=$?
+    if [[ $got_code = 0 ]]; then
+      .zi-ice id-as'_local/config' nocompile
+      local -a ICE ICES
+      ICE+=("${(kv)ZI_ICES[@]}"); ZI_ICES=()
+      # TODO: Updated verbose message
+      (( OPTS[opt_-v,--verbose] )) && +zi-message "{info2}Codeload successful{rst}"
+    else
+      (( OPTS[opt_-v,--verbose] )) && +zi-message "{error}Codeload failed{rst}"
+      return 1
+    fi
+    return 0
   fi
 } # ]]]
 # FUNCTION: .zi-build-module [[[

@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
-emulate -R zsh
-setopt extendedglob warncreateglobal typesetsilent rcquotes noshortloops
+builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
 local zero=$'\0' r=$'\r' n=$'\n' IFS=
 { command perl -pe 'BEGIN { $|++; $/ = \1 }; tr/\r\n/\n\0/' || gstdbuf -o0 gtr '\r\n' '\n\0' || \

@@ -118,8 +118,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
-  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123}
-  local URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
+  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---}
+  local pkgjson tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123}
+  local URL=https://raw.githubusercontent.com/${ZI[PKG_OWNER]}/${2}/HEAD/package.json
   local pro_sep="{rst}, {profile}" epro_sep="{error}, {profile}" tool_sep="{rst}, {cmd}" lhi_hl="{lhi}" profile_hl="{profile}"
 
   trap "rmdir ${(qqq)local_path} 2>/dev/null; return 1" INT TERM QUIT HUP

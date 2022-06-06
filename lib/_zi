@@ -23,6 +23,7 @@ commands=(
   delete:"Delete plugin"
   unload:"Unload plugin"
   snippet:"Source (or add to PATH with --command) local or remote file (-f: force - do not use cache)"
+  codeload:"Load a code as local plugin from a specified user, repository and branch"
   update:"Git update plugin (or all plugins and snippets if --all passed)"
   status:"Git status for plugin (or all plugins if --all passed)"
   report:"Show plugins report (or all plugins if --all passed)"
@@ -81,6 +82,9 @@ case $state in
           _message "Hit enter to get commands list" && ret=0
           ;;
         icemods)
+          _message "Hit enter to get commands list" && ret=0
+          ;;
+        codeload)
           _message "Hit enter to get commands list" && ret=0
           ;;
         analytics)

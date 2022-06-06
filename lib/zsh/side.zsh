@@ -2,7 +2,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
+# Copyright (c) 2021 Z-Shell Community.
 
 # FUNCTION: .zi-exists-physically [[[
 # Checks if directory of given plugin exists in PLUGIN_DIR.
@@ -44,8 +44,8 @@
     }
     .zi-any-colorify-as-uspl2 "$1" "$2"
 
-    +zi-message "{error}No such (plugin or snippet){rst}: $REPLY."
-    [[ $nospec -eq 0 && $spec1 != $spec2 ]] && +zi-message "(expands to: {file}${spec2#%}{rst})."
+    +zi-message "{error}No such (plugin or snippet){ehi}:{rst} $REPLY."
+    [[ $nospec -eq 0 && $spec1 != $spec2 ]] && +zi-message "({p}expands to{ehi}: {file}${spec2#%}{rst})."
     return 1
   fi
   return 0
@@ -136,7 +136,7 @@
   .zi-get-object-path snippet "$url2"
   local_dirB=$reply[-3] dirnameB=$reply[-2]
   [[ -z $svn_dirA ]] && \
-    fileB_there=( "$local_dirB/$dirnameB"/*~*.(zwc|md|js|html)(.-DOnN[1]) )
+  fileB_there=( "$local_dirB/$dirnameB"/*~*.(zwc|md|js|html)(.-DOnN[1]) )
   reply=( "$local_dirA/$dirnameA" "$svn_dirA" "$local_dirB/$dirnameB" "${fileB_there[1]##$local_dirB/$dirnameB/#}" )
 } # ]]]
 # FUNCTION: .zi-compute-ice [[[

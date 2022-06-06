@@ -1,8 +1,7 @@
 #!/usr/bin/env zsh
 
-emulate -LR zsh
-
-setopt typesetsilent extendedglob warncreateglobal
+builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
 { typeset -g COLS="$(tput cols)" } 2>/dev/null
 if (( COLS < 10 )) {
@@ -14,13 +13,6 @@ progress_frames=(
   '0.08 ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏'
   '0.08 ⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷'
   '0.08 ⢹ ⢺ ⢼ ⣸ ⣇ ⡧ ⡗ ⡏'
-#  '0.2 ▹▹▹▹▹ ▸▹▹▹▹ ▹▸▹▹▹ ▹▹▸▹▹ ▹▹▹▸▹ ▹▹▹▹▸'
-#  '0.2 ▁ ▃ ▄ ▅ ▆ ▇ ▆ ▅ ▄ ▃'
-#  '0.2 ▏ ▎ ▍ ▌ ▋ ▊ ▉ ▊ ▋ ▌ ▍ ▎'
-#  '0.2 ▖ ▘ ▝ ▗'
-#  '0.2 ◢ ◣ ◤ ◥'
-#  '0.2 ▌ ▀ ▐ ▄'
-#  '0.2 ✶ ✸ ✹ ✺ ✹ ✷'
 )
 
 integer -g progress_style=$(( RANDOM % 2 + 1 )) cur_frame=1
@@ -151,9 +143,9 @@ while read -r line; do
   if (( loop_count >= 2 )); then
     integer pr
     (( pr = have_4_deltas ? deltas_4 / 10 : (
-        have_3_receiving ? receiving_3 / 10 : (
-        have_5_compress ? compress_5 / 10 : ( ( ( loop_count - 1 ) / 14 ) % 10 ) + 1 ) ) ))
-  timeline "" $pr 11
+      have_3_receiving ? receiving_3 / 10 : (
+      have_5_compress ? compress_5 / 10 : ( ( ( loop_count - 1 ) / 14 ) % 10 ) + 1 ) ) ))
+    timeline "" $pr 11
     if (( have_5_compress )); then
       print_my_line_compress "${${${(M)have_1_counting:#1}:+$counting_1}:-...}" \
       "${${${(M)have_2_total:#1}:+$total_packed_2}:-0}" \

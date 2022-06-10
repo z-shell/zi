@@ -82,7 +82,7 @@ case $state in
           _message "Hit enter to get commands list" && ret=0
           ;;
         icemods)
-          _message "Hit enter to get commands list" && ret=0
+          _message "Hit enter to get ice-modifiers list" && ret=0
           ;;
         codeload)
           _message "Hit enter to get commands list" && ret=0

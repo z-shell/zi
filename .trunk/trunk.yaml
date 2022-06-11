@@ -5,7 +5,7 @@ repo:
   repo:
     host: github.com
     owner: z-shell
-    name: zi-src
+    name: zi
 lint:
   disabled:
     - svgo
@@ -23,7 +23,9 @@ lint:
         [markdownlint, -q, --config, .github/.markdownlint.yaml, "${target}"]
       direct_configs: [.github/.markdownlint.yaml]
   enabled:
+    - zsh-n@1.0
     - actionlint@1.6.13
     - gitleaks@8.8.7
     - markdownlint@0.31.1
     - prettier@2.6.2
+    - shfmt@3.5.0

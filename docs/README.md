@@ -3,7 +3,7 @@
   <td align="center">
 <h1>
 <a target="_self" href="https://github.com/z-shell/zi">
-  <img style="width: 60px; height: 60px" 
+  <img style="width: 60px; height: 60px"
        src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" alt="❮ ZI ❯ Logo" />
   </a>❮ <strong>ZI</strong> ❯
 </h1>

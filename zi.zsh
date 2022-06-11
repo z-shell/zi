@@ -1631,6 +1631,12 @@ builtin setopt noaliases
   command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
   builtin zle -F "$THEFD" +zi-deploy-message
 } # ]]]
+# FUNCTION: .zi-formatter-auto[[[
+# The automatic message formatting tool automatically detects,
+# formats, and colorizes the following pieces of text:
+#
+# [URLs], [plugin IDs + word- after a check to the disk], [ice modifiers],
+# [zi commands], single char bits and quoted strings: [ `...', "..." ].
 .zi-formatter-auto() {
   builtin emulate -L zsh -o extendedglob -o warncreateglobal -o typesetsilent ${=${options[xtrace]:#off}:+-o xtrace}
   local out in=$1 i rwmsg match spaces rest
@@ -1701,7 +1707,6 @@ builtin setopt noaliases
   else
     ch=-
   fi
-
   REPLY=$ZI[col-$2]${(pl:COLUMNS-1::$ch:):-}$ZI[col-rst]
 } # ]]]
 # FUNCTION: .zi-formatter-url. [[[

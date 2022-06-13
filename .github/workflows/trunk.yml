@@ -11,11 +11,13 @@ on:
     types: [opened, synchronize]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   check:
     uses: z-shell/.github/.github/workflows/trunk.yml@main
-    secrets:
-      trunk-token: ${{ secrets.TRUNK_TOKEN }}
     with:
       get_dependencies: apt-get update && sudo apt-get install -yq zsh
       runs-on: ubuntu-latest

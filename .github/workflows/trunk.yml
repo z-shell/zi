@@ -1,16 +1,18 @@
 ---
-name: "⭕ Trunk Check"
+name: "⭕ Trunk"
 on:
   push:
     branches: [main]
     tags: ["v*.*.*"]
+    paths:
+      - "./lib/**"
+      - "./zi.zsh"
   pull_request:
     types: [opened, synchronize]
   workflow_dispatch:
 
 jobs:
-  trunk:
-    name: "⚡"
+  check:
     uses: z-shell/.github/.github/workflows/trunk.yml@main
     secrets:
       trunk-token: ${{ secrets.TRUNK_TOKEN }}
@@ -25,7 +27,7 @@ jobs:
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v3
-      - name: "✨ Set matrix output"
+      - name: "Set matrix output"
         id: set-matrix
         run: |
           MATRIX="$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -iname '_zi' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
@@ -40,15 +42,13 @@ jobs:
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v3
-      #      - name: "✨ Install dependencies"
-      #        run: |
-      #          sudo apt install -y zsh
+      - name: "⚡ Install dependencies"
+        run: sudo apt-get update && sudo apt-get install -yq zsh
       - name: "⚡ zsh -n: ${{ matrix.file }}"
         env:
           ZSH_FILE: ${{ matrix.file }}
         run: |
           zsh -n "${ZSH_FILE}"
-
       - name: "⚡ zcompile ${{ matrix.file }}"
         env:
           ZSH_FILE: ${{ matrix.file }}
@@ -93,8 +93,9 @@ jobs:
           repository: "z-shell/zd"
           token: ${{ secrets.GITHUB_TOKEN }}
       - run: command git clone --branch main --depth 1 -- https://github.com/z-shell/zi.git zi
-      - name: "Install dependencies"
+      - name: "⚡ Install dependencies"
         run: |
+          sudo apt-get update && sudo apt-get install -yq zsh
           mkdir bin
           curl -fsSL https://raw.githubusercontent.com/zdharma/revolver/v0.2.4/revolver > bin/revolver
           curl -fsSL https://raw.githubusercontent.com/zdharma/color/d8f91ab5fcfceb623ae45d3333ad0e543775549c/color.zsh > bin/color
@@ -104,11 +105,11 @@ jobs:
           cd ..
           mv ./zunit.git/zunit bin
           chmod u+x bin/{color,revolver,zunit}
-      - name: "✅ ZUnit: ${{ matrix.file }}"
+      - name: "⚡ ZUnit: ${{ matrix.file }}"
         env:
           ZUNIT_TEST: ${{ matrix.file }}
         run: |
-          echo "🔛 $ZUNIT_TEST" >&2
+          echo "⚡ $ZUNIT_TEST" >&2
           export PATH="$PWD/bin:$PATH"
           export TERM=xterm-256color
           zunit --tap --verbose "docker/tests/${ZUNIT_TEST}.zunit"

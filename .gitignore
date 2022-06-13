@@ -126,3 +126,5 @@ TAGS
 
 CVS
 .#*
+
+.trunk/out*

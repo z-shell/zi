@@ -1,0 +1,19 @@
+---
+name: "⭕ Trunk Check"
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  trunk:
+    name: "⚡"
+    uses: z-shell/.github/.github/workflows/trunk.yml@main
+    secrets:
+      trunk-token: ${{ secrets.TRUNK_TOKEN }}
+    with:
+      get_dependencies: apt-get update && sudo apt-get install -yq zsh
+      runs-on: ubuntu-latest

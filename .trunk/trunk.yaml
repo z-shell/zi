@@ -25,3 +25,5 @@ lint:
     - gitleaks@8.8.7
     - markdownlint@0.31.1
     - prettier@2.6.2
+    - shfmt@3.5.0
+

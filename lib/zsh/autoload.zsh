@@ -570,16 +570,16 @@ ZI[EXTENDED_GLOB]=""
       action=1
     fi
     if (( action )); then
-      +zi-message "{info}Uninstalling completion \`{file}$cfile{info}'{…}{rst}"
+      +zi-message "{auto}Uninstalling completion \`$cfile' …"
       # Make compinit notice the change
       .zi-forget-completion "$cfile"
       (( global_action ++ ))
     else
-      +zi-message "{info}Completion \`{file}$cfile{info}' not installed.{rst}"
+      +zi-message "{auto}Completion \`$cfile' not installed"
     fi
   done
   if (( global_action > 0 )); then
-    +zi-message "{info}Uninstalled {num}$global_action{info} completions.{rst}"
+    +zi-message "{msg}Uninstalled {num}$global_action{rst} completions"
   fi
   .zi-compinit >/dev/null
 } # ]]]
@@ -630,7 +630,7 @@ ZI[EXTENDED_GLOB]=""
 .zi-self-update() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent warncreateglobal
-  [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}ZI{rst} ❯ {…}"
+  [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
   local nl=$'\n' escape=$'\x1b[' current_branch=$(command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
   (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
@@ -656,7 +656,7 @@ ZI[EXTENDED_GLOB]=""
   }
   )
   if [[ $1 != -q ]] {
-    +zi-message "{profile}Compiling »»»{rst} ❮ {happy}ZI{rst} ❯ {…}"
+    +zi-message "{profile}Compiling »»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
   }
   command rm -f ${ZI[BIN_DIR]}/*.zwc(DN)
   command rm -f ${ZI[BIN_DIR]}/lib/zsh/*.zwc(DN)
@@ -667,7 +667,7 @@ ZI[EXTENDED_GLOB]=""
   zcompile -U ${ZI[BIN_DIR]}/lib/zsh/additional.zsh
   zcompile -U ${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh
   # Load for the current session
-  [[ $1 != -q ]] && +zi-message "{profile}Reloading »»»{rst} ❮ {happy}ZI{rst} ❯ {…}"
+  [[ $1 != -q ]] && +zi-message "{profile}Reloading »»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
   source ${ZI[BIN_DIR]}/zi.zsh
   source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
   source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
@@ -848,7 +848,7 @@ ZI[EXTENDED_GLOB]=""
     # Remove one level of quoting to pass to zstyle
     local ps_arr1="${(Q)ps_arr[1-correct]}"
     local ps_arr2="${(Q)ps_arr[2-correct]}"
-    (( quiet )) || builtin print "Deleting zstyle $ps_arr1 $ps_arr2"
+    (( quiet )) || +zi-message "Deleting zstyle $ps_arr1 $ps_arr2"
     zstyle -d "$ps_arr1" "$ps_arr2"
   done
 
@@ -1091,7 +1091,7 @@ ZI[EXTENDED_GLOB]=""
       new+=( "$p" )
     } else {
       (( quiet )) || +zi-message "Removing {pname}PATH{rst} element {info}$p{rst}"
-      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk"
+      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk{rst}"
     }
   done
   path=( "${new[@]}" )
@@ -1103,7 +1103,7 @@ ZI[EXTENDED_GLOB]=""
       new+=( "$p" )
     } else {
       (( quiet )) || +zi-message "Removing {pname}FPATH{rst} element {info}$p{rst}"
-      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk"
+      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk{rst}"
     }
   }
   fpath=( "${new[@]}" )
@@ -1173,13 +1173,13 @@ ZI[EXTENDED_GLOB]=""
 
   if [[ "$uspl2" = "_dtrace/_dtrace" ]]; then
     .zi-clear-debug-report
-    (( quiet )) || +zi-message "dtrace report saved to \$LASTREPORT"
+    (( quiet )) || +zi-message "dtrace report saved to {var}\$LASTREPORT{rst}"
   else
-    (( quiet )) || +zi-message "Unregistering plugin $uspl2col"
+    (( quiet )) || +zi-message "{auto}Unregistering plugin $uspl2col"
     .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
     zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
     .zi-clear-report-for "$user" "$plugin"
-    (( quiet )) || +zi-message "Plugin's report saved to \$LASTREPORT"
+    (( quiet )) || +zi-message "Plugin's report saved to {var}\$LASTREPORT{rst}"
   fi
 } # ]]]
 # FUNCTION: .zi-show-report [[[
@@ -1219,24 +1219,24 @@ ZI[EXTENDED_GLOB]=""
   REPLY=""
   .zi-diff-functions-compute "$uspl2"
   .zi-format-functions "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Functions created:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}Functions created{ehi}:{rst}"$'\n'"$REPLY"
   # Print report gathered via $options-diffing
   REPLY=""
   .zi-diff-options-compute "$uspl2"
   .zi-format-options "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Options changed:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}Options changed{ehi}:{rst}"$'\n'"$REPLY"
   # Print report gathered via environment diffing
   REPLY=""
   .zi-diff-env-compute "$uspl2"
   .zi-format-env "$uspl2" "1"
-  [[ -n "$REPLY" ]] && +zi-message "{p}PATH elements added:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}PATH elements added{ehi}:{rst}"$'\n'"$REPLY"
   REPLY=""
   .zi-format-env "$uspl2" "2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}FPATH elements added:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}FPATH elements added{ehi}:{rst}"$'\n'"$REPLY"
   # Print report gathered via parameter diffing
   .zi-diff-parameter-compute "$uspl2"
   .zi-format-parameter "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Variables added or redefined:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{p}Variables added or redefined{ehi}:{rst}"$'\n'"$REPLY"
   # Print what completions plugin has
   .zi-find-completions-of-plugin "$user" "$plugin"
   typeset -a completions
@@ -1315,7 +1315,7 @@ ZI[EXTENDED_GLOB]=""
   if (( was_snippet )) {
     .zi-exists-physically "$user" "$plugin" || return $retval
     .zi-any-colorify-as-uspl2 "$2" "$3"
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{msg2}Updating also \`$REPLY{rst}{msg2}' plugin (already updated a snippet of the same name){…}{rst}"
+    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{auto}Updating also \`$REPLY' plugin (already updated a snippet of the same name) …"
   } else {
     .zi-exists-physically-message "$user" "$plugin" || return 1
   }
@@ -1392,7 +1392,7 @@ ZI[EXTENDED_GLOB]=""
         }
       }
       if (( ZI[annex-multi-flag:pull-active] <= 1 && !OPTS[opt_-q,--quiet] )) {
-        +zi-message "Binary{ehi}:{rst} {b}{version}${version}{rst} is the latest {info}✔{rst}"
+        +zi-message "Binary{ehi}:{rst} {version}${version}{rst} {info}✔{rst}"
       }
     }
     if (( 1 )) {
@@ -1728,7 +1728,7 @@ ZI[EXTENDED_GLOB]=""
     # Must be a git repository or a binary release
     if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]]; then
       (( !OPTS[opt_-q,--quiet] )) && \
-        builtin print "$REPLY: not a git repository"
+        +zi-message "$REPLY: not a git repository"
       continue
     fi
     if [[ $st = status ]]; then
@@ -1739,7 +1739,7 @@ ZI[EXTENDED_GLOB]=""
       .zi-update-or-status update "$user" "$plugin"
       update_rc=$?
       [[ $update_rc -ne 0 ]] && {
-        +zi-message "{warn}Warning: {pid}${user}/${plugin} {warn}update returned{ehi}: {num}${update_rc}"
+        +zi-message "{warn}Warning: {pid}${user}/${plugin} {warn}update returned{ehi}:{rst} {num}${update_rc}"
         retval=$?
       }
     fi
@@ -1841,7 +1841,7 @@ ZI[EXTENDED_GLOB]=""
     counter=0
     PUAssocArray=()
   } elif (( counter == 1 && !OPTS[opt_-q,--quiet] )) {
-    +zi-message "{info3}Spawning the next{opt} ${OPTS[value]}{info3} concurrent update jobs{ehi}: {var}${tpe}{rst} {…}"
+    +zi-message "{info3}Spawning the next{opt} ${OPTS[value]}{info3} concurrent update jobs{ehi}:{rst} {var}${tpe}{rst} {…}"
   }
 } # ]]]
 # FUNCTION: .zi-show-zstatus [[[
@@ -1863,7 +1863,7 @@ ZI[EXTENDED_GLOB]=""
   +zi-message "{msg}User-land{ehi}: {tab}{tab}{dir}${ZPFX}{rst}"
   +zi-message "{msg}Completions{ehi}:{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
-  +zi-message "{info}Loaded plugins{ehi}: {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
+  +zi-message "{info}Loaded plugins{ehi}:{rst} {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
   # Count light-loaded plugins
   integer light=0
   local s
@@ -2088,7 +2088,7 @@ ZI[EXTENDED_GLOB]=""
   matches=( $pdir_path/*.zwc(DN) )
   if [[ "${#matches[@]}" -eq "0" ]]; then
     if [[ "$silent" = "1" ]]; then
-      builtin print "not compiled"
+      +zi-message "not compiled"
     else
       .zi-any-colorify-as-uspl2 "$user" "$plugin"
       +zi-message "$REPLY not compiled"

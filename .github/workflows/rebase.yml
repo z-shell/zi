@@ -1,20 +1,28 @@
 ---
-name: 🧬 Automatic Rebase
+name: "🔁 Rebase"
 on:
   issue_comment:
     types: [created]
 jobs:
   rebase:
-    name: Rebase
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase')
     runs-on: ubuntu-latest
+    name: 🔁 Rebase
+    # Automate with comments: /autosquash, /rebase
+    if: >-
+      github.event.issue.pull_request != '' &&
+      (
+        contains(github.event.comment.body, '/rebase') ||
+        contains(github.event.comment.body, '/autosquash')
+      )
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-      - name: 🧬 Automatic Rebase
-        uses: cirrus-actions/rebase@1.7
+          fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
+      - name: 🔁 Rebase
+        uses: z-shell/.github/actions/rebase@main
+        with:
+          autosquash: ${{ contains(github.event.comment.body, '/autosquash') || contains(github.event.comment.body, '/rebase-autosquash') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}

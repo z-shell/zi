@@ -138,7 +138,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   [[ -e $tmpfile ]] && pkgjson="$(<$tmpfile)"
 
   if [[ -z $pkgjson ]] {
-    +zi-message "{u-warn}Error{b-warn}:{error} the package {apo}\`{pid}$id_as{apo}\` {error}couldn't be found.{rst}"
+    +zi-message "{u-warn}Error{b-warn}{ehi}:{rst} the package {apo}\`{pid}$id_as{apo}\` {rst}couldn't be found"
     return 1
   }
 
@@ -847,7 +847,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       builtin print -rl -- ${list[@]#$plugin_dir/} >! ${TMPDIR:-/tmp}/zi.compiled.$$.lst
       if (( retval )) {
         +zi-message "{note}Note:{rst} The additional {num}${#list}{rst} compiled files" \
-          "are listed in the {var}\$ADD_COMPILED{rst} array (operation exit code: {ehi}$retval{rst})."
+          "are listed in the {var}\$ADD_COMPILED{rst} array ({p}operation exit code{ehi}:{rst} {data2}$retval{rst})."
       } else {
         +zi-message "{note}Note:{rst} The additional {num}${#list}{rst} compiled files" \
           "are listed in the {var}\$ADD_COMPILED{rst} array."
@@ -2175,7 +2175,7 @@ zimv() {
   [[ -z $ICE[ps-on-update] ]] && return 0
   [[ "$1" = plugin ]] && local tpe="$1" dir="${5#%}" hook="$6" subtype="$7" || local tpe="$1" dir="${4#%}" hook="$5" subtype="$6"
   if (( !OPTS[opt_-q,--quiet] )) {
-    +zi-message "Running $tpe's provided update code: {info}${ICE[ps-on-update][1,50]}${ICE[ps-on-update][51]:+…}{rst}"
+    +zi-message "Running $tpe's provided update code{ehi}:{rst} {info}${ICE[ps-on-update][1,50]}${ICE[ps-on-update][51]:+…}{rst}"
     (
       builtin cd -q "$dir" || return 1
       eval "$ICE[ps-on-update]"

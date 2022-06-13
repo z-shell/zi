@@ -28,7 +28,7 @@ ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|noco
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|notify|reset"
 
-ZI[cmd-list]="-h|--help|help|codeload|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
+ZI[cmd-list]="-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
 cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|\
 uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run"
@@ -2171,7 +2171,6 @@ zi() {
     -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
     --command  opt_-x,--command
     env-whitelist "-h|--help|-v|--verbose"
-    codeload      "-v|--verbose"
     update        "-L|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose|-h|--help"
     delete        "-a|--all|-c|--clean|-y|--yes|-q|--quiet|-h|--help"
     unload        "-h|--help|-q|--quiet"
@@ -2657,9 +2656,6 @@ zi() {
           ;;
         (analytics)
           .zi-analytics-menu
-          ;;
-        (codeload)
-          .zi-codeload "$@"
           ;;
         (-h|--help|help)
           .zi-help

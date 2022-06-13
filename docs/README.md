@@ -11,6 +11,7 @@
   🧙‍♂️ 🪄 A Swiss Army Knife for <a href="https://zsh.sourceforge.io/"><strong>Zsh</strong></a> -
   <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell ✨</a>
 </h2>
+ <p>
   <a
     href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+"><strong>《
       Report an issue </strong></a>
@@ -20,13 +21,14 @@
       Request a Feature 》</strong></a>
   ·
   <a href="https://github.com/orgs/z-shell/discussions"><strong>《 Ask a Question 》</strong></a>
-    </p>
+  </p><p>
     <a href="https://z.digitalclouds.dev/search/"><strong>《💡》Search Wiki </strong></a>
     <a href="https://z.digitalclouds.dev/docs/getting_started/installation/"><strong>《⚡️》 Install </strong></a>
     <a
       href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+"><strong>《💜》Join
       </strong></a>
     <a href="https://crowdin.digitalclouds.dev/z-shell/"><strong>《🌐》Localize </strong></a>
+     </p>
   </td>
   </tr>
   <tr>

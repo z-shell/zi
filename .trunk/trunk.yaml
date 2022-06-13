@@ -1,0 +1,27 @@
+version: 0.1
+cli:
+  version: 0.13.1-beta
+repo:
+  repo:
+    host: github.com
+    owner: z-shell
+    name: zi
+lint:
+  linters:
+    - name: zsh-n
+      files: [zsh]
+      type: pass_fail
+      command: [zsh, -c, "zsh -n ${target} 2>&1"]
+      success_codes: [0, 1]
+      environment:
+        - name: PATH
+          list: ["${env.PATH}"]
+    - name: markdownlint
+      command:
+        [markdownlint, -q, --config, .github/.markdownlint.yaml, "${target}"]
+      direct_configs: [.github/.markdownlint.yaml]
+  enabled:
+    - actionlint@1.6.13
+    - gitleaks@8.8.7
+    - markdownlint@0.31.1
+    - prettier@2.6.2

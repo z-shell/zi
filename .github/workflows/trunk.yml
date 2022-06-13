@@ -17,7 +17,3 @@ jobs:
     with:
       get_dependencies: apt-get update && sudo apt-get install -yq zsh
       runs-on: ubuntu-latest
-    #trunk-path:
-    #check-mode:
-    #upload-series:
-    #arguments:

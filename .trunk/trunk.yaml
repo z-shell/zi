@@ -23,7 +23,6 @@ lint:
         [markdownlint, -q, --config, .github/.markdownlint.yaml, "${target}"]
       direct_configs: [.github/.markdownlint.yaml]
   enabled:
-    - zsh-n@1.0
     - actionlint@1.6.13
     - gitleaks@8.8.7
     - markdownlint@0.31.1

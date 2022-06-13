@@ -76,10 +76,8 @@
       <td align="left">
         <h2>🎯 Roadmap</h2>
         <p>
-          Generally, new features will be introduced as a components to improve <strong>performance</strong> and the
-          compatibility of ❮ <strong>ZI</strong> ❯. Not to force, and allow the user to <strong>decide</strong> and
-          <strong>choose</strong> the features.<br />
-          Let us know what to improve and what should be maintained with a ⭐ on features you like and use:
+          Generally, new features will be introduced as a component to improve performance and compatibility and not to force, but to allow the user to <strong>decide</strong> and
+          <strong>choose</strong> the features. Let us know what should be <strong>improved</strong> and <strong>maintained</strong> with a ⭐ on features you like and use:
         </p>
         <ul>
           <li>
@@ -123,20 +121,19 @@
         <h2 align="left">💞 Contributing</h2>
         <p>
           Contributions are what make the open-source community such an amazing place to learn, inspire, and create.
-          Any contributions you make will benefit everybody else and are <b>greatly appreciated</b> and our
-          <b>target</b> to support each other.
+          Any contributions you make will benefit everybody else and <b>greatly appreciated</b> and our
+          <b>target</b> support each other.
         </p>
         <p>
           Please read
-          <a href="https://github.com/z-shell/community/blob/main/docs/project/CONTRIBUTING.md">our contribution
-            guidelines"</a>
+          <a href="https://github.com/z-shell/community/blob/main/docs/project/CONTRIBUTING.md">our contribution guidelines</a>
           before you start. Thank you for being involved!
         </p>
         <hr />
         <h2 align="left">🆙 Project assistance</h2>
         <p>If you want to say <b>thank you</b> or/and support the active development.</p>
         <p>
-          - Add a <a href="https://github.com/z-shell/zi">GitHub Star</a> to the project, and follow
+          - Add a <a href="https://github.com/z-shell/zi">GitHub Star</a> to the project, and follow the
           <a href="https://github.com/z-shell">Z-Shell</a> organization.
         </p>
         <p>- Write interesting articles about the project on:</p>
@@ -144,9 +141,8 @@
           <a href="https://dev.to/">Dev.to</a>, <a href="https://medium.com/">Medium.com</a>,
           <a href="https://news.ycombinator.com/news">Hacker News</a>,
           <a href="https://community.ops.io/zsh">Community.ops.io</a>,
-          <a href="https://www.reddit.com/r/zsh/">Reddit</a>, <a href="https://twitter.com/zshell_zi">Twitter</a> or
-          your blog. Let us know so can share your post, especially if it's in other languages or some interesting
-          zshrc configurations.
+          <a href="https://www.reddit.com/r/zsh/">Reddit</a>, <a href="https://twitter.com/zshell_zi">Twitter</a>, or
+          your blog.<br /> Let us know so we can share your post.
         </p>
         <p>
           <a target="_self" href="https://twitter.com/zshell_zi">
@@ -163,11 +159,8 @@
           </a>
         </p>
         <p>
-          Participate in the community by showing the
-          <a
-            href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">interst</a>
-          to the project, as it may bring us together, then great things may happen. If you would like to
-          participate, but are not sure about what and how - do not hesitate to contact us so we can discuss the
+          Participate in the community by showing <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+">interest</a>
+          in the project, as it may bring us together, then great things may happen. If you want but are not confident about participating - do not hesitate to contact us so we can discuss the
           situation 👍. We've all been there, we all had to start from something - together is much easier, just
           need to do the first step 🚀.
         </p>
@@ -198,9 +191,8 @@
         <h2 align="left">🥇 Authors & contributors</h2>
         <p>
           Check the list of authors and contributors in this
-          <a href="https://github.com/z-shell/zi/contributors">repository</a> and also all other repositories under
-          <a href="https://github.com/z-shell">Z-Shell</a> organization. We will inlclude all showning the interest
-          or dedicated their time to take a part.
+          <a href="https://github.com/z-shell/zi/contributors">repository</a> and also all other repositories under the
+          <a href="https://github.com/z-shell">Z-Shell</a> organization. We will include all showing interest or dedicated their time to taking part.
         </p>
     <tr>
       <td align="center">

@@ -185,10 +185,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local -a req
   req=( ${(s.;.)${:-${required:+$required\;}${ICE[required]}}} )
   for required ( $req ) {
-    if [[ $required == (bgn|dl|monitor) ]]; then
-      if [[ ( $required == bgn && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-bin-gem-node *]} ) || ( $required == dl && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ) || ( $required == monitor && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-readurl *]} ) ]]; then
+    if [[ $required == (bgn|dl|rdl) ]]; then
+      if [[ ( $required == bgn && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-bin-gem-node *]} ) || ( $required == dl && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ) || ( $required == rdl && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-readurl *]} ) ]]; then
         local -A namemap
-        namemap=( bgn bin-gem-node dl patch-dl monitor readurl )
+        namemap=( bgn bin-gem-node dl patch-dl rdl readurl )
         +zi-message -n "{u-warn}ERROR{b-warn}: {error}the "
         if [[ -z ${(MS)ICE[required]##(\;|(#s))$required(\;|(#e))} ]]; then
           +zi-message -n "{error}requested profile {apo}\`{hi}$profile{apo}\`{error} "

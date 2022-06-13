@@ -8,14 +8,6 @@ repo:
     name: zi
 lint:
   linters:
-    - name: zsh-n
-      files: [zsh]
-      type: pass_fail
-      command: [zsh, -c, "zsh -n ${target} 2>&1"]
-      success_codes: [0, 1]
-      environment:
-        - name: PATH
-          list: ["${env.PATH}"]
     - name: markdownlint
       command:
         [markdownlint, -q, --config, .github/.markdownlint.yaml, "${target}"]

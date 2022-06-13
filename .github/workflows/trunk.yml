@@ -15,11 +15,4 @@ jobs:
     secrets:
       trunk-token: ${{ secrets.TRUNK_TOKEN }}
     with:
-      get_dependencies: |
-        apt-get update
-        sudo apt-get install -yq zsh
-    #runs-on:
-    #trunk-path:
-    #check-mode:
-    #upload-series:
-    #arguments:
+      get_dependencies: apt-get update && sudo apt-get install -yq zsh

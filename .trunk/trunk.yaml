@@ -7,6 +7,8 @@ repo:
     owner: z-shell
     name: zi
 lint:
+  disabled:
+    - svgo
   linters:
     - name: markdownlint
       command:
@@ -16,5 +18,5 @@ lint:
     - actionlint@1.6.13
     - gitleaks@8.8.7
     - markdownlint@0.31.1
-    - prettier@2.6.2
+    - prettier@2.7.0
     - shfmt@3.5.0

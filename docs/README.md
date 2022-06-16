@@ -78,7 +78,7 @@
       <td align="left">
         <h2>🎯 Roadmap</h2>
         <p>
-          Generally, new features will be introduced as a component to improve performance and compatibility and not to force, but to allow the user to <strong>decide</strong> and
+          Generally, new features will be introduced as a component to improve performance and compatibility and not to force, but to allow the user <strong>decide</strong> and
           <strong>choose</strong> the features. Let us know what should be <strong>improved</strong> and <strong>maintained</strong> with a ⭐ on features you like and use:
         </p>
         <ul>
@@ -103,7 +103,7 @@
           <li>
             <a href="https://github.com/z-shell/zi/issues?q=label%3Aenhancement+is%3Aopen+sort%3Areactions-%2B1-desc">Top
               feature requests</a>
-            - add your votes using the 👍 reaction)
+            - add your votes using the 👍 reaction
           </li>
           <li>
             <a

@@ -1,5 +1,6 @@
 ---
 name: "♾️ ZUnit"
+
 on:
   push:
     branches: [main]
@@ -8,6 +9,7 @@ on:
       - "lib/zsh/install.zsh"
       - "lib/zsh/autoload.zsh"
   pull_request:
+    paths:
       - "lib/zsh/install.zsh"
       - "lib/zsh/autoload.zsh"
   workflow_dispatch:
@@ -16,6 +18,7 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+jobs:
   zunit-matrix:
     runs-on: ubuntu-latest
     outputs:

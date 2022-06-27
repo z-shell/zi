@@ -1442,6 +1442,7 @@ ZI[EXTENDED_GLOB]=""
       integer had_output=0
       local IFS=$'\n'
       command git fetch --quiet && \
+      declare -a line
       line=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
       if (( ${#line} > 0 )); then
         [[ $had_output -eq 0 ]] && {
@@ -1450,10 +1451,10 @@ ZI[EXTENDED_GLOB]=""
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}: {auto}$REPLY"
+            } || +zi-message "{nl}Updating{ehi}: {rst}$REPLY"
           }
         }
-      +zi-message "$line"
+        +zi-message "$line"
       fi | command tee .zi_lastupd | .zi-pager &
       integer pager_pid=$!
       { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
@@ -1471,7 +1472,7 @@ ZI[EXTENDED_GLOB]=""
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating $REPLY{rst}"
+            } || +zi-message "{nl}Updating{ehi}: {rst}$REPLY"
           }
         } else {
           ZI[annex-multi-flag:pull-active]=0

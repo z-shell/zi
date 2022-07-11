@@ -9,8 +9,7 @@ jobs:
     name: 🔁 Rebase
     # Automate with comments: /autosquash, /rebase
     if: >-
-      github.event.issue.pull_request != '' &&
-      (
+      github.event.issue.pull_request != '' && (
         contains(github.event.comment.body, '/rebase') ||
         contains(github.event.comment.body, '/autosquash')
       )

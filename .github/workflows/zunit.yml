@@ -9,14 +9,11 @@ on:
       - "lib/zsh/install.zsh"
       - "lib/zsh/autoload.zsh"
   pull_request:
+    branches: [main]
     paths:
       - "lib/zsh/install.zsh"
       - "lib/zsh/autoload.zsh"
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  workflow_dispatch: {}
 
 jobs:
   zunit-matrix:

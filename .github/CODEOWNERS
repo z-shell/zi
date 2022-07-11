@@ -1,25 +1,25 @@
-# Approvers:
+# Approvers
 # 1. @z-shell
 
-# Reviewers:
+# Reviewers
 # 1. @z-shell
 
 * @z-shell/tcs
 
-# Order is important; the last matching pattern takes the most precedence.
+# Order is important; the last matching pattern takes the most precedence
 #*.sh    @z-shell
 #*.md    @z-shell
 
-# You can also use email addresses if you prefer. They'll be used to look up users just like we do for commit author emails.
+# You can also use email addresses if you prefer. They'll be used to look up users just like we do for commit author emails
 #*.sh z-shell@digitalclouds.dev
 
 # The `docs/*` pattern will match files like
 # `docs/getting-started.md` but not further nested files like
-# `docs/build-app/troubleshooting.md`.
+# `docs/build-app/troubleshooting.md`
 #docs/* @z-shell
 
-# In this example, @z-shell owns any file in an `lib` directory anywhere in your repository.
+# In this example, @z-shell owns any file in an `lib` directory anywhere in your repository
 #lib/ @z-shell
 
-# In this example, @z-shell owns any file in the `.github` directory in the root of your repository.
+# In this example, @z-shell owns any file in the `.github` directory in the root of your repository
 /.github/ @ss-o

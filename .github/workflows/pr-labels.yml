@@ -17,12 +17,10 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           pull-request-number: "${{ github.event.pull_request.number }}"
           valid-labels: >
-            "breaking-change 💥, bug 🐞, i18n 🌐, l10n 🗣, documentation 📝, enhancement ✨, security 🛡️, refactor ♻️,
-            performance 🚀, new-feature 🎉, triage 📑, maintenance 📈, ci 🤖, fix ⚡, dependencies 📦, submodules ⚙️,
-            annex 💠, plugin 🧿, package 📦"
+            "breaking-change 💥, bug 🐞, i18n 🌐, l10n 🗣, documentation 📝, enhancement ✨, security 🛡️, refactor ♻️, performance 🚀, new-feature 🎉, triage 📑, maintenance 📈, ci 🤖, fix ⚡,
+            dependencies 📦, submodules ⚙️, annex 🌀, plugin ⚙️, package 📦"
 
           invalid-labels: >
-            "Q&A ✍️, stale 👻, no-stale 🔒, locked ‼️, resolved ☑️, feature-request 💡, help-wanted, beginner-friendly
-            💕, priority-low 🔖, invalid ⚠️"
+            "Q&A ✍️, stale 👻, no-stale 🔒, locked ‼️, resolved ☑️, feature-request 💡, help-wanted, beginner-friendly 💕, priority-low 🔖, invalid ⚠️"
 
           disable-reviews: true

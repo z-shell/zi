@@ -553,7 +553,7 @@ ZI[EXTENDED_GLOB]=""
   }
   symlinked=( ${ZI[COMPLETIONS_DIR]}/_[^_.]*~*.zwc )
   backup_comps=( ${ZI[COMPLETIONS_DIR]}/[^_.]*~*.zwc )
-  (( ${+functions[.zi-forget-completion]} )) || builtin source ${ZI[BIN_DIR]}"/lib/zsh/install.zsh"
+  (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh"
   # Delete completions if they are really there, either as completions (_fname) or backups (fname)
   for c in ${completions[@]}; do
     action=0
@@ -1175,7 +1175,7 @@ ZI[EXTENDED_GLOB]=""
     .zi-clear-debug-report
     (( quiet )) || +zi-message "dtrace report saved to {var}\$LASTREPORT{rst}"
   else
-    (( quiet )) || +zi-message "{auto}Unregistering plugin $uspl2col"
+    (( quiet )) || +zi-message "Unregistering plugin $uspl2col{rst}"
     .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
     zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
     .zi-clear-report-for "$user" "$plugin"
@@ -1242,7 +1242,7 @@ ZI[EXTENDED_GLOB]=""
   typeset -a completions
   completions=( "${reply[@]}" )
   if [[ "${#completions[@]}" -ge "1" ]]; then
-    +zi-message "{p}Completions:{rst}"
+    +zi-message "{p}Completions{ehi}:{rst}"
     .zi-check-which-completions-are-installed "${completions[@]}"
     typeset -a installed
     installed=( "${reply[@]}" )
@@ -1735,7 +1735,7 @@ ZI[EXTENDED_GLOB]=""
       builtin print "\nStatus for plugin $REPLY"
       ( builtin cd -q "$repo"; command git status )
     else
-      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} ${REPLY}" || builtin print -n .
+      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} $REPLY" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
       update_rc=$?
       [[ $update_rc -ne 0 ]] && {
@@ -1901,7 +1901,7 @@ ZI[EXTENDED_GLOB]=""
   +zi-message "{info}Completions available overall{ehi}: {num}${#completions[@]}{rst}"
   # Enumerate snippets loaded
   # }, ${infoc}{rst}", j:, :, {msg}"$'\e[0m, +zi-message h
-  +zi-message -n "{info}Snippets loaded{ehi}: {nl}"
+  +zi-message -n "{info}Snippets loaded{ehi}: {rst}{nl}"
   local sni
   for sni in ${(onv)ZI_SNIPPETS[@]}; do
     +zi-message -n "{url}${sni% <[^>]#>}{rst} ${(M)sni%<[^>]##>}, "

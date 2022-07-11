@@ -1644,18 +1644,19 @@ builtin setopt noaliases
   local -a ice_order ecmds
   ice_order=( ${(As:|:)ZI[ice-list]} ${(@)${(A@kons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/} )
   ecmds=( ${ZI_EXTS[(I)z-annex subcommand:*]#z-annex subcommand:} )
+  in=${(j: :)${${(Z+Cn+)in}//[$'\t ']/$'\u00a0'}}
   rwmsg=$in
   while [[ $in == (#b)([[:space:]]#)([^[:space:]]##)(*) ]]; do
     spaces=$match[1]
     rest=$match[3]
-    rwmsg=$match[2]
+    rwmsg=${match[2]//---//}
     REPLY=$rwmsg
     if [[ $rwmsg == (#b)(((http|ftp)(|s)|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
       .zi-formatter-url $rwmsg
-    elif [[ -d $ZI[PLUGINS_DIR]/${rwmsg//\//---} ]]; then
-      .zi-formatter-pid $rwmsg
-    elif [[ $rwmsg == ${(~j:|:)ice_order} ]]; then
+    elif [[ $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
       REPLY=$ZI[col-ice]$rwmsg$ZI[col-rst]
+    elif [[ $rwmsg == (OMZ([PLT]|)|PZT([MLT]|)):* || -d $ZI[PLUGINS_DIR]/${rwmsg//\//---} ]]; then
+      .zi-formatter-pid $rwmsg
     elif [[ $rwmsg == (${~ZI[cmd-list]}|${(~j:|:)ecmds}) ]]; then
       REPLY=$ZI[col-cmd]$rwmsg$ZI[col-rst]
     elif type $1 &>/dev/null; then
@@ -1672,11 +1673,11 @@ builtin setopt noaliases
     in=$rest
     out+=${spaces//$'\n'/$'\013\015'}$REPLY
   done
-  REPLY=$out
+  REPLY=${out//$'\u00a0'/ }
 } # ]]]
 # FUNCTION: .zi-formatter-pid. [[[
 .zi-formatter-pid() {
-  builtin emulate -L zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -RL zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
   # Save whitespace location
   local pbz=${(M)1##(#s)[[:space:]]##}
   local kbz=${(M)1%%[[:space:]]##(#e)}

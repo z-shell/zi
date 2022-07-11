@@ -61,7 +61,7 @@ timeline() {
 # $4 - receiving percentage
 # $5 - resolving percentage
 print_my_line() {
-  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{201}"
+  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{046}"
   [[ -n "${4#...}" && -z "${5#...}" ]] && local col="%F{226}" col3="%F{226}" col4="%F{226}"
   [[ -n "${5#...}" ]] && local col="%F{201}" col3="%F{046}" col4="%F{046}"
   if (( COLS >= 70 )) {
@@ -75,9 +75,9 @@ print_my_line() {
 }
 
 print_my_line_compress() {
-  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{201}"
-  [[ -n "${4#...}" && -z "${5#...}" && -z "${6#...}" ]] && local col="%F{226}" col3="%F{226}" col4="%F{226}"
-  [[ -n "${5#...}" && -z "${6#...}" ]] && local col="%F{201}" col3="%F{226}" col4="%F{226}"
+  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{046}"
+  [[ -n "${4#...}" && -z "${5#...}" && -z "${6#...}" ]] && local col="%F{226}" col3="%F{226}" col4="%F{226}" col5="%F{226}"
+  [[ -n "${5#...}" && -z "${6#...}" ]] && local col="%F{201}" col3="%F{226}" col4="%F{226}" col5="%F{226}"
   [[ -n "${6#...}" ]] && local col3="%F{201}" col4="%F{046}" col5="%F{046}"
   if (( COLS >= 80 )) {
     builtin print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3, ${col3}COMPR%f: $4%%${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "

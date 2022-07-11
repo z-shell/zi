@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
-emulate -R zsh
-setopt extendedglob warncreateglobal typesetsilent rcquotes noshortloops
+builtin  emulate -R zsh
+builtin  setopt extendedglob warncreateglobal typesetsilent rcquotes noshortloops
 
 local zero=$'\0' r=$'\r' n=$'\n' IFS=
 { command perl -pe 'BEGIN { $|++; $/ = \1 }; tr/\r\n/\n\0/' || gstdbuf -o0 gtr '\r\n' '\n\0' || \

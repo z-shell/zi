@@ -82,8 +82,8 @@ ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 export ZPFX=${~ZPFX} ZCDR="${ZCDR:-${XDG_CONFIG_HOME:-$HOME/.config}/zi}" PMSPEC=0fuUpiPs \
 ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}"
 
-[[ -z ${path[(re)$ZPFX/bin]} ]] && [[ -d "$ZPFX/bin" ]] && path=( "$ZPFX/bin" "${path[@]}" )
-[[ -z ${path[(re)$ZPFX/sbin]} ]] && [[ -d "$ZPFX/sbin" ]] && path=( "$ZPFX/sbin" "${path[@]}" )
+[[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d "${ZPFX}/bin" ]] && path=( "${ZPFX}/bin" "${path[@]}" )
+[[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d "${ZPFX}/sbin" ]] && path=( "${ZPFX}/sbin" "${path[@]}" )
 [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
 [[ -n ${ZI[ZCOMPDUMP_PATH]} ]] && ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
 [[ ! -d ${~ZI[MAN_DIR]} ]] && command mkdir -p ${~ZI[MAN_DIR]}/man{1..9}
@@ -126,9 +126,6 @@ zmodload zsh/zutil || { builtin print -P "%F{196}zsh/zutil module is required, a
 zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is required, aborting ❮ ZI ❯ set up.%f"; return 1; }
 zmodload zsh/terminfo 2>/dev/null
 zmodload zsh/termcap 2>/dev/null
-
-
-
 
 # Terminal color codes.
 if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+termcap} -eq 1 && -n ${termcap[Co]} ) ]] {
@@ -1638,24 +1635,26 @@ builtin setopt noaliases
 # [URLs], [plugin IDs + word- after a check to the disk], [ice modifiers],
 # [zi commands], single char bits and quoted strings: [ `...', "..." ].
 .zi-formatter-auto() {
-  builtin emulate -L zsh -o extendedglob -o warncreateglobal -o typesetsilent ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -RL zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extendedglob warncreateglobal typesetsilent
   local out in=$1 i rwmsg match spaces rest
   integer mbegin mend
   local -a ice_order ecmds
   ice_order=( ${(As:|:)ZI[ice-list]} ${(@)${(A@kons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/} )
   ecmds=( ${ZI_EXTS[(I)z-annex subcommand:*]#z-annex subcommand:} )
+  in=${(j: :)${${(Z+Cn+)in}//[$'\t ']/$'\u00a0'}}
   rwmsg=$in
   while [[ $in == (#b)([[:space:]]#)([^[:space:]]##)(*) ]]; do
     spaces=$match[1]
     rest=$match[3]
-    rwmsg=$match[2]
+    rwmsg=${match[2]//---//}
     REPLY=$rwmsg
     if [[ $rwmsg == (#b)(((http|ftp)(|s)|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
       .zi-formatter-url $rwmsg
-    elif [[ -d $ZI[PLUGINS_DIR]/${rwmsg//\//---} ]]; then
-      .zi-formatter-pid $rwmsg
-    elif [[ $rwmsg == ${(~j:|:)ice_order} ]]; then
+    elif [[ $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
       REPLY=$ZI[col-ice]$rwmsg$ZI[col-rst]
+    elif [[ $rwmsg == (OMZ([PLT]|)|PZT([MLT]|)):* || -d $ZI[PLUGINS_DIR]/${rwmsg//\//---} ]]; then
+      .zi-formatter-pid $rwmsg
     elif [[ $rwmsg == (${~ZI[cmd-list]}|${(~j:|:)ecmds}) ]]; then
       REPLY=$ZI[col-cmd]$rwmsg$ZI[col-rst]
     elif type $1 &>/dev/null; then
@@ -1672,11 +1671,11 @@ builtin setopt noaliases
     in=$rest
     out+=${spaces//$'\n'/$'\013\015'}$REPLY
   done
-  REPLY=$out
+  REPLY=${out//$'\u00a0'/ }
 } # ]]]
 # FUNCTION: .zi-formatter-pid. [[[
 .zi-formatter-pid() {
-  builtin emulate -L zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -RL zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
   # Save whitespace location
   local pbz=${(M)1##(#s)[[:space:]]##}
   local kbz=${(M)1%%[[:space:]]##(#e)}
@@ -2707,10 +2706,43 @@ zicdclear() { .zi-compdef-clear -q; }
 # A function that can be invoked from within `atinit', `atload', etc. ice-mod.
 # It runs `autoload compinit; compinit' and respects
 # ZI[ZCOMPDUMP_PATH] and ZI[COMPINIT_OPTS].
-zicompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+# ]]]
+# FUNCTION: zicompinit_fast. [[[
+# Checking the cached .zcompdump file to see if it must be regenerated adds a noticable delay to zsh startup.
+# This restricts checking it once a day, determines when to regenerate, as compinit doesn't always need to
+# modify the compdump and compiles mapped to share (total mem reduction) run in background in multiple shells.
+# A function that can be invoked from within `atinit', `atload'
+zicompinit_fast() {
+  autoload -Uz compinit
+  local zcompf="${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}"
+  #local check_ub="$(awk -F= '/^NAME/{print $2}' /etc/os-release | grep 'Ubuntu')"
+  local zcompf_a="${zcompf}.augur"
+  #[[ $check_ub ]] && export skip_global_compinit=1
+
+  # Globbing (#qN.mh+24):
+  # - '#q' is an explicit glob qualifier that makes globbing work within zsh's [[ ]] construct.
+  # - 'N' makes the glob pattern evaluate to nothing when it doesn't match (rather than throw a globbing error)
+  # - '.' matches "regular files"
+  # - 'mh+24' matches files, directories and etc., that are older than 24 hours.
+  if [[ -e "$zcompf_a" && -f "$zcompf_a"(#qN.mh+24) ]]; then
+    compinit -d "$zcompf"
+    command touch "$zcompf_a"
+  else
+    compinit -C -d "$zcompf"
+  fi
+  # if .zcompdump exists (and is non-zero), and is older than the .zwc file, then regenerate
+  if [[ -s "$zcompf" && (! -s "${zcompf}.zwc" || "$zcompf" -nt "${zcompf}.zwc") ]]; then
+    # since file is mapped, it might be mapped right now (current shells), so rename it then make a new one
+    [[ -e "$zcompf.zwc" ]] && command mv -f "$zcompf.zwc" "$zcompf.zwc.old"
+    # compile it mapped, so multiple shells can share it (total mem reduction) run in background
+    { zcompile -M "$zcompf" && command rm -f "$zcompf.zwc.old" }&!
+  fi
+}
 # ]]]
 # FUNCTION: zicompdef. [[[
-# Stores compdef for a replay with `zicdreplay' (turbo mode) or with `zi cdreplay' (normal mode). An utility functton of an undefined use case.
+# Stores compdef for a replay with `zicdreplay' (turbo mode) or with `zi cdreplay' (normal mode).
+# An utility function of an undefined use case.
 zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # ]]]
 # FUNCTION: @autoload. [[[
@@ -2727,7 +2759,7 @@ zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
 ❮▼❯() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
-zpcompinit() { autoload -Uz compinit; compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zpcompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 
 #

@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-emulate -R zsh -o extendedglob
+builtin emulate -R zsh -o extendedglob
 
 local pkg=$1
 if [[ -z $pkg || ! -e $pkg ]] {

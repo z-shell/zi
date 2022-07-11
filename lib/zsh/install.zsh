@@ -1714,22 +1714,21 @@ ziextract() {
     command chmod a+x "${execs[@]}"
     if (( !OPTS[opt_-q,--quiet] )) {
       if (( ${#execs} == 1 )); then
-        +zi-message "{annex}ziextract{ehi}:{rst} Successfully extracted and assigned {b}{opt}+x{rst} chmod to the file{ehi}:{rst}" "\`{file}${execs[1]}{rst}'"
+        +zi-message "{annex}ziextract{ehi}:{rst} {auto}Successfully extracted and assigned \`+x\` chmod to the file{ehi}:{rst} \`{file}${execs[1]}{rst}'"
       else
         local sep="$ZI[col-rst],$ZI[col-obj] "
         if (( ${#execs} > 7 )) {
-          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files{ehi}:{rst}" "({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
-            "in \`{file}$file{rst}'. All the extracted" "{obj2}${#execs}{rst} executables are available in the {var}INSTALLED_EXECS{rst} array"
+          +zi-message "{annex}ziextract{ehi}:{rst} {auto}Successfully extracted and assigned \`+x\` chmod to the files{ehi}:{rst} ({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
+            "in \`{file}$file{rst}' {nl}{mmdsh}{msg} All the extracted {obj2}${#execs}{rst} executables are available in the {var}INSTALLED_EXECS{rst} array"
         } else {
-          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files{ehi}:{rst}" "({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained" "in \`{file}$file{rst}'"
+          +zi-message "{annex}ziextract{ehi}:{rst} {auto}Successfully extracted and assigned \`+x\` chmod to the files{ehi}:{rst} ({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained in \`{file}$file{rst}'"
         }
       fi
     }
   } elif (( warning )) {
-    +zi-message "{annex}ziextract{ehi}:" "{error}Did not recognize the archive" "type of \`{file}${file}{rst}'" \
-      "${ext:+/ {obj2}${ext}{rst} }" "{rst}({p}no extraction has been done{rst})"
+    +zi-message "{annex}ziextract{ehi}:{rst} {auto}Did not recognize the archive type of \`{file}${file}{rst}'" \
+      "${ext:+/ {obj2}${ext}{rst} } {nl}{mmdsh}{msg} {error}no extraction has been done{rst}"
   }
-
   if (( move | move2 )) {
     local -a files
     files=( *~(._zi|.git|._backup|.tmp231ABC)(DN/) )
@@ -1757,13 +1756,13 @@ ziextract() {
   local tpe=$1 extract=$2 local_dir=$3
   (
     builtin cd -q "$local_dir" || {
-      +zi-message "{error}ERROR:{msg2} The path of the $tpe" "(\`{file}$local_dir{msg2}') isn't accessible.{rst}"
+      +zi-message "{auto}The path of the $tpe {dir}$local_dir{rst} {nl}{mmdsh}{error} isn't accessible{rst}"
       return 1
     }
     local -a files
     files=( ${(@)${(@s: :)${extract##(\!-|-\!|\!|-)}}//(#b)(((#s)|([^\\])[\\]([\\][\\])#)|((#s)|([^\\])([\\][\\])#)) /${match[2]:+$match[3]$match[4] }${match[5]:+$match[6]${(l:${#match[7]}/2::\\:):-} }} )
     if [[ ${#files} -eq 0 && -n ${extract##(\!-|-\!|\!|-)} ]] {
-        +zi-message "{error}ERROR:{msg2} The files" "(\`{file}${extract##(\!-|-\!|\!|-)}{msg2}')" "not found, cannot extract.{rst}"
+        +zi-message "{auto}The files ${extract##(\!-|-\!|\!|-)} not found{rst}{nl}{mmdsh}{error} cannot extract{rst}"
         return 1
     } else {
       (( !${#files} )) && files=( "" )

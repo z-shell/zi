@@ -1392,7 +1392,7 @@ ZI[EXTENDED_GLOB]=""
         }
       }
       if (( ZI[annex-multi-flag:pull-active] <= 1 && !OPTS[opt_-q,--quiet] )) {
-        +zi-message "Binary{ehi}:{rst} {version}$version {mdsh}{version} ✔{rst}"
+        +zi-message "Binary{ehi}:{rst} {version}$version{rst}{…}{version} ✔{rst}"
       }
     }
     if (( 1 )) {
@@ -1401,7 +1401,7 @@ ZI[EXTENDED_GLOB]=""
           .zi-any-colorify-as-uspl2 "$id_as"
           (( ZI[first-plugin-mark] )) && {
             ZI[first-plugin-mark]=0
-          } || +zi-message "{nl}Updating{ehi}: {auto}$REPLY"
+          } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
         }
         ICE=( "${(kv)ice[@]}" )
         # Run annexes' atpull hooks (the before atpull-ice ones).
@@ -1450,7 +1450,7 @@ ZI[EXTENDED_GLOB]=""
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}: {auto}$REPLY"
+            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
           }
         }
         +zi-message "$line"
@@ -1471,7 +1471,7 @@ ZI[EXTENDED_GLOB]=""
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}: {auto}$REPLY"
+            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
           }
         } else {
           ZI[annex-multi-flag:pull-active]=0
@@ -1734,7 +1734,7 @@ ZI[EXTENDED_GLOB]=""
       builtin print "\nStatus for plugin $REPLY"
       ( builtin cd -q "$repo"; command git status )
     else
-      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}: {auto}$REPLY" || builtin print -n .
+      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} $REPLY{rst}" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
       update_rc=$?
       [[ $update_rc -ne 0 ]] && {
@@ -1814,7 +1814,7 @@ ZI[EXTENDED_GLOB]=""
       local PUFILEMAIN=${${id_as#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
       local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
       .zi-any-colorify-as-uspl2 "$uspl"
-      +zi-message "Updating{ehi}: {auto}$REPLY" >! $PUFILE
+      +zi-message "Updating{ehi}:{rst} $REPLY{rst}" >! $PUFILE
       .zi-any-to-user-plugin "$uspl"
       local user=${reply[-2]} plugin=${reply[-1]}
       .zi-update-or-status update "$user" "$plugin" &>>! $PUFILE &

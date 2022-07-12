@@ -49,7 +49,7 @@ if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
   return 1
 fi
 
-# HOME_DIR setup.
+# Establish ZI[HOME_DIR]
 if [[ -z ${ZI[HOME_DIR]} ]]; then
   if [[ -d ${HOME}/.zi ]]; then
     ZI[HOME_DIR]="${HOME}/.zi"
@@ -62,24 +62,28 @@ if [[ -z ${ZI[HOME_DIR]} ]]; then
   fi
 fi
 
-# ❮ ZI ❯ Home directories.
+: ${XDG_ZI_HOME:=${ZI[HOME_DIR]}}
 : ${ZI[THEMES_DIR]:=${ZI[HOME_DIR]}/themes}
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}
 : ${ZI[ZMODULES_DIR]:=${ZI[HOME_DIR]}/zmodules}
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
+
 typeset -g ZPFX
 : ${ZPFX:=${ZI[HOME_DIR]}/polaris}
 : ${ZI[MAN_DIR]:=${ZPFX}/man}
-: ${ZI[ALIASES_OPT]::=${${options[aliases]:#off}:+1}}
-# ❮ ZI ❯ Remotes.
+: ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
 : ${ZI[PKG_OWNER]:=z-shell}
 
-ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]} ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]} ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
-ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]} ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
+ZI[THEMES_DIR]=${~ZI[THEMES_DIR]}
+ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}
+ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
+ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]}
+ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
+ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]}
 
-export ZPFX=${~ZPFX} ZCDR="${ZCDR:-${XDG_CONFIG_HOME:-$HOME/.config}/zi}" PMSPEC=0fuUpiPs \
+export ZPFX=${~ZPFX} ZCDR="${ZCDR:-${XDG_CONFIG_HOME:-$HOME/.config}/zi}" PMSPEC=0fuUpiPsX \
 ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}"
 
 [[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d "${ZPFX}/bin" ]] && path=( "${ZPFX}/bin" "${path[@]}" )
@@ -2247,7 +2251,7 @@ zi() {
           ICE=( "${___ices[@]}" "${(kv)ZI_ICES[@]}" )
           ZI_ICE=( "${(kv)ICE[@]}" ) ZI_ICES=()
           integer ___msgs=${+ICE[debug]}
-          (( ___msgs )) && +zi-message "{pre}zi-main:{faint} Processing {pname}$1{faint}{…}{rst}"
+          (( ___msgs )) && +zi-message "{profile}zi-main{ehi}:{faint} Processing {pname}$1{faint}{…}{rst}"
           # Delete up to the final space to get the previously-processed ID.
           ZI[annex-exposed-processed-IDs]+="${___id:+ $___id}"
           # Strip the ID-qualifier (`@') and GitHub domain from the ID.

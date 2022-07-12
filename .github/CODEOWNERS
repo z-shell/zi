@@ -4,7 +4,7 @@
 # Reviewers
 # 1. @z-shell
 
-* @z-shell/tcs
+* @z-shell/tsc
 
 # Order is important; the last matching pattern takes the most precedence
 #*.sh    @z-shell

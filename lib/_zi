@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 # shellcheck disable=SC2034,SC2039,SC2059,SC2086,SC2129,SC2181,SC2296,SC2170,SC2128,SC2206,SC1036,SC2039,SC2068,SC2076,SC2155,SC2162,SC2181,SC2201,SC2207,SC2208,SC2236,SC2255,SC2270,SC2273,SC2274,SC2275,SC2276,SC2277,SC2278,SC2279,SC2280,SC2281,SC2282,SC2283,SC2284,SC2285,SC2286,SC2287,SC2288,SC2289,SC2290,SC2291,SC2292,SC2293,SC2294,SC2295,SC2296,SC2297,SC2298,SC2299,SC2300,SC2301,SC2302,SC2303,SC2304,SC2305,SC2306,SC2307,SC2308,SC2309,SC2310,SC2311,SC2312,SC2313,SC2314,SC2315,SC2316,SC2317,SC2318,SC2319,SC2320,SC2321,SC2322,SC2323,SC2324,SC2325,SC2326,SC2327,SC2328,SC2329,SC2330,SC2331,SC2332,SC2333,SC2334,SC2335,SC2336,SC2337,SC2338,SC2339,SC2340,SC2341,SC2342,SC2343,SC2344,SC2345,SC2346,SC2347,SC2348,SC2349,SC2350,SC2351,SC2352,SC2353,SC2354,SC2355,SC2356,SC2357,SC2358,SC2359,SC2360,SC2361,SC2362,SC2363,SC2364,SC2365,SC2366,SC2367,SC2368,SC2369,SC2370,SC2371,SC2372,SC2373,SC2374,SC2375,SC2376,SC2377,SC2378,SC2379,SC2380,SC2381,SC2382,SC2383,SC2384,SC2203,SC2168,SC2154
 
-setopt localoptions warncreateglobal typesetsilent
+builtin setopt local_options warn_create_global typeset_silent
 
 local curcontext="$curcontext" state state_descr line ret=1
 local -a expl
@@ -78,10 +78,10 @@ case $state in
           _message "Hit enter to get usage information" && ret=0
           ;;
         subcmds)
-          _message "Hit enter to get commands list" && ret=0
+          _message "Hit enter to get subcommands list" && ret=0
           ;;
         icemods)
-          _message "Hit enter to get commands list" && ret=0
+          _message "Hit enter to get ice-modifiers list" && ret=0
           ;;
         analytics)
           _message "Hit enter to show commands for stats" && ret=0

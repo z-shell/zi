@@ -72,11 +72,15 @@
     builtin read -t 1 ___tmp <>"${___fle:r}.fifo2"
   done >>! "$ZSRV_WORK_DIR/$ZSRV_ID".log 2>&1
 } # ]]]
-# FUNCTION: .zi-wrap-track-functions [[[
-.zi-wrap-track-functions() {
+# FUNCTION: .zi-wrap-functions [[[
+# Handles the wrap'…' ice-modifier which allows to extend the tracking (e.g: gathering of report and unload data) of a plugin
+# beyond the moment of sourcing it's main file(s). It works by wrapping the given functions with a tracking-enabling
+# and disabling snippet of code.This is useful especially with prompts, as they very often do their
+# initialization in the first call to their precmd hook function.
+.zi-wrap-functions() {
   local user="$1" plugin="$2" id_as="$3" f
   local -a wt
-  wt=( ${(@s.;.)ICE[wrap-track]} )
+  wt=( ${(@s.;.)ICE[wrap]} )
   for f in ${wt[@]}; do
     functions[${f}-zi-bkp]="${functions[$f]}"
     eval "

@@ -1,0 +1,21 @@
+---
+name: "❇️ Assign"
+
+on:
+  issues:
+    types:
+      - opened
+  pull_request:
+    types:
+      - labeled
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/z-shell/projects/4
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          labeled: bug 🐞, triage 📑, annex 🌀, plugin ⚙️, package 📦, feature-request 💡
+          label-operator: OR

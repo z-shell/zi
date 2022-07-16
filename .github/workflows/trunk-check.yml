@@ -1,0 +1,23 @@
+---
+name: "⭕ Trunk"
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    types: [opened, synchronize]
+  schedule:
+    - cron: "0 05 * * 5"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    if: github.event.schedule != '0 05 * * 5'
+    name: "⚡"
+    uses: z-shell/.github/.github/workflows/trunk.yml@main
+  upload:
+    if: github.event.schedule == '0 05 * * 5'
+    name: "🆙"
+    uses: z-shell/.github/.github/workflows/trunk.yml@main
+    secrets:
+      trunk-token: ${{ secrets.TRUNK_TOKEN }}

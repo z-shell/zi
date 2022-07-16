@@ -1,0 +1,30 @@
+{
+  "proseWrap": "always",
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "printWidth": 200
+      }
+    },
+    {
+      "files": "*.yml",
+      "options": {
+        "printWidth": 200
+      }
+    },
+    {
+      "files": "*.yaml",
+      "options": {
+        "printWidth": 200
+      }
+    },
+    {
+      "files": "*.md",
+      "options": {
+        "printWidth": 200
+      }
+    }
+  ]
+}

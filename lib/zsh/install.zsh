@@ -397,7 +397,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       case ${ICE[proto]} in
         (|https|git|http|ftp|ftps|rsync|ssh)
           :zi-git-clone() {
-            command git clone --filter=blob:none --progress ${(s: :)ICE[cloneopts]---recursive} ${(s: :)ICE[depth]:+--depth ${ICE[depth]}} \
+            command git clone --verbose --progress ${(s: :)ICE[cloneopts]---recursive} ${(s: :)ICE[depth]:+--depth ${ICE[depth]}} \
             "${ICE[proto]:-https}://${site:-${ICE[from]:-github.com}}/$remote_url_path" "$local_path" \
             --config transfer.fsckobjects=false --config receive.fsckobjects=false \
             --config fetch.fsckobjects=false --config pull.rebase=false

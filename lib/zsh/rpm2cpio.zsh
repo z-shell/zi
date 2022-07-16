@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
-emulate -R zsh -o extendedglob
+builtin emulate -R zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob
 
 local pkg=$1
 if [[ -z $pkg || ! -e $pkg ]] {

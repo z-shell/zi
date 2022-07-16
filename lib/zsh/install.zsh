@@ -118,8 +118,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
-  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---} pkgjson tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123}
-  local URL=https://raw.githubusercontent.com/z-shell/$2/HEAD/package.json
+  local user=$1 pkg=$2 plugin=$2 id_as=$3 dir=$4 profile=$5 local_path=${ZI[PLUGINS_DIR]}/${3//\//---}
+  local pkgjson tmpfile=${$(mktemp):-${TMPDIR:-/tmp}/zsh.xYzAbc123}
+  local URL=https://raw.githubusercontent.com/${ZI[PKG_OWNER]}/$2/HEAD/package.json
   local pro_sep="{rst}, {profile}" epro_sep="{error}, {profile}" tool_sep="{rst}, {cmd}" lhi_hl="{lhi}" profile_hl="{profile}"
 
   trap "rmdir ${(qqq)local_path} 2>/dev/null; return 1" INT TERM QUIT HUP
@@ -257,8 +258,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           return 1
         }
       }
-
-      ziextract "$fname" --move
+      ziextract "$fname" ${ICE[extract]---move} ${${(M)ICE[extract]:#!([^!]|(#e))*}:+--move} ${${(M)ICE[extract]:#!!*}:+--move2}
       return 0
     ) && {
       reply=( "$user" "$plugin" )
@@ -289,7 +289,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local user=$1 plugin=$2 id_as=$3 remote_url_path=${1:+$1/}$2 local_path tpe=$4 update=$5 version=$6
 
   if .zi-get-object-path plugin "$id_as" && [[ -z $update ]] {
-    +zi-message "{u-warn}ERROR{b-warn}:{error} A plugin named {pid}$id_as{error} already exists, aborting."
+    +zi-message "{error}Error{ehi}:{rst} A plugin named {pid}$id_as{rst} already exists, aborting."
     return 1
   }
   local_path=$REPLY
@@ -365,7 +365,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           if { ! .zi-download-file-stdout "$url" 0 1 >! "${REPLY:t}" } {
             if { ! .zi-download-file-stdout "$url" 1 1 >! "${REPLY:t}" } {
               command rm -f "${REPLY:t}"
-              +zi-message "Download of release for \`$remote_url_path' " "failed.{nl}Tried url: $url."
+              +zi-message "{auto}Download of release for \`$remote_url_path' failed{nl}{mmdsh} Tried url{ehi}:{rst} {auto}"
               return 1
             }
           }
@@ -379,7 +379,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           [[ -d ._zi ]] || return 2
           builtin print -r -- $url >! ._zi/url || return 3
           builtin print -r -- ${REPLY} >! ._zi/is_release${count:#1} || return 4
-          ziextract ${REPLY:t} ${${${#reply}:#1}:+--nobkp}
+          ziextract ${REPLY:t} ${${${#reply}:#1}:+--nobkp} ${${(M)ICE[extract]:#!([^!]|(#e))*}:+--move} ${${(M)ICE[extract]:#!!*}:+--move2}
         }
         return $?
       ) || {
@@ -398,7 +398,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       case ${ICE[proto]} in
         (|https|git|http|ftp|ftps|rsync|ssh)
           :zi-git-clone() {
-            command git clone --progress ${(s: :)ICE[cloneopts]---recursive} ${(s: :)ICE[depth]:+--depth ${ICE[depth]}} \
+            command git clone --verbose --progress ${(s: :)ICE[cloneopts]---recursive} ${(s: :)ICE[depth]:+--depth ${ICE[depth]}} \
             "${ICE[proto]:-https}://${site:-${ICE[from]:-github.com}}/$remote_url_path" "$local_path" \
             --config transfer.fsckobjects=false --config receive.fsckobjects=false \
             --config fetch.fsckobjects=false --config pull.rebase=false
@@ -543,26 +543,26 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     ]]; then
       if [[ $reinstall = 1 ]]; then
         # Remove old files
-        command rm -f "${ZI[COMPLETIONS_DIR]}/$cfile" "${ZI[COMPLETIONS_DIR]}/$bkpfile"
+        command rm -f "${ZI[COMPLETIONS_DIR]}/${cfile}" "${ZI[COMPLETIONS_DIR]}/${bkpfile}"
       fi
       INSTALLED_COMPS+=( $cfile )
-      (( quiet )) || builtin print -Pr "Symlinking completion ${ZI[col-uname]}$cfile%f%b to completions directory."
-      command ln -fs "$c" "${ZI[COMPLETIONS_DIR]}/$cfile"
+      (( quiet )) || +zi-message "{auto}Symlinking completion \`$cfile' to completions directory{…}{rst}"
+      command ln -fs "$c" "${ZI[COMPLETIONS_DIR]}/${cfile}"
       # Make compinit notice the change
       .zi-forget-completion "$cfile" "$quiet"
     else
       SKIPPED_COMPS+=( $cfile )
-      (( quiet )) || builtin print -Pr "Not symlinking completion \`${ZI[col-obj]}$cfile%f%b', it already exists."
-      (( quiet )) || builtin print -Pr "${ZI[col-info2]}Use \`${ZI[col-pname]}zi creinstall $abbrev_pspec${ZI[col-info2]}' to force install.%f%b"
+      (( quiet )) || +zi-message "{auto}Not symlinking completion \`$cfile', it already exists{…}{rst}"
+      (( quiet )) || +zi-message "{mmdsh}{rst} {auto}Use \`zi creinstall $abbrev_pspec' to force install"
     fi
   done
 
   if (( quiet == 1 && (${#INSTALLED_COMPS} || ${#SKIPPED_COMPS}) )) {
-    +zi-message "{msg}Installed {num}${#INSTALLED_COMPS}" \
-      "{msg}completions. They are stored in{var}" "\$INSTALLED_COMPS{msg} array."
+    +zi-message "{msg}Installed {num}${#INSTALLED_COMPS} {msg}completions" \
+      "{nl}{mmdsh} They are stored in{var} \$INSTALLED_COMPS{msg} array"
     if (( ${#SKIPPED_COMPS} )) {
-      +zi-message "{msg}Skipped installing" "{num}${#SKIPPED_COMPS}{msg} completions." \
-        "They are stored in {var}\$SKIPPED_COMPS{msg} array."
+      +zi-message "{msg}Skipped installing {num}${#SKIPPED_COMPS}{msg} completions" \
+        "{nl}{mmdsh} They are stored in{var} \$SKIPPED_COMPS{msg} array"
     }
   }
 
@@ -629,7 +629,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
     if (( ${+commands[curl]} )); then
       if [[ -n $progress ]]; then
-        command curl --progress-bar -fSL "$url" 2> >($ZI[BIN_DIR]/lib/zsh/single-line.zsh >&2) || return 1
+        command curl --progress-bar -fSL "$url" 2> >(${ZI[BIN_DIR]}/lib/zsh/single-line.zsh >&2) || return 1
       else
         command curl -fsSL "$url" || return 1
       fi
@@ -640,14 +640,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     elif (( ${+commands[lynx]} )); then
       command lynx -source "$url" || return 1
     else
-      +zi-message "{u-warn}ERROR{b-warn}:{rst}No download tool detected" \
-        "(one of: {cmd}curl{rst}, {cmd}wget{rst}, {cmd}lftp{rst}," "{cmd}lynx{rst})."
+      +zi-message "{error}Error{ehi}:{rst} No compatible download tool detected" \
+      "{nl}{mmdsh} Expected{ehi}:{rst} {cmd}curl{rst}, {cmd}wget{rst}, {cmd}lftp{rst}," "{cmd}lynx{rst}"
       return 2
     fi
   } else {
     if type curl 2>/dev/null 1>&2; then
       if [[ -n $progress ]]; then
-        command curl --progress-bar -fSL "$url" 2> >($ZI[BIN_DIR]/lib/zsh/single-line.zsh >&2) || return 1
+        command curl --progress-bar -fSL "$url" 2> >(${ZI[BIN_DIR]}/lib/zsh/single-line.zsh >&2) || return 1
       else
         command curl -fsSL "$url" || return 1
       fi
@@ -716,7 +716,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local url="$1" update="$2" directory="$3"
 
   (( ${+commands[svn]} )) || \
-    builtin print -Pr -- "${ZI[col-error]}Warning:%f%b Subversion not found" ", please install it to use \`${ZI[col-obj]}svn%f%b' ice."
+    +zi-message "{error}Warning{ehi}:{rst} Subversion not found{nl}{mmdsh}{rst} {auto}Please install it to use \`svn' ice"
 
   if [[ "$update" = "-t" ]]; then
     ( () { builtin setopt localoptions noautopushd; builtin cd -q "$directory"; }
@@ -787,7 +787,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     if [[ -n ${ICE[pick]} ]]; then
       list=( ${~${(M)ICE[pick]:#/*}:-$plugin_dir/$ICE[pick]}(DN) )
       if [[ ${#list} -eq 0 ]] {
-        builtin print "No files for compilation found (pick-ice didn't match)."
+        +zi-message "No files for compilation found (pick-ice didn't match){rst}{…}"
         return 1
       }
       reply=( "${list[1]:h}" "${list[1]}" )
@@ -796,12 +796,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         if [[ -f $plugin_dir/$filename ]] {
           reply=( "$plugin_dir" $plugin_dir/$filename )
         } elif { ! .zi-first % "$plugin_dir" } {
-          +zi-message "No files for compilation found."
+          +zi-message "No files for compilation found{rst}{…}"
           return 1
         }
       } else {
         .zi-first "$1" "$2" || {
-          +zi-message "No files for compilation found."
+          +zi-message "No files for compilation found{rst}{…}"
           return 1
         }
       }
@@ -815,10 +815,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       () {
         builtin emulate -LR zsh -o extendedglob
         if { ! zcompile -U "$first" } {
-          +zi-message "{msg2}Warning:{rst} Compilation failed. Don't worry, the plugin will work also without compilation."
-          +zi-message "{msg2}Warning:{rst} Consider submitting an error report to ❮ ZI ❯ or to the plugin's author."
+          +zi-message "{error}Warning{ehi}:{rst} Compilation failed. Don't worry, the plugin will work also without compilation"
+          +zi-message "{error}Warning{ehi}:{rst} Consider submitting an error report to ❮ ZI ❯ or to the plugin's author"
         } else {
-          +zi-message " {info}✔{rst}"
+          +zi-message " {version}✔{rst}"
         }
         # Try to catch possible additional file
         zcompile -U "${${first%.plugin.zsh}%.zsh-theme}.zsh" 2>/dev/null
@@ -835,7 +835,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       eval "list+=( \$plugin_dir/$~pat(N) )"
     }
     if [[ ${#list} -eq 0 ]] {
-      +zi-message "{u-warn}Warning{b-warn}:{rst} ice {ice}compile{apo}''{rst} didn't match any files."
+      +zi-message "{error}Warning{ehi}:{rst} ice {ice}compile{apo}''{rst} didn't match any files."
     } else {
       integer retval
       for first in $list; do
@@ -846,11 +846,11 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       done
       builtin print -rl -- ${list[@]#$plugin_dir/} >! ${TMPDIR:-/tmp}/zi.compiled.$$.lst
       if (( retval )) {
-        +zi-message "{note}Note:{rst} The additional {num}${#list}{rst} compiled files" \
-          "are listed in the {var}\$ADD_COMPILED{rst} array ({p}operation exit code{ehi}:{rst} {data2}$retval{rst})."
+        +zi-message "{mmdsh}{rst} The additional {num}${#list}{rst} compiled files" \
+          "are listed in the {var}\$ADD_COMPILED{rst} array ({p}exit code{ehi}:{rst} {data2}$retval{rst})"
       } else {
-        +zi-message "{note}Note:{rst} The additional {num}${#list}{rst} compiled files" \
-          "are listed in the {var}\$ADD_COMPILED{rst} array."
+        +zi-message "{mmdsh}{rst} The additional {num}${#list}{rst} compiled files" \
+          "are listed in the {var}\$ADD_COMPILED{rst} array"
       }
     }
   fi
@@ -987,7 +987,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
               () {
                 builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
                 zcompile -U "${list[1]}" &>/dev/null || \
-                  +zi-message "{u-warn}Warning{b-warn}:{rst} couldn't compile {apo}\`{file}${list[1]}{apo}\`{rst}."
+                  +zi-message "{error}Warning{ehi}:{rst} Couldn't compile {apo}\`{file}${list[1]}{rst}'"
               }
             }
           fi
@@ -1052,7 +1052,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             if { ! .zi-download-file-stdout "$url" 0 1 >! "$dirname/$filename" } {
               if { ! .zi-download-file-stdout "$url" 1 1 >! "$dirname/$filename" } {
                 command rm -f "$dirname/$filename"
-                +zi-message "{u-warn}ERROR{b-warn}:{rst} Download failed."
+                +zi-message "{error}Error{ehi}:{rst} Download failed{…}"
                 return 4
               }
             }
@@ -1108,26 +1108,26 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
       command mkdir -p "$local_dir/$dirname"
       if [[ ! -e $url ]] {
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{ehi}ERROR:{error} The source file {file}$url{error} doesn't exist.{rst}"
+        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{error}Error{ehi}:{rst} {msg}The source file {file}$url{msg} doesn't exist.{rst}"
         retval=4
       }
       if [[ -e $url && ! -f $url && $url != /dev/null ]] {
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{ehi}ERROR:{error} The source {file}$url{error} isn't a regular file.{rst}"
+        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{error}Error{ehi}:{rst} {msg}The source {file}$url{msg} isn't a regular file.{rst}"
         retval=4
       }
       if [[ -e $url && ! -r $url && $url != /dev/null ]] {
-        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{ehi}ERROR:{error} The source {file}$url{error} isn't" \
-          "accessible (wrong permissions).{rst}"
+        (( !OPTS[opt_-q,--quiet] )) && +zi-message "{error}Error{ehi}:{rst} {msg}The source {file}$url{msg} isn't" \
+          "accessible{nl}{mmdsh}{error} wrong permissions{rst}"
         retval=4
       }
       if (( !OPTS[opt_-q,--quiet] )) && [[ $url != /dev/null ]] {
         +zi-message "{msg}Copying {file}$filename{msg}{…}{rst}"
         command cp -vf "$url" "$local_dir/$dirname/$filename" || \
-          { +zi-message "{ehi}ERROR:{error} The file copying has been unsuccessful.{rst}"; retval=4; }
+          { +zi-message "{error}Error{ehi}:{rst} {auto}The file copying has been unsuccessful"; retval=4; }
       } else {
         command cp -f "$url" "$local_dir/$dirname/$filename" &>/dev/null || \
-          { +zi-message "{ehi}ERROR:{error} The copying of {file}$filename{error} has been unsuccessful"\
-            "${${(M)OPTS[opt_-q,--quiet]:#1}:+, skip the -q/--quiet option for more information}.{rst}"; retval=4; }
+          { +zi-message "{error}Error{ehi}:{rst} {msg}The copying of {file}$filename{msg} has been unsuccessful"\
+            "${${(M)OPTS[opt_-q,--quiet]:#1}:+, skip the -q/--quiet option for more information}{rst}"; retval=4; }
       }
     }
 
@@ -1302,7 +1302,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   if (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) {
     ICE=( "${(kv)ICE[@]}" "${tmp[@]}" )
   } elif [[ -n ${ZI_SICE[$id_as]} ]] {
-    +zi-message "{error}WARNING:{msg2} Inconsistency #3 occurred, please report the string: \`{obj}${ZI_SICE[$id_as]}{msg2}' to the" \
+    +zi-message "{error}Warning{ehi}:{rst} {msg2}Inconsistency #3 occurred, please report the string: \`{obj}${ZI_SICE[$id_as]}{msg2}' to the" \
     "GitHub issues page: {obj}https://github.com/z-shell/zi/issues/{msg2}.{rst}"
   }
   id_as=${ICE[id-as]:-$id_as}
@@ -1329,7 +1329,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   }
 
   if { ! .zi-get-object-path snippet "$id_as" } {
-    +zi-message "{msg2}Error: the snippet \`{obj}$id_as{msg2}'" "doesn't exist, aborting the update.{rst}"
+    +zi-message "{msg2}Error{ehi}:{rst} the snippet \`{obj}$id_as{msg2}'" "doesn't exist, aborting the update.{rst}"
       return 1
   }
   filename=$reply[-2] dirname=$reply[-2] local_dir=$reply[-3]
@@ -1452,7 +1452,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     if (( !$#list )) {
       +zi-message -n "{error}Didn't find correct Github" "release-file to download"
       if [[ -n $bpick ]] {
-        +zi-message -n ", try adapting {obj}bpick{error}-ICE" "(the current bpick is{error}: {file}${bpick}{error})."
+        +zi-message -n ", try adapting {obj}bpick{error}-ICE" "({auto}current bpick{ehi}:{rst} {file}${bpick}{error})"
       } else {
         +zi-message -n .
       }
@@ -1482,7 +1482,7 @@ ziextract() {
   }
   local -a opt_move opt_move2 opt_norm opt_auto opt_nobkp
   zparseopts -D -E -move=opt_move -move2=opt_move2 -norm=opt_norm -auto=opt_auto -nobkp=opt_nobkp || \
-  { +zi-message "{annex}ziextract{ehi}:{error} Incorrect options given to" "\`{annex}ziextract{error}' {rst}({p}available are{ehi}:{rst} {opt}--auto{msg2}," \
+  { +zi-message "{annex}ziextract{ehi}:{rst} {error}Incorrect options given to" "\`{annex}ziextract{error}' {rst}({p}available are{ehi}:{rst} {opt}--auto{msg2}," \
   "{opt}--move{msg2}, {opt}--move2{msg2}, {opt}--norm{msg2}, {opt}--nobkp{rst})"; return 1; }
 
   local file="$1" ext="$2"
@@ -1559,7 +1559,7 @@ ziextract() {
     return 1
   }
   if [[ ! -e $file ]] {
-    +zi-message "{annex}ziextract{ehi}:{rst} {error} The {file}file{error} \`{pname}${file}{error}' does not exist{rst}"
+    +zi-message "{annex}ziextract{ehi}:{rst} {error}The {file}file{error} \`{pname}${file}{error}' does not exist{rst}"
     return 1
   }
   if (( !nobkp )) {
@@ -1655,15 +1655,12 @@ ziextract() {
         for prog ( hdiutil cp ) { →zi-check $prog "$file" || return 1; }
 
         integer retval
-        local attached_vol="$( command hdiutil attach "$file" | \
-            command tail -n1 | command cut -f 3 )"
-
+        local attached_vol="$( command hdiutil attach "$file" | command tail -n1 | command cut -f 3 )"
         command cp -Rf ${attached_vol:-${TMPDIR:-/tmp}/acb321GEF}/*(D) .
         retval=$?
         command hdiutil detach $attached_vol
-
         if (( retval )) {
-          +zi-message "{annex}ziextract{ehi}:{warn} Problem occurred when attempted to copy the files from the mounted image{ehi}:{rst} \`{file}${file}{rst}'"
+          +zi-message "{annex}ziextract{ehi}:{rst} {warn}Problem occurred when attempted to copy the files from the mounted image{ehi}:{rst} \`{file}${file}{rst}'"
         }
         return $retval
       }
@@ -1684,7 +1681,7 @@ ziextract() {
 
   if [[ $(typeset -f + →zi-extract) == "→zi-extract" ]] {
     .zi-extract-wrapper "$file" →zi-extract || {
-      +zi-message -n "{annex}ziextract{ehi}:{warn} Problem occurred while extracting \`{file}${file}{warn}'{rst}"
+      +zi-message -n "{annex}ziextract{ehi}:{rst} {warn}Problem occurred while extracting \`{file}$file{warn}'{rst}"
       local -a bfiles
       bfiles=( ._backup/*(DN) )
       if (( ${#bfiles} && !nobkp )) {
@@ -1714,22 +1711,21 @@ ziextract() {
     command chmod a+x "${execs[@]}"
     if (( !OPTS[opt_-q,--quiet] )) {
       if (( ${#execs} == 1 )); then
-        +zi-message "{annex}ziextract{ehi}:{rst} Successfully extracted and assigned {b}{opt}+x{rst} chmod to the file{ehi}:{rst}" "\`{file}${execs[1]}{rst}'"
+        +zi-message "{annex}ziextract{ehi}:{rst} {auto}Successfully extracted and assigned \`+x\` chmod to the file{ehi}:{rst} \`{file}${execs[1]}{rst}'"
       else
         local sep="$ZI[col-rst],$ZI[col-obj] "
         if (( ${#execs} > 7 )) {
-          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files{ehi}:{rst}" "({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
-            "in \`{file}$file{rst}'. All the extracted" "{obj2}${#execs}{rst} executables are available in the {var}INSTALLED_EXECS{rst} array"
+          +zi-message "{annex}ziextract{ehi}:{rst} {auto}Successfully extracted and assigned \`+x\` chmod to the files{ehi}:{rst} ({obj2}${(pj:$sep:)${(@)execs[1,5]:t}},…{rst}) contained" \
+            "in \`{file}$file{rst}' {nl}{mmdsh}{msg} All the extracted {obj2}${#execs}{rst} executables are available in the {var}INSTALLED_EXECS{rst} array"
         } else {
-          +zi-message "{annex}ziextract{ehi}:{rst} Successfully" "extracted and assigned {b}{opt}+x{rst} chmod to the files{ehi}:{rst}" "({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained" "in \`{file}$file{rst}'"
+          +zi-message "{annex}ziextract{ehi}:{rst} {auto}Successfully extracted and assigned \`+x\` chmod to the files{ehi}:{rst} ({obj2}${(pj:$sep:)${execs[@]:t}}{rst}) contained in \`{file}$file{rst}'"
         }
       fi
     }
   } elif (( warning )) {
-    +zi-message "{annex}ziextract{ehi}:" "{error}Did not recognize the archive" "type of \`{file}${file}{rst}'" \
-      "${ext:+/ {obj2}${ext}{rst} }" "{rst}({p}no extraction has been done{rst})"
+    +zi-message "{annex}ziextract{ehi}:{rst} {auto}Did not recognize the archive type of \`{file}${file}{rst}'" \
+      "${ext:+/ {obj2}${ext}{rst} } {nl}{mmdsh}{rst}{error} No extraction has been done{rst}"
   }
-
   if (( move | move2 )) {
     local -a files
     files=( *~(._zi|.git|._backup|.tmp231ABC)(DN/) )
@@ -1757,13 +1753,13 @@ ziextract() {
   local tpe=$1 extract=$2 local_dir=$3
   (
     builtin cd -q "$local_dir" || {
-      +zi-message "{error}ERROR:{msg2} The path of the $tpe" "(\`{file}$local_dir{msg2}') isn't accessible.{rst}"
+      +zi-message "{auto}The path of the $tpe {dir}$local_dir{rst} {nl}{mmdsh}{error} Not accessible{rst}"
       return 1
     }
     local -a files
     files=( ${(@)${(@s: :)${extract##(\!-|-\!|\!|-)}}//(#b)(((#s)|([^\\])[\\]([\\][\\])#)|((#s)|([^\\])([\\][\\])#)) /${match[2]:+$match[3]$match[4] }${match[5]:+$match[6]${(l:${#match[7]}/2::\\:):-} }} )
     if [[ ${#files} -eq 0 && -n ${extract##(\!-|-\!|\!|-)} ]] {
-        +zi-message "{error}ERROR:{msg2} The files" "(\`{file}${extract##(\!-|-\!|\!|-)}{msg2}')" "not found, cannot extract.{rst}"
+        +zi-message "{auto}The files ${extract##(\!-|-\!|\!|-)} not found{rst}{nl}{mmdsh}{error} Failed to extract{rst}"
         return 1
     } else {
       (( !${#files} )) && files=( "" )
@@ -1803,7 +1799,7 @@ zpextract() { ziextract "$@"; }
   # Download mirrors.lst
   #
 
-  +zi-message "{info}Downloading{ehi}: {obj}mirrors.lst{info}{…}{rst}"
+  +zi-message "{info}Downloading{ehi}:{rst} {obj}mirrors.lst{info}{…}{rst}"
   local mlst="$(mktemp)"
   while (( retry -- )) {
     if ! .zi-download-file-stdout https://cygwin.com/mirrors.lst 0 > $mlst; then
@@ -1818,7 +1814,7 @@ zpextract() { ziextract "$@"; }
   }
 
   if [[ -z $mirror ]] {
-    +zi-message "{error}Couldn't download{error}: {obj}mirrors.lst {error}."
+    +zi-message "{error}Couldn't download{ehi}:{rst} {obj}mirrors.lst {error}."
     return 1
   }
 
@@ -1828,8 +1824,8 @@ zpextract() { ziextract "$@"; }
   # Download setup.ini.bz2
   #
 
-  +zi-message "{info2}Selected mirror is{error}: {url}${mirror}{rst}"
-  +zi-message "{info}Downloading{ehi}: {file}setup.ini.bz2{info}{…}{rst}"
+  +zi-message "{info2}Selected mirror is{ehi}:{rst} {url}${mirror}{rst}"
+  +zi-message "{info}Downloading{ehi}:{rst} {file}setup.ini.bz2{info}{…}{rst}"
   local setup="$(mktemp -u)"
   retry=3
   while (( retry -- )) {
@@ -1840,12 +1836,12 @@ zpextract() { ziextract "$@"; }
     command bunzip2 "$setup.bz2" 2>/dev/null
     [[ -s $setup ]] && break
     mirror=${${mlist[ RANDOM % (${#mlist} + 1) ]}%%;*}
-    +zi-message "{pre}Retrying{error}: {meta}#{obj}$(( 3 - $retry ))/3, {pre}with mirror{error}: {url}${mirror}{rst}"
+    +zi-message "{pre}Retrying{ehi}:{rst} {meta}#{obj}$(( 3 - $retry ))/3, {pre}with mirror{error}: {url}$mirror{rst}"
   }
   local setup_contents="$(command grep -A 26 "@ $pkg\$" "$setup")"
   local urlpart=${${(S)setup_contents/(#b)*@ $pkg${nl}*install: (*)$nl*/$match[1]}%% *}
   if [[ -z $urlpart ]] {
-    +zi-message "{error}Couldn't find package{error}: {data2}\`{data}${pkg}{data2}'{error}.{rst}"
+    +zi-message "{error}Couldn't find package{ehi}:{rst} {data2}\`{data}$pkg{data2}'{error}.{rst}"
     return 2
   }
   local url=$mirror/$urlpart outfile=${TMPDIR:-${TMPDIR:-/tmp}}/${urlpart:t}
@@ -1854,18 +1850,18 @@ zpextract() { ziextract "$@"; }
   # Download the package
   #
 
-  +zi-message "{info}Downloading{ehi}: {file}${url:t}{info}{…}{rst}"
+  +zi-message "{info}Downloading{ehi}:{rst} {file}${url:t}{info}{…}{rst}"
   retry=2
   while (( retry -- )) {
     integer retval=0
     if ! .zi-download-file-stdout $url 0 1 > $outfile; then
       if ! .zi-download-file-stdout $url 1 1 > $outfile; then
-        +zi-message "{error}Couldn't download{error}: {url}${url}{error}."
+        +zi-message "{error}Couldn't download{ehi}:{rst} {url}$url{error}."
         retval=1
         mirror=${${mlist[ RANDOM % (${#mlist} + 1) ]}%%;*}
         url=$mirror/$urlpart outfile=${TMPDIR:-${TMPDIR:-/tmp}}/${urlpart:t}
         if (( retry )) {
-          +zi-message "{info2}Retrying, with mirror{error}: {url}${mirror}{info2}{…}{rst}"
+          +zi-message "{info2}Retrying, with mirror{ehi}:{rst} {url}$mirror{info2}{…}{rst}"
           continue
         }
       fi
@@ -1924,14 +1920,14 @@ zimv() {
   }
   if (( ( OPTS[opt_-r,--reset] && ZI[-r/--reset-opt-hook-has-been-run] == 0 ) || ( ${+ICE[reset]} && ZI[-r/--reset-opt-hook-has-been-run] == 1 ) )) {
     if (( ZI[-r/--reset-opt-hook-has-been-run] )) {
-      local msg_bit="{meta}reset{msg2} ice given{pre}" option=
+      local msg_bit="{ice}reset{msg} ice given{pre}" option=
     } else {
-      local msg_bit="{meta2}-r/--reset{msg2} given to \`{meta}update{pre}'" option=1
+      local msg_bit="{opt}-r/--reset{msg} given to \`{cmd}update{rst}'{pre}" option=1
     }
     if [[ $type == snippet ]] {
       if (( $+ICE[svn] )) {
         if [[ $skip_pull -eq 0 && -d $filename/.svn ]] {
-          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository ($msg_bit) with command: {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
+          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Resetting the repository ($msg_bit) with command{ehi}:{rst} {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
           command svn revert --recursive $filename/.
         }
       } else {
@@ -1939,9 +1935,9 @@ zimv() {
           if (( !OPTS[opt_-q,--quiet] )) {
             if [[ -f $local_dir/$dirname/$filename ]] {
               if [[ -n $option || -z $ICE[reset] ]] {
-                +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2} {…}{rst}"
+                +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Removing the snippet-file{ehi}:{rst} {file}$filename{msg} {…}{rst}"
               } else {
-                +zi-message "{pre}reset ($msg_bit):{msg2} Removing the snippet-file: {file}$filename{msg2}, with the supplied code: {data2}$ICE[reset]{msg2} {…}{rst}"
+                +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Removing the snippet-file{ehi}:{rst} {file}$filename{msg}, with the supplied code{ehi}:{rst} {data2}$ICE[reset]{msg} {…}{rst}"
               }
               if (( option )) {
                 command rm -f "$local_dir/$dirname/$filename"
@@ -1949,33 +1945,33 @@ zimv() {
                 eval "${ICE[reset]:-rm -f \"$local_dir/$dirname/$filename\"}"
               }
             } else {
-              +zi-message "{pre}reset ($msg_bit):{msg2} The file {file}$filename{msg2} is already deleted {…}{rst}"
+              +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}The file {file}$filename{msg} is already deleted {…}{rst}"
               if [[ -n $ICE[reset] && ! -n $option ]] {
-                +zi-message "{pre}reset ($msg_bit):{msg2} (skipped running the provided reset-code:" "{data2}$ICE[reset]{msg2}){rst}"
+                +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}(skipped running the provided reset-code{ehi}:{rst} {data2}$ICE[reset]{msg}){rst}"
               }
             }
           }
         } else {
           [[ -f $local_dir/$dirname/$filename ]] && \
-            +zi-message "{pre}reset ($msg_bit): {msg2}Skipping the removal of {file}$filename{msg2} as there is no new copy scheduled for download.{rst}" || \
-            +zi-message "{pre}reset ($msg_bit): {msg2}The file {file}$filename{msg2} is already deleted and {ehi}no new download is being scheduled.{rst}"
+            +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Skipping the removal of {file}$filename{msg} as there is no new copy scheduled for download{rst}" || \
+            +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}The file {file}$filename{msg} is already deleted and no new download is being scheduled{rst}"
         }
       }
     } elif [[ $type == plugin ]] {
       if (( is_release && !skip_pull )) {
         if (( option )) {
-          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*"
+          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Running{ehi}:{rst} rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*"
           builtin eval command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)
         } else {
-          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit): {msg2}running: {rst}${ICE[reset]:-rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*}"
+          (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Running{ehi}:{rst} ${ICE[reset]:-rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}/*}"
           builtin eval ${ICE[reset]:-command rm -rf ${${ZI[PLUGINS_DIR]:#[/[:space:]]##}:-${TMPDIR:-/tmp}/xyzabc312}/"${${(M)${local_dir##${ZI[PLUGINS_DIR]}[/[:space:]]#}:#[^/]*}:-${TMPDIR:-/tmp}/xyzabc312-zi-protection-triggered}"/*(ND)}
         }
       } elif (( !skip_pull )) {
         if (( option )) {
-          +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} git reset --hard HEAD {…}"
+          +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Resetting the repository with command{ehi}:{rst} {auto}git reset --hard HEAD {…}"
           command git reset --hard HEAD
         } else {
-          +zi-message "{pre}reset ($msg_bit): {msg2}Resetting the repository with command:{rst} ${ICE[reset]:-git reset --hard HEAD} {…}"
+          +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Resetting the repository with command{ehi}:{rst} {auto}${ICE[reset]:-git reset --hard HEAD} {…}"
           builtin eval "${ICE[reset]:-git reset --hard HEAD}"
         }
       }
@@ -2068,9 +2064,9 @@ zimv() {
   local -a afr
     ( () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
       afr=( ${~from}(DN) )
-
       if (( ! ${#afr} )) {
-        +zi-message "{warn}Warning: mv ice didn't match any file. [{error}$ICE[mv]{warn}] {nl}{warn}Available files:{nl}{obj}$(ls -1)"
+        +zi-message "{warn}Warning{ehi}:{rst} {auto}mv ice didn't match any file{rst} [{error}$ICE[mv]{rst}]" \
+        "{nl}{mmdsh} Available files{ehi}:{rst}{nl}{obj}$(ls -1)"
         return 1
       }
       if (( !OPTS[opt_-q,--quiet] )) {

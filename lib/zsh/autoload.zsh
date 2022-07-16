@@ -553,7 +553,7 @@ ZI[EXTENDED_GLOB]=""
   }
   symlinked=( ${ZI[COMPLETIONS_DIR]}/_[^_.]*~*.zwc )
   backup_comps=( ${ZI[COMPLETIONS_DIR]}/[^_.]*~*.zwc )
-  (( ${+functions[.zi-forget-completion]} )) || builtin source ${ZI[BIN_DIR]}"/lib/zsh/install.zsh"
+  (( ${+functions[.zi-forget-completion]} )) || builtin source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
   # Delete completions if they are really there, either as completions (_fname) or backups (fname)
   for c in ${completions[@]}; do
     action=0
@@ -1090,8 +1090,8 @@ ZI[EXTENDED_GLOB]=""
     if [[ -z "${elem[(r)${(q)p}]}" ]] {
       new+=( "$p" )
     } else {
-      (( quiet )) || +zi-message "Removing {pname}PATH{rst} element {info}$p{rst}"
-      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk{rst}"
+      (( quiet )) || +zi-message "Removing {var}\$PATH{rst} element {info}$p{rst}"
+      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning{ehi}:{rst} it didn't exist on disk{rst}"
     }
   done
   path=( "${new[@]}" )
@@ -1102,8 +1102,8 @@ ZI[EXTENDED_GLOB]=""
     if [[ -z "${elem[(r)${(q)p}]}" ]] {
       new+=( "$p" )
     } else {
-      (( quiet )) || +zi-message "Removing {pname}FPATH{rst} element {info}$p{rst}"
-      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning:{rst} it didn't exist on disk{rst}"
+      (( quiet )) || +zi-message "Removing {var}\$FPATH{rst} element {info}$p{rst}"
+      [[ -d "$p" ]] || (( quiet )) || +zi-message "{error}Warning{ehi}:{rst} it didn't exist on disk{rst}"
     }
   }
   fpath=( "${new[@]}" )
@@ -1175,7 +1175,7 @@ ZI[EXTENDED_GLOB]=""
     .zi-clear-debug-report
     (( quiet )) || +zi-message "dtrace report saved to {var}\$LASTREPORT{rst}"
   else
-    (( quiet )) || +zi-message "{auto}Unregistering plugin $uspl2col"
+    (( quiet )) || +zi-message "Unregistering plugin $uspl2col{rst}"
     .zi-unregister-plugin "$user" "$plugin" "${sice[teleid]}"
     zsh_loaded_plugins[${zsh_loaded_plugins[(i)$user${${user:#(%|/)*}:+/}$plugin]}]=()  # Support Zsh plugin standard
     .zi-clear-report-for "$user" "$plugin"
@@ -1219,30 +1219,30 @@ ZI[EXTENDED_GLOB]=""
   REPLY=""
   .zi-diff-functions-compute "$uspl2"
   .zi-format-functions "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Functions created{ehi}:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{mmdsh}{p} Functions created{ehi}:{rst}"$'\n'"$REPLY"
   # Print report gathered via $options-diffing
   REPLY=""
   .zi-diff-options-compute "$uspl2"
   .zi-format-options "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Options changed{ehi}:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{mmdsh}{p} Options changed{ehi}:{rst}"$'\n'"$REPLY"
   # Print report gathered via environment diffing
   REPLY=""
   .zi-diff-env-compute "$uspl2"
   .zi-format-env "$uspl2" "1"
-  [[ -n "$REPLY" ]] && +zi-message "{p}PATH elements added{ehi}:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{mmdsh}{var} \$PATH {p}elements added{ehi}:{rst}"$'\n'"$REPLY"
   REPLY=""
   .zi-format-env "$uspl2" "2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}FPATH elements added{ehi}:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{mmdsh}{var} \$FPATH {p}elements added{ehi}:{rst}"$'\n'"$REPLY"
   # Print report gathered via parameter diffing
   .zi-diff-parameter-compute "$uspl2"
   .zi-format-parameter "$uspl2"
-  [[ -n "$REPLY" ]] && +zi-message "{p}Variables added or redefined{ehi}:{rst}"$'\n'"$REPLY"
+  [[ -n "$REPLY" ]] && +zi-message "{mmdsh}{p} Variables added or redefined{ehi}:{rst}"$'\n'"$REPLY"
   # Print what completions plugin has
   .zi-find-completions-of-plugin "$user" "$plugin"
   typeset -a completions
   completions=( "${reply[@]}" )
   if [[ "${#completions[@]}" -ge "1" ]]; then
-    +zi-message "{p}Completions:{rst}"
+    +zi-message "{mmdsh}{p} Completions{ehi}:{rst}"
     .zi-check-which-completions-are-installed "${completions[@]}"
     typeset -a installed
     installed=( "${reply[@]}" )
@@ -1392,7 +1392,7 @@ ZI[EXTENDED_GLOB]=""
         }
       }
       if (( ZI[annex-multi-flag:pull-active] <= 1 && !OPTS[opt_-q,--quiet] )) {
-        +zi-message "Binary{ehi}:{rst} {version}${version}{rst} {info}✔{rst}"
+        +zi-message "Binary{ehi}:{rst} {version}$version{rst}{…}{version} ✔{rst}"
       }
     }
     if (( 1 )) {
@@ -1401,7 +1401,7 @@ ZI[EXTENDED_GLOB]=""
           .zi-any-colorify-as-uspl2 "$id_as"
           (( ZI[first-plugin-mark] )) && {
             ZI[first-plugin-mark]=0
-          } || +zi-message "{nl}Updating $REPLY{rst}"
+          } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
         }
         ICE=( "${(kv)ice[@]}" )
         # Run annexes' atpull hooks (the before atpull-ice ones).
@@ -1441,21 +1441,20 @@ ZI[EXTENDED_GLOB]=""
       ( builtin cd -q "$local_dir" || return 1
       integer had_output=0
       local IFS=$'\n'
-      command git fetch --quiet && command git log --color --date=short --pretty=format:'%Cgreen%cd %h %Creset%s%n' ..FETCH_HEAD | \
-      while read line; do
-        [[ -n ${line%%[[:space:]]##} ]] && {
-          [[ $had_output -eq 0 ]] && {
-            had_output=1
-            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-              .zi-any-colorify-as-uspl2 "$id_as"
-              (( ZI[first-plugin-mark] )) && {
-                ZI[first-plugin-mark]=0
-              } || +zi-message "{nl}Updating $REPLY{rst}"
-            }
+      command git fetch --quiet && \
+      declare -a line; line=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
+      if (( ${#line} > 0 )); then
+        [[ $had_output -eq 0 ]] && {
+          had_output=1
+          if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+            .zi-any-colorify-as-uspl2 "$id_as"
+            (( ZI[first-plugin-mark] )) && {
+              ZI[first-plugin-mark]=0
+            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
           }
-          +zi-message $line
         }
-      done | command tee .zi_lastupd | .zi-pager &
+        +zi-message "$line"
+      fi | command tee .zi_lastupd | .zi-pager &
       integer pager_pid=$!
       { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
       { wait $pager_pid; } > /dev/null 2>&1
@@ -1472,7 +1471,7 @@ ZI[EXTENDED_GLOB]=""
             .zi-any-colorify-as-uspl2 "$id_as"
             (( ZI[first-plugin-mark] )) && {
               ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating $REPLY{rst}"
+            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
           }
         } else {
           ZI[annex-multi-flag:pull-active]=0
@@ -1735,7 +1734,7 @@ ZI[EXTENDED_GLOB]=""
       builtin print "\nStatus for plugin $REPLY"
       ( builtin cd -q "$repo"; command git status )
     else
-      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} ${REPLY}" || builtin print -n .
+      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} $REPLY{rst}" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
       update_rc=$?
       [[ $update_rc -ne 0 ]] && {
@@ -1815,7 +1814,7 @@ ZI[EXTENDED_GLOB]=""
       local PUFILEMAIN=${${id_as#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
       local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
       .zi-any-colorify-as-uspl2 "$uspl"
-      +zi-message "Updating $REPLY{…}" >! $PUFILE
+      +zi-message "Updating{ehi}:{rst} $REPLY{rst}" >! $PUFILE
       .zi-any-to-user-plugin "$uspl"
       local user=${reply[-2]} plugin=${reply[-1]}
       .zi-update-or-status update "$user" "$plugin" &>>! $PUFILE &
@@ -1853,15 +1852,15 @@ ZI[EXTENDED_GLOB]=""
   builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
 
   local infoc="${ZI[col-info2]}"
-  +zi-message "{info}Directories set{ehi}: "
-  +zi-message "{msg}Home{ehi}: {tab}{tab}{tab}{tab}{tab}{tab}{tab}{dir}${ZI[HOME_DIR]}{rst}"
-  +zi-message "{msg}Binary{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[BIN_DIR]}{rst}"
-  +zi-message "{msg}Plugin{ehi}: {tab}{tab}{tab}{tab}{tab}{dir}${ZI[PLUGINS_DIR]}{rst}"
-  +zi-message "{msg}Snippet{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SNIPPETS_DIR]}{rst}"
-  +zi-message "{msg}Service{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[SERVICES_DIR]}{rst}"
-  +zi-message "{msg}Modules{ehi}: {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
-  +zi-message "{msg}User-land{ehi}: {tab}{tab}{dir}${ZPFX}{rst}"
-  +zi-message "{msg}Completions{ehi}:{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
+  +zi-message "{info}Directories set{ehi}:{rst} "
+  +zi-message "{msg}Home{ehi}:{rst} {tab}{tab}{tab}{tab}{tab}{tab}{tab}{dir}${ZI[HOME_DIR]}{rst}"
+  +zi-message "{msg}Binary{ehi}:{rst} {tab}{tab}{tab}{tab}{tab}{dir}${ZI[BIN_DIR]}{rst}"
+  +zi-message "{msg}Plugin{ehi}:{rst} {tab}{tab}{tab}{tab}{tab}{dir}${ZI[PLUGINS_DIR]}{rst}"
+  +zi-message "{msg}Snippet{ehi}:{rst} {tab}{tab}{tab}{tab}{dir}${ZI[SNIPPETS_DIR]}{rst}"
+  +zi-message "{msg}Service{ehi}:{rst} {tab}{tab}{tab}{tab}{dir}${ZI[SERVICES_DIR]}{rst}"
+  +zi-message "{msg}Modules{ehi}:{rst} {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
+  +zi-message "{msg}User-land{ehi}:{rst} {tab}{tab}{dir}${ZPFX}{rst}"
+  +zi-message "{msg}Completions{ehi}:{rst}{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
   # Without _zlocal/zi
   +zi-message "{info}Loaded plugins{ehi}:{rst} {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
   # Count light-loaded plugins
@@ -1871,11 +1870,11 @@ ZI[EXTENDED_GLOB]=""
     [[ "$s" = 1 ]] && (( light ++ ))
   done
   # Without _zlocal/zi
-  +zi-message "{info}Light loaded{ehi}: {num}$(( light - 1 )){rst}"
+  +zi-message "{info}Light loaded{ehi}:{rst} {num}$(( light - 1 )){rst}"
   # Downloaded plugins, without _zlocal/zi, custom
   typeset -a plugins
   plugins=( "${ZI[PLUGINS_DIR]}"/*(DN) )
-  +zi-message "{info}Downloaded plugins{ehi}: {num}$(( ${#plugins} - 1 )){rst}"
+  +zi-message "{info}Downloaded plugins{ehi}:{rst} {num}$(( ${#plugins} - 1 )){rst}"
   # Number of compiled plugins
   typeset -a matches m
   integer count=0
@@ -1888,20 +1887,20 @@ ZI[EXTENDED_GLOB]=""
       cur_plugin="$uspl1"
     fi
   done
-  +zi-message "{info}Compiled plugins{ehi}: {num}$count{rst}"
+  +zi-message "{info}Compiled plugins{ehi}:{rst} {num}$count{rst}"
   # Number of enabled completions, with _zlocal/zi
   typeset -a completions
   completions=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc(DN) )
-  +zi-message "{info}Enabled completions{ehi}: {num}${#completions[@]}{rst}"
+  +zi-message "{info}Enabled completions{ehi}:{rst} {num}${#completions[@]}{rst}"
   # Number of disabled completions, with _zlocal/zi
   completions=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
-  +zi-message "{info}Disabled completions{ehi}: {num}${#completions[@]}{rst}"
+  +zi-message "{info}Disabled completions{ehi}:{rst} {num}${#completions[@]}{rst}"
   # Number of completions existing in all plugins
   completions=( "${ZI[PLUGINS_DIR]}"/*/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/test*|/zsdoc/*|*.ps1)(DN) )
-  +zi-message "{info}Completions available overall{ehi}: {num}${#completions[@]}{rst}"
+  +zi-message "{info}Completions available overall{ehi}:{rst} {num}${#completions[@]}{rst}"
   # Enumerate snippets loaded
   # }, ${infoc}{rst}", j:, :, {msg}"$'\e[0m, +zi-message h
-  +zi-message -n "{info}Snippets loaded{ehi}: {nl}"
+  +zi-message -n "{info}Snippets loaded{ehi}:{rst} {nl}"
   local sni
   for sni in ${(onv)ZI_SNIPPETS[@]}; do
     +zi-message -n "{url}${sni% <[^>]#>}{rst} ${(M)sni%<[^>]##>}, "
@@ -2463,7 +2462,6 @@ sleep 3
 local snip
 for snip ( \$final_todelete ) { zi delete -q -y \$snip; _retval+=\$?; }
 builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\"
-
 # Next delete unloaded plugins
 local -a dirs
 dirs=( \${\${ZI[PLUGINS_DIR]%%[/[:space:]]##}:-${TMPDIR:-${TMPDIR:-/tmp}}/abcEFG312}/*~*/(\${(~j:|:)\${ZI_REGISTERED_PLUGINS[@]//\//---}})(ND/) )
@@ -2687,35 +2685,25 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 
   command cat >! "${plugin:t}.plugin.zsh" <<EOF
 # -*- mode: sh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
-
 # Copyright (c) $year $user_name
-
 # According to the Zsh Plugin Standard:
 # https://z.digitalclouds.dev/community/zsh_plugin_standard
-
 0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 0="${${(M)0:#/*}:-$PWD/$0}"
-
 # Then \${0:h} to get plugin's directory
-
 if [[ \${zsh_loaded_plugins[-1]} != */${plugin:t} && -z \${fpath[(r)\${0:h}]} ]] {
   fpath+=( "\${0:h}" )
 }
-
 # Standard hash for plugins, to not pollute the namespace
 typeset -gA Plugins
 Plugins[${${(U)plugin:t}//-/_}_DIR]="\${0:h}"
-
 autoload -Uz example-script
-
 # Use alternate vim marks [[[ and ]]] as the original ones can
 # confuse nested substitutions, e.g.: \${\${\${VAR}}}
-
 # vim:ft=zsh:tw=120:sw=2:sts=2:et:foldmarker=[[[,]]]
 EOF
 
   command cat >>! .git/config <<EOF
-
 [diff "zsh"]
   xfuncname = "^((function[[:blank:]]+[^[:blank:]]+[[:blank:]]*(\\\\(\\\\)|))|([^[:blank:]]+[[:blank:]]*\\\\(\\\\)))[[:blank:]]*(\\\\{|)[[:blank:]]*$"
 [diff "markdown"]
@@ -2967,8 +2955,8 @@ EOF
     fi
   elif [[ "$1" = "info" ]]; then
     if [[ "$2" = "--link" ]]; then
-      +zi-message "You can copy the error messages and submit{rst}"
-      +zi-message "{info2}error-report at: {obj}https://github.com/z-shell/zpmod/issues{rst}"
+      +zi-message "Please submit any issues at the address below{ehi}:{rst} " \
+      "{nl}{mmdsh}{url} https://github.com/z-shell/zpmod/issues{rst}"
     else
       +zi-message "To load the module, add following 2 lines to .zshrc, at top:{nl}" \
       "{nl}" \
@@ -3042,34 +3030,34 @@ EOF
 .zi-help() {
 #  +zi-message "{hi}Welcome ${(%):-%n}"
 if (( $+commands[clear] )) { clear; }
-sleep 0.08 && +zi-message "{info}- {rst}❮ {happy}ZI{rst} ❯{info} Usage{ehi}:{rst}"
-sleep 0.08 && +zi-message "❯ analytics     - Statistics, benchmarks and information"
-sleep 0.08 && +zi-message "❯ subcmds       - Show subcommands registered by annex"
-sleep 0.08 && +zi-message "❯ icemods       - Show all registerted ice-modifiers"
-sleep 0.08 && +zi-message "❯ self-update   - Self update and compile"
-sleep 0.08 && +zi-message "❯ compinit      – Refresh completions"
-sleep 0.08 && +zi-message "❯ cdreplay      {opt}[-q]{rst} – Replay compdefs (run after compinit)"
-sleep 0.08 && +zi-message "❯ cdclear       {opt}[-q]{rst} – Clear compdef replay list"
-sleep 0.08 && +zi-message "❯ env-whitelist {opt}[-v][-h]{rst} – Specify names or paterns of variables left unchanged during an unload"
-sleep 0.08 && +zi-message "❯ snippet       {opt}[-f] {p}[snippet]|{url}URL{rst} – Source local or remote file"
-sleep 0.08 && +zi-message "❯ delete        {opt}[--all][--clean] {p}[plugin]|{url}URL{rst} – Remove plugin or snippet from disk"
-sleep 0.08 && +zi-message "❯ update        {opt}[-L][-s][-v][-q][-r][-p] {p}[plugin]|{url}URL{rst} – Git update plugins or snippets"
-sleep 0.08 && +zi-message "❯ load          {opt}[-b] {p}[plugin]{rst} – Load plugin or absolute local path"
-sleep 0.08 && +zi-message "❯ unload        {opt}[-q] {p}[plugin]{rst} – Unload plugin"
-sleep 0.08 && +zi-message "❯ light         {opt}[-b] {p}[plugin]{rst}{msg}   – Load plugins without reporting/tracking"
-sleep 0.08 && +zi-message "❯ add-fpath     {opt}[-f] {p}[plugin]|{dir}DIR{rst} – Append directory to \$fpath; use -f to prepend instead"
-sleep 0.08 && +zi-message "❯ run           {opt}[-l] {p}[plugin]|{cmd}CMD{rst} – Runs command in the given plugin's directory"
-sleep 0.08 && +zi-message "❯ compile       {opt}[--all] {p}[plugin]{rst} – Compile plugins"
-sleep 0.08 && +zi-message "❯ uncompile     {opt}[--all] {p}[plugin]{rst} – Remove compiled version of plugins."
-sleep 0.08 && +zi-message "❯ cdisable      {p}[name]{rst} – Disable completion"
-sleep 0.08 && +zi-message "❯ cenable       {p}[name]{rst} – Enable completion"
-sleep 0.08 && +zi-message "❯ creinstall    {p}[plugin]{rst} – Install completions for plugin, can also receive absolute local path"
-sleep 0.08 && +zi-message "❯ cuninstall    {p}[plugin]{rst} – Uninstall completions for plugin"
-sleep 0.08 && +zi-message "❯ recall        {p}[plugin]|{url}URL{rst} – Fetch saved ice modifiers and construct command"
-sleep 0.08 && +zi-message "❯ srv           {p}[service]|{cmd}CMD{rst} – Control a service: stop,start,restart,next,quit"
-sleep 0.08 && +zi-message "❯ create        {p}[plugin]{rst} – Create plugin"
-sleep 0.08 && +zi-message "❯ edit          {p}[plugin]{rst} – Edit plugin's file with \$EDITOR{nl}"
-sleep 0.08 && +zi-message "{info}- {rst}❮ {happy}ZI{rst} ❯ {info}WIKI{ehi}: {url}https://z.digitalclouds.dev{rst}{nl}"
+sleep 0.03 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Usage{ehi}:{rst}"
+sleep 0.03 && +zi-message "❯ analytics     {mdsh}{rst} {auto}Statistics, benchmarks, and information"
+sleep 0.03 && +zi-message "❯ subcmds       {mdsh}{rst} {auto}Show subcommands registered by the annexes"
+sleep 0.03 && +zi-message "❯ icemods       {mdsh}{rst} {auto}Show all registered ice-modifiers"
+sleep 0.03 && +zi-message "❯ self-update   {mdsh}{rst} {auto}Self-update and compile"
+sleep 0.04 && +zi-message "❯ compinit      {mdsh}{rst} {auto}Refresh completions"
+sleep 0.04 && +zi-message "❯ cdreplay      {opt}[-q]{rst} {mdsh}{rst} {auto}Replay compdefs (run after compinit)"
+sleep 0.04 && +zi-message "❯ cdclear       {opt}[-q]{rst} {mdsh}{rst} {auto}Clear compdef replay list"
+sleep 0.04 && +zi-message "❯ env-whitelist {opt}[-v][-h]{rst} {mdsh}{rst} {auto}Specify names or patterns of variables left unchanged during an{rst} unload"
+sleep 0.05 && +zi-message "❯ snippet       {opt}[-f]{p} [snippet]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Source local or remote file"
+sleep 0.05 && +zi-message "❯ delete        {opt}[--all][--clean]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Remove 'plugin/snippet' from the disk"
+sleep 0.05 && +zi-message "❯ update        {opt}[-L][-s][-v][-q][-r][-p]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Git update plugins or snippets"
+sleep 0.05 && +zi-message "❯ load          {opt}[-b]{p} [plugin]{rst} {mdsh}{rst} {auto}Load plugin or absolute local path"
+sleep 0.06 && +zi-message "❯ unload        {opt}[-q]{p} [plugin]{rst} {mdsh}{rst} {auto}Unload plugin"
+sleep 0.06 && +zi-message "❯ light         {opt}[-b]{p} [plugin]{rst} {mdsh}{rst} {auto}Load plugins without 'reporting/tracking'"
+sleep 0.06 && +zi-message "❯ add-fpath     {opt}[-f]{p} [plugin]{rst}|{dir}[dir]{rst} {mdsh}{rst} {auto}Append directory to{var} \$fpath{rst}, use -f to prepend instead"
+sleep 0.06 && +zi-message "❯ run           {opt}[-l]{p} [plugin]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} {auto}Runs a command in the given plugin's directory"
+sleep 0.07 && +zi-message "❯ compile       {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} Compile plugins"
+sleep 0.07 && +zi-message "❯ uncompile     {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} Remove compiled plugins"
+sleep 0.07 && +zi-message "❯ cdisable      {p}[name]{rst} {mdsh}{rst} {auto}Disable completion"
+sleep 0.07 && +zi-message "❯ cenable       {p}[name]{rst} {mdsh}{rst} {auto}Enable completion"
+sleep 0.08 && +zi-message "❯ creinstall    {p}[plugin]{rst} {mdsh}{rst} {auto}Install completions for the plugin, can also receive absolute local path"
+sleep 0.08 && +zi-message "❯ cuninstall    {p}[plugin]{rst} {mdsh}{rst} {auto}Uninstall completions for plugin"
+sleep 0.08 && +zi-message "❯ recall        {p}[plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Fetch saved ice-modifiers and construct the command"
+sleep 0.08 && +zi-message "❯ srv           {p}[service]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} Control a service{ehi}:{rst} {auto}'stop,start,restart,next,quit'"
+sleep 0.09 && +zi-message "❯ create        {p}[plugin]{rst} {mdsh}{rst} {auto}Create a plugin"
+sleep 0.09 && +zi-message "❯ edit          {p}[plugin]{rst} {mdsh}{rst} Edit plugin's file with{var} \$EDITOR{rst}{nl}"
+sleep 0.09 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Wiki{ehi}:{rst} {url}https://z.digitalclouds.dev{rst}{nl}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
 # Statistics, benchmarks and information.
@@ -3077,37 +3065,37 @@ sleep 0.08 && +zi-message "{info}- {rst}❮ {happy}ZI{rst} ❯ {info}WIKI{ehi}: 
 # User-action entry point.
 .zi-analytics-menu() {
 if (( $+commands[clear] )) { clear; }
-sleep 0.08 && +zi-message "{info}- {rst}❮ {happy}ZI{rst} ❯{info} Analytics{ehi}:{rst}"
-sleep 0.08 && +zi-message "❯ compiled          – List plugins that are compiled"
-sleep 0.08 && +zi-message "❯ zstatus           – Overall status"
-sleep 0.08 && +zi-message "❯ module help       – Manage zpmod"
-sleep 0.08 && +zi-message "❯ dtrace|dstart     – Start tracking what's going on in session"
-sleep 0.08 && +zi-message "❯ dstop             – Stop tracking what's going on in session"
-sleep 0.08 && +zi-message "❯ dreport           – Report what was going on in session"
-sleep 0.08 && +zi-message "❯ dunload           – Revert changes recorded between dstart and dstop"
-sleep 0.08 && +zi-message "❯ dclear            – Clear report of what was going on in session"
-sleep 0.08 && +zi-message "❯ bindkeys          – List bindkeys"
-sleep 0.08 && +zi-message "❯ clist|completions – List completions in use"
-sleep 0.08 && +zi-message "❯ cdlist            – Show compdef replay list"
-sleep 0.08 && +zi-message "❯ csearch           – Search for available completions from any plugin"
-sleep 0.08 && +zi-message "❯ man               – Show manual"
-sleep 0.08 && +zi-message "❯ ls                – List snippets in formatted and colorized manner"
-sleep 0.08 && +zi-message "❯ status            {opt}[--all] {p}[plugin]|{url}URL{rst} – Git status for plugin or svn status for snippet"
-sleep 0.08 && +zi-message "❯ report            {opt}[--all] {p}[plugin]{rst} – Show reports"
-sleep 0.08 && +zi-message "❯ times             {opt}[-s][-m][-a]{rst} – Statistics on plugin load times, sorted in order of loading"
-sleep 0.08 && +zi-message "❯ glance            {p}[plugin]{rst} – Look at plugin's source"
-sleep 0.08 && +zi-message "❯ stress            {p}[plugin]{rst} – Test plugin for compatibility with set of options"
-sleep 0.08 && +zi-message "❯ changes           {p}[plugin]{rst} – View plugin's git log"
-sleep 0.08 && +zi-message "❯ recently          {p}[time]{rst} – Show plugins that changed recently (e.g.: 1 month 2 days)"
-sleep 0.08 && +zi-message "❯ cd                {p}[plugin]{rst} – Enter plugin's directory; also support snippets, if feed with URL"
-sleep 0.08 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} – Show what plugins are loaded (filter: keyword)"
+sleep 0.03 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Analytics{ehi}:{rst}"
+sleep 0.03 && +zi-message "❯ compiled          {mdsh}{rst} {auto}List plugins that are compiled"
+sleep 0.03 && +zi-message "❯ zstatus           {mdsh}{rst} {auto}Overall status"
+sleep 0.03 && +zi-message "❯ module help       {mdsh}{rst} {auto}Manage zpmod"
+sleep 0.03 && +zi-message "❯ dtrace|dstart     {mdsh}{rst} {auto}Start tracking what's going on in session"
+sleep 0.04 && +zi-message "❯ dstop             {mdsh}{rst} {auto}Stop tracking what's going on in session"
+sleep 0.04 && +zi-message "❯ dreport           {mdsh}{rst} {auto}Report what was going on in session"
+sleep 0.04 && +zi-message "❯ dunload           {mdsh}{rst} {auto}Revert changes recorded between dstart and dstop"
+sleep 0.04 && +zi-message "❯ dclear            {mdsh}{rst} {auto}Clear report of what was going on in session"
+sleep 0.05 && +zi-message "❯ bindkeys          {mdsh}{rst} {auto}List bindkeys"
+sleep 0.05 && +zi-message "❯ clist|completions {mdsh}{rst} {auto}List completions in use"
+sleep 0.05 && +zi-message "❯ cdlist            {mdsh}{rst} {auto}Show compdef replay list"
+sleep 0.05 && +zi-message "❯ csearch           {mdsh}{rst} {auto}Search for available completions from any plugin"
+sleep 0.06 && +zi-message "❯ man               {mdsh}{rst} {auto}Show manual"
+sleep 0.06 && +zi-message "❯ ls                {mdsh}{rst} {auto}List snippets in formatted and colorized manner"
+sleep 0.06 && +zi-message "❯ status            {opt}[--all]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Git status for plugin or svn status for snippet"
+sleep 0.06 && +zi-message "❯ report            {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} {auto}Show reports"
+sleep 0.07 && +zi-message "❯ times             {opt}[-s][-m][-a]{rst} {mdsh}{rst} {auto}Statistics on plugin load times, sorted in order of loading"
+sleep 0.07 && +zi-message "❯ glance            {p}[plugin]{rst} {mdsh}{rst} {auto}Look at plugin's source"
+sleep 0.07 && +zi-message "❯ stress            {p}[plugin]{rst} {mdsh}{rst} {auto}Test plugin for compatibility with set of options"
+sleep 0.07 && +zi-message "❯ changes           {p}[plugin]{rst} {mdsh}{rst} {auto}View plugin's git log"
+sleep 0.08 && +zi-message "❯ recently          {p}[time]{rst} {mdsh}{rst} {auto}Show plugins that changed recently (e.g.: 1 month 2 days)"
+sleep 0.08 && +zi-message "❯ cd                {p}[plugin]{rst} {mdsh}{rst} {auto}Enter plugin's directory; also support snippets, if feed with URL"
+sleep 0.08 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} {mdsh}{rst} {auto}Show what plugins are loaded (filter: keyword)"
 } # ]]]
 # FUNCTION: .zi-registered-subcommands [[[
 # Shows subcommands registered by annex.
 #
 # User-action entry point.
 .zi-registered-subcommands() {
-  +zi-message "{info}- Registered subcommands{ehi}:{rst}"
+  +zi-message "{mmdsh}{info} Registered subcommands{ehi}:{rst}"
   integer idx
   local type key
   local -a arr
@@ -3127,7 +3115,7 @@ sleep 0.08 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} – Show what
 #
 # User-action entry point.
 .zi-registered-ice-mods() {
-  +zi-message "{info}- Registered ice-modifiers{ehi}:{rst}"
+  +zi-message "{mmdsh}{info} Registered ice-modifiers{ehi}:{rst}"
   local -a ice_order
   ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
   +zi-message "${ice_order[*]}"

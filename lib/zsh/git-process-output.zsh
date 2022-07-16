@@ -1,8 +1,7 @@
 #!/usr/bin/env zsh
 
-emulate -LR zsh
-
-setopt typesetsilent extendedglob warncreateglobal
+builtin emulate -LR zsh
+builtin setopt extended_glob warn_create_global typeset_silent
 
 { typeset -g COLS="$(tput cols)" } 2>/dev/null
 if (( COLS < 10 )) {
@@ -11,16 +10,9 @@ if (( COLS < 10 )) {
 # Credit to molovo/revolver for the ideas
 typeset -ga progress_frames
 progress_frames=(
-  '0.08 ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏'
-  '0.08 ⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷'
-  '0.08 ⢹ ⢺ ⢼ ⣸ ⣇ ⡧ ⡗ ⡏'
-#  '0.2 ▹▹▹▹▹ ▸▹▹▹▹ ▹▸▹▹▹ ▹▹▸▹▹ ▹▹▹▸▹ ▹▹▹▹▸'
-#  '0.2 ▁ ▃ ▄ ▅ ▆ ▇ ▆ ▅ ▄ ▃'
-#  '0.2 ▏ ▎ ▍ ▌ ▋ ▊ ▉ ▊ ▋ ▌ ▍ ▎'
-#  '0.2 ▖ ▘ ▝ ▗'
-#  '0.2 ◢ ◣ ◤ ◥'
-#  '0.2 ▌ ▀ ▐ ▄'
-#  '0.2 ✶ ✸ ✹ ✺ ✹ ✷'
+  '0.1 ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏'
+  '0.1 ⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷'
+  '0.1 ⢹ ⢺ ⢼ ⣸ ⣇ ⡧ ⡗ ⡏'
 )
 
 integer -g progress_style=$(( RANDOM % 2 + 1 )) cur_frame=1
@@ -49,7 +41,7 @@ local first=1
 timeline() {
   local sp='▚▞'; sp="${sp:$2%2:1}"
   # Maximal width is 24 characters
-  local bar="$(print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓█████████████████████" "")"
+  local bar="$(builtin print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓█████████████████████" "")"
   local -a frames_splitted
   frames_splitted=( ${(@zQ)progress_frames[progress_style]} )
   if (( SECONDS - last_time >= frames_splitted[1] )) {
@@ -57,43 +49,44 @@ timeline() {
     (( cur_frame = cur_frame ? cur_frame : 1 ))
     last_time=$SECONDS
   }
-  print -nr -- ${frames_splitted[cur_frame+1]}" "
-  print -nPr "%F{165}"
-  print -f "%s %s" "${bar// /░}" ""
-  print -nPr "%f"
+  builtin print -nr -- ${frames_splitted[cur_frame+1]}" "
+  builtin print -nPr "%F{201}"
+  builtin print -f "%s %s" "${bar// /░}" ""
+  builtin print -nPr "%f"
 }
-# $1 - n. of objects
+
+# $1 - n of objects
 # $2 - packed objects
 # $3 - total objects
 # $4 - receiving percentage
 # $5 - resolving percentage
 print_my_line() {
-  local col="%F{200}" col3="%F{200}" col4="%F{200}" col5="%F{200}"
-  [[ -n "${4#...}" && -z "${5#...}" ]] && col3="%F{201}"
-  [[ -n "${5#...}" ]] && col4="%F{201}"
+  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{046}"
+  [[ -n "${4#...}" && -z "${5#...}" ]] && local col="%F{226}" col3="%F{226}" col4="%F{226}"
+  [[ -n "${5#...}" ]] && local col="%F{201}" col3="%F{046}" col4="%F{046}"
   if (( COLS >= 70 )) {
-    print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
+    builtin print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
   } elif (( COLS >= 60 )) {
-    print -Pnr -- "${col}OBJ%f: $1, ${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
+    builtin print -Pnr -- "${col}OBJ%f: $1, ${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
   } else {
-    print -Pnr -- "${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
+    builtin print -Pnr -- "${${4:#...}:+, ${col3}REC%f: $4%}${${5:#...}:+, ${col4}RES%f: $5%}  "
   }
-  print -n $'\015'
+  builtin print -n $'\015'
 }
 
 print_my_line_compress() {
-  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{201}"
-  [[ -n "${4#...}" && -z "${5#...}" && -z "${6#...}" ]] && col3="%F{201}"
-  [[ -n "${5#...}" && -z "${6#...}" ]] && col4="%F{201}"
-  [[ -n "${6#...}" ]] && col5="%F{201}"
+  local col="%F{201}" col3="%F{201}" col4="%F{201}" col5="%F{046}"
+  [[ -n "${4#...}" && -z "${5#...}" && -z "${6#...}" ]] && local col="%F{226}" col3="%F{226}" col4="%F{226}" col5="%F{226}"
+  [[ -n "${5#...}" && -z "${6#...}" ]] && local col="%F{201}" col3="%F{226}" col4="%F{226}" col5="%F{226}"
+  [[ -n "${6#...}" ]] && local col3="%F{201}" col4="%F{046}" col5="%F{046}"
   if (( COLS >= 80 )) {
-    print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3, ${col3}COMPR%f: $4%%${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
+    builtin print -Pnr -- "${col}OBJ%f: $1, ${col}PACK%f: $2/$3, ${col3}COMPR%f: $4%%${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
   } elif (( COLS >= 65 )) {
-    print -Pnr -- "${col}OBJ%f: $1, ${col3}COMPR%f: $4%%${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
+    builtin print -Pnr -- "${col}OBJ%f: $1, ${col3}COMPR%f: $4%%${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
   } else {
-    print -Pnr -- "${col}OBJ%f: $1, ${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
+    builtin print -Pnr -- "${col}OBJ%f: $1, ${${5:#...}:+, ${col4}REC%f: $5%%}${${6:#...}:+, ${col5}RES%f: $6%%}  "
   }
-  print -n $'\015'
+  builtin print -n $'\015'
 }
 
 integer have_1_counting=0 have_2_total=0 have_3_receiving=0 have_4_deltas=0 have_5_compress=0
@@ -111,13 +104,13 @@ if [[ -n $TERM ]] {
 while read -r line; do
   (( ++ loop_count ))
   if [[ "$line" = "Cloning into"* ]]; then
-    print $line
+    builtin print $line
     continue
   elif [[ "$line" = (#i)*user*name* || "$line" = (#i)*password* ]]; then
-    print $line
+    builtin print $line
     continue
   elif [[ "$line" = remote:*~*(Counting|Total|Compressing|Enumerating)* || "$line" = fatal:* ]]; then
-    print $line
+    builtin print $line
     continue
   fi
   if [[ "$line" = (#b)"remote: Counting objects:"[\ ]#([0-9]##)(*) ]]; then
@@ -175,7 +168,7 @@ done
   grep fatal:
 }
 
-print
+builtin print
 
 [[ $+ZI_CNORM == 1 && -n $TERM ]] && eval $ZI_CNORM
 

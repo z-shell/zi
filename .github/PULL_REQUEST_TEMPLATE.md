@@ -13,7 +13,7 @@
 - [ ] Documentation content changes
 - [ ] Code style update (formatting, renaming)
 - [ ] Refactoring (no functional changes, no URL changes)
-- [ ] Improving performance of the project (not introducing new features)
+- [ ] Improving the performance of the project (not introducing new features)
 - [ ] Other (please describe):
 
 Issue Number: N/A

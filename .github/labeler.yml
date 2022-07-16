@@ -1,15 +1,28 @@
 documentation 📝:
-  - any: ["**/*.md", "!.github/ISSUE_TEMPLATE/*"]
+  - "docs/**/*.md"
+  - "community/**/*.md"
+  - "ecosystem/**/*.md"
+  - ".github/*.md"
+  - "!.github/ISSUE_TEMPLATE/*"
 maintenance 📈:
-  - any: [".github/**/*", "!.github/workflows/*"]
-  - "*.code-workspace"
-  - ".vscode**"
+  - ".editorconfig"
+  - ".gitattributes"
+  - ".gitignore"
+  - ".github/CODEOWNERS"
+  - ".github/*.md"
+  - ".github/*.yml"
+  - ".github/*.yaml"
+  - ".github/*.json"
+  - ".github/**rc"
   - ".trunk/**"
+  - ".vscode/**"
+  - "crowdin.yml"
 enhancement ✨:
   - "functions/**"
   - "src/**"
   - "lib/**"
 i18n 🌐:
   - "i18n/**"
+  - "docs/i18n/**"
 ci 🤖:
   - ".github/workflows/*"

@@ -5,7 +5,7 @@
 <a target="_self" href="https://github.com/z-shell/zi">
   <img style="width: 60px; height: 60px"
        src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" alt="❮ ZI ❯ Logo" />
-  </a>❮ <strong>ZI</strong> ❯
+  </a>❮ <strong>Zi</strong> ❯
 </h1>
 <h2>
   🧙‍♂️ 🪄 A Swiss Army Knife for <a href="https://zsh.sourceforge.io/"><strong>Zsh</strong></a> -
@@ -58,10 +58,8 @@
         alt="Visual Studio Code" />
     </a>
     </p>
-  <hr />
   <p>
-    <a href="https://asciinema.org/a/459358" target="_blank"><img style="width: 100%; height: auto"
-        src="https://asciinema.org/a/459358.svg" /></a>
+    <a href="https://asciinema.org/a/509113" target="_blank"><img src="https://asciinema.org/a/509113.svg" /></a>
   </p>
   <tr>
     <td align="center">
@@ -69,8 +67,6 @@
         src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" />
       <img align="center" style="width: 80%; height: auto"
         src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/metrics.svg" />
-      <img align="center" style="width: 80%; height: auto"
-        src="https://github.com/z-shell/.github/raw/main/metrics/plugin/projects/projects.svg" />
     </td>
   </tr>
   <table>

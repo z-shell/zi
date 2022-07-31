@@ -1116,7 +1116,7 @@ builtin setopt noaliases
       noglob unset functions[m]
     fi
   else
-    +zi-message "{error}ERROR #1"
+    +zi-error "{error}ERROR #1"
     return 1
   fi
 } # ]]]
@@ -1127,7 +1127,7 @@ builtin setopt noaliases
 .zi-load-snippet() {
   typeset -F 3 SECONDS=0
   local -a opts
-  zparseopts -E -D -a opts f -command || { +zi-message "{u-warn}Error{b-warn}:{rst} Incorrect options (accepted ones: {opt}-f{rst}, {opt}--command{rst})."; return 1; }
+  zparseopts -E -D -a opts f -command || { +zi-error "{u-warn}Error{b-warn}:{rst} Incorrect options (accepted ones: {opt}-f{rst}, {opt}--command{rst})."; return 1; }
   local url="$1"
   [[ -n ${ICE[teleid]} ]] && url="${ICE[teleid]}"
   # Hide arguments from sourced scripts. Without this calls our "$@" are visible as "$@" within scripts that we `source`.
@@ -1538,7 +1538,7 @@ builtin setopt noaliases
   typeset -a pos
   # Check if compinit was loaded.
   if [[ ${+functions[compdef]} = 0 ]]; then
-    +zi-message "{u-warn}Error{b-warn}:{rst} The {func}compinit{rst}" \
+    +zi-error "{u-warn}Error{b-warn}:{rst} The {func}compinit{rst}" \
       "function hasn't been loaded, cannot do {it}{cmd}compdef replay{rst}."
     return 1
   fi
@@ -1591,7 +1591,7 @@ builtin setopt noaliases
 .zi-run() {
   if [[ $1 = (-l|--last) ]]; then
     { set -- "${ZI[last-run-plugin]:-$(<${ZI[BIN_DIR]}/last-run-object.txt)}" "${@[2-correct,-1]}"; } &>/dev/null
-    [[ -z $1 ]] && { +zi-message "{u-warn}Error{b-warn}:{rst} No recent plugin-ID saved on the disk yet, please specify" \
+    [[ -z $1 ]] && { +zi-error "{u-warn}Error{b-warn}:{rst} No recent plugin-ID saved on the disk yet, please specify" \
     "it as the first argument, i.e.{ehi}: {cmd}zi run {pid}usr/plg{slight} {…}the code to run{…} "; return 1; }
   else
     integer ___nolast=1
@@ -1611,7 +1611,7 @@ builtin setopt noaliases
     eval "${@[2-correct,-1]}"
     () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldpwd"; }
   else
-    +zi-message "{u-warn}Error{b-warn}:{rst} no such plugin or snippet."
+    +zi-error "{u-warn}Error{b-warn}:{rst} no such plugin or snippet."
   fi
 } # ]]]
 # FUNCTION: +zi-deploy-message. [[[
@@ -1788,6 +1788,19 @@ builtin setopt noaliases
     print -n $'\015'
   fi
 } # ]]]
+
+# FUNCTION: +zi-error. [[[
+#
+# Same as +zi-message but print on STDERR instead of STDOUT
+#
+# Arguments:
+#   string to print on STDERR
+# Author: 0xMRTT
++zi-error() {
+  +zi-message $@ >&2
+}
+
+#]]]
 # FUNCTION: +zi-prehelp-usage-message. [[[
 # Prints the usage message.
 +zi-prehelp-usage-message() {
@@ -1813,7 +1826,7 @@ builtin setopt noaliases
   } elif [[ -n $allowed ]] {
     shift 2
     # No – an error message:
-    +zi-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
+    +zi-error "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
     "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}{…} Aborting.{rst}"
   } else {
     local -a cmds
@@ -2226,7 +2239,7 @@ zi() {
       local ___last_ice=${@[___retval2]}
       shift ___retval2
       if [[ $# -gt 0 && $1 != for ]] {
-        +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" "{apo}\`{cmd}$1{apo}\`{rst} "
+        +zi-error -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" "{apo}\`{cmd}$1{apo}\`{rst} "
         +zi-prehelp-usage-message rst
         return 1
       } elif (( $# == 0 )) {
@@ -2409,7 +2422,7 @@ zi() {
     if (( ___error )) {
       () {
         builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
-        +zi-message -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
+        +zi-error -n "{u-warn}Error{b-warn}:{rst} No plugin or snippet ID given"
         if [[ -n $___last_ice ]] {
           +zi-message -n " (the last recognized ice was: {ice}"\
           "${___last_ice/(#m)(${~ZI[ice-list]})/"{data}$MATCH"}{apo}''{rst}).{error}
@@ -2472,7 +2485,7 @@ zi() {
       (( ${#reply} )) && {
         reply=( "${(Q)${(z@)reply[1]}[@]}" )
         (( ${+functions[${reply[5]}]} )) && { "${reply[5]}" "$@"; return $?; } || \
-          { +zi-message "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
+          { +zi-error "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
       }
       (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
       case "$1" in
@@ -2684,10 +2697,10 @@ zi() {
           ;;
         (*)
           if [[ -z $1 ]] {
-            +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
+            +zi-error -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
             +zi-prehelp-usage-message rst
           } else {
-            +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" "{apo}\`{error}$1{apo}\`{rst} "
+            +zi-error -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" "{apo}\`{error}$1{apo}\`{rst} "
             +zi-prehelp-usage-message rst
           }
           ___retval=1

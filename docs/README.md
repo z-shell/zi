@@ -22,8 +22,8 @@
   ·
   <a href="https://github.com/orgs/z-shell/discussions"><strong>《 Ask a Question 》</strong></a>
   </p><p>
-    <a href="https://z.digitalclouds.dev/search/"><strong>《💡》Search Wiki </strong></a>
-    <a href="https://z.digitalclouds.dev/docs/getting_started/installation/"><strong>《⚡️》 Install </strong></a>
+    <a href="https://wiki.zshell.dev/search/"><strong>《💡》Search Wiki </strong></a>
+    <a href="https://wiki.zshell.dev/docs/getting_started/installation/"><strong>《⚡️》 Install </strong></a>
     <a
       href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+"><strong>《💜》Join
       </strong></a>

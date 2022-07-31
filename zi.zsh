@@ -901,7 +901,7 @@ builtin setopt noaliases
 # FUNCTION: .zi-register-plugin. [[[
 # Adds the plugin to ZI_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
-# https://z.digitalclouds.dev/community/zsh_plugin_standard).
+# https://wiki.zshell.dev/community/zsh_plugin_standard).
 .zi-register-plugin() {
   local uspl2="$1" mode="$2" teleid="$3"
   integer ret=0
@@ -1019,7 +1019,7 @@ builtin setopt noaliases
 } # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
-# https://z.digitalclouds.dev/community/zsh_plugin_standard
+# https://wiki.zshell.dev/community/zsh_plugin_standard
 @zsh-plugin-run-on-unload() {
   ICE[ps-on-unload]="${(j.; .)@}"
   .zi-pack-ice "$id_as" ""

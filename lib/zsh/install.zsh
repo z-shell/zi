@@ -23,7 +23,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     if [[ -n ${match[3]} ]] {
       ___idx+=${mbegin[1]}
 
-      [[ $___quoting = \' ]] && \
+      if [[ $___quoting = \' ]] && \
         { ___workbuf=${match[3]}; } || \
         { ___workbuf=${match[3]:1}; (( ++ ___idx )); }
     } else {
@@ -521,7 +521,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $3 - if 1, then reinstall, otherwise only install completions that aren't there
 .zi-install-completions() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt nullglob extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt nullglob exteUndedglob warncreateglobal typesetsilent noshortloops
 
   local id_as=$1${2:+${${${(M)1:#%}:+$2}:-/$2}}
   local reinstall=${3:-0} quiet=${${4:+1}:-0}
@@ -544,9 +544,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   typeset -a completions already_symlinked backup_comps
   local c cfile bkpfile
   # The plugin == . is a semi-hack/trick to handle `creinstall .' properly
-  [[ $user == % || ( -z $user && $plugin == . ) &]] & \
-  completions=( "${plugin}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) ) || \
-  completions=( "${ZI[PLUGINS_DIR]}/${id_as//\//---}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) )
+  if [[ $user == % || ( -z $user && $plugin == . ) ]]; then
+    completions=( "${plugin}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) ) || \
+    completions=( "${ZI[PLUGINS_DIR]}/${id_as//\//---}"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN^/) )
+  fi
   already_symlinked=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc(DN) )
   backup_comps=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc(DN) )
 

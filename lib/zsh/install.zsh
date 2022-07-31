@@ -8,7 +8,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
 # FUNCTION: .zi-parse-json [[[
 # Retrievies the ice-list from given profile from the JSON of the package.json.
-.zi-parse-json() {
+function .zi-parse-json() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent
 
@@ -115,7 +115,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 }
 # ]]]
 # FUNCTION: .zi-get-package [[[
-.zi-get-package() {
+function .zi-get-package() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
@@ -296,7 +296,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 #
 # $1 - user
 # $2 - plugin
-.zi-setup-plugin-dir() {
+function .zi-setup-plugin-dir() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal noshortloops rcquotes
 
@@ -520,7 +520,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 # $3 - if 1, then reinstall, otherwise only install completions that aren't there
-.zi-install-completions() {
+function .zi-install-completions() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt nullglob exteUndedglob warncreateglobal typesetsilent noshortloops
 
@@ -598,7 +598,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # After that it runs normal `compinit', which should more easily detect ❮ ZI ❯ completions.
 #
 # No arguments.
-.zi-compinit() {
+function .zi-compinit() {
   if [[ -n ${OPTS[opt_-p,--parallel]} && $1 != 1 ]]; then
     return
   fi
@@ -638,7 +638,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # Downloads file to stdout.
 # Supports following backend commands: curl, wget, lftp, lynx.
 # Used by snippet loading.
-.zi-download-file-stdout() {
+function .zi-download-file-stdout() {
   local url="$1" restart="$2" progress="${(M)3:#1}"
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt localtraps extendedglob
@@ -688,7 +688,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 } # ]]]
 # FUNCTION: .zi-get-url-mtime [[[
 # For the given URL returns the date in the Last-Modified header as a time stamp
-.zi-get-url-mtime() {
+function .zi-get-url-mtime() {
   local url="$1" IFS line header
   local -a cmd
 
@@ -733,7 +733,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - URL
 # $2 - mode, "" - normal, "-u" - update, "-t" - test
 # $3 - subdirectory (not path) with working copy, needed for -t and -u
-.zi-mirror-using-svn() {
+function .zi-mirror-using-svn() {
   builtin setopt localoptions extendedglob warncreateglobal
   local url="$1" update="$2" directory="$3"
 
@@ -770,7 +770,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # completion stops being visible to Zsh.
 #
 # $1 - completion function name, e.g. "_cp"; can also be "cp"
-.zi-forget-completion() {
+function .zi-forget-completion() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent warncreateglobal
 
@@ -799,7 +799,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 #
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
-.zi-compile-plugin() {
+function .zi-compile-plugin() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
@@ -887,7 +887,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # Downloads snippet – either a file – with curl, wget, lftp or lynx, or a directory,
 # with Subversion – when svn-ICE is active. Github supports Subversion protocol and allows
 # to clone subdirectories. This is used to provide a layer of support for Oh-My-Zsh and Prezto.
-.zi-download-snippet() {
+function .zi-download-snippet() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent
 
@@ -1301,7 +1301,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 }
 # ]]]
 # FUNCTION: .zi-update-snippet [[[
-.zi-update-snippet() {
+function .zi-update-snippet() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
@@ -1400,7 +1400,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-get-latest-gh-r-url-part [[[
 # Gets version string of latest release of given Github package.
 # Connects to Github releases page.
-.zi-get-latest-gh-r-url-part() {
+function .zi-get-latest-gh-r-url-part() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
 
@@ -1519,7 +1519,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 #
 # $1 - url
 # $2 - file
-ziextract() {
+function ziextract() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent noshortloops # warncreateglobal
 
@@ -1802,7 +1802,7 @@ ziextract() {
   return 0
 } # ]]]
 # FUNCTION: .zi-extract() [[[
-.zi-extract() {
+function .zi-extract() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent
   local tpe=$1 extract=$2 local_dir=$3
@@ -1830,10 +1830,10 @@ ziextract() {
 }
 # ]]]
 # FUNCTION: zpextract [[[
-zpextract() { ziextract "$@"; }
+function zpextract() { ziextract "$@"; }
 # ]]]
 # FUNCTION: .zi-at-eval [[[
-.zi-at-eval() {
+function .zi-at-eval() {
   local atpull="$1" atclone="$2"
   integer retval
   @zi-substitute atclone atpull
@@ -1845,7 +1845,7 @@ zpextract() { ziextract "$@"; }
   return "$?"f
 } # ]]]
 # FUNCTION: .zi-get-cygwin-package [[[
-.zi-get-cygwin-package() {
+function .zi-get-cygwin-package() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
 
@@ -1935,7 +1935,7 @@ zpextract() { ziextract "$@"; }
 }
 # ]]]
 # FUNCTION zicp [[[
-zicp() {
+function zicp() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
 
@@ -1975,7 +1975,7 @@ zicp() {
 }
 # ]]]
 # FUNCTION zimv [[[
-zimv() {
+function zimv() {
   local dir
   if [[ $1 = (-d|--dir) ]]; then
     dir=$2; shift 2;
@@ -1984,7 +1984,7 @@ zimv() {
 }
 # ]]]
 # FUNCTION: ∞zi-reset-opt-hook [[[
-∞zi-reset-hook() {
+function ∞zi-reset-hook() {
   # File
   if [[ "$1" = plugin ]]; then
     local type="$1" user="$2" plugin="$3" id_as="$4" dir="${5#%}" hook="$6"
@@ -2064,7 +2064,7 @@ zimv() {
   fi
 } # ]]]
 # FUNCTION: ∞zi-make-ee-hook [[[
-∞zi-make-ee-hook() {
+function ∞zi-make-ee-hook() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
@@ -2077,7 +2077,7 @@ zimv() {
   .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!\!}}
 } # ]]]
 # FUNCTION: ∞zi-make-e-hook [[[
-∞zi-make-e-hook() {
+function ∞zi-make-e-hook() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
@@ -2090,7 +2090,7 @@ zimv() {
   .zi-countdown make && command make -C "$dir" ${(@s; ;)${make#\!}}
 } # ]]]
 # FUNCTION: ∞zi-make-hook [[[
-∞zi-make-hook() {
+function ∞zi-make-hook() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
@@ -2102,7 +2102,7 @@ zimv() {
   .zi-countdown make && command make -C "$dir" ${(@s; ;)make}
 } # ]]]
 # FUNCTION: ∞zi-atclone-hook [[[
-∞zi-atclone-hook() {
+function ∞zi-atclone-hook() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
@@ -2127,7 +2127,7 @@ zimv() {
   return "$rc"
 } # ]]]
 # FUNCTION: ∞zi-extract-hook [[[
-∞zi-extract-hook() {
+function ∞zi-extract-hook() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
@@ -2137,7 +2137,7 @@ zimv() {
   .zi-extract plugin "$extract" "$dir"
 } # ]]]
 # FUNCTION: ∞zi-mv-hook [[[
-∞zi-mv-hook() {
+function ∞zi-mv-hook() {
   if [[ -z $ICE[mv] ]]; then
     return 0
   fi
@@ -2170,7 +2170,7 @@ zimv() {
     )
 } # ]]]
 # FUNCTION: ∞zi-cp-hook [[[
-∞zi-cp-hook() {
+function ∞zi-cp-hook() {
   if [[ -z $ICE[cp] ]]; then
     return
   fi
@@ -2201,7 +2201,7 @@ zimv() {
   )
 } # ]]]
 # FUNCTION: ∞zi-compile-plugin-hook [[[
-∞zi-compile-plugin-hook() {
+function ∞zi-compile-plugin-hook() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
@@ -2222,7 +2222,7 @@ zimv() {
     fi
 } # ]]]
 # FUNCTION: ∞zi-atpull-e-hook [[[
-∞zi-atpull-e-hook() {
+function ∞zi-atpull-e-hook() {
   (( ${+ICE[atpull]} )) || return 0
   [[ -n ${ICE[atpull]} ]] || return 0
   # Only process atpull"!cmd"
@@ -2245,7 +2245,7 @@ zimv() {
   return "$rc"
 } # ]]]
 # FUNCTION: ∞zi-atpull-hook [[[
-∞zi-atpull-hook() {
+function ∞zi-atpull-hook() {
   (( ${+ICE[atpull]} )) || return 0
   [[ -n ${ICE[atpull]} ]] || return 0
   # Exit early if atpull"!cmd" -> this is done by zi-atpull-e-hook
@@ -2269,7 +2269,7 @@ zimv() {
   return "$rc"
 } # ]]]
 # FUNCTION: ∞zi-ps-on-update-hook [[[
-∞zi-ps-on-update-hook() {
+function ∞zi-ps-on-update-hook() {
   if [[ -z $ICE[ps-on-update] ]]; then
     return 0
   fi

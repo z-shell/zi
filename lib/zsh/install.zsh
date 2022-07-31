@@ -28,7 +28,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         { ___workbuf=${match[3]:1}; (( ++ ___idx )); }
     } else {
       ___idx+=${mbegin[1]}
-      if [[ -z $___quoting ]] {
+      if [[ -z $___quoting ]]; then
         if [[ ${match[1]} = ["({["] ]]; then
           ___Strings[$___level/${___Counts[$___level]}]+=" $'\0'--object--$'\0'"
           ___pos_to_level[$___idx]=$(( ++ ___level ))
@@ -43,16 +43,16 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           if (( ___level > 0 )); then
             ___pair_idx=${___level_to_pos[$___level]}
             ___pos_to_level[$___idx]=$(( ___level -- ))
-            if [[ ${___pair_map[${___input[___pair_idx]}]} = ${___input[___idx]} ]] {
+            if [[ ${___pair_map[${___input[___pair_idx]}]} = ${___input[___idx]} ]]; then
               ___final_pairs[$___idx]=$___pair_idx
               ___final_pairs[$___pair_idx]=$___idx
               ___pair_order+=( $___idx )
-            }
+            fi
           else
             ___pos_to_level[$___idx]=-1
           fi
         fi
-      }
+      fi
 
       if [[ ${match[1]} = \" && $___quoting != \' ]]; then
         if [[ $___quoting = '"' ]]; then
@@ -104,9 +104,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     }
   }
 
-  if [[ -n $___found && $___nest -lt 2 ]] {
+  if [[ -n $___found && $___nest -lt 2 ]]; then
     .zi-parse-json "$___found" "$___key" "$___varname" 2
-  }
+  fi
 
   if (( ___nest == 2 )) {
     : ${(PAA)___varname::="${(kv)___Strings[@]}"}
@@ -140,10 +140,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     pkgjson="$(<$tmpfile)"
   fi
 
-  if [[ -z $pkgjson ]] {
+  if [[ -z $pkgjson ]]; then
     +zi-message "{u-warn}Error{b-warn}{ehi}:{rst} the package {apo}\`{pid}$id_as{apo}\` {rst}couldn't be found"
     return 1
-  }
+  fi
 
   local -A Strings
   .zi-parse-json "$pkgjson" "plugin-info" Strings
@@ -188,10 +188,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   +zi-message "{info3}Package{ehi}:{rst} {pid}$pkg{rst}. Selected" "profile{ehi}:{rst} {hi}$profile{rst}. \
   Available profiles:${${${(M)profile:#default}:+$lhi_hl}:-$profile_hl}" "${(pj:$pro_sep:)profiles[@]}{rst}."
-  if [[ $profile != *bgn* && -n ${(M)profiles[@]:#*bgn*} ]] {
+  if [[ $profile != *bgn* && -n ${(M)profiles[@]:#*bgn*} ]]; then
     +zi-message "{note}Note:{rst} The {apo}\`{profile}bgn{glob}*{apo}\`{rst}" "profiles are recommended (if available)." \
     "They provide binaries without {slight}altering/cluttering{rst} the  {var}\$PATH{rst} environment variable."
-  }
+  fi
 
   ICE[required]=${ICE[required]:-$ICE[requires]}
   local -a req
@@ -229,13 +229,13 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     fi
   }
 
-  if [[ -n ${ICE[dl]} && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ]] {
+  if [[ -n ${ICE[dl]} && -z ${(k)ZI_EXTS[(r)<-> z-annex-data: z-a-patch-dl *]} ]]; then
     +zi-message "{nl}{u-warn}WARNING{b-warn}:{rst} the profile uses" \
       "{ice}dl''{rst} ice however there's currently no {annex}z-a-patch-dl{rst}" "annex loaded, which provides it."
     +zi-message "The ice will be inactive, i.e.: no additional" "files will become downloaded (the ice downloads the given URLs)." \
       "The package should still work, as it doesn't indicate to" "{u}{slight}require{rst} the annex."
     +zi-message "{nl}You can download the" "annex from its homepage at {url}https://github.com/z-shell/z-a-patch-dl{rst}."
-  }
+  fi
 
   if [[ -n ${jsondata1[message]} ]]; then
     +zi-message "{info}${jsondata1[message]}{rst}"
@@ -301,10 +301,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   local user=$1 plugin=$2 id_as=$3 remote_url_path=${1:+$1/}$2 local_path tpe=$4 update=$5 version=$6
 
-  if .zi-get-object-path plugin "$id_as" && [[ -z $update ]] {
+  if .zi-get-object-path plugin "$id_as" && [[ -z $update ]]; then
     +zi-message "{error}Error{ehi}:{rst} A plugin named {pid}$id_as{rst} already exists, aborting."
     return 1
-  }
+  fi
   local_path=$REPLY
 
   trap "rmdir ${(qqq)local_path}/._zi ${(qqq)local_path} 2>/dev/null" EXIT
@@ -340,22 +340,22 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   command rm -f ${TMPDIR:-/tmp}/zi-execs.$$.lst ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst \
         ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zi.compiled.$$.lst
 
-  if [[ $tpe != tarball ]] {
-    if [[ -z $update ]] {
+  if [[ $tpe != tarball ]]; then
+    if [[ -z $update ]]; then
       .zi-any-colorify-as-uspl2 "$user" "$plugin"
       local pid_hl='{pid}' id_msg_part=" (at label{ehi}:{rst} {id-as}$id_as{rst}{…})"
       (( $+ICE[pack] )) && local infix_m="({b}{ice}pack{apo}''{rst}) "
       +zi-message "{nl}Downloading{ehi}:{rst} $infix_m{pid}$user${user:+/}$plugin{…}${${${id_as:#$user/$plugin}}:+$id_msg_part}"
-    }
+    fi
 
     local site
     if [[ -n ${ICE[from]} ]]; then
       site=${sites[${ICE[from]}]}
     fi
-    if [[ -z $site && ${ICE[from]} = *(gh-r|github-rel)* ]] {
+    if [[ -z $site && ${ICE[from]} = *(gh-r|github-rel)* ]]; then
       site=${ICE[from]/(gh-r|github-re)/${sites[gh-r]}}
-    }
-  }
+    fi
+  fi
 
   (
     if [[ $site = */releases ]] {
@@ -440,12 +440,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           return 1
       esac
 
-      if [[ -n ${ICE[ver]} ]] {
+      if [[ -n ${ICE[ver]} ]]; then
         command git -C "$local_path" checkout "${ICE[ver]}"
-      }
+      fi
     }
 
-    if [[ $update != -u ]] {
+    if [[ $update != -u ]]; then
       hook_rc=0
       # Store ices at clone of a plugin
       .zi-store-ices "$local_path/._zi" ICE "" "" "" ""
@@ -479,7 +479,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
         fi
       done
-    }
+    fi
     return "$retval"
   ) || return $?
 
@@ -493,16 +493,16 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     .zi-install-completions "$id_as" "" "0"
   fi
 
-  if [[ -e ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ]] {
+  if [[ -e ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ]]; then
     typeset -ga INSTALLED_COMPS SKIPPED_COMPS
     { INSTALLED_COMPS=( "${(@f)$(<${TMPDIR:-/tmp}/zi.installed_comps.$$.lst)}" ) } 2>/dev/null
     { SKIPPED_COMPS=( "${(@f)$(<${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst)}" ) } 2>/dev/null
-  }
+  fi
 
-  if [[ -e ${TMPDIR:-/tmp}/zi.compiled.$$.lst ]] {
+  if [[ -e ${TMPDIR:-/tmp}/zi.compiled.$$.lst ]]; then
     typeset -ga ADD_COMPILED
     { ADD_COMPILED=( "${(@f)$(<${TMPDIR:-/tmp}/zi.compiled.$$.lst)}" ) } 2>/dev/null
-  }
+  fi
 
   # After any download – rehash the command table this will miss the as"program" binaries
   # as their PATH gets extended - and it is done later. It will however work for sbin'' ice.
@@ -711,10 +711,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     header="${${line#*, }//$'\r'}"
   done
 
-  if [[ -z $header ]] {
+  if [[ -z $header ]]; then
     REPLY=$(( $(date +"%s") ))
     return 3
-  }
+  fi
 
   LANG=C TZ=UTC strftime -r -s REPLY "%d %b %Y %H:%M:%S GMT" "$header" &>/dev/null || {
     REPLY=$(( $(date +"%s") ))
@@ -807,14 +807,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local -A ICE
   .zi-compute-ice "$id_as" "pack" ICE plugin_dir filename is_snippet || return 1
 
-  if [[ ${ICE[pick]} != /dev/null && ${ICE[as]} != null && ${+ICE[null]} -eq 0 && ${ICE[as]} != command && ${+ICE[binary]} -eq 0 && ( ${+ICE[nocompile]} = 0 || ${ICE[nocompile]} = \! ) ]] {
+  if [[ ${ICE[pick]} != /dev/null && ${ICE[as]} != null && ${+ICE[null]} -eq 0 && ${ICE[as]} != command && ${+ICE[binary]} -eq 0 && ( ${+ICE[nocompile]} = 0 || ${ICE[nocompile]} = \! ) ]]; then
     reply=()
     if [[ -n ${ICE[pick]} ]]; then
       list=( ${~${(M)ICE[pick]:#/*}:-$plugin_dir/$ICE[pick]}(DN) )
-      if [[ ${#list} -eq 0 ]] {
+      if [[ ${#list} -eq 0 ]]; then
         +zi-message "No files for compilation found (pick-ice didn't match){rst}{…}"
         return 1
-      }
+      fi
       reply=( "${list[1]:h}" "${list[1]}" )
     else
       if (( is_snippet )) {
@@ -836,7 +836,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     local fname=${first#$pdir_path/}
 
     +zi-message -n "Compiling{ehi}:{rst} {b}{file}$fname{rst}{…}"
-    if [[ -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} ]] {
+    if [[ -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} ]]; then
       () {
         builtin emulate -LR zsh -o extendedglob
         if { ! zcompile -U "$first" } {
@@ -848,8 +848,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         # Try to catch possible additional file
         zcompile -U "${${first%.plugin.zsh}%.zsh-theme}.zsh" 2>/dev/null
       }
-    }
-  }
+    fi
+  fi
 
   if [[ -n "${ICE[compile]}" ]]; then
     local -a pats
@@ -914,24 +914,24 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   } else {
     url=${url/(#s)(#m)(${(~kj.|.)ZI_2MAP})/$ZI_2MAP[$MATCH]}
     if [[ $save_url == (${(~kj.|.)${(Mk)ZI_1MAP:#OMZ*}})* ]] {
-      if [[ $url != *.zsh(|-theme) && $url != */_[^/]## ]] {
+      if [[ $url != *.zsh(|-theme) && $url != */_[^/]## ]]; then
         if [[ $save_url == OMZT::* ]] {
           url+=.zsh-theme
         } else {
           url+=/${${url#*::}:t}.plugin.zsh
         }
-      }
-    } elif [[ $save_url = (${(~kj.|.)${(kM)ZI_1MAP:#PZT*}})* ]] {
-      if [[ $url != *.zsh && $url != */_[^/]## ]] {
+      fi
+    } elif [[ $save_url = (${(~kj.|.)${(kM)ZI_1MAP:#PZT*}})* ]]; then
+      if [[ $url != *.zsh && $url != */_[^/]## ]]; then
         url+=/init.zsh
-      }
-    }
+      fi
+    fi
   }
 
   # Change the url to point to raw github content if it isn't like that
-  if [[ "$url" = *github.com* && ! "$url" = */raw/* && "${+ICE[svn]}" = "0" ]] {
+  if [[ "$url" = *github.com* && ! "$url" = */raw/* && "${+ICE[svn]}" = "0" ]]; then
     url="${${url/\/blob\///raw/}/\/tree\///raw/}"
-  }
+  fi
 
   command rm -f ${TMPDIR:-/tmp}/zi-execs.$$.lst ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zi.compiled.$$.lst
 
@@ -1121,7 +1121,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       ZI[annex-multi-flag:pull-active]=3 retval=3
       # Run annexes' atpull hooks (the before atpull-ice ones).
       # The local-file snippets block.
-      if [[ $update = -u ]] {
+      if [[ $update = -u ]]; then
         reply=(
           ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
           ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
@@ -1136,22 +1136,22 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
           fi
         done
-      }
+      fi
 
       command mkdir -p "$local_dir/$dirname"
-      if [[ ! -e $url ]] {
+      if [[ ! -e $url ]]; then
         (( !OPTS[opt_-q,--quiet] )) && +zi-message "{error}Error{ehi}:{rst} {msg}The source file {file}$url{msg} doesn't exist.{rst}"
         retval=4
-      }
-      if [[ -e $url && ! -f $url && $url != /dev/null ]] {
+      fi
+      if [[ -e $url && ! -f $url && $url != /dev/null ]]; then
         (( !OPTS[opt_-q,--quiet] )) && +zi-message "{error}Error{ehi}:{rst} {msg}The source {file}$url{msg} isn't a regular file.{rst}"
         retval=4
-      }
-      if [[ -e $url && ! -r $url && $url != /dev/null ]] {
+      fi
+      if [[ -e $url && ! -r $url && $url != /dev/null ]]; then
         (( !OPTS[opt_-q,--quiet] )) && +zi-message "{error}Error{ehi}:{rst} {msg}The source {file}$url{msg} isn't" \
           "accessible{nl}{mmdsh}{error} wrong permissions{rst}"
         retval=4
-      }
+      fi
       if (( !OPTS[opt_-q,--quiet] )) && [[ $url != /dev/null ]] {
         +zi-message "{msg}Copying {file}$filename{msg}{…}{rst}"
         command cp -vf "$url" "$local_dir/$dirname/$filename" || \
@@ -1236,7 +1236,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
     # Run annexes' atpull hooks (the after atpull-ice ones)
     # The block is common to all 3 snippet types.
-    if [[ $update = -u ]] {
+    if [[ $update = -u ]]; then
       if (( ZI[annex-multi-flag:pull-active] > 0 )) {
         reply=(
           ${(on)ZI_EXTS2[(I)zi hook:atpull-pre <->]}
@@ -1269,7 +1269,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
         fi
       done
-    }
+    fi
   ) || return $?
   typeset -ga INSTALLED_EXECS
   { INSTALLED_EXECS=( "${(@f)$(<${TMPDIR:-/tmp}/zi-execs.$$.lst)}" ) } 2>/dev/null
@@ -1279,15 +1279,15 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   if [[ 0 = ${+ICE[nocompletions]} && ${ICE[as]} != null && ${+ICE[null]} -eq 0 ]]; then
     .zi-install-completions "%" "$local_dir/$dirname" 0
   fi
-  if [[ -e ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ]] {
+  if [[ -e ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst || -e ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst ]]; then
     typeset -ga INSTALLED_COMPS SKIPPED_COMPS
     { INSTALLED_COMPS=( "${(@f)$(<${TMPDIR:-/tmp}/zi.installed_comps.$$.lst)}" ) } 2>/dev/null
     { SKIPPED_COMPS=( "${(@f)$(<${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst)}" ) } 2>/dev/null
-  }
-  if [[ -e ${TMPDIR:-/tmp}/zi.compiled.$$.lst ]] {
+  fi
+  if [[ -e ${TMPDIR:-/tmp}/zi.compiled.$$.lst ]]; then
     typeset -ga ADD_COMPILED
     { ADD_COMPILED=( "${(@f)$(<${TMPDIR:-/tmp}/zi.compiled.$$.lst)}" ) } 2>/dev/null
-  }
+  fi
 
   # After any download – rehash the command table
   # This will however miss the as"program" binaries as their PATH gets extended - and it is done later.
@@ -1353,18 +1353,18 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   } else {
     url=${url/(#s)(#m)(${(~kj.|.)ZI_2MAP})/$ZI_2MAP[$MATCH]}
     if [[ $save_url == (${(~kj.|.)${(Mk)ZI_1MAP:#OMZ*}})* ]] {
-      if [[ $url != *.zsh(|-theme) && $url != */_[^/]## ]] {
+      if [[ $url != *.zsh(|-theme) && $url != */_[^/]## ]]; then
         if [[ $save_url == OMZT::* ]] {
           url+=.zsh-theme
         } else {
           url+=/${${url#*::}:t}.plugin.zsh
         }
-      }
-    } elif [[ $save_url = (${(~kj.|.)${(kM)ZI_1MAP:#PZT*}})* ]] {
-      if [[ $url != *.zsh ]] {
+      fi
+    } elif [[ $save_url = (${(~kj.|.)${(kM)ZI_1MAP:#PZT*}})* ]]; then
+      if [[ $url != *.zsh ]]; then
         url+=/init.zsh
-      }
-    }
+      fi
+    fi
   }
 
   if { ! .zi-get-object-path snippet "$id_as" } {
@@ -1453,44 +1453,44 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   for bpick ( "${bpicks[@]}" ) {
     list=( $init_list )
 
-    if [[ -n $bpick ]] {
+    if [[ -n $bpick ]]; then
       list=( ${(M)list[@]:#(#i)*/$~bpick} )
-    }
+    fi
 
-    if (( $#list > 1 )) {
+    if (( $#list > 1 )); then
       list2=( ${(M)list[@]:#(#i)*${~matchstr[$MACHTYPE]:-${MACHTYPE#(#i)(i|amd)}}*} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
-    if (( ${#list} > 1 && ${#matchstr[${MACHTYPE}-2]} )) {
+    if (( ${#list} > 1 && ${#matchstr[${MACHTYPE}-2]} )); then
       list2=( ${(M)list[@]:#(#i)*${~matchstr[${MACHTYPE}-2]:-${MACHTYPE#(#i)(i|amd)}}*} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
-    if (( $#list > 1 )) {
+    if (( $#list > 1 )); then
       list2=( ${(M)list[@]:#(#i)*${~matchstr[$CPUTYPE]:-${CPUTYPE#(#i)(i|amd)}}*} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
-    if (( $#list > 1 )) {
+    if (( $#list > 1 )); then
       list2=( ${(M)list[@]:#(#i)*${~matchstr[${${OSTYPE%(#i)-(gnu|musl)}%%(-|)[0-9.]##}]:-${${OSTYPE%(#i)-(gnu|musl)}%%(-|)[0-9.]##}}*} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
-    if (( $#list > 1 )) {
+    if (( $#list > 1 )); then
       list2=( ${list[@]:#(#i)*.(sha[[:digit:]]#|asc)} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
-    if (( $#list > 1 && $+commands[dpkg-deb] )) {
+    if (( $#list > 1 && $+commands[dpkg-deb] )); then
       list2=( ${list[@]:#*.deb} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
-    if (( $#list > 1 && $+commands[rpm] )) {
+    if (( $#list > 1 && $+commands[rpm] )); then
       list2=( ${list[@]:#*.rpm} )
       (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    fi
 
     if (( !$#list )) {
       +zi-message -n "{error}Didn't find correct Github" "release-file to download"
@@ -1557,7 +1557,7 @@ ziextract() {
           continue
         fi
         type=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
-        if [[ $type = (zip|rar|xz|7-zip|gzip|bzip2|tar|exe|pe32) ]] {
+        if [[ $type = (zip|rar|xz|7-zip|gzip|bzip2|tar|exe|pe32) ]]; then
           (( !OPTS[opt_-q,--quiet] )) && \
           +zi-message "{annex}ziextract{ehi}:{rst} {note}Detected a {obj2}$type{note} archive in the file{ehi}:{rst} {file}$fname{rst}"
           ziextract "$fname" "$type" $opt_move $opt_move2 $opt_norm --norm ${${${#archives}:#1}:+--nobkp}
@@ -1572,7 +1572,7 @@ ziextract() {
             fname=$fname.out
           fi
           files=( *.tar(ND) )
-          if [[ -f $fname || -f ${fname:r} ]] {
+          if [[ -f $fname || -f ${fname:r} ]]; then
             local -aU output2 archives2
             output2=( ${(@f)"$(command file -- "$fname"(N) "${fname:r}"(N) $files[1](N) 2>&1)"} )
             archives2=( ${(M)output2[@]:#(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) *} )
@@ -1580,7 +1580,7 @@ ziextract() {
             for file2 ( $archives2 ) {
               fname=${file2%:*} desc=${file2##*:}
               local type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
-              if [[ $type != $type2 && $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar) ]] {
+              if [[ $type != $type2 && $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar) ]]; then
                 # TODO: #115 If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
                 if [[ $fname != $infname && $norm -eq 0 ]]; then
                   command rm -f "$infname"
@@ -1590,29 +1590,29 @@ ziextract() {
                 ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm ${${${#archives}:#1}:+--nobkp}
                 ret_val+=$?
                 stage2_processed+=( $fname )
-                if [[ $fname == *.out ]] {
+                if [[ $fname == *.out ]]; then
                   if [[ -f $fname ]]; then
                     command mv -f "$fname" "${fname%.out}"
                   fi
                   stage2_processed+=( ${fname%.out} )
-                }
-              }
+                fi
+              fi
             }
-          }
-        }
+          fi
+        fi
       }
     }
     return $ret_val
   }
 
-  if [[ -z $file ]] {
+  if [[ -z $file ]]; then
     +zi-message "{annex}ziextract{ehi}:{rst} {error}Argument required for {file}file{error} to extract or the {opt}--auto{error} option{rst}"
     return 1
-  }
-  if [[ ! -e $file ]] {
+  fi
+  if [[ ! -e $file ]]; then
     +zi-message "{annex}ziextract{ehi}:{rst} {error}The {file}file{error} \`{pname}${file}{error}' does not exist{rst}"
     return 1
-  }
+  fi
   if (( !nobkp )) {
     command mkdir -p ._backup
     command rm -rf ._backup/*(DN)
@@ -1656,11 +1656,11 @@ ziextract() {
       →zi-extract() { →zi-check tar "$file" || return 1; command tar -xf "$file"; }
       ;;
     ((#i)*.gz|(#i)*.gzip)
-      if [[ $file != (#i)*.gz ]] {
+      if [[ $file != (#i)*.gz ]]; then
         command mv $file $file.gz
         file=$file.gz
         integer zi_was_renamed=1
-      }
+      fi
       →zi-extract() {
         →zi-check gunzip "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
@@ -1672,10 +1672,10 @@ ziextract() {
       ;;
     ((#i)*.bz2|(#i)*.bzip2)
       # Rename file if its extension does not match "bz2". bunzip2 refuses to operate on files that are not named correctly.
-      if [[ $file != (#i)*.bz2 ]] {
+      if [[ $file != (#i)*.bz2 ]]; then
         command mv $file $file.bz2
         file=$file.bz2
-      }
+      fi
       →zi-extract() { →zi-check bunzip2 "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
         command bunzip2 "$file" |& command egrep -v '.out$'
@@ -1685,10 +1685,10 @@ ziextract() {
       }
       ;;
     ((#i)*.xz)
-      if [[ $file != (#i)*.xz ]] {
+      if [[ $file != (#i)*.xz ]]; then
         command mv $file $file.xz
         file=$file.xz
-      }
+      fi
       →zi-extract() { →zi-check xz "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
         command xz -d "$file"
@@ -1751,11 +1751,11 @@ ziextract() {
 
   local -a execs
   execs=( **/*~(._zi(|/*)|.git(|/*)|.svn(|/*)|.hg(|/*)|._backup(|/*))(DN-.) )
-  if [[ ${#execs} -gt 0 && -n $execs ]] {
+  if [[ ${#execs} -gt 0 && -n $execs ]]; then
     execs=( ${(@f)"$( file ${execs[@]} )"} )
     execs=( "${(M)execs[@]:#[^:]##:*executable*}" )
     execs=( "${execs[@]/(#b)([^:]##):*/${match[1]}}" )
-  }
+  fi
 
   builtin print -rl -- ${execs[@]} >! ${TMPDIR:-/tmp}/zi-execs.$$.lst
   if [[ ${#execs} -gt 0 ]] {
@@ -1870,10 +1870,10 @@ zpextract() { ziextract "$@"; }
     fi
   }
 
-  if [[ -z $mirror ]] {
+  if [[ -z $mirror ]]; then
     +zi-message "{error}Couldn't download{ehi}:{rst} {obj}mirrors.lst {error}."
     return 1
-  }
+  fi
 
   mirror=http://ftp.eq.uc.pt/software/pc/prog/cygwin/
 
@@ -1899,10 +1899,10 @@ zpextract() { ziextract "$@"; }
   }
   local setup_contents="$(command grep -A 26 "@ $pkg\$" "$setup")"
   local urlpart=${${(S)setup_contents/(#b)*@ $pkg${nl}*install: (*)$nl*/$match[1]}%% *}
-  if [[ -z $urlpart ]] {
+  if [[ -z $urlpart ]]; then
     +zi-message "{error}Couldn't find package{ehi}:{rst} {data2}\`{data}$pkg{data2}'{error}.{rst}"
     return 2
-  }
+  fi
   local url=$mirror/$urlpart outfile=${TMPDIR:-${TMPDIR:-/tmp}}/${urlpart:t}
 
   #
@@ -1937,22 +1937,30 @@ zicp() {
 
   local -a mbegin mend match
   local cmd=cp
-  if [[ $1 = (-m|--mv) ]] { cmd=mv; shift; }
+  if [[ $1 = (-m|--mv) ]]; then
+    cmd=mv; shift;
+  fi
 
   local dir
-  if [[ $1 = (-d|--dir)  ]] { dir=$2; shift 2; }
+  if [[ $1 = (-d|--dir)  ]]; then
+    dir=$2; shift 2;
+  fi
 
   local arg
   arg=${${(j: :)@}//(#b)(([[:space:]]~ )#(([^[:space:]]| )##)([[:space:]]~ )#(#B)(->|=>|→)(#B)([[:space:]]~ )#(#b)(([^[:space:]]| )##)|(#B)([[:space:]]~ )#(#b)(([^[:space:]]| )##))/${match[3]:+$match[3] $match[6]\;}${match[8]:+$match[8] $match[8]\;}}
   (
-    if [[ -n $dir ]] { cd $dir || return 1; }
+    if [[ -n $dir ]]; then
+      cd $dir || return 1;
+    fi
     local a b var
     integer retval
     for a b ( "${(s: :)${${(@s.;.)${arg%\;}}:-* .}}" ) {
       for var ( a b ) {
         : ${(P)var::=${(P)var//(#b)(((#s)|([^\\])[\\]([\\][\\])#)|((#s)|([^\\])([\\][\\])#)) /${match[2]:+$match[3]$match[4] }${match[5]:+$match[6]${(l:${#match[7]}/2::\\:):-} }}}
       }
-      if [[ $a != *\** ]] { a=${a%%/##}"/*" }
+      if [[ $a != *\** ]]; then
+        a=${a%%/##}"/*"
+      fi
       command mkdir -p ${~${(M)b:#/*}:-$ZPFX/$b}
       command $cmd -f ${${(M)cmd:#cp}:+-R} $~a ${~${(M)b:#/*}:-$ZPFX/$b}
       retval+=$?
@@ -1965,7 +1973,9 @@ zicp() {
 # FUNCTION zimv [[[
 zimv() {
   local dir
-  if [[ $1 = (-d|--dir) ]] { dir=$2; shift 2; }
+  if [[ $1 = (-d|--dir) ]]; then
+    dir=$2; shift 2;
+  fi
   zicp --mv ${dir:+--dir} $dir "$@"
 }
 # ]]]
@@ -1985,10 +1995,10 @@ zimv() {
     }
     if [[ $type == snippet ]] {
       if (( $+ICE[svn] )) {
-        if [[ $skip_pull -eq 0 && -d $filename/.svn ]] {
+        if [[ $skip_pull -eq 0 && -d $filename/.svn ]]; then
           (( !OPTS[opt_-q,--quiet] )) && +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}Resetting the repository ($msg_bit) with command{ehi}:{rst} {rst}svn revert --recursive {…}/{file}$filename/.{rst} {…}"
           command svn revert --recursive $filename/.
-        }
+        fi
       } else {
         if (( ZI[annex-multi-flag:pull-active] >= 2 )) {
           if (( !OPTS[opt_-q,--quiet] )) {
@@ -2005,9 +2015,9 @@ zimv() {
               }
             } else {
               +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}The file {file}$filename{msg} is already deleted {…}{rst}"
-              if [[ -n $ICE[reset] && ! -n $option ]] {
+              if [[ -n $ICE[reset] && ! -n $option ]]; then
                 +zi-message "{pre}reset ($msg_bit){ehi}:{rst} {msg}(skipped running the provided reset-code{ehi}:{rst} {data2}$ICE[reset]{msg}){rst}"
-              }
+              fi
             }
           }
         } else {
@@ -2191,11 +2201,11 @@ zimv() {
   if [[ "$1" = plugin ]]; then
     local dir="${5#%}" hook="$6" subtype="$7" || local dir="${4#%}" hook="$5" subtype="$6"
   fi
-    if ! [[ ( $hook = *\!at(clone|pull)* && ${+ICE[nocompile]} -eq 0 ) || ( $hook = at(clone|pull)* && $ICE[nocompile] = '!' ) ]] {
+    if ! [[ ( $hook = *\!at(clone|pull)* && ${+ICE[nocompile]} -eq 0 ) || ( $hook = at(clone|pull)* && $ICE[nocompile] = '!' ) ]]; then
       return 0
-    }
+    fi
     # Compile plugin
-    if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
+    if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]]; then
       () {
         builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
         builtin setopt extendedglob warncreateglobal
@@ -2205,7 +2215,7 @@ zimv() {
           .zi-compile-plugin "$id_as" ""
         }
       }
-    }
+    fi
 } # ]]]
 # FUNCTION: ∞zi-atpull-e-hook [[[
 ∞zi-atpull-e-hook() {

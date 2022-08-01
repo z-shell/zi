@@ -2637,21 +2637,33 @@ function .zi-run-task() {
 
   if [[ $___action = *load ]]; then
     if [[ $___tpe = p ]]; then
-      .zi-load "${(@)=___id}" "" "$___mode"; (( ___retval += $? ))
+      .zi-load "${(@)=___id}" "" "$___mode"
+      (( ___retval += $? ))
     elif [[ $___tpe = s ]]; then
-      .zi-load-snippet $___opt "$___id"; (( ___retval += $? ))
+      .zi-load-snippet $___opt "$___id"
+      (( ___retval += $? ))
     elif [[ $___tpe = p1 || $___tpe = s1 ]]; then
       (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
       zpty -b "${___id//\//:} / ${ICE[service]}" '.zi-service '"${(M)___tpe#?}"' "$___mode" "$___id"'
     fi
-    (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )) && zle && zle -M "Loaded $___id"
+    if (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )); then
+      zle && zle -M "Loaded $___id"
+    fi
   elif [[ $___action = *remove ]]; then
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-    [[ $___tpe = p ]] && .zi-unload "$___id_as" "" -q
-    (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )) && zle && zle -M "Unloaded $___id_as"
+    if [[ $___tpe = p ]]; then
+      .zi-unload "$___id_as" "" -q
+    fi
+    if (( ${+ICE[silent]} == 0 && ${+ICE[lucid]} == 0 && ___retval == 0 )); then
+      zle && zle -M "Unloaded $___id_as"
+    fi
   fi
 
-  [[ ${REPLY::=$___action} = \!* ]] && zle && zle .reset-prompt
+  if [[ ${REPLY::=$___action} = \!* ]]; then
+    if zle; then
+      zle .reset-prompt
+    fi
+  fi
 
   return ___s
 } # ]]]
@@ -2670,10 +2682,11 @@ function .zi-submit-turbo() {
   ZI[WAIT_ICE_${ZI[WAIT_IDX]}]="${(j: :)${(qkv)ICE[@]}}"
   ZI[fts-${ICE[subscribe]}]="${ICE[subscribe]:+$EPOCHSECONDS}"
 
-  [[ $tpe = s* ]] && \
-    local id="${${opt_plugin:+$opt_plugin}:-$opt_uspl2}" || \
+  if [[ $tpe = s* ]]; then
+    local id="${${opt_plugin:+$opt_plugin}:-$opt_uspl2}"
+  else
     local id="${${opt_plugin:+$opt_uspl2${${opt_uspl2:#%*}:+/}$opt_plugin}:-$opt_uspl2}"
-
+  fi
   if [[ ${${ICE[wait]}%%[^0-9]([^0-9]|)([^0-9]|)([^0-9]|)} = (\!|.|)<-> ]]; then
     ZI_TASKS+=( "$EPOCHSECONDS+${${ICE[wait]#(\!|.)}%%[^0-9]([^0-9]|)([^0-9]|)([^0-9]|)}+${${${(M)ICE[wait]%a}:+1}:-${${${(M)ICE[wait]%b}:+2}:-${${${(M)ICE[wait]%c}:+3}:-1}}} $tpe ${ZI[WAIT_IDX]} ${mode:-_} ${(q)id} ${opt_plugin:+${(q)opt_uspl2}}" )
   elif [[ -n ${ICE[wait]}${ICE[load]}${ICE[unload]}${ICE[subscribe]} ]]; then

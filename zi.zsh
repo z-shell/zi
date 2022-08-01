@@ -2368,7 +2368,7 @@ function .zi-formatter-bar-util() {
 function .zi-formatter-url() {
   builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
   #              1:proto        3:domain/5:start      6:end-of-it         7:no-dot-domain        9:file-path
-  if [[ $1 = (#b)([^:]#)(://|::)((([[:alnum:]._+-]##).([[:alnum:]_+-]##))|([[:alnum:].+_-]##))(|/(*)) ]] {
+  if [[ $1 = (#b)([^:]#)(://|::)((([[:alnum:]._+-]##).([[:alnum:]_+-]##))|([[:alnum:].+_-]##))(|/(*)) ]]; then
     # The advanced coloring if recognized the format…
     match[9]=${match[9]//\//"%F{227}%B"/"%F{81}%b"}
     if [[ -n $match[4] ]]; then
@@ -2384,29 +2384,29 @@ function .zi-formatter-url() {
       REPLY+="$(print -Pr -- %F{227}%B/%F{81}%b$match[9]%f%b)"
     fi
   #endif
-  } else {
+  else
     # …revert to the basic if not…
     REPLY=$ZI[col-url]$1$ZI[col-rst]
-  }
+  fi
 } # ]]]
 # FUNCTION: +zi-message-formatter [[[
 function .zi-main-message-formatter() {
   if [[ -z $1 && -z $2 && -z $3 ]]; then
-  REPLY=""
-  return
+    REPLY=""
+    return
   fi
   local append influx in_prepend
   if [[ $2 == (b|u|it|st|nb|nu|nit|nst) ]]; then
-  # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
-  append=$ZI[col-$2]
+    # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
+    append=$ZI[col-$2]
   elif [[ $2 == (…|ndsh|mdsh|mmdsh|-…|lr|) || -z $2 || -z $ZI[col-$2] ]]; then
-  # Resume previous escape code, if stored.
-  if [[ $ZI[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
-    in_prepend=$ZI[col-$ZI[__last-formatter-code]]
-    influx=$ZI[col-$ZI[__last-formatter-code]]
+    # Resume previous escape code, if stored.
+    if [[ $ZI[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
+      in_prepend=$ZI[col-$ZI[__last-formatter-code]]
+      influx=$ZI[col-$ZI[__last-formatter-code]]
     fi
   else
-  # End of escaping logic
+    # End of escaping logic
     append=$ZI[col-rst]
   fi
   # Construct the text.
@@ -2420,14 +2420,18 @@ function .zi-main-message-formatter() {
 function +zi-message() {
   builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
   local opt msg
-  [[ $1 = -* ]] && { local opt=$1; shift; }
+  if [[ $1 = -* ]]; then
+    local opt=$1
+    shift
+  fi
 
   ZI[__last-formatter-code]=
   msg=${${(j: :)${@:#--}}//\%/%%}
 
   # First try a dedicated formatter, marking its empty output with ←→, then
   # the general formatter and in the end filter-out the ←→ from the message.
-  msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; builtin print -rn -- "$REPLY"
+  msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] \
+    "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; builtin print -rn -- "$REPLY"
   )${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+$match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
   # Reset color attributes at the end of the message.
   msg=$msg$ZI[col-rst]
@@ -2460,26 +2464,28 @@ function +zi-prehelp-usage-message() {
   local cmd=$1 allowed=$2 sep="$ZI[col-msg2], $ZI[col-ehi]" sep2="$ZI[col-msg2], $ZI[col-opt]" bcol
 
   # -h/--help given?
-  if (( OPTS[opt_-h,--help] )) {
+  if (( OPTS[opt_-h,--help] )); then
     # Yes – a help message:
-+zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" "the available {b-lhi}options{ehi}:{rst}"
+    +zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" "the available {b-lhi}options{ehi}:{rst}"
     local opt
-    for opt ( ${(kos:|:)allowed} ) {
-      [[ $opt == --* ]] && continue
+    for opt ( ${(kos:|:)allowed} ); do
+      if [[ $opt == --* ]]; then
+        continue
+      fi
       local msg=${___opt_map[$opt]#*:} txt=${___opt_map[(r)opt_$opt,--[^:]##]}
-      if [[ $msg == *":["* ]] {
+      if [[ $msg == *":["* ]]; then
         msg=${${(MS)msg##$cmd:\[[^]]##}:-${(MS)msg##\*:\[[^]]##}}
         msg=${msg#($cmd|\*):\[}
-      }
+      fi
       local pre_msg=`+zi-message -n {opt}${(r:14:)${txt#opt_}}`
       +zi-message ${(r:35:: :)pre_msg}{rst}{ehi}→{rst}"  $msg"
-    }
-  } elif [[ -n $allowed ]] {
+    done
+  elif [[ -n $allowed ]]; then
     shift 2
     # No – an error message:
     +zi-error "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
     "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}{…} Aborting.{rst}"
-  } else {
+  else
     local -a cmds
     cmds=( load snippet update delete )
     local bcol="{$cmd}" sep="${ZI[col-rst]}${ZI[col-$cmd]}\`, \`${ZI[col-cmd]}"
@@ -2492,7 +2498,7 @@ function +zi-prehelp-usage-message() {
       "{nb}or{b} snippet) {pname}ID-1 ID-2 {-…} {lhi}{…}$bcol\`)." \
     "See \`{cmd}help$bcol\` for a more detailed usage information and" \
     "the list of the {cmd}subcommands$bcol.{rst}"
-  }
+  fi
 }
 # ]]]
 # FUNCTION: +zi-parse-opts. [[[
@@ -2513,12 +2519,22 @@ function .zi-ice() {
   integer retval
   local bit exts="${(j:|:)${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}"
   for bit; do
-  [[ $bit = (#b)(--|)(${~ZI[ice-list]}${~exts})(*) ]] && ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}" || break
+    if [[ $bit = (#b)(--|)(${~ZI[ice-list]}${~exts})(*) ]]; then
+      ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}"
+    else
+      break
+    fi
     retval+=1
   done
-  [[ ${ZI_ICES[as]} = program ]] && ZI_ICES[as]=command
-  [[ -n ${ZI_ICES[on-update-of]} ]] && ZI_ICES[subscribe]="${ZI_ICES[subscribe]:-${ZI_ICES[on-update-of]}}"
-  [[ -n ${ZI_ICES[pick]} ]] && ZI_ICES[pick]="${ZI_ICES[pick]//\$ZPFX/${ZPFX%/}}"
+  if [[ ${ZI_ICES[as]} = program ]]; then
+    ZI_ICES[as]=command
+  fi
+  if [[ -n ${ZI_ICES[on-update-of]} ]]; then
+    ZI_ICES[subscribe]="${ZI_ICES[subscribe]:-${ZI_ICES[on-update-of]}}"
+  fi
+  if [[ -n ${ZI_ICES[pick]} ]]; then
+    ZI_ICES[pick]="${ZI_ICES[pick]//\$ZPFX/${ZPFX%/}}"
+  fi
 
 return retval
 } # ]]]
@@ -2541,19 +2557,31 @@ function .zi-load-ices() {
   )
   ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
   # TODO Snippet's dir computation…
-  if [[ ! -d $___path ]] {
+  if [[ ! -d $___path ]]; then
     if ! .zi-get-object-path snippet "${id_as//\//---}"; then
       return 1
     fi
     ___path="$REPLY"/._zi
-  }
-  for ___key ( "${ice_order[@]}" ) {
-    (( ${+ICE[$___key]} )) && [[ ${ICE[$___key]} != +* ]] && continue
-    [[ -e $___path/$___key ]] && ICE[$___key]="$(<$___path/$___key)"
-  }
-  [[ -n ${ICE[on-update-of]} ]] && ICE[subscribe]="${ICE[subscribe]:-${ICE[on-update-of]}}"
-  [[ ${ICE[as]} = program ]] && ICE[as]=command
-  [[ -n ${ICE[pick]} ]] && ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"
+  fi
+  for ___key ( "${ice_order[@]}" ); do
+    if (( ${+ICE[$___key]} )); then
+      if [[ ${ICE[$___key]} != +* ]]; then
+        continue
+      fi
+    fi
+    if [[ -e $___path/$___key ]]; then
+      ICE[$___key]="$(<$___path/$___key)"
+    fi
+  done
+  if [[ -n ${ICE[on-update-of]} ]]; then
+    ICE[subscribe]="${ICE[subscribe]:-${ICE[on-update-of]}}"
+  fi
+  if [[ ${ICE[as]} = program ]]; then
+    ICE[as]=command
+  fi
+  if [[ -n ${ICE[pick]} ]]; then
+    ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"
+  fi
 
   return 0
 } # ]]]

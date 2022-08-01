@@ -1363,7 +1363,9 @@ function .zi-load-snippet() {
         else
           ((1))
           builtin source "$ZERO"
+        fi
         (( retval += $? ))
+      fi
     fi
     if [[ -n ${ICE[multisrc]} ]]; then
       local ___oldcd="$PWD"
@@ -1442,7 +1444,6 @@ function .zi-load-snippet() {
         fi
       fi
     fi
-  fi
   elif [[ -n ${opts[(r)--command]} || ${ICE[as]} = command ]]; then
     if [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]]; then
       ICE[pick]="${id_as:t}"
@@ -1543,10 +1544,11 @@ function .zi-load-snippet() {
           else
             ((1))
             builtin source "$ZERO"
-          (( retval += $? ))
           fi
+          (( retval += $? ))
         fi
       done
+    fi
     # Run the atload hooks right before atload ice.
     reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atload-<-> <->]} )
     for key in "${reply[@]}"; do
@@ -1577,7 +1579,7 @@ function .zi-load-snippet() {
       fi
     fi
     if [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]]; then
-      (( -- ZI[TMP_SUBST] == 0 )) && {
+      if (( -- ZI[TMP_SUBST] == 0 )); then
         ZI[TMP_SUBST]=inactive
         builtin setopt noaliases
         if (( ${+ZI[bkp-compdef]} )); then
@@ -1588,7 +1590,7 @@ function .zi-load-snippet() {
         if (( ZI[ALIASES_OPT] )); then
           builtin setopt aliases
         fi
-      }
+      fi
     fi
   elif [[ ${ICE[as]} = completion ]]; then
     ((1))
@@ -1625,6 +1627,7 @@ function .zi-load-snippet() {
     else
      +zi-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $retval"
     fi
+  fi
   if (( ${+ICE[reset-prompt]} == 1 )); then
     +zi-deploy-message @rst
   fi
@@ -1633,7 +1636,8 @@ function .zi-load-snippet() {
   ZI[TIME_${ZI[TIME_INDEX]}_${id_as}]=$SECONDS
   ZI[AT_TIME_${ZI[TIME_INDEX]}_${id_as}]=$EPOCHREALTIME
   .zi-set-m-func unset
-  return retval
+  return retval;
+
 } # ]]]
 # FUNCTION: .zi-load. [[[
 # Implements the exposed-to-user action of loading a plugin.

@@ -1670,7 +1670,7 @@ function .zi-load () {
     "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" "${${___key##(zi|z-annex) hook:}%% <->}" load || \
     return $(( 10 - $? ))
   done
-  if [[ $___user != % && ! -d ${ZI[PLUGINS_DIR]}/${___id_as//\//---} ]] {
+  if [[ $___user != % && ! -d ${ZI[PLUGINS_DIR]}/${___id_as//\//---} ]]; then
     (( ${+functions[.zi-setup-plugin-dir]} )) || \
       builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || \
       return 1
@@ -1687,7 +1687,7 @@ function .zi-load () {
     fi
     ___user="${reply[-2]}" ___plugin="${reply[-1]}"
     ICE[teleid]="$___user${${___user:#(%|/)*}:+/}$___plugin"
-    [[ $REPLY = snippet ]] && {
+    if [[ $REPLY = snippet ]]; then
       ICE[id-as]="${ICE[id-as]:-$___id_as}"
       if .zi-load-snippet $___plugin; then
         return
@@ -1697,7 +1697,7 @@ function .zi-load () {
         zle .reset-prompt
       fi
       return 1
-    }
+    fi
     .zi-setup-plugin-dir "$___user" "$___plugin" "$___id_as" "$REPLY"
     local rc="$?"
     if [[ "$rc" -ne 0 ]]; then
@@ -1705,12 +1705,12 @@ function .zi-load () {
         builtin print
         zle .reset-prompt
       fi
-    return "$rc"
-  fi
+      return "$rc"
+    fi
     if zle; then
       ___rst=1
     fi
-  }
+  fi
   ZI_SICE[$___id_as]=
   .zi-pack-ice "$___id_as"
   if (( ${+ICE[cloneonly]} )); then
@@ -1961,13 +1961,19 @@ function .zi-load-plugin() {
     ((1))
   else
     if [[ -n ${ICE[pick]} ]]; then
-      [[ ${ICE[pick]} = /dev/null ]] && reply=( /dev/null ) || reply=( ${(M)~ICE[pick]##/*}(DN) $___pdir_path/${~ICE[pick]}(DN) )
+      if [[ ${ICE[pick]} = /dev/null ]]; then
+        reply=( /dev/null )
+      else
+        reply=( ${(M)~ICE[pick]##/*}(DN) $___pdir_path/${~ICE[pick]}(DN) )
+      fi
     elif [[ -e $___pdir_path/$___pbase.plugin.zsh ]]; then
       reply=( "$___pdir_path/$___pbase".plugin.zsh )
     else
       .zi-find-other-matches "$___pdir_path" "$___pbase"
     fi
-    #[[ ${#reply} -eq 0 ]] && return 1
+    #if [[ ${#reply} -eq 0 ]]; then
+    # return 1
+    #fi
     # Get first one.
     local ___fname="${reply[1-correct]:t}"
     ___pdir_path="${reply[1-correct]:h}"
@@ -2726,19 +2732,29 @@ function -zi_scheduler_add_sh() {
 function @zi-scheduler() {
   integer ___ret="${${ZI[lro-data]%:*}##*:}"
   # lro stands for lastarg-retval-option.
-  [[ $1 = following ]] && sched +1 'ZI[lro-data]="$_:$?:${options[printexitvalue]}"; @zi-scheduler following "${ZI[lro-data]%:*:*}"'
-  [[ -n $1 && $1 != (following*|burst) ]] && { local THEFD="$1"; zle -F "$THEFD"; exec {THEFD}<&-; }
-  [[ $1 = burst ]] && local -h EPOCHSECONDS=$(( EPOCHSECONDS+10000 ))
+  if [[ $1 = following ]]; then
+    sched +1 'ZI[lro-data]="$_:$?:${options[printexitvalue]}"; @zi-scheduler following "${ZI[lro-data]%:*:*}"'
+  fi
+  if [[ -n $1 && $1 != (following*|burst) ]]; then
+    local THEFD="$1"
+    zle -F "$THEFD"
+    exec {THEFD}<&-
+  fi
+  if [[ $1 = burst ]]; then
+    local -h EPOCHSECONDS=$(( EPOCHSECONDS+10000 ))
+  fi
   ZI[START_TIME]="${ZI[START_TIME]:-$EPOCHREALTIME}"
 
   integer ___t=EPOCHSECONDS ___i correct
   local -a match mbegin mend reply
   local MATCH REPLY AFD; integer MBEGIN MEND
 
-  [[ -o ksharrays ]] && correct=1
+  if [[ -o ksharrays ]]; then
+    correct=1
+  fi
 
-  if [[ -n $1 ]] {
-    if [[ ${#ZI_RUN} -le 1 || $1 = following ]]  {
+  if [[ -n $1 ]]; then
+    if [[ ${#ZI_RUN} -le 1 || $1 = following ]]; then
       () {
         builtin emulate -L zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
         # Example entry:
@@ -2749,8 +2765,8 @@ function @zi-scheduler() {
         # an entry with "<no-data>", i.e. ZI_TASKS[1] entry.
         integer ___idx1 ___idx2
         local ___ar2 ___ar3 ___ar4 ___ar5
-        for (( ___idx1 = 0; ___idx1 <= 4; ___idx1 ++ )) {
-          for (( ___idx2 = 1; ___idx2 <= (___idx >= 4 ? 1 : 3); ___idx2 ++ )) {
+        for (( ___idx1 = 0; ___idx1 <= 4; ___idx1 ++ )); do
+          for (( ___idx2 = 1; ___idx2 <= (___idx >= 4 ? 1 : 3); ___idx2 ++ )); do
             # The following substitution could be just (well, 'just'..) this:
             #
             # ZI_TASKS=( ${ZI_TASKS[@]/(#b)([0-9]##)+([0-9]##)+([1-3])(*)/
@@ -2773,11 +2789,11 @@ function @zi-scheduler() {
               : 1 )
               : 1  ))]}} )
             ZI_TASKS=( "<no-data>" ${ZI_TASKS[@]:#<no-data>} )
-          }
-        }
+          done
+        done
       }
-    }
-  } else {
+    fi
+  else
     add-zsh-hook -d -- precmd @zi-scheduler
     add-zsh-hook -- chpwd @zi-scheduler
     () {
@@ -2793,32 +2809,36 @@ function @zi-scheduler() {
     exec {AFD}< <(LANG=C command sleep 0.002; builtin print run;)
     command true # workaround a Zsh bug, see: http://www.zsh.org/mla/workers/2018/msg00966.html
     zle -F "$AFD" @zi-scheduler
-  }
+  fi
 
   local ___task ___idx=0 ___count=0 ___idx2
   # All wait'' objects.
-  for ___task ( "${ZI_RUN[@]}" ) {
+  for ___task ( "${ZI_RUN[@]}" ); do
     .zi-run-task 1 "${(@z)___task}" && ZI_TASKS+=( "$___task" )
-    if [[ $(( ++___idx, ___count += ${${REPLY:+1}:-0} )) -gt 0 && $1 != burst ]] {
+    if [[ $(( ++___idx, ___count += ${${REPLY:+1}:-0} )) -gt 0 && $1 != burst ]]; then
       AFD=13371337 # for older Zsh + noclobber option
       exec {AFD}< <(LANG=C command sleep 0.0002; builtin print run;)
       command true
       # The $? and $_ will be left unchanged automatically by Zsh.
       zle -F "$AFD" @zi-scheduler
       break
-    }
-  }
+    fi
+  done
   # All unload'' objects.
-  for (( ___idx2=1; ___idx2 <= ___idx; ++ ___idx2 )) {
+  for (( ___idx2=1; ___idx2 <= ___idx; ++ ___idx2 )); do
     .zi-run-task 2 "${(@z)ZI_RUN[___idx2-correct]}"
-  }
+  done
   # All load'' & subscribe'' objects.
-  for (( ___idx2=1; ___idx2 <= ___idx; ++ ___idx2 )) {
+  for (( ___idx2=1; ___idx2 <= ___idx; ++ ___idx2 )); do
     .zi-run-task 3 "${(@z)ZI_RUN[___idx2-correct]}"
-  }
+  done
   ZI_RUN[1-correct,___idx-correct]=()
 
-  [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
+  if [[ ${ZI[lro-data]##*:} = on ]]; then
+    return 0
+  else
+    return ___ret
+  fi
 } # ]]]
 
 #
@@ -2839,11 +2859,13 @@ function zi() {
 
   # An annex's subcommand might use the reply vars.
   match=( ${ZI_EXTS[(I)z-annex subcommand:$1]} )
-  if (( !${#match} )) {
+  if (( !${#match} )); then
     local -a reply; local REPLY
-  }
+  fi
 
-  [[ -o ksharrays ]] && ___correct=1
+  if [[ -o ksharrays ]]; then
+    ___correct=1
+  fi
 
   local -A ___opt_map OPTS
   ___opt_map=(
@@ -2976,9 +2998,13 @@ function zi() {
             ___had_wait=${+ICE[wait]}
             .zi-load-ices "$___ehid"
             # wait'' isn't possible via the disk-ices (for packages), only via the command's ice-spec.
-            [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
+            if [[ $___had_wait -eq 0 ]]; then
+              unset 'ICE[wait]'
+            fi
           fi
-          [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]] && ICE[id-as]="${___etid:t}"
+          if [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]]; then
+            ICE[id-as]="${___etid:t}"
+          fi
           integer  ___is_snippet=${${(M)___is_snippet:#-1}:-0}
           () {
             builtin setopt localoptions extendedglob
@@ -3036,7 +3062,9 @@ function zi() {
             else
               .zi-get-object-path plugin $___ehid
             fi
-            (( $? )) && [[ ${zsh_eval_context[1]} = file ]] && { ___action_load=1; }
+            if (( $? )) && [[ ${zsh_eval_context[1]} = file ]]; then
+              ___action_load=1
+            fi
             local ___object_path="$REPLY"
           elif (( ! ___turbo )); then
             ___action_load=1
@@ -3049,7 +3077,11 @@ function zi() {
             () {
               builtin setopt localoptions extendedglob
               local ___mode
-              (( ___is_snippet > 0 )) && ___mode=snippet || ___mode="${${${ICE[light-mode]+light}}:-load}"
+              if (( ___is_snippet > 0 )); then
+                ___mode=snippet
+              else
+                ___mode="${${${ICE[light-mode]+light}}:-load}"
+              fi
               for MATCH ( ${(s.;.)ICE[trigger-load]} ); do
                 eval "${MATCH#!}() {
                   ${${(M)MATCH#!}:+unset -f ${MATCH#!}}
@@ -3065,7 +3097,9 @@ function zi() {
               done
             } "$@"
             ___retval+=$?
-            (( $# )) && shift
+            if (( $# )); then
+              shift
+            fi
             continue
           fi
 
@@ -3111,7 +3145,9 @@ function zi() {
         else
           ___error=1
         fi
-        (( $# )) && shift
+        if (( $# )); then
+          shift
+        fi
         ___is_snippet=0
       done
     else
@@ -3169,26 +3205,31 @@ function zi() {
       .zi-parse-opts env-whitelist "$@"
       builtin set -- "${reply[@]}"
 
-      if (( $# == 0 )) {
+      if (( $# == 0 )); then
         ZI[ENV-WHITELIST]=
         if (( OPTS[opt_-v,--verbose] )); then
           +zi-message "{msg2}Cleared the parameter whitelist.{rst}"
         fi
-      } else {
+      else
         ZI[ENV-WHITELIST]+="${(j: :)${(q-kv)@}} "
         local ___sep="$ZI[col-msg2], $ZI[col-data2]"
         if (( OPTS[opt_-v,--verbose] )); then
           +zi-message "{msg2}Extended the parameter whitelist with: {data2}${(pj:$___sep:)@}{msg2}.{rst}"
         fi
-      }
+      fi
       ;;
     (*)
       # Check if there is a z-annex registered for the subcommand.
       reply=( ${ZI_EXTS[z-annex subcommand:${(q)1}]} )
       if (( ${#reply} )); then
         reply=( "${(Q)${(z@)reply[1]}[@]}" )
-        (( ${+functions[${reply[5]}]} )) && { "${reply[5]}" "$@"; return $?; } || \
-          { +zi-error "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"; return 1; }
+        if (( ${+functions[${reply[5]}]} )); then
+          "${reply[5]}" "$@"
+          return $?
+        else
+          +zi-error "({error}Couldn't find the subcommand-handler \`{obj}${reply[5]}{error}' of the z-annex \`{file}${reply[3]}{error}')"
+          return 1
+        fi
       fi
       (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
       case "$1" in
@@ -3211,7 +3252,8 @@ function zi() {
               shift
             fi
             # Unload given plugin. Cloned directory remains intact so as are completions.
-            .zi-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
+            .zi-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"
+            ___retval=$?
           fi
           ;;
         (bindkeys)
@@ -3227,12 +3269,15 @@ function zi() {
           shift
           .zi-parse-opts update "$@"
           builtin set -- "${reply[@]}"
-          if [[ ${OPTS[opt_-a,--all]} -eq 1 || ${OPTS[opt_-p,--parallel]} -eq 1 || ${OPTS[opt_-s,--snippets]} -eq 1 || ${OPTS[opt_-l,--plugins]} -eq 1 || -z $1$2${ICE[teleid]}${ICE[id-as]} ]]; then
+          if [[ ${OPTS[opt_-a,--all]} -eq 1 || ${OPTS[opt_-p,--parallel]} -eq 1 || ${OPTS[opt_-s,--snippets]} -eq 1 || \
+            ${OPTS[opt_-l,--plugins]} -eq 1 || -z $1$2${ICE[teleid]}${ICE[id-as]} ]]; then
             if [[ -z $1$2 && $(( OPTS[opt_-a,--all] + OPTS[opt_-p,--parallel] + OPTS[opt_-s,--snippets] + OPTS[opt_-l,--plugins] )) -eq 0 ]]; then
               builtin print -r -- "Assuming --all is passed"
               sleep 3
             fi
-            (( OPTS[opt_-p,--parallel] )) && OPTS[value]=${1:-15}
+            if (( OPTS[opt_-p,--parallel] )); then
+              OPTS[value]=${1:-15}
+            fi
             .zi-update-or-status-all update; ___retval=$?
           else
             local ___key ___id="${1%%(///|//|/)}${2:+/}${2%%(///|//|/)}"
@@ -3250,7 +3295,8 @@ function zi() {
             fi
             .zi-update-or-status-all status; ___retval=$?
           else
-            .zi-update-or-status status "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+            .zi-update-or-status status "${2%%(///|//|/)}" "${3%%(///|//|/)}"
+            ___retval=$?
           fi
           ;;
         (report)
@@ -3261,7 +3307,8 @@ function zi() {
             fi
           .zi-show-all-reports
           else
-            .zi-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
+            .zi-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"
+            ___retval=$?
           fi
           ;;
         (loaded|list)
@@ -3279,7 +3326,8 @@ function zi() {
           ;;
         (cdisable)
           if [[ -z $2 ]]; then
-            builtin print "Argument needed, try: help"; ___retval=1
+            builtin print "Argument needed, try: help"
+            ___retval=1
           else
             local ___f="_${2#_}"
             # Disable completion given by completion function name with or without leading _, e.g. cp, _cp.
@@ -3296,7 +3344,8 @@ function zi() {
           ;;
         (cenable)
           if [[ -z $2 ]]; then
-            builtin print "Argument needed, try: help"; ___retval=1
+            builtin print "Argument needed, try: help"
+            ___retval=1
           else
             local ___f="_${2#_}"
             # Enable completion given by completion function name
@@ -3360,7 +3409,10 @@ function zi() {
         (compile)
           (( ${+functions[.zi-compile-plugin]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
+            if [[ -z $2 ]]; then
+              builtin print -r -- "Assuming --all is passed"
+              sleep 3
+            fi
             .zi-compile-uncompile-all 1; ___retval=$?
           else
             .zi-compile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
@@ -3368,7 +3420,10 @@ function zi() {
           ;;
         (uncompile)
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
+            if [[ -z $2 ]]; then
+              builtin print -r -- "Assuming --all is passed"
+              sleep 3
+            fi
             .zi-compile-uncompile-all 0; ___retval=$?
           else
             .zi-uncompile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
@@ -3405,14 +3460,20 @@ function zi() {
           ;;
         (srv)
           () { builtin setopt localoptions extendedglob warncreateglobal
-          [[ ! -e ${ZI[SERVICES_DIR]}/"$2".fifo ]] && { builtin print "No such service: $2"; } ||
-            { if [[ $3 = (#i)(next|stop|quit|restart) ]]; then
-              { builtin print "${(U)3}" >>! ${ZI[SERVICES_DIR]}/"$2".fifo || builtin print "Service $2 inactive"; ___retval=1; } ||
-                { [[ $3 = (#i)start ]] && rm -f ${ZI[SERVICES_DIR]}/"$2".stop ||
-                  { builtin print "Unknown service-command: $3"; ___retval=1; }
-                }
+            if [[ ! -e ${ZI[SERVICES_DIR]}/"$2".fifo ]]; then
+              builtin print "No such service: $2"
+            else
+              if [[ $3 = (#i)(next|stop|quit|restart) ]]; then
+                { builtin print "${(U)3}" >>! ${ZI[SERVICES_DIR]}/"$2".fifo || builtin print "Service $2 inactive"; ___retval=1; } ||
+                  { if [[ $3 = (#i)start ]]; then
+                      rm -f ${ZI[SERVICES_DIR]}/"$2".stop
+                    else
+                      builtin print "Unknown service-command: $3"
+                      ___retval=1
+                    fi
+                  }
               fi
-            }
+            fi
           } "$@"
           ;;
         (module)
@@ -3483,7 +3544,9 @@ function zicompinit_fast() {
   # if .zcompdump exists (and is non-zero), and is older than the .zwc file, then regenerate
   if [[ -s "$zcompf" && (! -s "${zcompf}.zwc" || "$zcompf" -nt "${zcompf}.zwc") ]]; then
     # since file is mapped, it might be mapped right now (current shells), so rename it then make a new one
-    [[ -e "$zcompf.zwc" ]] && command mv -f "$zcompf.zwc" "$zcompf.zwc.old"
+    if [[ -e "$zcompf.zwc" ]], then
+      command mv -f "$zcompf.zwc" "$zcompf.zwc.old"
+    fi
     # compile it mapped, so multiple shells can share it (total mem reduction) run in background
     { zcompile -M "$zcompf" && command rm -f "$zcompf.zwc.old" }&!
   fi

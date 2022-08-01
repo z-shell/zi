@@ -5,7 +5,9 @@
 
 typeset -gaH ZI_REGISTERED_PLUGINS ZI_TASKS ZI_RUN
 typeset -ga zsh_loaded_plugins
-if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
+if (( !${#ZI_TASKS} )); then
+  ZI_TASKS=( "<no-data>" )
+fi
 # Rename snippets URL -> NAME.
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
@@ -34,13 +36,19 @@ cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dst
 uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run"
 
 # BIN_DIR setup.
-[[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]] && ZI[BIN_DIR]=
+if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
+  ZI[BIN_DIR]=
+fi
 ZI[ZERO]="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 
-[[ ! -o functionargzero || ${options[posixargzero]} = on || ${ZI[ZERO]} != */* ]] && ZI[ZERO]="${(%):-%N}"
+if [[ ! -o functionargzero || ${options[posixargzero]} = on || ${ZI[ZERO]} != */* ]]; then
+  ZI[ZERO]="${(%):-%N}"
+fi
 : ${ZI[BIN_DIR]:="${ZI[ZERO]:h}"}
 
-[[ ${ZI[BIN_DIR]} = \~* ]] && ZI[BIN_DIR]=${~ZI[BIN_DIR]}
+if [[ ${ZI[BIN_DIR]} = \~* ]]; then
+  ZI[BIN_DIR]=${~ZI[BIN_DIR]}
+fi
 ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
 
 # Check if ZI[BIN_DIR] is established correctly.
@@ -87,13 +95,31 @@ export ZPFX=${~ZPFX} PMSPEC=0fuUpiPsX \
 ZCDR="${ZCDR:-${XDG_CONFIG_HOME:-$HOME/.config}/zi}" \
 ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}"
 
-[[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d "${ZPFX}/bin" ]] && path=( "${ZPFX}/bin" "${path[@]}" )
-[[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d "${ZPFX}/sbin" ]] && path=( "${ZPFX}/sbin" "${path[@]}" )
-[[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
-[[ -n ${ZI[ZCOMPDUMP_PATH]} ]] && ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
-[[ ! -d ${~ZI[MAN_DIR]} ]] && command mkdir -p ${~ZI[MAN_DIR]}/man{1..9}
-[[ ! -d $ZSH_CACHE_DIR ]] && command mkdir -p "$ZSH_CACHE_DIR"
-[[ ! -d $ZCDR ]] && command mkdir -p "$ZCDR"
+if [[ -z ${path[(re)${ZPFX}/bin]} ]]; then
+  if [[ -d "${ZPFX}/bin" ]]; then
+    path=( "${ZPFX}/bin" "${path[@]}" )
+  fi
+fi
+if [[ -z ${path[(re)${ZPFX}/sbin]} ]]; then
+  if [[ -d "${ZPFX}/sbin" ]]; then
+    path=( "${ZPFX}/sbin" "${path[@]}" )
+  fi
+fi
+if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then
+  fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
+fi
+if [[ -n ${ZI[ZCOMPDUMP_PATH]} ]]; then
+  ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
+fi
+if [[ ! -d ${~ZI[MAN_DIR]} ]]; then
+  command mkdir -p ${~ZI[MAN_DIR]}/man{1..9}
+fi
+if [[ ! -d $ZSH_CACHE_DIR ]]; then
+  command mkdir -p "$ZSH_CACHE_DIR"
+fi
+if [[ ! -d $ZCDR ]]; then
+  command mkdir -p "$ZCDR"
+fi
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"
 ZI[DOWNAR]=";:^[[B;:^[OB;:\\e[B;:\\eOB;:${termcap[kd]/$'\e'/^\[};:${terminfo[kcud1]/$'\e'/^\[};:"
@@ -211,7 +237,9 @@ function :zi-reload-and-run () {
   local -a ___fpath
   ___fpath=( ${fpath[@]} )
   local -a +h fpath
-  [[ $FPATH != *${${(@0)fpath_prefix}[1]}* ]] && fpath=( ${(@0)fpath_prefix} ${___fpath[@]} )
+  if [[ $FPATH != *${${(@0)fpath_prefix}[1]}* ]]; then
+    fpath=( ${(@0)fpath_prefix} ${___fpath[@]} )
+  fi
   # After this the function exists again.
   builtin autoload ${(s: :)autoload_opts} -- "$func"
   # User wanted to call the function, not only load it.
@@ -235,14 +263,19 @@ function :zi-tmp-subst-autoload () {
 
   # Process the id-as''/teleid'' to get the plugin dir.
   .zi-any-to-user-plugin $ZI[CUR_USPL2]
-  [[ $reply[1] = % ]] && local PLUGIN_DIR="$reply[2]" || \
-  local PLUGIN_DIR="$ZI[PLUGINS_DIR]/${reply[1]:+$reply[1]---}${reply[2]//\//---}"
+  if [[ $reply[1] = % ]]; then
+    local PLUGIN_DIR="$reply[2]"
+  else
+    local PLUGIN_DIR="$ZI[PLUGINS_DIR]/${reply[1]:+$reply[1]---}${reply[2]//\//---}"
+  fi
   # "Fpath elements" - ie those elements that are inside the plug-in directory.
   # The name comes from the fact that they are the selected fpath elements → so just "items".
   local -a fpath_elements
   fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
   # Add a function subdirectory to items, if any (this action is according to the Plug Standard version 1.07 and later).
-  [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
+  if [[ -d $PLUGIN_DIR/functions ]]; then
+    fpath_elements+=( "$PLUGIN_DIR"/functions )
+  fi
   if (( ${+opts[(r)-X]} )); then
     .zi-add-report "${ZI[CUR_USPL2]}" "Warning: Failed autoload ${(j: :)opts[@]} $*"
     +zi-message -u2 "{error}builtin autoload required for {obj}${(j: :)opts[@]}{error} option(s)"
@@ -272,9 +305,11 @@ function :zi-tmp-subst-autoload () {
     # Author of the idea of FPATH-clean autoloading: Bart Schaefer.
     if (( ${+functions[$func]} != 1 )) {
       builtin setopt noaliases
-      if [[ $func == /* ]] && is-at-least 5.4; then
-        builtin autoload ${opts[@]} $func
-        return $?
+      if [[ $func == /* ]]; then
+        if is-at-least 5.4; then
+          builtin autoload ${opts[@]} $func
+          return $?
+        fi
       elif [[ $func == /* ]]; then
         if [[ $ZI[MUTE_WARNINGS] != (1|true|on|yes) && -z $ZI[WARN_SHOWN_FOR_$ZI[CUR_USPL2]] ]]; then
           +zi-message "{u-warn}Warning{b-warn}: {rst}the plugin {pid}$ZI[CUR_USPL2]" \
@@ -295,7 +330,10 @@ function :zi-tmp-subst-autoload () {
         if (( ${+opts[(r)-C]} )); then
           local pth nl=$'\n' sel=""
           for pth ( $PLUGIN_DIR $fpath_elements $fpath ); do
-            [[ -f $pth/$func ]] && { sel=$pth; break; }
+            if [[ -f $pth/$func ]]; then
+              sel=$pth
+              break
+            fi
           done
           if [[ -z $sel ]]; then
             +zi-message '{u-warn}zi{b-warn}:{error} Couldn''t find autoload function{ehi}:' \
@@ -306,7 +344,9 @@ function :zi-tmp-subst-autoload () {
               local body=\"\$(<${(qqq)sel}/${(qqq)func})\" body2
               () { builtin setopt localoptions extendedglob
                 body2=\"\${body##[[:space:]]#${func}[[:blank:]]#\(\)[[:space:]]#\{}\"
-                [[ \$body2 != \$body ]] && body2=\"\${body2%\}[[:space:]]#([$nl]#([[:blank:]]#\#[^$nl]#((#e)|[$nl]))#)#}\"
+                if [[ \$body2 != \$body ]]; then
+                  body2=\"\${body2%\}[[:space:]]#([$nl]#([[:blank:]]#\#[^$nl]#((#e)|[$nl]))#)#}\"
+                fi
               }
               functions[${${(q)custom[count*2]}:-$func}]=\"\$body2\"
               ${(q)${custom[count*2]}:-$func} \"\$@\"
@@ -377,17 +417,34 @@ function :zi-tmp-subst-bindkey() {
 
     local bmap_val="${ZI_CUR_BIND_MAP[${1}]}"
     if (( !ZI_CUR_BIND_MAP[empty] )); then
-      [[ -z $bmap_val ]] && bmap_val="${ZI_CUR_BIND_MAP[${(qqq)1}]}"
-      [[ -z $bmap_val ]] && bmap_val="${ZI_CUR_BIND_MAP[${(qqq)${(Q)1}}]}"
-      [[ -z $bmap_val ]] && { bmap_val="${ZI_CUR_BIND_MAP[!${(qqq)1}]}"; integer val=1; }
-      [[ -z $bmap_val ]] && bmap_val="${ZI_CUR_BIND_MAP[!${(qqq)${(Q)1}}]}"
+      if [[ -z $bmap_val ]]; then
+        bmap_val="${ZI_CUR_BIND_MAP[${(qqq)1}]}"
+      fi
+      if [[ -z $bmap_val ]]; then
+        bmap_val="${ZI_CUR_BIND_MAP[${(qqq)${(Q)1}}]}"
+      fi
+      if [[ -z $bmap_val ]]; then
+        bmap_val="${ZI_CUR_BIND_MAP[!${(qqq)1}]}"
+        integer val=1
+      fi
+      if [[ -z $bmap_val ]]; then
+        bmap_val="${ZI_CUR_BIND_MAP[!${(qqq)${(Q)1}}]}"
+      fi
     fi
     if [[ -n $bmap_val ]]; then
       string="${(q)bmap_val}"
       if (( val )); then
-        [[ ${pos[1]} = "-M" ]] && pos[4]="$bmap_val" || pos[2]="$bmap_val"
+        if [[ ${pos[1]} = "-M" ]]; then
+          pos[4]="$bmap_val"
+        else
+          pos[2]="$bmap_val"
+        fi
       else
-        [[ ${pos[1]} = "-M" ]] && pos[3]="${(Q)bmap_val}" || pos[1]="${(Q)bmap_val}"
+        if [[ ${pos[1]} = "-M" ]]; then
+          pos[3]="${(Q)bmap_val}"
+        else
+          pos[1]="${(Q)bmap_val}"
+        fi
       fi
       .zi-add-report "${ZI[CUR_USPL2]}" ":::Bindkey: combination <$1> changed to <$bmap_val>${${(M)bmap_val:#hold}:+, i.e. ${ZI[col-error]}unmapped${ZI[col-rst]}}"
       ((1))
@@ -398,9 +455,17 @@ function :zi-tmp-subst-bindkey() {
     ]]; then
       string="${(q)bmap_val}"
       if (( val )); then
-        [[ ${pos[1]} = "-M" ]] && pos[4]="$bmap_val" || pos[2]="$bmap_val"
+        if [[ ${pos[1]} = "-M" ]]; then
+          pos[4]="$bmap_val"
+        else
+          pos[2]="$bmap_val"
+        fi
       else
-        [[ ${pos[1]} = "-M" ]] && pos[3]="${(Q)bmap_val}" || pos[1]="${(Q)bmap_val}"
+        if [[ ${pos[1]} = "-M" ]]; then
+          pos[3]="${(Q)bmap_val}"
+        else
+          pos[1]="${(Q)bmap_val}"
+        fi
       fi
       .zi-add-report "${ZI[CUR_USPL2]}" ":::Bindkey: combination <$1> recognized as cursor-key and changed to <${bmap_val}>${${(M)bmap_val:#hold}:+, i.e. ${ZI[col-error]}unmapped${ZI[col-rst]}}"
     fi
@@ -435,9 +500,13 @@ function :zi-tmp-subst-bindkey() {
     fi
     quoted="${(q)quoted}"
     # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-    [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+    if [[ -n ${ZI[CUR_USPL2]} ]]; then
+      ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+    fi
     # Remember for dtrace.
-    [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
+    if [[ ${ZI[DTRACE]} = 1 ]]; then
+      ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
+    fi
   else
     # bindkey -A newkeymap main?
     # Negative indices for KSH_ARRAYS immunity.
@@ -452,8 +521,12 @@ function :zi-tmp-subst-bindkey() {
       local quoted="${(q)keys} ${(q)widget} ${(q)prev} ${(q)optA} ${(q)mapname} ${(q)optR}"
       quoted="${(q)quoted}"
       # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
-      [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
+      if [[ -n ${ZI[CUR_USPL2]} ]]; then
+        ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+      fi
+      if [[ ${ZI[DTRACE]} = 1 ]]; then
+        ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
+      fi
       .zi-add-report "${ZI[CUR_USPL2]}" "Warning: keymap \`main' copied to \`${name}' because of \`${pos[-2]}' substitution"
     # bindkey -N newkeymap [other].
     elif [[ ${#opts} -eq 1 && ${+opts[-N]} = 1 ]]; then
@@ -463,8 +536,12 @@ function :zi-tmp-subst-bindkey() {
       local quoted="${(q)keys} ${(q)widget} ${(q)prev} ${(q)optN} ${(q)mapname} ${(q)optR}"
       quoted="${(q)quoted}"
       # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
-      [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
+      if [[ -n ${ZI[CUR_USPL2]} ]]; then
+        ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+      fi
+      if [[ ${ZI[DTRACE]} = 1 ]]; then
+        ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
+      fi
     else
       .zi-add-report "${ZI[CUR_USPL2]}" "Warning: last bindkey used non-typical options: ${(kv)opts[*]}"
     fi
@@ -492,9 +569,13 @@ function :zi-tmp-subst-zstyle() {
     local ps="$pattern $style"
     ps="${(q)ps}"
     # Remember the zstyle, only when load is in progress (it can be dstart that leads execution here).
-    [[ -n ${ZI[CUR_USPL2]} ]] && ZI[ZSTYLES__${ZI[CUR_USPL2]}]+="$ps "
+    if [[ -n ${ZI[CUR_USPL2]} ]]; then
+      ZI[ZSTYLES__${ZI[CUR_USPL2]}]+="$ps "
+    fi
     # Remember for dtrace.
-    [[ ${ZI[DTRACE]} = 1 ]] && ZI[ZSTYLES___dtrace/_dtrace]+=$ps
+    if [[ ${ZI[DTRACE]} = 1 ]]; then
+      ZI[ZSTYLES___dtrace/_dtrace]+=$ps
+    fi
   else
     if [[ ! ${#opts[@]} = 1 && ( ${+opts[(r)-s]} = 1 || ${+opts[(r)-b]} = 1 || ${+opts[(r)-a]} = 1 || ${+opts[(r)-t]} = 1 || ${+opts[(r)-T]} = 1 || ${+opts[(r)-m]} = 1 ) ]]; then
       .zi-add-report "${ZI[CUR_USPL2]}" "Warning: last zstyle used non-typical options: ${opts[*]}"
@@ -521,7 +602,9 @@ function :zi-tmp-subst-alias() {
     local aname="${a%%[=]*}"
     local avalue="${a#*=}"
     # Check if alias is to be redefined.
-    (( ${+aliases[$aname]} )) && .zi-add-report "${ZI[CUR_USPL2]}" "Warning: redefining alias \`${aname}', previous value: ${aliases[$aname]}"
+    if (( ${+aliases[$aname]} )); then
+      .zi-add-report "${ZI[CUR_USPL2]}" "Warning: redefining alias \`${aname}', previous value: ${aliases[$aname]}"
+    fi
     local bname=${(q)aliases[$aname]}
     aname="${(q)aname}"
     if (( ${+opts[(r)-s]} )); then
@@ -537,9 +620,13 @@ function :zi-tmp-subst-alias() {
     fi
     quoted="${(q)quoted}"
     # Remember the alias, only when load is in progress (it can be dstart that leads execution here).
-    [[ -n ${ZI[CUR_USPL2]} ]] && ZI[ALIASES__${ZI[CUR_USPL2]}]+="$quoted "
+    if [[ -n ${ZI[CUR_USPL2]} ]]; then
+      ZI[ALIASES__${ZI[CUR_USPL2]}]+="$quoted "
+    fi
     # Remember for dtrace.
-    [[ ${ZI[DTRACE]} = 1 ]] && ZI[ALIASES___dtrace/_dtrace]+="$quoted "
+    if [[ ${ZI[DTRACE]} = 1 ]]; then
+      ZI[ALIASES___dtrace/_dtrace]+="$quoted "
+    fi
   done
   # Actual alias.
   builtin alias "${pos[@]}"
@@ -563,9 +650,13 @@ function :zi-tmp-subst-zle() {
       local quoted="$2"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      if [[ -n ${ZI[CUR_USPL2]} ]]; then
+        ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      fi
       # Remember for dtrace.
-      [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
+      if [[ ${ZI[DTRACE]} = 1 ]]; then
+        ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
+      fi
     # These will be saved and restored.
     elif (( ${+widgets[$2]} )); then
       # Have to remember original widget "$2" and the copy that it's going to be done.
@@ -579,18 +670,26 @@ function :zi-tmp-subst-zle() {
       local quoted="$1 $widname $completion_widget $targetfun $saved_widcontents"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_SAVED__${ZI[CUR_USPL2]}]+="$quoted "
+      if [[ -n ${ZI[CUR_USPL2]} ]]; then
+        ZI[WIDGETS_SAVED__${ZI[CUR_USPL2]}]+="$quoted "
+      fi
       # Remember for dtrace.
-      [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_SAVED___dtrace/_dtrace]+="$quoted "
+      if [[ ${ZI[DTRACE]} = 1 ]]; then
+        ZI[WIDGETS_SAVED___dtrace/_dtrace]+="$quoted "
+      fi
     # These will be deleted.
     else
       .zi-add-report "${ZI[CUR_USPL2]}" "Note: a new widget created via zle -N: \`$2'"
       local quoted="$2"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      if [[ -n ${ZI[CUR_USPL2]} ]]; then
+        ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      fi
       # Remember for dtrace.
-      [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
+      if [[ ${ZI[DTRACE]} = 1 ]]; then
+        ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
+      fi
     fi
   fi
 
@@ -694,37 +793,77 @@ function .zi-tmp-subst-off() {
   local mode="$1"
   # Disable temporary substituting of functions only once.
   # Disable temporary substituting of functions only the way it was enabled first.
-  [[ ${ZI[TMP_SUBST]} = inactive || ${ZI[TMP_SUBST]} != $mode ]] && return 0
+  if [[ ${ZI[TMP_SUBST]} = inactive || ${ZI[TMP_SUBST]} != $mode ]]; then
+    return 0
+  fi
   ZI[TMP_SUBST]=inactive
   if [[ $mode != compdef ]]; then
     # 0. Unfunction autoload.
-    (( ${+ZI[bkp-autoload]} )) && functions[autoload]="${ZI[bkp-autoload]}" || unfunction autoload
+    if (( ${+ZI[bkp-autoload]} )); then
+      functions[autoload]="${ZI[bkp-autoload]}"
+    else
+      unfunction autoload
+    fi
   fi
   # E. Restore original compdef if it existed.
-  (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef
+  if (( ${+ZI[bkp-compdef]} )); then
+    functions[compdef]="${ZI[bkp-compdef]}"
+  else
+    unfunction compdef
+  fi
   # Restore the possible source function.
-  (( ${+ZI[bkp-source]} )) && functions[source]="${ZI[bkp-source]}" || unfunction source 2>/dev/null
-  (( ${+ZI[bkp-.]} )) && functions[.]="${ZI[bkp-.]}" || unfunction . 2> /dev/null
+  if (( ${+ZI[bkp-source]} )); then
+    functions[source]="${ZI[bkp-source]}"
+  else
+    unfunction source 2>/dev/null
+  fi
+  if (( ${+ZI[bkp-.]} )); then
+    functions[.]="${ZI[bkp-.]}"
+  else
+    unfunction . 2> /dev/null
+  fi
   # Light and compdef temporary substituting of functions stops here.
-  [[ ( $mode = light && ${+ICE[trackbinds]} -eq 0 ) || $mode = compdef ]] && return 0
+  if [[ ( $mode = light && ${+ICE[trackbinds]} -eq 0 ) || $mode = compdef ]]; then
+    return 0
+  fi
   # Unfunction temporary substituting of functions functions.
   # A.
-  (( ${+ZI[bkp-bindkey]} )) && functions[bindkey]="${ZI[bkp-bindkey]}" || unfunction bindkey
+  if (( ${+ZI[bkp-bindkey]} )); then
+    functions[bindkey]="${ZI[bkp-bindkey]}"
+  else
+    unfunction bindkey
+  fi
   # When `zi light -b ...' or when `zi ice trackbinds ...; zi light ...'.
-  [[ $mode = light-b || ( $mode = light && ${+ICE[trackbinds]} -eq 1 ) ]] && return 0
+  if [[ $mode = light-b || ( $mode = light && ${+ICE[trackbinds]} -eq 1 ) ]]; then
+    return 0
+  fi
   # B.
-  (( ${+ZI[bkp-zstyle]} )) && functions[zstyle]="${ZI[bkp-zstyle]}" || unfunction zstyle
+  if (( ${+ZI[bkp-zstyle]} )); then
+    functions[zstyle]="${ZI[bkp-zstyle]}"
+  else
+    unfunction zstyle
+  fi
   # C.
-  (( ${+ZI[bkp-alias]} )) && functions[alias]="${ZI[bkp-alias]}" || unfunction alias
+  if (( ${+ZI[bkp-alias]} )); then
+    functions[alias]="${ZI[bkp-alias]}"
+  else
+    unfunction alias
+  fi
   # D.
-  (( ${+ZI[bkp-zle]} )) && functions[zle]="${ZI[bkp-zle]}" || unfunction zle
+  if (( ${+ZI[bkp-zle]} )); then
+    functions[zle]="${ZI[bkp-zle]}"
+  else
+    unfunction zle
+  fi
   return 0
 } # ]]]
 # FUNCTION: pmodload. [[[
 # {function:pmodload} Compatibility with Prezto. Calls can be recursive.
 (( ${+functions[pmodload]} )) || pmodload() {
   local -A ices
-  (( ${+ICE} )) && ices=( "${(kv)ICE[@]}" teleid '' )
+  if (( ${+ICE} )); then
+    ices=( "${(kv)ICE[@]}" teleid '' )
+  fi
   local -A ICE ZI_ICE
   ICE=( "${(kv)ices[@]}" ) ZI_ICE=( "${(kv)ices[@]}" )
   while (( $# )); do
@@ -734,7 +873,9 @@ function .zi-tmp-subst-off() {
       shift
       continue
     else
-      [[ -z ${ZI_SNIPPETS[PZT::modules/$1${ICE[svn]-/init.zsh}]} && -z ${ZI_SNIPPETS[https://github.com/sorin-ionescu/prezto/trunk/modules/$1${ICE[svn]-/init.zsh}]} ]] && .zi-load-snippet PZT::modules/"$1${ICE[svn]-/init.zsh}"
+      if [[ -z ${ZI_SNIPPETS[PZT::modules/$1${ICE[svn]-/init.zsh}]} && -z ${ZI_SNIPPETS[https://github.com/sorin-ionescu/prezto/trunk/modules/$1${ICE[svn]-/init.zsh}]} ]]; then
+        .zi-load-snippet PZT::modules/"$1${ICE[svn]-/init.zsh}"
+      fi
       shift
     fi
   done
@@ -752,7 +893,13 @@ function .zi-tmp-subst-off() {
 function .zi-diff-functions() {
   local uspl2="$1"
   local cmd="$2"
-  [[ $cmd = begin ]] && { [[ -z ${ZI[FUNCTIONS_BEFORE__$uspl2]} ]] && ZI[FUNCTIONS_BEFORE__$uspl2]="${(j: :)${(qk)functions[@]}}" } || ZI[FUNCTIONS_AFTER__$uspl2]+=" ${(j: :)${(qk)functions[@]}}"
+  if [[ $cmd = begin ]]; then
+    if [[ -z ${ZI[FUNCTIONS_BEFORE__$uspl2]} ]]; then
+      ZI[FUNCTIONS_BEFORE__$uspl2]="${(j: :)${(qk)functions[@]}}"
+    else
+      ZI[FUNCTIONS_AFTER__$uspl2]+=" ${(j: :)${(qk)functions[@]}}"
+    fi
+  fi
 } # ]]]
 # FUNCTION: .zi-diff-options. [[[
 # Implements detection of change in option state. Performs data gathering, computation is done in *-compute().
@@ -761,7 +908,13 @@ function .zi-diff-functions() {
 # $2 - command, can be "begin" or "end"
 function .zi-diff-options() {
   local IFS=" "
-  [[ $2 = begin ]] && { [[ -z ${ZI[OPTIONS_BEFORE__$uspl2]} ]] && ZI[OPTIONS_BEFORE__$1]="${(kv)options[@]}" } || ZI[OPTIONS_AFTER__$1]+=" ${(kv)options[@]}"
+  if [[ $2 = begin ]]; then
+    if [[ -z ${ZI[OPTIONS_BEFORE__$uspl2]} ]]; then
+      ZI[OPTIONS_BEFORE__$1]="${(kv)options[@]}"
+    else
+      ZI[OPTIONS_AFTER__$1]+=" ${(kv)options[@]}"
+    fi
+  fi
 } # ]]]
 # FUNCTION: .zi-diff-env. [[[
 # Implements detection of change in PATH and FPATH.
@@ -771,19 +924,21 @@ function .zi-diff-options() {
 function .zi-diff-env() {
   typeset -a tmp
   local IFS=" "
-  [[ $2 = begin ]] && {
-    { [[ -z ${ZI[PATH_BEFORE__$uspl2]} ]] && tmp=( "${(q)path[@]}" )
+  if [[ $2 = begin ]]; then
+    if [[ -z ${ZI[PATH_BEFORE__$uspl2]} ]]; then
+      tmp=( "${(q)path[@]}" )
       ZI[PATH_BEFORE__$1]="${tmp[*]}"
-    }
-    { [[ -z ${ZI[FPATH_BEFORE__$uspl2]} ]] && tmp=( "${(q)fpath[@]}" )
+    fi
+    if [[ -z ${ZI[FPATH_BEFORE__$uspl2]} ]]; then
+      tmp=( "${(q)fpath[@]}" )
       ZI[FPATH_BEFORE__$1]="${tmp[*]}"
-    }
-  } || {
+    fi
+  else
     tmp=( "${(q)path[@]}" )
     ZI[PATH_AFTER__$1]+=" ${tmp[*]}"
     tmp=( "${(q)fpath[@]}" )
     ZI[FPATH_AFTER__$1]+=" ${tmp[*]}"
-  }
+  fi
 } # ]]]
 # FUNCTION: .zi-diff-parameter. [[[
 # Implements detection of change in any parameter's existence and type.
@@ -947,7 +1102,11 @@ function .zi-register-plugin() {
   # Support Zsh plugin standard.
   zsh_loaded_plugins+=( "$teleid" )
   # Full or light load?
-  [[ $mode == light ]] && ZI[STATES__$uspl2]=1 || ZI[STATES__$uspl2]=2
+  if [[ $mode == light ]]; then
+    ZI[STATES__$uspl2]=1
+  else
+    ZI[STATES__$uspl2]=2
+  fi
   ZI_REPORTS[$uspl2]=             ZI_CUR_BIND_MAP=( empty 1 )
   # Functions.
   ZI[FUNCTIONS_BEFORE__$uspl2]=  ZI[FUNCTIONS_AFTER__$uspl2]=
@@ -1080,21 +1239,23 @@ function @zsh-plugin-run-on-update() {
 # FUNCTION: .zi-prepare-home. [[[
 # Creates all directories needed by ZI, first checks if they already exist.
 function .zi-prepare-home() {
-  [[ -n ${ZI[HOME_READY]} ]] && return
+  if [[ -n ${ZI[HOME_READY]} ]]; then
+    return
+  fi
   ZI[HOME_READY]=1
-  [[ ! -d ${ZI[HOME_DIR]} ]] && {
+  if [[ ! -d ${ZI[HOME_DIR]} ]]; then
     command mkdir  -p "${ZI[HOME_DIR]}"
     # For compaudit.
     command chmod go-w "${ZI[HOME_DIR]}"
     # Also set up */bin and ZPFX in general.
     command mkdir 2>/dev/null -p $ZPFX/bin
-  }
-  [[ ! -d ${ZI[ZMODULES_DIR]} ]] && {
+  fi
+  if [[ ! -d ${ZI[ZMODULES_DIR]} ]]; then
     command mkdir -p "${ZI[ZMODULES_DIR]}"
     # For compaudit.
     command chmod go-w "${ZI[ZMODULES_DIR]}"
-  }
-  [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]] && {
+  fi
+  if [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]]; then
     command rm -rf "${ZI[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zi"
     command mkdir -p "${ZI[PLUGINS_DIR]}/_local---zi"
     command chmod go-w "${ZI[PLUGINS_DIR]}"
@@ -1105,8 +1266,8 @@ function .zi-prepare-home() {
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     .zi-clear-completions &>/dev/null
     .zi-compinit &>/dev/null
-  }
-  [[ ! -d ${ZI[COMPLETIONS_DIR]} ]] && {
+  fi
+  if [[ ! -d ${ZI[COMPLETIONS_DIR]} ]]; then
     command mkdir "${ZI[COMPLETIONS_DIR]}"
     # For compaudit.
     command chmod go-w "${ZI[COMPLETIONS_DIR]}"
@@ -1116,8 +1277,8 @@ function .zi-prepare-home() {
     command mkdir 2>/dev/null -p $ZPFX/bin
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
     .zi-compinit &>/dev/null
-  }
-  [[ ! -d ${ZI[SNIPPETS_DIR]} ]] && {
+  fi
+  if [[ ! -d ${ZI[SNIPPETS_DIR]} ]]; then
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
     command chmod go-w "${ZI[SNIPPETS_DIR]}"
     ( builtin cd ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
@@ -1126,7 +1287,7 @@ function .zi-prepare-home() {
     command chmod go-w "${ZI[SERVICES_DIR]}"
     # Also set up */bin and ZPFX in general.
     command mkdir 2>/dev/null -p $ZPFX/bin
-  }
+  fi
 } # ]]]
 # FUNCTION: .zi-load-object. [[[
 function .zi-load-object() {
@@ -1274,7 +1435,11 @@ function .zi-load-snippet() {
     # Source the file with compdef temporary substituting of functions.
     if [[ ${ZI[TMP_SUBST]} = inactive ]]; then
       # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
-      (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
+      if (( ${+functions[compdef]} )); then
+        ZI[bkp-compdef]="${functions[compdef]}"
+      else
+        builtin unset "ZI[bkp-compdef]"
+      fi
       functions[compdef]=':zi-tmp-subst-compdef "$@";'
       ZI[TMP_SUBST]=1
     else
@@ -1833,7 +1998,11 @@ function .zi-load-plugin() {
     fi
     if [[ ${ICE[atinit]} = '!'* || -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]]; then
       if [[ ${ZI[TMP_SUBST]} = inactive ]]; then
-        (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
+        if (( ${+functions[compdef]} )); then
+          ZI[bkp-compdef]="${functions[compdef]}"
+        else
+          builtin unset "ZI[bkp-compdef]"
+        fi
         functions[compdef]=':zi-tmp-subst-compdef "$@";'
         ZI[TMP_SUBST]=1
       else
@@ -2595,7 +2764,11 @@ function .zi-load-ices() {
 function .zi-setup-params() {
   builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
   reply=( ${(@)${(@s.;.)ICE[param]}/(#m)*/${${MATCH%%(-\>|→|=\>)*}//((#s)[[:space:]]##|[[:space:]]##(#e))}${${(M)MATCH#*(-\>|→|=\>)}:+\=${${MATCH#*(-\>|→|=\>)}//((#s)[[:space:]]##|[[:space:]]##(#e))}}} )
-  (( ${#reply} )) && return 0 || return 1
+  if (( ${#reply} )); then
+    return 0
+  else
+    return 1
+  fi
 } # ]]]
 
 #
@@ -2946,7 +3119,9 @@ function zi() {
       ZI_ICES=( "${(kv)ICE[@]}" )
       ICE=() ZI_ICE=()
       1="${1:+@}${1#@}${2:+/$2}"
-      (( $# > 1 )) && { shift -p $(( $# - 1 )); }
+      if (( $# > 1 )); then
+        shift -p $(( $# - 1 ))
+      fi
       if [[ -z $1 ]]; then
         +zi-message "Argument needed, try: {cmd}help."
         return 1
@@ -2983,12 +3158,16 @@ function zi() {
           ICE=( "${___ices[@]}" "${(kv)ZI_ICES[@]}" )
           ZI_ICE=( "${(kv)ICE[@]}" ) ZI_ICES=()
           integer ___msgs=${+ICE[debug]}
-          (( ___msgs )) && +zi-message "{profile}zi-main{ehi}:{faint} Processing {pname}$1{faint}{…}{rst}"
+          if (( ___msgs )); then
+            +zi-message "{profile}zi-main{ehi}:{faint} Processing {pname}$1{faint}{…}{rst}"
+          fi
           # Delete up to the final space to get the previously-processed ID.
           ZI[annex-exposed-processed-IDs]+="${___id:+ $___id}"
           # Strip the ID-qualifier (`@') and GitHub domain from the ID.
           ___id="${${1#@}%%(///|//|/)}"
-          (( ___is_snippet == -1 )) && ___id="${___id#https://github.com/}"
+          if (( ___is_snippet == -1 )); then
+            ___id="${___id#https://github.com/}"
+          fi
           # Effective handle-ID – the label under which the object will be identified / referred-to by ZI.
           ___ehid="${ICE[id-as]:-$___id}"
           # Effective remote-ID (i.e.: URL, GitHub username/repo, package name, etc.). teleid'' allows "overriding" of $1.
@@ -3027,7 +3206,9 @@ function zi() {
             if (( ___retval2 )); then
               # An error is actually only an odd return code.
               ___retval+=$(( ___retval2 & 1 ? ___retval2 : 0 ))
-              (( ___retval2 & 1 && $# )) && shift
+              if (( ___retval2 & 1 && $# )); then
+                shift
+              fi
               # Override $@?
               if (( ___retval2 & 2 )); then
                 local -a ___args
@@ -3062,8 +3243,10 @@ function zi() {
             else
               .zi-get-object-path plugin $___ehid
             fi
-            if (( $? )) && [[ ${zsh_eval_context[1]} = file ]]; then
-              ___action_load=1
+            if (( $? )); then
+              if [[ ${zsh_eval_context[1]} = file ]]; then
+                ___action_load=1
+              fi
             fi
             local ___object_path="$REPLY"
           elif (( ! ___turbo )); then
@@ -3528,7 +3711,9 @@ function zicompinit_fast() {
   local zcompf="${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}"
   #local check_ub="$(awk -F= '/^NAME/{print $2}' /etc/os-release | grep 'Ubuntu')"
   local zcompf_a="${zcompf}.augur"
-  #[[ $check_ub ]] && export skip_global_compinit=1
+  #if [[ $check_ub ]]; then
+  #  export skip_global_compinit=1
+  #fi
 
   # Globbing (#qN.mh+24):
   # - '#q' is an explicit glob qualifier that makes globbing work within zsh's [[ ]] construct.
@@ -3593,8 +3778,12 @@ function zpcompdef() {
 # Source-executed code.
 #
 
-(( ZI[ALIASES_OPT] )) && builtin setopt aliases
-(( ZI[SOURCED] ++ )) && return
+if (( ZI[ALIASES_OPT] )); then
+  builtin setopt aliases
+fi
+if (( ZI[SOURCED] ++ )); then
+  return
+fi
 
 autoload add-zsh-hook
 if { zmodload zsh/datetime }; then

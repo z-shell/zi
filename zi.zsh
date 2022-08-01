@@ -2180,7 +2180,9 @@ function .zi-compdef-replay() {
 function .zi-compdef-clear() {
   local quiet="$1" count="${#ZI_COMPDEF_REPLAY}"
   ZI_COMPDEF_REPLAY=( )
-  [[ $quiet = -q ]] || +zi-message "Compdef-replay cleared (it had {num}${count}{rst} entries)."
+  if [[ $quiet = -q ]]; then
+    +zi-message "Compdef-replay cleared (it had {num}${count}{rst} entries)."
+  fi
 } # ]]]
 # FUNCTION: .zi-add-report. [[[
 # Adds a report line for given plugin.
@@ -2189,22 +2191,37 @@ function .zi-compdef-clear() {
 # $2, ... - the text
 function .zi-add-report() {
   # Use zi binary module if available.
-  [[ -n $1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append "$1" "$2"$'\n' || ZI_REPORTS[$1]+="$2"$'\n'; }
-  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
+  if [[ -n $1 ]]; then
+    if (( ${+builtins[zpmod]} && 0 )); then
+      zpmod report-append "$1" "$2"$'\n'
+    else
+      ZI_REPORTS[$1]+="$2"$'\n'
+    fi
+  fi
+  if [[ ${ZI[DTRACE]} = 1 ]]; then
+    if (( ${+builtins[zpmod]} )); then
+      zpmod report-append _dtrace/_dtrace "$2"$'\n'
+    else
+      ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'
+    fi
+  fi
   return 0
 } # ]]]
 # FUNCTION: .zi-add-fpath. [[[
 function .zi-add-fpath() {
-  [[ $1 = (-f|--front) ]] && { shift; integer front=1; }
+  if [[ $1 = (-f|--front) ]]; then
+    shift
+    integer front=1
+  fi
   .zi-any-to-user-plugin "$1" ""
   local id_as="$1" add_dir="$2" user="${reply[-2]}" plugin="${reply[-1]}"
-  if (( front )) {
+  if (( front )); then
     fpath[1,0]=${${${(M)user:#%}:+$plugin}:-${ZI[PLUGINS_DIR]}/${id_as//\//---}}${add_dir:+/$add_dir}
-  } else {
+  else
     fpath+=(
       ${${${(M)user:#%}:+$plugin}:-${ZI[PLUGINS_DIR]}/${id_as//\//---}}${add_dir:+/$add_dir}
     )
-  }
+  fi
 } # ]]]
 # FUNCTION: .zi-run. [[[
 # Run code inside plugin's folder
@@ -2212,8 +2229,11 @@ function .zi-add-fpath() {
 function .zi-run() {
   if [[ $1 = (-l|--last) ]]; then
     { set -- "${ZI[last-run-plugin]:-$(<${ZI[BIN_DIR]}/last-run-object.txt)}" "${@[2-correct,-1]}"; } &>/dev/null
-    [[ -z $1 ]] && { +zi-error "{u-warn}Error{b-warn}:{rst} No recent plugin-ID saved on the disk yet, please specify" \
-    "it as the first argument, i.e.{ehi}: {cmd}zi run {pid}usr/plg{slight} {…}the code to run{…} "; return 1; }
+    if [[ -z $1 ]]; then
+      +zi-error "{u-warn}Error{b-warn}:{rst} No recent plugin-ID saved on the disk yet, please specify" \
+      "it as the first argument, i.e.{ehi}: {cmd}zi run {pid}usr/plg{slight} {…}the code to run{…} "
+      return 1
+    fi
   else
     integer ___nolast=1
   fi
@@ -2227,10 +2247,15 @@ function .zi-run() {
     }
   }
   if (( $? == 0 )); then
-    (( ___nolast )) && { builtin print -r "$1" >! ${ZI[BIN_DIR]}/last-run-object.txt; }
+    if (( ___nolast )); then
+      builtin print -r "$1" >! ${ZI[BIN_DIR]}/last-run-object.txt
+    fi
     ZI[last-run-plugin]="$1"
     eval "${@[2-correct,-1]}"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldpwd"; }
+    () {
+      builtin setopt localoptions noautopushd
+      builtin cd -q "$___oldpwd"
+    }
   else
     +zi-error "{u-warn}Error{b-warn}:{rst} no such plugin or snippet."
   fi
@@ -2239,15 +2264,20 @@ function .zi-run() {
 # Deploys a sub-prompt message to be displayed OR a `zle
 # .reset-prompt' call to be invoked
 function +zi-deploy-message() {
-  [[ $1 = <-> && ( ${#} = 1 || ( $2 = (hup|nval|err) && ${#} = 2 ) ) ]] && { zle && {
-    local alltext text IFS=$'\n' nl=$'\n'
-    repeat 25; do read -r -u"$1" text; alltext+="${text:+$text$nl}"; done
-    [[ $alltext = @rst$nl ]] && { builtin zle reset-prompt; ((1)); } || \
-      { [[ -n $alltext ]] && builtin zle -M "$alltext"; }
-  }
-  builtin zle -F "$1"; exec {1}<&-
-  return 0
-  }
+  if [[ $1 = <-> && ( ${#} = 1 || ( $2 = (hup|nval|err) && ${#} = 2 ) ) ]]; then
+    if zle; then
+      local alltext text IFS=$'\n' nl=$'\n'
+      repeat 25; do read -r -u"$1" text; alltext+="${text:+$text$nl}"; done
+      if [[ $alltext = @rst$nl ]]; then
+        builtin zle reset-prompt
+        ((1))
+      elif [[ -n $alltext ]]; then
+        builtin zle -M "$alltext"
+      fi
+    fi
+    builtin zle -F "$1"; exec {1}<&-
+    return 0
+  fi
   local THEFD=13371337 hasw
   # The expansion is: if there is @sleep: pfx, then use what's after. it, otherwise substitute 0
   exec {THEFD} < <(LANG=C sleep $(( 0.01 + ${${${(M)1#@sleep:}:+${1#@sleep:}}:-0} )); builtin print -r -- ${1:#(@msg|@sleep:*)} "${@[2,-1]}"; )

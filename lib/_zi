@@ -187,7 +187,9 @@ case $state in
               p="${p:t}"
               user="${p%%---*}"
               plugin="${p#*---}"
-              [[ "${user}" = "${plugin}" && "${user}---${plugin}" != "${p}" ]] && user=""
+              if [[ "${user}" = "${plugin}" && "${user}---${plugin}" != "${p}" ]]; then
+                user=""
+              fi
               plugins+=( "${user:+${user}/}${plugin}" )
               break
             done
@@ -208,7 +210,9 @@ case $state in
                 p="${p:t}"
                 user="${p%%---*}"
                 plugin="${p#*---}"
-                [[ "${user}" = "${plugin}" && "${user}---${plugin}" != "${p}" ]] && user=""
+                if [[ "${user}" = "${plugin}" && "${user}---${plugin}" != "${p}" ]]; then
+                  user=""
+                fi
                 plugins+=( "${user:+${user}/}${plugin}" )
                 break
               fi

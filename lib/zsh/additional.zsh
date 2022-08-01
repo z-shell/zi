@@ -10,12 +10,14 @@
   ___substs=( "${(@s.;.)ICE[subst]}" )
   if [[ -n ${(M)___substs:#*\\(#e)} ]] {
     local ___prev
-    ___substs=( ${___substs[@]//(#b)((*)\\(#e)|(*))/${match[3]:+${___prev:+$___prev\;}}${match[3]}${${___prev::=${match[2]:+${___prev:+$___prev\;}}${match[2]}}:+}} )
+    ___substs=( \
+      ${___substs[@]//(#b)((*)\\(#e)|(*))/${match[3]:+${___prev:+$___prev\;}}${match[3]}${${___prev::=${match[2]:+${___prev:+$___prev\;}}${match[2]}}:+}}
+    )
   }
 
   # Load the plugin
   if [[ ! -r $1 ]] {
-    +zi-message "{error}source: Couldn't read the script {obj}${1}{error}" \
+    +zi-error "{error}source: Couldn't read the script {obj}${1}{error}" \
       ", cannot substitute {data}${ICE[subst]}{error}.{rst}"
   }
 
@@ -24,11 +26,11 @@
   () {
     builtin emulate -LR zsh -o extendedglob -o interactivecomments ${=${options[xtrace]:#off}:+-o xtrace}
     local ___subst ___tabspc=$'\t'
-    for ___subst ( "${___substs[@]}" ) {
+    for ___subst ( "${___substs[@]}" ); do
       ___ab=( "${(@)${(@)${(@s:->:)___subst}##[[:space:]]##}%%[[:space:]]##}" )
       ___ab[2]=${___ab[2]//(#b)\\([[:digit:]])/\${match[${match[1]}]}}
       builtin eval "___data=\"\${___data//(#b)\${~___ab[1]}/${___ab[2]}}\""
-    }
+    done
     ___data="() { ${(F)${(@)${(f)___data[@]}:#[$___tabspc]#\#*}} ; } \"\${@[2,-1]}\""
   }
 
@@ -46,27 +48,58 @@
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
   local ___tpe="$1" ___mode="$2" ___id="$3" ___fle="${ZI[SERVICES_DIR]}/${ICE[service]}.lock" ___fd ___cmd ___tmp ___lckd ___strd=0
   { builtin print -n >! "$___fle"; } 2>/dev/null 1>&2
-  [[ ! -e ${___fle:r}.fifo ]] && command mkfifo "${___fle:r}.fifo" 2>/dev/null 1>&2
-  [[ ! -e ${___fle:r}.fifo2 ]] && command mkfifo "${___fle:r}.fifo2" 2>/dev/null 1>&2
+  if [[ ! -e ${___fle:r}.fifo ]]; then
+    command mkfifo "${___fle:r}.fifo" 2>/dev/null 1>&2
+  fi
+  if [[ ! -e ${___fle:r}.fifo2 ]]; then
+    command mkfifo "${___fle:r}.fifo2" 2>/dev/null 1>&2
+  fi
   typeset -g ZSRV_WORK_DIR="${ZI[SERVICES_DIR]}" ZSRV_ID="${ICE[service]}"  # should be also set by other p-m
   while (( 1 )); do
     (
       while (( 1 )); do
-        [[ ! -f ${___fle:r}.stop ]] && if (( ___lckd )) || zsystem 2>/dev/null 1>&2 flock -t 1 -f ___fd -e $___fle; then
-          ___lckd=1
-          if (( ! ___strd )) || [[ $___cmd = RESTART ]]; then
-            [[ $___tpe = p ]] && { ___strd=1; .zi-load "$___id" "" "$___mode"; }
-            [[ $___tpe = s ]] && { ___strd=1; .zi-load-snippet "$___id" ""; }
+        if [[ ! -f ${___fle:r}.stop ]]; then
+          if (( ___lckd )) || zsystem 2>/dev/null 1>&2 flock -t 1 -f ___fd -e $___fle; then
+            ___lckd=1
+            if (( ! ___strd )) || [[ $___cmd = RESTART ]]; then
+              if [[ $___tpe = p ]]; then
+                ___strd=1
+                .zi-load "$___id" "" "$___mode"
+              fi
+              if [[ $___tpe = s ]]; then
+                ___strd=1
+                .zi-load-snippet "$___id" ""
+              fi
+            fi
+            ___cmd=
+            while (( 1 )); do
+              builtin read -t 32767 ___cmd <>"${___fle:r}.fifo" && break;
+            done
+          else
+            return 0
           fi
-          ___cmd=
-          while (( 1 )); do builtin read -t 32767 ___cmd <>"${___fle:r}.fifo" && break; done
-        else
-          return 0
         fi
-        [[ $___cmd = (#i)NEXT ]] && { kill -TERM "$ZSRV_PID"; builtin read -t 2 ___tmp <>"${___fle:r}.fifo2"; kill -HUP "$ZSRV_PID"; exec {___fd}>&-; ___lckd=0; ___strd=0; builtin read -t 10 ___tmp <>"${___fle:r}.fifo2"; }
-        [[ $___cmd = (#i)STOP ]] && { kill -TERM "$ZSRV_PID"; builtin read -t 2 ___tmp <>"${___fle:r}.fifo2"; kill -HUP "$ZSRV_PID"; ___strd=0; builtin print >! "${___fle:r}.stop"; }
-        [[ $___cmd = (#i)QUIT ]] && { kill -HUP ${sysparams[pid]}; return 1; }
-        [[ $___cmd != (#i)RESTART ]] && { ___cmd=; builtin read -t 1 ___tmp <>"${___fle:r}.fifo2"; }
+        if [[ $___cmd = (#i)NEXT ]]; then
+          kill -TERM "$ZSRV_PID"; builtin read -t 2 ___tmp <>"${___fle:r}.fifo2"
+          kill -HUP "$ZSRV_PID"; exec {___fd}>&-
+          ___lckd=0
+          ___strd=0; builtin read -t 10 ___tmp <>"${___fle:r}.fifo2"
+        fi
+        if [[ $___cmd = (#i)STOP ]]; then
+          kill -TERM "$ZSRV_PID"
+          builtin read -t 2 ___tmp <>"${___fle:r}.fifo2"
+          kill -HUP "$ZSRV_PID"
+          ___strd=0
+          builtin print >! "${___fle:r}.stop"
+        fi
+        if [[ $___cmd = (#i)QUIT ]]; then
+          kill -HUP ${sysparams[pid]}
+          return 1
+        fi
+        if [[ $___cmd != (#i)RESTART ]]; then
+          ___cmd=
+          builtin read -t 1 ___tmp <>"${___fle:r}.fifo2"
+        fi
       done
     ) || break
     builtin read -t 1 ___tmp <>"${___fle:r}.fifo2"
@@ -107,7 +140,7 @@ function $f {
 # Starts Dtrace, i.e. session tracking for changes in Zsh state.
 .zi-debug-start() {
   if [[ ${ZI[DTRACE]} = 1 ]]; then
-    +zi-message "{error}Dtrace is already active, stop it first with \`dstop'{rst}"
+    +zi-error "{error}Dtrace is already active, stop it first with \`dstop'{rst}"
     return 1
   fi
 

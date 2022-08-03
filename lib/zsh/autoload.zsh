@@ -2916,7 +2916,7 @@ EOF
   nval_ices=(
     ${(s.|.)ZI[nval-ice-list]}
     # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
-    ${(@)${(@)${(@Akons:|:u)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
+    ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}
     # Must be last
     svn
   )

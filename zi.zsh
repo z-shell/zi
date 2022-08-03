@@ -2775,10 +2775,11 @@ zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 (( ZI[SOURCED] ++ )) && return
 
 autoload add-zsh-hook
-if { zmodload zsh/datetime } {
+if zmodload zsh/datetime; then
   add-zsh-hook -- precmd @zi-scheduler  # zsh/datetime required for wait/load/unload ice-mods
   ZI[HAVE_SCHEDULER]=1
-}
+fi
+
 functions -M -- zi_scheduler_add 1 1 -zi_scheduler_add_sh 2>/dev/null
 zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
@@ -2807,27 +2808,14 @@ zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;34=
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]
-# module recompilation for the project rename. [[[
-if [[ -e "${${ZI[ZMODULES_DIR]}}/zpmod/Src/zi/zpmod.so" ]] {
-  if [[ ! -f ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT || ( ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT -ot ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ) ]] {
-  # Don't trust access times and verify hard stored values.
-  [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT)"
-  [[ -e ${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST ]] && local recompile_request_ts="$(<${${ZI[ZMODULES_DIR]}}/zpmod/RECOMPILE_REQUEST)"
-  if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]] {
-    +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" "of the ❮ ZI ❯ module has been requested… {hi}Building{rst}…"
-    (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-    command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" distclean &>/dev/null
-    .zi-module build &>/dev/null
-    if command make -C "${${ZI[ZMODULES_DIR]}}/zpmod" &>/dev/null; then
-    +zi-message "{ok}Build successful!{rst}"
-    else
-    builtin print -r -- "${ZI[col-error]}Compilation failed.${ZI[col-rst]}" "${ZI[col-pre]}You can enter the following command:${ZI[col-rst]}" \
-    'make -C ${${ZI[ZMODULES_DIR]}}/zpmod' "${ZI[col-pre]}to see the error messages and e.g.: report an issue" "at GitHub${ZI[col-rst]}"
-    fi
-    command date '+%s' >! "${${ZI[ZMODULES_DIR]}}/zpmod/COMPILED_AT"
-  }
-  }
-} # ]]]
+# Check module built / compile status [[[
+if [[ -e "${ZI[ZMODULES_DIR]}/zpmod/Src/zi/zpmod.so" ]]; then
+  if [[ ! -f ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT || \
+  ( ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT -ot ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ) ]]; then
+    (( ${+functions[.zi-check-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || return 1
+    .zi-check-module
+  fi
+fi # ]]]
 
 # !atpull-pre.
 @zi-register-hook "-r/--reset" hook:e-\!atpull-pre ∞zi-reset-hook

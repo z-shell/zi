@@ -2982,16 +2982,16 @@ EOF
 # FUNCTION: .zi-build-module [[[
 # Performs ./configure && make on the module and displays information how to load the module in .zshrc.
 .zi-build-module() {
-  if command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" rev-parse 2>/dev/null; then
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" clean -d -f -f
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" reset --hard HEAD
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" pull
+  if command git -C "${ZI[ZMODULES_DIR]}/zpmod" rev-parse 2>/dev/null; then
+    command git -C "${ZI[ZMODULES_DIR]}/zpmod" clean -d -f -f
+    command git -C "${ZI[ZMODULES_DIR]}/zpmod" reset --hard HEAD
+    command git -C "${ZI[ZMODULES_DIR]}/zpmod" pull
   else
-    if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
-      mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"
-      chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
+    if ! test -d "${ZI[ZMODULES_DIR]}/zpmod"; then
+      mkdir -p "${ZI[ZMODULES_DIR]}/zpmod"
+      chmod g-rwX "${ZI[ZMODULES_DIR]}/zpmod"
     fi
-    command git clone --progress "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {
+    command git clone --progress "https://github.com/z-shell/zpmod.git" "${ZI[ZMODULES_DIR]}/zpmod" || {
       +zi-message "{error}Failed to clone module repository{rst}"
       return 1
     }

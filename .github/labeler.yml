@@ -3,7 +3,6 @@ documentation 📝:
   - "community/**/*.md"
   - "ecosystem/**/*.md"
   - ".github/*.md"
-  - "!.github/ISSUE_TEMPLATE/*"
 maintenance 📈:
   - ".editorconfig"
   - ".gitattributes"

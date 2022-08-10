@@ -553,7 +553,7 @@ ZI[EXTENDED_GLOB]=""
   }
   symlinked=( ${ZI[COMPLETIONS_DIR]}/_[^_.]*~*.zwc )
   backup_comps=( ${ZI[COMPLETIONS_DIR]}/[^_.]*~*.zwc )
-  (( ${+functions[.zi-forget-completion]} )) || builtin source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
+  (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh"
   # Delete completions if they are really there, either as completions (_fname) or backups (fname)
   for c in ${completions[@]}; do
     action=0
@@ -633,27 +633,27 @@ ZI[EXTENDED_GLOB]=""
   [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
   local nl=$'\n' escape=$'\x1b[' current_branch=$(command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
-  (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
-  lines=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset || %b' ..FETCH_HEAD)"} )
-  if (( ${#lines} > 0 )); then
-    # Remove the (origin/master ...) segments, to expect only tags to appear
-    lines=( "${(S)lines[@]//\(([,[:blank:]]#(origin|HEAD|master|main)[^a-zA-Z]##(HEAD|origin|master|main)[,[:blank:]]#)#\)/}" )
-    # Remove " ||" if it ends the line (i.e. no additional text from the body)
-    lines=( "${lines[@]/ \|\|[[:blank:]]#(#e)/}" )
-    # If there's no ref-name, 2 consecutive spaces occur - fix this
-    lines=( "${lines[@]/(#b)[[:space:]]#\|\|[[:space:]]#(*)(#e)/|| ${match[1]}}" )
-    lines=( "${lines[@]/(#b)$escape([0-9]##)m[[:space:]]##${escape}m/$escape${match[1]}m${escape}m}" )
-    # Replace what follows "|| ..." with the same thing but with no newlines,
-    # and also only first 10 words (the (w)-flag enables word-indexing)
-    lines=( "${lines[@]/(#b)[[:blank:]]#\|\|(*)(#e)/| ${${match[1]//$nl/ }[(w)1,(w)10]}}" )
-    builtin print -rl -- "${lines[@]}" | .zi-pager
-    builtin print
-  fi
-  if [[ $1 != -q ]] {
-    command git pull --no-stat --ff-only origin $current_branch
-  } else {
-    command git pull --no-stat --quiet --ff-only origin $current_branch
-  }
+  ( builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
+    lines=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset || %b' ..FETCH_HEAD)"} )
+    if (( ${#lines} > 0 )); then
+      # Remove the (origin/master ...) segments, to expect only tags to appear
+      lines=( "${(S)lines[@]//\(([,[:blank:]]#(origin|HEAD|master|main)[^a-zA-Z]##(HEAD|origin|master|main)[,[:blank:]]#)#\)/}" )
+      # Remove " ||" if it ends the line (i.e. no additional text from the body)
+      lines=( "${lines[@]/ \|\|[[:blank:]]#(#e)/}" )
+      # If there's no ref-name, 2 consecutive spaces occur - fix this
+      lines=( "${lines[@]/(#b)[[:space:]]#\|\|[[:space:]]#(*)(#e)/|| ${match[1]}}" )
+      lines=( "${lines[@]/(#b)$escape([0-9]##)m[[:space:]]##${escape}m/$escape${match[1]}m${escape}m}" )
+      # Replace what follows "|| ..." with the same thing but with no newlines,
+      # and also only first 10 words (the (w)-flag enables word-indexing)
+      lines=( "${lines[@]/(#b)[[:blank:]]#\|\|(*)(#e)/| ${${match[1]//$nl/ }[(w)1,(w)10]}}" )
+      builtin print -rl -- "${lines[@]}" | .zi-pager
+      builtin print
+    fi
+    if [[ $1 != -q ]] {
+      command git pull --no-stat --ff-only origin $current_branch
+    } else {
+      command git pull --no-stat --quiet --ff-only origin $current_branch
+    }
   )
   if [[ $1 != -q ]] {
     +zi-message "{profile}Compiling »»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
@@ -1439,66 +1439,67 @@ ZI[EXTENDED_GLOB]=""
     fi
     if (( ! is_release )) {
       ( builtin cd -q "$local_dir" || return 1
-      integer had_output=0
-      local IFS=$'\n'
-      command git fetch --quiet && \
-      declare -a line; line=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
-      if (( ${#line} > 0 )); then
-        [[ $had_output -eq 0 ]] && {
-          had_output=1
-          if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-            .zi-any-colorify-as-uspl2 "$id_as"
-            (( ZI[first-plugin-mark] )) && {
-              ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+        integer had_output=0
+        local IFS=$'\n'
+        local -a line
+        command git fetch --quiet && \
+        line=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
+        if (( ${#line} > 0 )); then
+          [[ $had_output -eq 0 ]] && {
+            had_output=1
+            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+              .zi-any-colorify-as-uspl2 "$id_as"
+              (( ZI[first-plugin-mark] )) && {
+                ZI[first-plugin-mark]=0
+              } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+            }
           }
-        }
-        +zi-message "$line"
-      fi | command tee .zi_lastupd | .zi-pager &
-      integer pager_pid=$!
-      { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
-      { wait $pager_pid; } > /dev/null 2>&1
-      local -a log
-      { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
-      command rm -f $local_dir/.zi_lastupd
-      if [[ ${#log} -gt 0 ]] {
-        ZI[annex-multi-flag:pull-active]=2
-      } else {
-        if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )) {
-          ZI[annex-multi-flag:pull-active]=1
-          # Handle the snippet/plugin boundary in the messages
-          if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-            .zi-any-colorify-as-uspl2 "$id_as"
-            (( ZI[first-plugin-mark] )) && {
-              ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
-          }
+          +zi-message "$line"
+        fi | command tee .zi_lastupd | .zi-pager &
+        integer pager_pid=$!
+        { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
+        { wait $pager_pid; } > /dev/null 2>&1
+        local -a log
+        { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
+        command rm -f $local_dir/.zi_lastupd
+        if [[ ${#log} -gt 0 ]] {
+          ZI[annex-multi-flag:pull-active]=2
         } else {
-          ZI[annex-multi-flag:pull-active]=0
-        }
-      }
-      if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
-        ICE=( "${(kv)ice[@]}" )
-        # Run annexes' atpull hooks (the before atpull-ice ones).
-        # The regular Git-plugins block.
-        reply=(
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
-        )
-        for key in "${reply[@]}"; do
-          arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-          "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
-          hook_rc=$?
-          # Effectively return the last != 0 rc
-          [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
-            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+          if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )) {
+            ZI[annex-multi-flag:pull-active]=1
+            # Handle the snippet/plugin boundary in the messages
+            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+              .zi-any-colorify-as-uspl2 "$id_as"
+              (( ZI[first-plugin-mark] )) && {
+                ZI[first-plugin-mark]=0
+              } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+            }
+          } else {
+            ZI[annex-multi-flag:pull-active]=0
           }
-        done
-        ICE=()
-        (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command egrep -v '(FETCH_HEAD|up.to.date\.|From.*://)'
-      }
+        }
+        if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
+          ICE=( "${(kv)ice[@]}" )
+          # Run annexes' atpull hooks (the before atpull-ice ones).
+          # The regular Git-plugins block.
+          reply=(
+            ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
+            ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
+            ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+          )
+          for key in "${reply[@]}"; do
+            arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+            "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
+            hook_rc=$?
+            # Effectively return the last != 0 rc
+            [[ "$hook_rc" -ne 0 ]] && {
+              retval="$hook_rc"
+              builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+            }
+          done
+          ICE=()
+          (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command egrep -v '(FETCH_HEAD|up.to.date\.|From.*://)'
+        }
         return ${ZI[annex-multi-flag:pull-active]}
       )
       ZI[annex-multi-flag:pull-active]=$?
@@ -1676,7 +1677,7 @@ ZI[EXTENDED_GLOB]=""
     .zi-compinit 1 1 &>/dev/null
     rehash
     if (( !OPTS[opt_-q,--quiet] )) {
-      +zi-message "{info}The update took {num}${SECONDS}{info} seconds{rst}"
+      +zi-message "{info}The update took {num}$SECONDS{info} seconds{rst}"
     }
     return $retval
   }
@@ -2166,11 +2167,12 @@ ZI[EXTENDED_GLOB]=""
   integer longest=0
   local -a unpacked
   for c in "${packs[@]}"; do
+    # ${(Q)${(z@)c}[@]}
     unpacked=( "${(Q@)${(z@)c}}" )
     [[ "${#unpacked[1]}" -gt "$longest" ]] && longest="${#unpacked[1]}"
   done
   for c in "${packs[@]}"; do
-    unpacked=( "${(Q)${(z@)c}[@]}" )
+    unpacked=( "${(Q@)${(z@)c}}" )
     .zi-any-colorify-as-uspl2 "$unpacked[2]"
     builtin print -n "${(r:longest+1:: :)unpacked[1]} $REPLY"
 
@@ -2916,7 +2918,7 @@ EOF
   nval_ices=(
     ${(s.|.)ZI[nval-ice-list]}
     # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
-    ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}
+    ${(@)${(@)${(@Akons:|:u)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
     # Must be last
     svn
   )

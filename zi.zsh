@@ -78,7 +78,6 @@ typeset -g ZPFX
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
 
 : ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
-: ${ZI[OPTIMIZE_OUT_DISK_ACCESSES]:=0}
 : ${ZI[PKG_OWNER]:=z-shell}
 
 ZI[MAN_DIR]=${~ZI[MAN_DIR]}

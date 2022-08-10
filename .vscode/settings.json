@@ -9,7 +9,6 @@
   "markdownlint.config": {
     "extends": ".github/.markdownlint.yaml"
   },
-  "prettier.configPath": ".github/.prettierrc",
   "shellformat.useEditorConfig": true,
   "files.associations": {
     "*za-*": "shellscript"

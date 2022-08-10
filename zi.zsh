@@ -1115,6 +1115,7 @@ builtin setopt noaliases
     command mkdir -p "${ZI[SERVICES_DIR]}"
     command chmod go-w "${ZI[SERVICES_DIR]}"
   fi
+  # Set up ZPFX
   if [[ ! -d "${ZPFX}" ]]; then
     command mkdir -p "${ZPFX}"
     command chmod go-w "${ZPFX}"
@@ -1122,11 +1123,11 @@ builtin setopt noaliases
   if [[ ! -d "${ZPFX}/bin" ]]; then
     command mkdir -p "${ZPFX}/bin"
   fi
-  if [[ -d "${ZPFX}/share" ]]; then
+  if [[ ! -d "${ZPFX}/lib" ]]; then
     command mkdir -p "${ZPFX}/lib"
     command chmod go-w "${ZPFX}/lib"
   fi
-  if [[ -d "${ZPFX}/share" ]]; then
+  if [[ ! -d "${ZPFX}/share" ]]; then
     command mkdir -p "${ZPFX}/share"
     command chmod go-w "${ZPFX}/share"
   fi

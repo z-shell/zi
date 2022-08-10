@@ -5,7 +5,7 @@
 <a target="_self" href="https://github.com/z-shell/zi">
   <img style="width: 60px; height: 60px"
        src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" alt="❮ ZI ❯ Logo" />
-  </a>❮ <strong>ZI</strong> ❯
+  </a>❮ <strong>Zi</strong> ❯
 </h1>
 <h2>
   🧙‍♂️ 🪄 A Swiss Army Knife for <a href="https://zsh.sourceforge.io/"><strong>Zsh</strong></a> -
@@ -20,14 +20,14 @@
     href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+"><strong>《
       Request a Feature 》</strong></a>
   ·
-  <a href="https://github.com/orgs/z-shell/discussions"><strong>《 Ask a Question 》</strong></a>
+  <a href="https://discussions.zshell.dev/"><strong>《 Ask a Question 》</strong></a>
   </p><p>
-    <a href="https://z.digitalclouds.dev/search/"><strong>《💡》Search Wiki </strong></a>
-    <a href="https://z.digitalclouds.dev/docs/getting_started/installation/"><strong>《⚡️》 Install </strong></a>
+    <a href="https://wiki.zshell.dev/search/"><strong>《💡》Search Wiki </strong></a>
+    <a href="https://wiki.zshell.dev/docs/getting_started/installation/"><strong>《⚡️》 Install </strong></a>
     <a
       href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+"><strong>《💜》Join
       </strong></a>
-    <a href="https://crowdin.digitalclouds.dev/z-shell/"><strong>《🌐》Localize </strong></a>
+    <a href="https://translate.zshell.dev/"><strong>《🌐》Localize </strong></a>
      </p>
   </td>
   </tr>
@@ -37,7 +37,7 @@
     <a target="_self" href="https://status.zshell.dev">
       <img align="center" src="https://github.com/z-shell/status/workflows/Uptime%20CI/badge.svg" alt="Uptime CI" />
     </a>
-    <a title="Crowdin" target="_self" href="https://crowdin.digitalclouds.dev/z-shell">
+    <a title="Crowdin" target="_self" href="https://https://translate.zshell.dev/">
       <img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" />
     </a>
     <a title="Gitter" target="_self"
@@ -58,10 +58,8 @@
         alt="Visual Studio Code" />
     </a>
     </p>
-  <hr />
   <p>
-    <a href="https://asciinema.org/a/459358" target="_blank"><img style="width: 100%; height: auto"
-        src="https://asciinema.org/a/459358.svg" /></a>
+    <a href="https://asciinema.org/a/509113" target="_blank"><img src="https://asciinema.org/a/509113.svg" /></a>
   </p>
   <tr>
     <td align="center">
@@ -69,8 +67,6 @@
         src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" />
       <img align="center" style="width: 80%; height: auto"
         src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/metrics.svg" />
-      <img align="center" style="width: 80%; height: auto"
-        src="https://github.com/z-shell/.github/raw/main/metrics/plugin/projects/projects.svg" />
     </td>
   </tr>
   <table>

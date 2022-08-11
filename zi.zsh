@@ -1636,9 +1636,9 @@ builtin setopt noaliases
 # FUNCTION: .zi-formatter-auto[[[
 # The automatic message formatting tool automatically detects,
 # formats, and colorizes the following pieces of text:
-#
-# [URLs], [plugin IDs + word- after a check to the disk], [ice modifiers],
-# [zi commands], single char bits and quoted strings: [ `...', "..." ].
+# [URLs], [plugin IDs (user/repo) if exists on the disk], [numbers], [time], [single-word id-as plugins],
+# [single word commands], [single word functions], [zi commands], [ice modifiers (e.g: mv'a -> b')],
+# [single-char bits and quoted strings (`...', ,'...', "...")].
 .zi-formatter-auto() {
   builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent
@@ -1654,16 +1654,26 @@ builtin setopt noaliases
     rest=$match[3]
     rwmsg=${match[2]//---//}
     REPLY=$rwmsg
-    if [[ $rwmsg == (#b)(((http|ftp)(|s)|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
+    if [[ $rwmsg == ([[:space:]]##|(#s))[0-9.]##([[:space:]]##|(#e)) && \
+      $rest == ([[:space:]]#|(#s))[sm]([[:space:]]##*|(#e)) || $rwmsg == ([[:space:]]##|(#s))[0-9.]##[sm]([[:space:]]##|(#e)) ]]; then
+      REPLY=${ZI[col-time]}$rwmsg${ZI[col-rst]}
+      if [[ $rwmsg != *[sm]* ]]; then
+        rest=$ZI[col-time]${(M)rest##[[:space:]]#[sm]}$ZI[col-rst]${rest##[[:space:]]#[sm]}
+      fi
+    elif [[ $rwmsg == ([[:space:]]##|(#s))[0-9.]##([[:space:]]##|(#e)) ]]; then
+      REPLY=${ZI[col-num]}$rwmsg${ZI[col-rst]}
+    elif [[ $rwmsg == (#b)((http(s|)|ftp(s|)|rsync|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
       .zi-formatter-url $rwmsg
     elif [[ $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
-      REPLY=$ZI[col-ice]$rwmsg$ZI[col-rst]
-    elif [[ $rwmsg == (OMZ([PLT]|)|PZT([MLT]|)):* || -d $ZI[PLUGINS_DIR]/${rwmsg//\//---} ]]; then
+      REPLY=${ZI[col-ice]}$rwmsg${ZI[col-rst]}      
+    elif [[ $rwmsg == (OMZ|PZT|PZTM|OMZP|OMZT|OMZL)::* || $rwmsg == [^/]##/[^/]## || -d ${ZI[PLUGINS_DIR]}/${rwmsg//\//---} ]]; then
       .zi-formatter-pid $rwmsg
     elif [[ $rwmsg == (${~ZI[cmd-list]}|${(~j:|:)ecmds}) ]]; then
-      REPLY=$ZI[col-cmd]$rwmsg$ZI[col-rst]
-    elif type $1 &>/dev/null; then
-      REPLY=$ZI[col-bcmd]$rwmsg$ZI[col-rst]
+      REPLY=${ZI[col-cmd]}$rwmsg${ZI[col-rst]}
+    elif (( $+commands[$1] )); then
+      REPLY=${ZI[col-bcmd]}$rwmsg${ZI[col-rst]}
+    elif (( $+functions[$1] )); then
+      REPLY=${ZI[col-func]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == (#b)(*)('<->'|'<–>'|'<—>')(*) || $rwmsg == (#b)(*)(…|–|—|↔|...)(*) ]]; then
       local -A map=( … … - dsh – ndsh — mdsh '<->' ↔ '<–>' ↔ '<—>' ↔ ↔ ↔ ... …)
       REPLY=$match[1]$ZI[col-$map[$rwmsg]]$match[3]
@@ -1741,21 +1751,21 @@ builtin setopt noaliases
 # FUNCTION: +zi-message-formatter [[[
 .zi-main-message-formatter() {
   if [[ -z $1 && -z $2 && -z $3 ]]; then
-  REPLY=""
-  return
+    REPLY=""
+    return
   fi
   local append influx in_prepend
   if [[ $2 == (b|u|it|st|nb|nu|nit|nst) ]]; then
-  # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
-  append=$ZI[col-$2]
+    # Code repetition to preserve any leading/trailing whitespace and to allow accumulation of this code with others.
+    append=$ZI[col-$2]
   elif [[ $2 == (…|ndsh|mdsh|mmdsh|-…|lr|) || -z $2 || -z $ZI[col-$2] ]]; then
-  # Resume previous escape code, if stored.
-  if [[ $ZI[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
-    in_prepend=$ZI[col-$ZI[__last-formatter-code]]
-    influx=$ZI[col-$ZI[__last-formatter-code]]
+    # Resume previous escape code, if stored.
+    if [[ $ZI[__last-formatter-code] != (…|ndsh|mdsh|mmdsh|-…|lr|rst|nl|) ]]; then
+      in_prepend=$ZI[col-$ZI[__last-formatter-code]]
+      influx=$ZI[col-$ZI[__last-formatter-code]]
     fi
   else
-  # End of escaping logic
+    # End of escaping logic
     append=$ZI[col-rst]
   fi
   # Construct the text.

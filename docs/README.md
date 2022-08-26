@@ -4,7 +4,7 @@
 <h1>
 <a target="_self" href="https://github.com/z-shell/zi">
   <img style="width: 60px; height: 60px"
-       src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" alt="❮ ZI ❯ Logo" />
+       src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" alt="❮ Zi ❯ Logo" />
   </a>❮ <strong>Zi</strong> ❯
 </h1>
 <h2>
@@ -33,16 +33,23 @@
   </tr>
   <tr>
   <td align="center">
-  <p>
-    <a target="_self" href="https://status.zshell.dev">
-      <img align="center" src="https://github.com/z-shell/status/workflows/Uptime%20CI/badge.svg" alt="Uptime CI" />
+  <p align="center">
+    <a title="Z-Shell Matrix" target="_self" rel="nofollow" href="https://matrix.to/#/#zshell:matrix.org">
+      <img align="center" src="https://badgen.net/matrix/members/zshell/matrix.org" alt="Zi Matrix" />
     </a>
-    <a title="Crowdin" target="_self" href="https://https://translate.zshell.dev/">
+    <a title="Zi Gitter Matrix" target="_self" rel="nofollow" href="https://matrix.to/#/#z-shell_zi:gitter.im">
+      <img align="center" src="https://badgen.net/matrix/members/z-shell_zi/gitter.im" alt="Zi Gitter Matrix" />
+    </a>
+    <a title="Zi Gitter" target="_self" rel="nofollow" href="https://gitter.im/z-shell/zi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
+      <img align="center" src="https://badgen.net/gitter/members/z-shell/zi" alt="Zi Gitter" />
+    </a>
+  </p>
+    <a target="_self" rel="nofollow" href="https://sourcegraph.com/github.com/z-shell/zi">
+      <img align="center" src="https://badgen.net/badge/icon/sourcegraph?color=purple&style=plastic&icon=sourcegraph&label=Zi"
+           alt="Zi Sourcegraph">
+    </a>
+    <a title="Crowdin" target="_self" href="https://translate.zshell.dev/">
       <img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" />
-    </a>
-    <a title="Gitter" target="_self"
-      href="https://gitter.im/z-shell/zi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
-      <img align="center" src="https://badges.gitter.im/z-shell/zi.svg" />
     </a>
     <a title="Releases" target="_self" href="https://github.com/z-shell/zi/releases">
       <img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" />
@@ -164,9 +171,10 @@
         </p>
         <hr />
         <h2 align="left">🛡️ Security</h2>
-        <p>- Z-Shell ZI follows good practices of security, but 100% security cannot be assured.</p>
         <p>
-          - Z-Shell ZI is provided <bold>"as is"</bold> without any <bold>warranty</bold>. Use at your own risk.
+          - Z-Shell <string>Zi</strong> follows good practices of security, but 100% security cannot be assured.</p>
+        <p>
+          - Z-Shell <string>Zi</strong> is provided <bold>"as is"</bold> without any <bold>warranty</bold>. Use at your own risk.
         </p>
         <p>
           - For more information and to report security issues, please refer to our
@@ -181,7 +189,7 @@
           it don't want to depend on an unreliable source.
         </p>
         <p>
-          <a href="https://github.com/z-shell/zi">ZI</a>, formerly known as zplugin, zinit, is an open-source
+          <a href="https://github.com/z-shell/zi"><string>Zi</strong></a>, formerly known as zplugin, zinit, is an open-source
           community project released under the
           <a href="https://github.com/z-shell/zi/blob/main/LICENSE">MIT License</a>.
         </p>

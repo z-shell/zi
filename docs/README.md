@@ -45,7 +45,7 @@
         <a title="Zi Gitter Matrix" target="_self" rel="nofollow" href="https://matrix.to/#/#z-shell_zi:gitter.im">
           <img align="center" src="https://badgen.net/matrix/members/z-shell_zi/gitter.im" alt="Zi Gitter Matrix" />
         </a>
-        <!--
+<!--
 <a title="Zi Gitter" target="_self" rel="nofollow" href="https://gitter.im/z-shell/zi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
   <img align="center" src="https://badgen.net/gitter/members/z-shell/zi" alt="Zi Gitter" />
 </a></div>
@@ -85,7 +85,7 @@
         <img align="center" style="width: 80%; height: auto"
           src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" />
         <img align="center" style="width: 80%; height: auto"
-          src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/metrics.svg" />
+          src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/metrics.svg" />
       </div>
   </tr>
   </td>

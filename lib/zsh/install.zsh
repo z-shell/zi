@@ -1613,7 +1613,7 @@ ziextract() {
       →zi-extract() {
         →zi-check gunzip "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
-        command gunzip "$file" |& command egrep -v '.out$'
+        command gunzip "$file" |& command grep -E -v '.out$'
         integer ret=$pipestatus[1]
         command touch -t "$(strftime %Y%m%d%H%M.%S $ZI[tmp])" "$file"
         return ret
@@ -1627,7 +1627,7 @@ ziextract() {
       }
       →zi-extract() { →zi-check bunzip2 "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
-        command bunzip2 "$file" |& command egrep -v '.out$'
+        command bunzip2 "$file" |& command grep -E -v '.out$'
         integer ret=$pipestatus[1]
         command touch -t "$(strftime %Y%m%d%H%M.%S $ZI[tmp])" "$file"
         return ret

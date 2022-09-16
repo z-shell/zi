@@ -4,7 +4,7 @@
       <h1 align="center">
         <a target="_self" href="https://github.com/z-shell/zi">
           <img style="width: 60px; height: 60px"
-            src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/favicon.svg" alt="❮ Zi ❯ Logo" />
+            src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.svg" alt="❮ Zi ❯ Logo" />
         </a>❮ <strong>Zi</strong> ❯
       </h1>
       <h2 align="center">

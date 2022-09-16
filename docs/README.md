@@ -45,14 +45,6 @@
         <a title="Zi Gitter Matrix" target="_self" rel="nofollow" href="https://matrix.to/#/#z-shell_zi:gitter.im">
           <img align="center" src="https://badgen.net/matrix/members/z-shell_zi/gitter.im" alt="Zi Gitter Matrix" />
         </a>
-<!--
-<a title="Zi Gitter" target="_self" rel="nofollow" href="https://gitter.im/z-shell/zi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
-  <img align="center" src="https://badgen.net/gitter/members/z-shell/zi" alt="Zi Gitter" />
-</a></div>
-<a target="_self" rel="nofollow" href="https://sourcegraph.com/github.com/z-shell/zi">
-  <img align="center" src="https://badgen.net/badge/icon/sourcegraph?color=purple&style=plastic&icon=sourcegraph&label=Zi" alt="Zi Sourcegraph">
-</a>
--->
         <a title="Crowdin" target="_self" href="https://translate.zshell.dev/">
           <img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" />
         </a>

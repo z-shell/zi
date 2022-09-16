@@ -25,15 +25,13 @@ jobs:
           issue-comment: >
             Issue closed and locked due to lack of activity.
 
-            If you encounter this same issue, please open a new issue and refer
-            to this closed one.
+            If you encounter this same issue, please open a new issue and refer to this closed one.
 
           pr-inactive-days: "7"
           pr-lock-reason: ""
           pr-comment: >
             Pull Request closed and locked due to lack of activity.
 
-            If you'd like to build on this closed PR, you can clone it using
-            this method: https://stackoverflow.com/a/14969986
+            If you'd like to build on this closed PR, you can clone it using this method: https://stackoverflow.com/a/14969986
 
             Then open a new PR, referencing this closed PR in your message.

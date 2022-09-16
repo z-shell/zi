@@ -344,7 +344,13 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   (
     if [[ $site = */releases ]] {
-      local url=$site/${ICE[ver]}
+      local tag_version=${ICE[ver]}
+      if [[ -z $tag_version ]]; then
+        tag_version="$( { .zi-download-file-stdout $site/latest || .zi-download-file-stdout $site/latest 1; } 2>/dev/null | \
+        command grep -m1 -o 'href=./'$user'/'$plugin'/releases/tag/[^"]\+')"
+        tag_version=${tag_version##*/}
+      fi
+      local url=$site/expanded_assets/$tag_version
 
       .zi-get-latest-gh-r-url-part "$user" "$plugin" "$url" || return $?
 
@@ -1358,16 +1364,23 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # Connects to Github releases page.
 .zi-get-latest-gh-r-url-part() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops
 
   REPLY=
   local user=$1 plugin=$2 urlpart=$3
 
-  if [[ -z $urlpart ]] {
-    local url=https://github.com/$user/$plugin/releases/$ICE[ver]
-  } else {
+  if [[ -z $urlpart ]]; then
+    local tag_version=${ICE[ver]}
+    if [[ -z $tag_version ]]; then
+      local releases_url=https://github.com/$user/$plugin/releases/latest
+      tag_version="$( { .zi-download-file-stdout $releases_url || .zi-download-file-stdout $releases_url 1; } 2>/dev/null | \
+      command grep -m1 -o 'href=./'$user'/'$plugin'/releases/tag/[^"]\+')"
+      tag_version=${tag_version##*/}
+    fi
+    local url=https://github.com/$user/$plugin/releases/expanded_assets/$tag_version
+  else
     local url=https://$urlpart
-  }
+  fi
 
   local -A matchstr
   matchstr=(
@@ -1613,7 +1626,7 @@ ziextract() {
       →zi-extract() {
         →zi-check gunzip "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
-        command gunzip "$file" |& command egrep -v '.out$'
+        command gunzip "$file" |& command grep -E -v '.out$'
         integer ret=$pipestatus[1]
         command touch -t "$(strftime %Y%m%d%H%M.%S $ZI[tmp])" "$file"
         return ret
@@ -1627,7 +1640,7 @@ ziextract() {
       }
       →zi-extract() { →zi-check bunzip2 "$file" || return 1
         .zi-get-mtime-into "$file" 'ZI[tmp]'
-        command bunzip2 "$file" |& command egrep -v '.out$'
+        command bunzip2 "$file" |& command grep -E -v '.out$'
         integer ret=$pipestatus[1]
         command touch -t "$(strftime %Y%m%d%H%M.%S $ZI[tmp])" "$file"
         return ret

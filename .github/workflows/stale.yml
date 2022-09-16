@@ -21,24 +21,18 @@ jobs:
           stale-issue-label: "stale 👻"
           exempt-issue-labels: "no-stale 🔒,help-wanted 👥"
           stale-issue-message: >
-            There hasn't been any activity on this issue recently, and in order
-            to prioritize active issues, it will be marked as stale.
+            There hasn't been any activity on this issue recently, and in order to prioritize active issues, it will be marked as stale.
 
-            Please make sure to update to the latest version and
-            check if that solves the issue. Let us know if that works for you
-            by leaving a 👍
+            Please make sure to update to the latest version and check if that solves the issue. Let us know if that works for you by leaving a 👍
 
-            Because this issue is marked as stale, it will be closed and locked
-            in 7 days if no further activity occurs.
+            Because this issue is marked as stale, it will be closed and locked in 7 days if no further activity occurs.
 
             Thank you for your contributions!
           stale-pr-label: "stale 👻"
           exempt-pr-labels: "no-stale 🔒"
           stale-pr-message: >
-            There hasn't been any activity on this pull request recently, and in
-            order to prioritize active work, it has been marked as stale.
+            There hasn't been any activity on this pull request recently, and in order to prioritize active work, it has been marked as stale.
 
-            This PR will be closed and locked in 7 days if no further activity
-            occurs.
+            This PR will be closed and locked in 7 days if no further activity occurs.
 
             Thank you for your contributions!

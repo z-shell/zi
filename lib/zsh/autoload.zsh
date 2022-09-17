@@ -2687,7 +2687,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 # -*- mode: sh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # Copyright (c) $year $user_name
 # According to the Zsh Plugin Standard:
-# https://z.digitalclouds.dev/community/zsh_plugin_standard
+# https://wiki.zshell.dev/community/zsh_plugin_standard
 0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 0="${${(M)0:#/*}:-$PWD/$0}"
 # Then \${0:h} to get plugin's directory
@@ -3036,6 +3036,7 @@ sleep 0.03 && +zi-message "❯ subcmds       {mdsh}{rst} {auto}Show subcommands 
 sleep 0.03 && +zi-message "❯ icemods       {mdsh}{rst} {auto}Show all registered ice-modifiers"
 sleep 0.03 && +zi-message "❯ self-update   {mdsh}{rst} {auto}Self-update and compile"
 sleep 0.04 && +zi-message "❯ compinit      {mdsh}{rst} {auto}Refresh completions"
+sleep 0.04 && +zi-message "❯ cclear        {mdsh}{rst} {auto}Clear stray and improper completions"
 sleep 0.04 && +zi-message "❯ cdreplay      {opt}[-q]{rst} {mdsh}{rst} {auto}Replay compdefs (run after compinit)"
 sleep 0.04 && +zi-message "❯ cdclear       {opt}[-q]{rst} {mdsh}{rst} {auto}Clear compdef replay list"
 sleep 0.04 && +zi-message "❯ env-whitelist {opt}[-v][-h]{rst} {mdsh}{rst} {auto}Specify names or patterns of variables left unchanged during an{rst} unload"
@@ -3057,7 +3058,7 @@ sleep 0.08 && +zi-message "❯ recall        {p}[plugin]{rst}|{url}[url]{rst} {m
 sleep 0.08 && +zi-message "❯ srv           {p}[service]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} Control a service{ehi}:{rst} {auto}'stop,start,restart,next,quit'"
 sleep 0.09 && +zi-message "❯ create        {p}[plugin]{rst} {mdsh}{rst} {auto}Create a plugin"
 sleep 0.09 && +zi-message "❯ edit          {p}[plugin]{rst} {mdsh}{rst} Edit plugin's file with{var} \$EDITOR{rst}{nl}"
-sleep 0.09 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Wiki{ehi}:{rst} {url}https://z.digitalclouds.dev{rst}{nl}"
+sleep 0.09 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Wiki{ehi}:{rst} {url}https://wiki.zshell.dev{rst}{nl}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
 # Statistics, benchmarks and information.

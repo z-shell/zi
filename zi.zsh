@@ -298,9 +298,9 @@ builtin setopt noaliases
             [[ -f $pth/$func ]] && { sel=$pth; break; }
           }
           if [[ -z $sel ]] {
-            +zi-message '{u-warn}zi{b-warn}:{error} Couldn''t find autoload function{ehi}:' \
-              "{apo}\`{file}${func}{apo}\`{error} anywhere in {var}\$fpath{error}."
-              retval=1
+            +zi-message "{u-warn}zi{b-warn}:{error} Couldn't find autoload function{ehi}:" \
+            "{apo}\`{file}${func}{apo}\`{error} anywhere in {var}\$fpath{error}."
+            retval=1
           } else {
             eval "function ${(q)${custom[++count*2]}:-$func} {
               local body=\"\$(<${(qqq)sel}/${(qqq)func})\" body2
@@ -1010,8 +1010,10 @@ builtin setopt noaliases
   }
 } # ]]]
 # FUNCTION: @zi-register-hook. [[[
-# Registers the z-annex inside ZI – i.e. an ZI extension
+# Registers the z-annex inside Zi.
 @zi-register-hook() {
+    builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+    builtin setopt extendedglob nobanghist noshortloops typesetsilent warncreateglobal
   local name="$1" type="$2" handler="$3" icemods="$4" key="zi ${(q)2}"
   ZI_EXTS2[seqno]=$(( ${ZI_EXTS2[seqno]:-0} + 1 ))
   ZI_EXTS2[$key${${(M)type#hook:}:+ ${ZI_EXTS2[seqno]}}]="${ZI_EXTS2[seqno]} z-annex-data: ${(q)name} ${(q)type} ${(q)handler} '' ${(q)icemods}"
@@ -1186,7 +1188,7 @@ builtin setopt noaliases
   (( ${+ICE[cloneonly]} || retval )) && return 0
   ZI_SNIPPETS[$id_as]="$id_as <${${ICE[svn]+svn}:-single file}>"
   ZI[CUR_USPL2]="$id_as" ZI_REPORTS[$id_as]=
-  reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atinit-<-> <->]} )
+  reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atinit-<-> <->]} )
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
     "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" \!atinit || return $(( 10 - $? ))
@@ -1239,7 +1241,7 @@ builtin setopt noaliases
     [[ -n ${ICE[src]} ]] && { ZERO="${${(M)ICE[src]##/*}:-$local_dir/$dirname/${ICE[src]}}"; (( ${+ICE[silent]} )) && { { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( retval += $? )); ((1)); } || { ((1)); { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; }; (( retval += $? )); }; }
     [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { builtin setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; }; eval "reply=(${ICE[multisrc]})"; () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; local fname; for fname in "${reply[@]}"; do ZERO="${${(M)fname:#/*}:-$local_dir/$dirname/$fname}"; (( ${+ICE[silent]} )) && { { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( retval += $? )); ((1)); } || { ((1)); { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; }; (( retval += $? )); }; done; }
     # Run the atload hooks right before atload ice.
-    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atload-<-> <->]} )
+    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atload-<-> <->]} )
     for key in "${reply[@]}"; do
       arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
       "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" \!atload
@@ -1287,7 +1289,7 @@ builtin setopt noaliases
     fi
     [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { builtin setopt localoptions noautopushd; builtin cd -q "$local_dir/$dirname"; }; eval "reply=(${ICE[multisrc]})"; () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; local fname; for fname in "${reply[@]}"; do ZERO="${${(M)fname:#/*}:-$local_dir/$dirname/$fname}"; (( ${+ICE[silent]} )) && { { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( retval += $? )); ((1)); } || { ((1)); { [[ -n $precm ]] && { builtin ${precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); builtin source "$ZERO"; }; }; (( retval += $? )); }; done; }
     # Run the atload hooks right before atload ice.
-    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atload-<-> <->]} )
+    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atload-<-> <->]} )
     for key in "${reply[@]}"; do
       arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
       "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" \!atload
@@ -1384,7 +1386,7 @@ builtin setopt noaliases
   if [[ -n ${ICE[param]} ]] {
     .zi-setup-params && local ${(Q)reply[@]}
   }
-  reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atinit-<-> <->]} )
+  reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atinit-<-> <->]} )
   for ___key in "${reply[@]}"; do
     ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]}[@]}" )
     "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}" \!atinit || return $(( 10 - $? ))
@@ -1465,7 +1467,7 @@ builtin setopt noaliases
     [[ -n ${ICE[src]} ]] && { ZERO="${${(M)ICE[src]##/*}:-$___pdir_orig/${ICE[src]}}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }; }
     [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { builtin setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; }; eval "reply=(${ICE[multisrc]})"; () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; local ___fname; for ___fname in "${reply[@]}"; do ZERO="${${(M)___fname:#/*}:-$___pdir_orig/$___fname}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }; done; }
     # Run the atload hooks right before atload ice.
-    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atload-<-> <->]} )
+    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atload-<-> <->]} )
     for ___key in "${reply[@]}"; do
       ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]}[@]}" )
       "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" \!atload
@@ -1506,7 +1508,7 @@ builtin setopt noaliases
     [[ -n ${ICE[src]} ]] && { ZERO="${${(M)ICE[src]##/*}:-$___pdir_orig/${ICE[src]}}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }; }
     [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { builtin setopt localoptions noautopushd; builtin cd -q "$___pdir_orig"; }; eval "reply=(${ICE[multisrc]})"; () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }; for ___fname in "${reply[@]}"; do ZERO="${${(M)___fname:#/*}:-$___pdir_orig/$___fname}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); } done; }
     # Run the atload hooks right before atload ice.
-    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\\\!atload-<-> <->]} )
+    reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atload-<-> <->]} )
     for ___key in "${reply[@]}"; do
       ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]}[@]}" )
       "${___arr[5]}" plugin "$___user" "$___plugin" "$___id_as" "$___pdir_orig" \!atload
@@ -1645,7 +1647,7 @@ builtin setopt noaliases
   local out in=$1 i rwmsg match spaces rest
   integer mbegin mend
   local -a ice_order ecmds
-  ice_order=( ${(As:|:)ZI[ice-list]} ${(@)${(A@kons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/} )
+  ice_order=( ${(As:|:)ZI[ice-list]} ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/} )
   ecmds=( ${ZI_EXTS[(I)z-annex subcommand:*]#z-annex subcommand:} )
   in=${(j: :)${${(Z+Cn+)in}//[$'\t ']/$'\u00a0'}}
   rwmsg=$in
@@ -1665,7 +1667,7 @@ builtin setopt noaliases
     elif [[ $rwmsg == (#b)((http(s|)|ftp(s|)|rsync|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
       .zi-formatter-url $rwmsg
     elif [[ $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
-      REPLY=${ZI[col-ice]}$rwmsg${ZI[col-rst]}      
+      REPLY=${ZI[col-ice]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == (OMZ|PZT|PZTM|OMZP|OMZT|OMZL)::* || $rwmsg == [^/]##/[^/]## || -d ${ZI[PLUGINS_DIR]}/${rwmsg//\//---} ]]; then
       .zi-formatter-pid $rwmsg
     elif [[ $rwmsg == (${~ZI[cmd-list]}|${(~j:|:)ecmds}) ]]; then
@@ -1857,7 +1859,7 @@ builtin setopt noaliases
 .zi-ice() {
   builtin setopt localoptions noksharrays extendedglob warncreateglobal typesetsilent noshortloops
   integer retval
-  local bit exts="${(j:|:)${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}"
+  local bit exts="${(j:|:)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}"
   for bit; do
   [[ $bit = (#b)(--|)(${~ZI[ice-list]}${~exts})(*) ]] && ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}" || break
     retval+=1
@@ -1883,7 +1885,7 @@ return retval
   local -a ice_order
   ice_order=(
     ${(As:|:)ZI[ice-list]}
-    ${(@)${(A@kons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
+    ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
   # TODO Snippet's dir computation…
@@ -2201,7 +2203,7 @@ zi() {
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then
         +zi-prehelp-usage-message $cmd $___opt_map[$cmd] $@
-        return 1;
+        return 1
       fi
     fi
   fi
@@ -2510,7 +2512,7 @@ zi() {
           ;;
         (update)
           if (( ${+ICE[if]} )) {
-            eval "${ICE[if]}" || return 1;
+            eval "${ICE[if]}" || return 1
           }
           for REPLY ( ${(s.;.)ICE[has]} ) {
             (( ${+commands[$REPLY]} )) || return 1

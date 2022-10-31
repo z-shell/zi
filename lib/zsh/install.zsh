@@ -441,9 +441,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # Store ices at clone of a plugin
       .zi-store-ices "$local_path/._zi" ICE "" "" "" ""
       reply=(
-        ${(on)ZI_EXTS2[(I)zi hook:\\\!atclone-pre <->]}
-        ${(on)ZI_EXTS[(I)z-annex hook:\\\!atclone-<-> <->]}
-        ${(on)ZI_EXTS2[(I)zi hook:\\\!atclone-post <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:\!atclone-pre <->]}
+        ${(on)ZI_EXTS[(I)z-annex hook:\!atclone-<-> <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:\!atclone-post <->]}
       )
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -635,9 +635,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
     if (( ${+commands[curl]} )); then
       if [[ -n $progress ]]; then
-        command curl --progress-bar -fSL "$url" 2> >(${ZI[BIN_DIR]}/lib/zsh/single-line.zsh >&2) || return 1
+        command curl --tcp-fastopen --progress-bar -fSL "$url" 2> >(${ZI[BIN_DIR]}/lib/zsh/single-line.zsh >&2) || return 1
       else
-        command curl -fsSL "$url" || return 1
+        command curl --tcp-fastopen -fsSL "$url" || return 1
       fi
     elif (( ${+commands[wget]} )); then
       command wget ${${progress:--q}:#1} "$url" -O - || return 1
@@ -653,9 +653,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   } else {
     if type curl 2>/dev/null 1>&2; then
       if [[ -n $progress ]]; then
-        command curl --progress-bar -fSL "$url" 2> >(${ZI[BIN_DIR]}/lib/zsh/single-line.zsh >&2) || return 1
+        command curl --tcp-fastopen --progress-bar -fSL "$url" 2> >(${ZI[BIN_DIR]}/lib/zsh/single-line.zsh >&2) || return 1
       else
-        command curl -fsSL "$url" || return 1
+        command curl --tcp-fastopen -fsSL "$url" || return 1
       fi
     elif type wget 2>/dev/null 1>&2; then
       command wget ${${progress:--q}:#1} "$url" -O - || return 1
@@ -684,7 +684,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   }
 
   if (( ${+commands[curl]} )) || type curl 2>/dev/null 1>&2; then
-    cmd=(command curl -sIL "$url")
+    cmd=(command curl --tcp-fastopen -sIL "$url")
   elif (( ${+commands[wget]} )) || type wget 2>/dev/null 1>&2; then
     cmd=(command wget --server-response --spider -q "$url" -O -)
   else
@@ -951,9 +951,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             fi
             # Run annexes' atpull hooks (the before atpull-ice ones). The SVN block.
             reply=(
-              ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-              ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-              ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+              ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
             )
             for key in "${reply[@]}"; do
               arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -1039,9 +1039,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           # The URL-snippet block.
           if [[ $update = -u && $ZI[annex-multi-flag:pull-active] -ge 1 ]] {
             reply=(
-              ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-              ${${ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-              ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+              ${${ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
             )
             for key in "${reply[@]}"; do
               arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -1097,9 +1097,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # The local-file snippets block.
       if [[ $update = -u ]] {
         reply=(
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
         )
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -1172,7 +1172,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # The block is common to all 3 snippet types.
       reply=(
         ${(on)ZI_EXTS2[(I)zi hook:no-e-\\\!atpull-pre <->]}
-        ${${ICE[atpull]:#\!*}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
+        ${${ICE[atpull]:#\!*}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
         ${(on)ZI_EXTS2[(I)zi hook:no-e-\\\!atpull-post <->]}
       )
       for key in "${reply[@]}"; do
@@ -1188,9 +1188,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # Run annexes' atclone hooks (the before atclone-ice ones)
       # The block is common to all 3 snippet types.
       reply=(
-        ${(on)ZI_EXTS2[(I)zi hook:\\\!atclone-pre <->]}
-        ${(on)ZI_EXTS[(I)z-annex hook:\\\!atclone-<-> <->]}
-        ${(on)ZI_EXTS2[(I)zi hook:\\\!atclone-post <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:\!atclone-pre <->]}
+        ${(on)ZI_EXTS[(I)z-annex hook:\!atclone-<-> <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:\!atclone-post <->]}
       )
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -2105,18 +2105,19 @@ zimv() {
 
   @zi-substitute from to
 
-  local -a afr
+  local -a afr retval
   ( () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
     afr=( ${~from}(DN) )
-    if (( ${#afr} )) {
-      if (( !OPTS[opt_-q,--quiet] )) {
-        command cp -vf "${afr[1]}" "$to"
+    if (( ${#afr} )); then
+      if (( !OPTS[opt_-q,--quiet] )); then
+        command cp -vf "${afr[1]}" "$to"; retval=$?
         command cp -vf "${afr[1]}".zwc "$to".zwc 2>/dev/null
-      } else {
-        command cp -f "${afr[1]}" "$to"
+      else
+        command cp -f "${afr[1]}" "$to"; retval=$?
         command cp -f "${afr[1]}".zwc "$to".zwc 2>/dev/null
-      }
-    }
+      fi
+    fi
+    return $retval
   )
 } # ]]]
 # FUNCTION: ∞zi-compile-plugin-hook [[[

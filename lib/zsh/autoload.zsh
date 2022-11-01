@@ -2661,9 +2661,9 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   if [[ "$user" != "_local" && -n "$user" ]]; then
     builtin print "${ZI[col-info]}Creating Github repository${ZI[col-rst]}"
     if [[ $isorg = (y|yes) ]]; then
-      command curl --tcp-fastopen --silent -u "$user" https://api.github.com/orgs/$org/repos -d '{"name":"'"$plugin"'"}' >/dev/null
+      command curl --silent -u "$user" https://api.github.com/orgs/$org/repos -d '{"name":"'"$plugin"'"}' >/dev/null
     else
-      command curl --tcp-fastopen --silent -u "$user" https://api.github.com/user/repos -d '{"name":"'"$plugin"'"}' >/dev/null
+      command curl --silent -u "$user" https://api.github.com/user/repos -d '{"name":"'"$plugin"'"}' >/dev/null
     fi
     command git clone "https://github.com/${${${(M)isorg:#(y|yes)}:+$org}:-$user}/${plugin}.git" "${${${(M)isorg:#(y|yes)}:+$org}:-$user}---${plugin//\//---}" || {
       builtin print "${ZI[col-error]}Creation of remote repository $uspl2col ${ZI[col-error]}failed${ZI[col-rst]}"

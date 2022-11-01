@@ -1395,6 +1395,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     armv5 'arm[?v]5'
     armv6 'arm[?v]6'
     armv7 'armv[?v]7'
+    amd64 '(amd|amd64|x64|x86|x86_64|64bit|)*~*(eabi(hf|)|powerpc|ppc64(le|)|[-_]mips*|aarch64|riscv(64|)|s390x|[-_.]arm*)*'
+    x86_64 '(amd|amd64|x64|x86|x86_64|64bit|)*~*(eabi(hf|)|powerpc|ppc64(le|)|[-_]mips*|aarch64|riscv(64|)|s390x|[-_.]arm*)*'
     amd64 '(amd|amd64|x64|x86|x86_64|64bit|)*~*(linux32|eabi(hf|)|powerpc|ppc64(le|)|[-_]mips*|aarch64|riscv(64|)|s390x|[-_.]arm*)*'
     x86_64 '(amd|amd64|x64|x86|x86_64|64bit|)*~*(linux32|eabi(hf|)|powerpc|ppc64(le|)|[-_]mips*|aarch64|riscv(64|)|s390x|[-_.]arm*)*'
     linux "*(linux-musl|musl|linux64|linux)*~^*(linux*${MACHTYPE}|${CPUTYPE}*linux)*"
@@ -1891,7 +1893,6 @@ zpextract() { ziextract "$@"; }
 zicp() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
-
   local -a mbegin mend match
   local cmd=cp
   if [[ $1 = (-m|--mv) ]] { cmd=mv; shift; }
@@ -1993,7 +1994,6 @@ zimv() {
       }
     }
   }
-
   if (( OPTS[opt_-r,--reset] )) {
     if (( ZI[-r/--reset-opt-hook-has-been-run] == 1 )) {
       ZI[-r/--reset-opt-hook-has-been-run]=0

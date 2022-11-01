@@ -1,18 +1,18 @@
 ---
 blank_issues_enabled: false
 contact_links:
-  - name: ZI Wiki
-    url: https://z.digitalclouds.dev
-    about: Knowledge base.
-  - name: Community Discussions
-    url: https://github.com/orgs/z-shell/discussions
-    about: Please ask and answer questions here.
-  - name: Slack Workspace
+  - name: Wiki
+    url: https://wiki.zshell.dev
+    about: Knowledge base
+  - name: Discussions
+    url: https://discussions.zshell.dev
+    about: Please ask and answer questions here
+  - name: Matrix
+    url: https://matrix.zshell.dev
+    about: An open network for secure, decentralized communication
+  - name: Slack
     url: https://join.slack.com/t/z-shell/shared_invite/zt-16twpopd2-p08ROUeT2aGZ5njJwysawA
-    about: Join to ask and answer questions or collaborate.
-  - name: Crowdin Translations
-    url: https://digitalclouds.crowdin.com/z-shell
-    about: Join to participate in translations.
-  - name: Z-Shell Portfolio
-    url: https://github.zshell.dev/
-    about: Z-Shell organization portfolio and governance.
+    about: Workspace to collaborate, ask and answer questions
+  - name: Crowdin
+    url: https://translate.zshell.dev
+    about: Translation and localization management

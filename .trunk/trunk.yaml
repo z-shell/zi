@@ -1,32 +1,26 @@
 version: 0.1
 cli:
-  version: 0.17.0-beta
-  options:
-    - commands: [check, fmt]
-    - args: -y
+  version: 1.0.1
 plugins:
   sources:
     - id: trunk
-      ref: v0.0.3
+      ref: v0.0.5
       uri: https://github.com/trunk-io/plugins
-repo:
-  repo:
-    host: github.com
-    owner: z-shell
-    name: zi
-actions:
-  enabled:
-    - trunk-check-pre-push
-    - trunk-fmt-pre-commit
-    - trunk-cache-prune
-    - trunk-check-upgrade
-    - trunk-upgrade
 lint:
   enabled:
-    - svgo@2.8.0
-    - git-diff-check@SYSTEM
-    - actionlint@1.6.17
-    - gitleaks@8.12.0
+    - actionlint@1.6.21
+    - svgo@3.0.0
+    - gitleaks@8.15.0
     - markdownlint@0.32.2
+    - git-diff-check
     - prettier@2.7.1
-    - shfmt@3.5.0
+runtimes:
+  enabled:
+    - go@1.18.3
+    - node@16.14.2
+actions:
+  enabled:
+    - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
+    - trunk-upgrade-available

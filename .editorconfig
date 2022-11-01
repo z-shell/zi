@@ -1,6 +1,7 @@
 # Space or Tabs?
 # https://stackoverflow.com/questions/35649847/objective-reasons-for-using-spaces-instead-of-tabs-for-indentation
 # https://stackoverflow.com/questions/12093748/how-to-use-tabs-instead-of-spaces-in-a-shell-script
+# https://github.com/editorconfig/editorconfig-defaults/blob/master/editorconfig-defaults.json
 #
 # 1. What happens when I press the Tab key in my text editor?
 # 2. What happens when I request my editor to indent one or more lines?

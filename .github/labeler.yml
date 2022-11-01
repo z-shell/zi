@@ -1,28 +1,14 @@
 documentation 📝:
-  - "docs/**/*.md"
-  - "community/**/*.md"
-  - "ecosystem/**/*.md"
-  - ".github/*.md"
-  - "!.github/ISSUE_TEMPLATE/*"
-maintenance 📈:
-  - ".editorconfig"
-  - ".gitattributes"
-  - ".gitignore"
-  - ".github/CODEOWNERS"
-  - ".github/*.md"
-  - ".github/*.yml"
-  - ".github/*.yaml"
-  - ".github/*.json"
-  - ".github/**rc"
-  - ".trunk/**"
-  - ".vscode/**"
-  - "crowdin.yml"
+  - "docs/*.md"
+  - "docs/man/*"
 enhancement ✨:
-  - "functions/**"
-  - "src/**"
+  - "*.zsh"
   - "lib/**"
-i18n 🌐:
-  - "i18n/**"
-  - "docs/i18n/**"
+maintenance 📈:
+  - ".github/CODEOWNERS"
+  - ".github/*.yml"
+  - ".github/*.json"
+  - ".vscode/*"
+  - ".trunk/**"
 ci 🤖:
-  - ".github/workflows/*"
+  - ".github/workflows/*.yml"

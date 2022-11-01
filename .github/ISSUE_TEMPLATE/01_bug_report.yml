@@ -2,6 +2,7 @@ name: "🐞 Bug report"
 description: File a bug report
 title: "[bug]: "
 labels: ["bug 🐞", "triage 📑"]
+assignees: ["ss-o"]
 body:
   - type: markdown
     attributes:
@@ -12,10 +13,27 @@ body:
     attributes:
       label: Environment
       description: >
-        Please describe your environment e.g: `echo "OSTYPE=${OSTYPE} CPUTYPE=$(uname -m) / MACHINE_TYPE=$MACHTYPE ZSH_VERSION=${ZSH_VERSION}"`
-
-        It may contain any additional information which would help to reproduce the issue.
-      placeholder: "OSTYPE=linux-gnu CPUTYPE=x86_64 / MACHINE_TYPE=x86_64 ZSH_VERSION=5.8"
+        Please describe your environment in as much detail as possible. Otherwise, we may not be able to reproduce the issue.
+      placeholder: >
+        Example:
+          print "Device: $VENDOR | $OSTYPE | $CPUTYPE"
+          print "Shell: $SHELL | $ZSH_ARGZERO | $ZSH_PATCHLEVEL"
+          print "Zi: $(git -C $ZI[BIN_DIR] rev-parse HEAD)"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      value: |
+        1.
+        2.
+        3.
+        4.
+        5.
+        ...
+      render: bash
     validations:
       required: true
   - type: textarea
@@ -23,6 +41,14 @@ body:
     attributes:
       label: Expected behavior
       description: "Please describe the expected behavior"
+      value: |
+        1.
+        2.
+        3.
+        4.
+        5.
+        ...
+      render: bash
     validations:
       required: true
   - type: textarea
@@ -30,26 +56,27 @@ body:
     attributes:
       label: Current behavior
       description: "Please describe how the bug manifests"
-    validations:
-      required: true
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce
-      description: "Explain the steps required to duplicate the issue"
+      value: |
+        1.
+        2.
+        3.
+        4.
+        5.
+        ...
+      render: bash
     validations:
       required: true
   - type: textarea
     id: code-snippet
     attributes:
       label: Code snippet
-      description: "Please insert your zshrc or just a short code snippet in concern"
+      description: "Please insert your zshrc or just a short code snippet in concern."
     validations:
       required: true
   - type: textarea
     id: additional
     attributes:
-      label: Aditional information
+      label: Additional information
       description: "List any other information that is relevant to your issue. For reports and stats run `zi analytics`"
     validations:
       required: true
@@ -69,7 +96,7 @@ body:
           required: true
   - type: checkboxes
     attributes:
-      label: Are you familiar with Contributor Covenant Code of Conduct?
+      label: Are you familiar with the Contributor Covenant Code of Conduct?
       options:
         - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
           required: true

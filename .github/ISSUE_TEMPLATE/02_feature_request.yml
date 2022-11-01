@@ -2,6 +2,7 @@ name: "💡 Feature request"
 description: Suggest an idea for this project
 title: "[feat]: "
 labels: ["feature-request 💡"]
+assignees: ["ss-o"]
 body:
   - type: markdown
     attributes:
@@ -18,7 +19,7 @@ body:
     id: code-snippet
     attributes:
       label: Related Code
-      description: "If you are able to illustrate the bug or feature request with an example, please provide it here"
+      description: "If you can illustrate the bug or feature request with an example, please provide it here"
     validations:
       required: false
   - type: textarea
@@ -46,7 +47,7 @@ body:
           required: true
   - type: checkboxes
     attributes:
-      label: Are you familiar with Contributor Covenant Code of Conduct?
+      label: Are you familiar with the Contributor Covenant Code of Conduct?
       options:
         - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
           required: true

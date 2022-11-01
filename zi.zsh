@@ -1,39 +1,43 @@
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
-#
-# Main state variables.
-#
 
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
+# Distributed under the terms of the MIT License.
+
+typeset -gx ZPFX PMSPEC=0fuUpiPsX
 typeset -gaH ZI_REGISTERED_PLUGINS ZI_TASKS ZI_RUN
 typeset -ga zsh_loaded_plugins
 if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
+
 # Rename snippets URL -> NAME.
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
+
 # Compatibility for previous versions.
 typeset -gAH ZINIT
 ZI=( "${(kv)ZINIT[@]}" "${(kv)ZI[@]}" )
 unset ZINIT
 
-#
-# Common values.
-#
-# ICES List
+# An ice-modifiers list.
 ZI[ice-list]="svn|proto|from|teleid|bindmap|cloneopts|id-as|depth|if|wait|load|unload|blockf|pick|bpick|src|as|\
 ver|silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|cloneonly|make|service|trackbinds|\
 multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|\
 countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
 subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
 
+# In no value value, i.e. not designed to hold value.
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
-nocompile|notify|reset"
+nocompile|reset"
 
+# Subcommands list
 ZI[cmd-list]="-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
 cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|\
 uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run"
 
-# BIN_DIR setup.
+# Establish ZI[BIN_DIR]
 [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]] && ZI[BIN_DIR]=
 ZI[ZERO]="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 
@@ -50,50 +54,89 @@ if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
 fi
 
 # Establish ZI[HOME_DIR]
-if [[ -z ${ZI[HOME_DIR]} ]]; then
-  if [[ -d ${HOME}/.zi ]]; then
+if [[ -z $ZI[HOME_DIR] ]]; then
+  if [[ -d $HOME ]]; then
     ZI[HOME_DIR]="${HOME}/.zi"
-  elif [[ -d ${ZDOTDIR:-$HOME}/.zi ]]; then
-    ZI[HOME_DIR]="${ZDOTDIR:-$HOME}/.zi"
-  elif [[ -d ${XDG_DATA_HOME:-$HOME}/.zi ]]; then
-    ZI[HOME_DIR]="${XDG_DATA_HOME:-$HOME}/.zi"
+  elif [[ -d $ZDOTDIR ]]; then
+    ZI[HOME_DIR]="${ZDOTDIR}/.zi"
+  elif [[ -d $XDG_DATA_HOME ]]; then
+    ZI[HOME_DIR]="${XDG_DATA_HOME}/.zi"
   else
     ZI[HOME_DIR]="${HOME}/.zi"
   fi
 fi
 
-: ${XDG_ZI_HOME:=${ZI[HOME_DIR]}}
+# Establish ZI[CACHE_DIR]
+if [[ -z $ZI[CACHE_DIR] ]]; then
+  if [[ -d ${HOME}/.cache ]]; then
+    ZI[CACHE_DIR]="${HOME}/.cache/zi"
+  elif [[ -d $XDG_CACHE_HOME ]]; then
+    ZI[CACHE_DIR]="${XDG_CACHE_HOME}/zi"
+  elif [[ -d ${ZDOTDIR}/.cache ]]; then
+    ZI[CACHE_DIR]="${ZDOTDIR}/.cache/zi"
+  elif [[ -d ${XDG_DATA_HOME}/.cache ]]; then
+    ZI[CACHE_DIR]="${XDG_DATA_HOME}/.cache/zi"
+  else
+    ZI[CACHE_DIR]="${HOME}/.cache/zi"
+  fi
+fi
+
+# Establish ZI[CONFIG_DIR]
+if [[ -z $ZI[CONFIG_DIR] ]]; then
+  if [[ -d ${HOME}/.config ]]; then
+    ZI[CONFIG_DIR]="${HOME}/.config/zi"
+  elif [[ -d $XDG_CONFIG_HOME ]]; then
+    ZI[CONFIG_DIR]="${XDG_CONFIG_HOME}/zi"
+  elif [[ -d ${XDG_DATA_HOME}/.config ]]; then
+    ZI[CONFIG_DIR]="${XDG_DATA_HOME}/.config/zi"
+  else
+    ZI[CONFIG_DIR]="${HOME}/.config/zi"
+  fi
+fi
+
+# Base Directory Specification
+: ${ZPFX:=${ZI[HOME_DIR]}/polaris}
+: ${ZI[MAN_DIR]:=${ZPFX}/man}
+: ${ZI[LOG_DIR]:=${ZI[CACHE_DIR]}/log}
 : ${ZI[THEMES_DIR]:=${ZI[HOME_DIR]}/themes}
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
 : ${ZI[SNIPPETS_DIR]:=${ZI[HOME_DIR]}/snippets}
 : ${ZI[SERVICES_DIR]:=${ZI[HOME_DIR]}/services}
 : ${ZI[ZMODULES_DIR]:=${ZI[HOME_DIR]}/zmodules}
+: ${ZI[ZCOMPDUMP_PATH]:=${ZI[CACHE_DIR]}/.zcompdump}
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
 
-typeset -g ZPFX
-: ${ZPFX:=${ZI[HOME_DIR]}/polaris}
-: ${ZI[MAN_DIR]:=${ZPFX}/man}
+# Base Directory Specification (XDG)
+: ${XDG_ZI_HOME:=${ZI[HOME_DIR]}}
+: ${XDG_ZI_CACHE:=${ZI[CACHE_DIR]}}
+: ${XDG_ZI_CONFIG:=${ZI[CONFIG_DIR]}}
+
+# Options Specification
 : ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
 : ${ZI[PKG_OWNER]:=z-shell}
 
+ZI[HOME_DIR]=${~ZI[HOME_DIR]}
+ZI[MAN_DIR]=${~ZI[MAN_DIR]}
+ZI[LOG_DIR]=${~ZI[LOG_DIR]}
+ZI[CACHE_DIR]=${~ZI[CACHE_DIR]}
 ZI[THEMES_DIR]=${~ZI[THEMES_DIR]}
+ZI[CONFIG_DIR]=${~ZI[CONFIG_DIR]}
 ZI[PLUGINS_DIR]=${~ZI[PLUGINS_DIR]}
 ZI[SNIPPETS_DIR]=${~ZI[SNIPPETS_DIR]}
 ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]}
 ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
+ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
 ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]}
 
-export ZPFX=${~ZPFX} PMSPEC=0fuUpiPsX \
-ZCDR="${ZCDR:-${XDG_CONFIG_HOME:-$HOME/.config}/zi}" \
-ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zi}"
+typeset -gx XDG_ZI_HOME=${~ZI[HOME_DIR]} ZPFX=${~ZPFX}
+typeset -gx XDG_ZI_CACHE=${~ZI[CACHE_DIR]} XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
 
+[[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]] && manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
 [[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d "${ZPFX}/bin" ]] && path=( "${ZPFX}/bin" "${path[@]}" )
 [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d "${ZPFX}/sbin" ]] && path=( "${ZPFX}/sbin" "${path[@]}" )
 [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
-[[ -n ${ZI[ZCOMPDUMP_PATH]} ]] && ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
-[[ ! -d ${~ZI[MAN_DIR]} ]] && command mkdir -p ${~ZI[MAN_DIR]}/man{1..9}
-[[ ! -d $ZSH_CACHE_DIR ]] && command mkdir -p "$ZSH_CACHE_DIR"
-[[ ! -d $ZCDR ]] && command mkdir -p "$ZCDR"
+
+typeset -gU PATH path
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"
 ZI[DOWNAR]=";:^[[B;:^[OB;:\\e[B;:\\eOB;:${termcap[kd]/$'\e'/^\[};:${terminfo[kcud1]/$'\e'/^\[};:"
@@ -136,11 +179,11 @@ zmodload zsh/termcap 2>/dev/null
 if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+termcap} -eq 1 && -n ${termcap[Co]} ) ]] {
   ZI+=(
   col-annex   $'\e[38;5;165m'      col-info    $'\e[38;5;82m'       col-p       $'\e[38;5;81m'
-  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;220m'      col-pname   $'\e[1;4m\e[32m'
-  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;220m' col-pre     $'\e[38;5;93m'
-  col-aps     $'\e[38;5;117m'      col-baps    $'\e[1;38;5;82m'     col-quo     $'\e[1;38;5;33m'
-  col-bar     $'\e[38;5;82m'       col-it      $'\e[3m'             col-profile $'\e[38;5;201m'
-  col-bspc    $'\b'                col-keyword $'\e[32m'            col-rst     $'\e[0m'
+  col-apo     $'\e[1;38;5;220m'    col-info2   $'\e[38;5;220m'      col-pkg     $'\e[1;3;38;5;27m'
+  col-b       $'\e[1m'             col-info3   $'\e[1m\e[38;5;220m' col-pname   $'\e[1;4m\e[32m'
+  col-aps     $'\e[38;5;117m'      col-baps    $'\e[1;38;5;82m'     col-pre     $'\e[38;5;93m'
+  col-bar     $'\e[38;5;82m'       col-bcmd    $'\e[38;5;220m'      col-profile $'\e[38;5;201m'
+  col-bspc    $'\b'                col-bapo    $'\e[1;39;5;220m'    col-keyword $'\e[32m'
   col-b-lhi   $'\e[1m\e[38;5;27m'  col-lhi     $'\e[38;5;33m'       col-slight  $'\e[38;5;230m'
   col-b-warn  $'\e[1;38;5;214m'    col-msg     $'\e[0m'             col-st      $'\e[9m'
   col-cmd     $'\e[38;5;82m'       col-msg2    $'\e[38;5;172m'      col-tab     $' \t '
@@ -150,17 +193,18 @@ if [[ -z $SOURCED && ( ${+terminfo} -eq 1 && -n ${terminfo[colors]} ) || ( ${+te
   col-ehi     $'\e[1m\e[38;5;210m' col-nb      $'\e[22m'            col-u       $'\e[4m'
   col-error   $'\e[1m\e[38;5;204m' col-nit     $'\e[23m'            col-uname   $'\e[1;4m\e[35m'
   col-failure $'\e[38;5;204m'      col-nl      $'\n'                col-uninst  $'\e[38;5;118m'
-  col-faint   $'\e[38;5;238m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;33m'
+  col-faint   $'\e[38;5;240m'      col-note    $'\e[38;5;148m'      col-url     $'\e[38;5;33m'
   col-file    $'\e[3;38;5;39m'     col-nst     $'\e[29m'            col-u-warn  $'\e[4;38;5;214m'
   col-func    $'\e[38;5;135m'      col-nu      $'\e[24m'            col-var     $'\e[38;5;39m'
+  col-flag    $'\e[1;3;38;5;79m'   col-it      $'\e[3m'             col-quo     $'\e[1;38;5;33m'
   col-glob    $'\e[38;5;226m'      col-num     $'\e[3;38;5;154m'    col-version $'\e[3;38;5;46m'
   col-happy   $'\e[1m\e[38;5;82m'  col-obj     $'\e[38;5;218m'      col-warn    $'\e[38;5;214m'
   col-hi      $'\e[1m\e[38;5;165m' col-obj2    $'\e[38;5;118m'      col-dbg     $'\e[90m'
-  col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'      col-bcmd    $'\e[38;5;220m'
-  col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;82m'
-  col-bapo    $'\e[1;39;5;220m'    col-quos    $'\e[1;38;5;160m'
-  col-mdsh  $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
-  col-mmdsh $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
+  col-ice     $'\e[38;5;39m'       col-ok      $'\e[38;5;220m'      col-rst     $'\e[0m'
+  col-id-as   $'\e[4;38;5;220m'    col-opt     $'\e[38;5;82m'       col-time    $'\e[38;5;220m'
+  col-quos    $'\e[1;38;5;160m'
+  col-mdsh    $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+–}:--}"$'\e[0m'
+  col-mmdsh   $'\e[1;38;5;220m'"${${${(M)LANG:#*UTF-8*}:+――}:--}"$'\e[0m'
   col-↔     ${${${(M)LANG:#*UTF-8*}:+$'\e[38;5;82m↔\e[0m'}:-$'\e[38;5;82m«-»\e[0m'}
   col-…     "${${${(M)LANG:#*UTF-8*}:+…}:-...}"  col-ndsh  "${${${(M)LANG:#*UTF-8*}:+–}:-}"
   col--…    "${${${(M)LANG:#*UTF-8*}:+⋯⋯}:-···}" col-lr    "${${${(M)LANG:#*UTF-8*}:+↔}:-"«-»"}"
@@ -1031,60 +1075,77 @@ builtin setopt noaliases
   .zi-pack-ice "$id_as" ""
 } # ]]]
 
-#
 # Remaining functions.
-#
 
 # FUNCTION: .zi-prepare-home. [[[
-# Creates all directories needed by ZI, first checks if they already exist.
+# Establish all required directories.
 .zi-prepare-home() {
   [[ -n ${ZI[HOME_READY]} ]] && return
   ZI[HOME_READY]=1
-  [[ ! -d ${ZI[HOME_DIR]} ]] && {
-    command mkdir  -p "${ZI[HOME_DIR]}"
-    # For compaudit.
+  if [[ ! -d ${ZI[HOME_DIR]} ]]; then
+    command mkdir -p "${ZI[HOME_DIR]}"
     command chmod go-w "${ZI[HOME_DIR]}"
-    # Also set up */bin and ZPFX in general.
-    command mkdir 2>/dev/null -p $ZPFX/bin
-  }
-  [[ ! -d ${ZI[ZMODULES_DIR]} ]] && {
+  fi
+  # Set up $ZPFX
+  if [[ ! -d ${ZPFX}/bin ]]; then
+    command mkdir -p "${ZPFX}/bin"
+  fi
+  if [[ ! -d ${ZPFX}/sbin ]]; then
+    command mkdir -p "${ZPFX}/sbin"
+  fi
+  if [[ ! -d ${ZPFX}/lib ]]; then
+    command mkdir -p "${ZPFX}/lib"
+    command chmod go-w "${ZPFX}/lib"
+  fi
+  if [[ ! -d ${ZPFX}/share ]]; then
+    command mkdir -p "${ZPFX}/share"
+    command chmod go-w "${ZPFX}/share"
+  fi
+  if [[ ! -d ${ZI[MAN_DIR]} ]]; then
+    command mkdir 2>/dev/null -p ${~ZI[MAN_DIR]}/man{1..9}
+    command chmod -R go-w "${ZI[MAN_DIR]}"
+  fi
+  if [[ ! -d ${ZI[CACHE_DIR]} ]]; then
+    command mkdir -p "${ZI[CACHE_DIR]}"
+    command chmod go-w "${ZI[CACHE_DIR]}"
+  fi
+  if [[ ! -d ${ZI[CONFIG_DIR]} ]]; then
+    command mkdir -p "${ZI[CONFIG_DIR]}"
+    command chmod go-w "${ZI[CONFIG_DIR]}"
+  fi
+  if [[ ! -d ${ZI[LOG_DIR]} ]]; then
+    command mkdir -p "${ZI[LOG_DIR]}"
+    command chmod go-w "${ZI[LOG_DIR]}"
+  fi
+  if [[ ! -d ${ZI[ZMODULES_DIR]} ]]; then
     command mkdir -p "${ZI[ZMODULES_DIR]}"
-    # For compaudit.
     command chmod go-w "${ZI[ZMODULES_DIR]}"
-  }
-  [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]] && {
+  fi
+  if [[ ! -d ${ZI[PLUGINS_DIR]}/_local---zi ]]; then
     command rm -rf "${ZI[PLUGINS_DIR]:-${TMPDIR:-/tmp}/132bcaCAB}/_local---zi"
     command mkdir -p "${ZI[PLUGINS_DIR]}/_local---zi"
     command chmod go-w "${ZI[PLUGINS_DIR]}"
     command ln -s "${ZI[BIN_DIR]}/lib/_zi" "${ZI[PLUGINS_DIR]}/_local---zi"
-    # Also set up */bin and ZPFX in general.
-    command mkdir 2>/dev/null -p $ZPFX/bin
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     .zi-clear-completions &>/dev/null
     .zi-compinit &>/dev/null
-  }
-  [[ ! -d ${ZI[COMPLETIONS_DIR]} ]] && {
+  fi
+  if [[ ! -d ${ZI[COMPLETIONS_DIR]} ]]; then
     command mkdir "${ZI[COMPLETIONS_DIR]}"
-    # For compaudit.
     command chmod go-w "${ZI[COMPLETIONS_DIR]}"
     # Symlink _zi completion into _local---zi directory.
     command ln -s "${ZI[PLUGINS_DIR]}/_local---zi/_zi" "${ZI[COMPLETIONS_DIR]}"
-    # Also set up */bin and ZPFX in general.
-    command mkdir 2>/dev/null -p $ZPFX/bin
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
     .zi-compinit &>/dev/null
-  }
-  [[ ! -d ${ZI[SNIPPETS_DIR]} ]] && {
+  fi
+  if [[ ! -d ${ZI[SNIPPETS_DIR]} ]]; then
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
     command chmod go-w "${ZI[SNIPPETS_DIR]}"
     ( builtin cd ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
-    # Also create the SERVICES_DIR.
     command mkdir -p "${ZI[SERVICES_DIR]}"
     command chmod go-w "${ZI[SERVICES_DIR]}"
-    # Also set up */bin and ZPFX in general.
-    command mkdir 2>/dev/null -p $ZPFX/bin
-  }
+  fi
 } # ]]]
 # FUNCTION: .zi-load-object. [[[
 .zi-load-object() {
@@ -1665,7 +1726,7 @@ builtin setopt noaliases
     elif [[ $rwmsg == (#b)((http(s|)|ftp(s|)|rsync|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
       .zi-formatter-url $rwmsg
     elif [[ $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
-      REPLY=${ZI[col-ice]}$rwmsg${ZI[col-rst]}      
+      REPLY=${ZI[col-ice]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == (OMZ|PZT|PZTM|OMZP|OMZT|OMZL)::* || $rwmsg == [^/]##/[^/]## || -d ${ZI[PLUGINS_DIR]}/${rwmsg//\//---} ]]; then
       .zi-formatter-pid $rwmsg
     elif [[ $rwmsg == (${~ZI[cmd-list]}|${(~j:|:)ecmds}) ]]; then
@@ -2568,7 +2629,7 @@ zi() {
               .zi-forget-completion "$___f"
               +zi-message "Initializing completion system ({func}compinit{rst}){…}"
               builtin autoload -Uz compinit
-              compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+              compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
             else
               ___retval=1
             fi
@@ -2586,7 +2647,7 @@ zi() {
               .zi-forget-completion "$___f"
               +zi-message "Initializing completion system ({func}compinit{rst}){…}"
               builtin autoload -Uz compinit
-              compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+              compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
             else
               ___retval=1
             fi
@@ -2600,7 +2661,7 @@ zi() {
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
           [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "Initializing completion ({func}compinit{rst}){…}"
           builtin autoload -Uz compinit
-          compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+          compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           ;;
         (cuninstall)
           if [[ -z $2 && -z $3 ]]; then
@@ -2611,7 +2672,7 @@ zi() {
             .zi-uninstall-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
             +zi-message "Initializing completion ({func}compinit{rst}){…}"
             builtin autoload -Uz compinit
-            compinit -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+            compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           fi
           ;;
         (csearch)
@@ -2721,7 +2782,7 @@ zicdclear() { .zi-compdef-clear -q; }
 # A function that can be invoked from within `atinit', `atload', etc. ice-mod.
 # It runs `autoload compinit; compinit' and respects
 # ZI[ZCOMPDUMP_PATH] and ZI[COMPINIT_OPTS].
-zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 # ]]]
 # FUNCTION: zicompinit_fast. [[[
 # Checking the cached .zcompdump file to see if it must be regenerated adds a noticable delay to zsh startup.
@@ -2730,7 +2791,7 @@ zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]:-${XDG_D
 # A function that can be invoked from within `atinit', `atload'
 zicompinit_fast() {
   autoload -Uz compinit
-  local zcompf="${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}"
+  local zcompf="${ZI[ZCOMPDUMP_PATH]}"
   #local check_ub="$(awk -F= '/^NAME/{print $2}' /etc/os-release | grep 'Ubuntu')"
   local zcompf_a="${zcompf}.augur"
   #[[ $check_ub ]] && export skip_global_compinit=1
@@ -2767,14 +2828,14 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # FUNCTION: zi-turbo. [[[
 # With zi-turbo first argument is a wait time and suffix, i.e. "0a".
 # Anything that doesn't match will be passed as if it were an ice mod.
-# Default ices depth'3' and lucid, allowed values [0-9][a-d].
-zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-d]/wait"${1}"} "${@:2}"; }
+# Default ices depth'3' and lucid, allowed values [0-9][a-c].
+zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-c]/wait"${1}"} "${@:2}"; }
 # ]]]
 # Compatibility functions. [[[
 ❮▼❯() { zi "$@"; }
 zpcdreplay() { .zi-compdef-replay -q; }
 zpcdclear() { .zi-compdef-clear -q; }
-zpcompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zpcompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 
 #

@@ -1479,6 +1479,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     reply+=( $list[1] )
   }
   [[ -n $reply ]]
+}
 # ]]]
 # FUNCTION: ziextract [[[
 # If the file is an archive, it is extracted by this function.

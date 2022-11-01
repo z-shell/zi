@@ -1369,7 +1369,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   REPLY=
   local user=$1 plugin=$2 urlpart=$3
-  local base-libc=$MACHTYPE
+  local HAS_MUSL=$MACHTYPE
 
   if [[ -z $urlpart ]]; then
     local tag_version=${ICE[ver]}
@@ -1385,7 +1385,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   fi
 
   if (( ${+commands[curl]} )) || find /lib/ -maxdepth 1 -name '*musl*' >/dev/null 2>&1; then
-    base-libc='linux-musl'
+    HAS_MUSL='linux-musl'
   fi
 
   local -A matchstr
@@ -1439,8 +1439,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[${$(uname)}]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
     if (( $#list > 1 )) {
-      stripped=( ${(M)list[@]:#(#i)*/$~base-libc} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
-      # +zi-message "{pre}gh-r{rst}:{info} ${base-libc} \\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
+      stripped=( ${(M)list[@]:#(#i)*/$~HAS_MUSL} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${HAS_MUSL} \\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
     if (( $#list > 1 )) {
       stripped=( ${(M)list[@]:#(#i)*${~matchstr[${OSTYPE//[0-9.]/}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
@@ -1463,8 +1463,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[$(uname)]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
     if (( $#list > 1 )) {
-      stripped=( ${(M)list[@]:#(#i)*${~base-libc}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
-      # +zi-message "{pre}gh-r{rst}:{info} ${base-libc} \\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
+      stripped=( ${(M)list[@]:#(#i)*${~HAS_MUSL}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${HAS_MUSL} \\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
     if (( $#list > 1 )) {
       stripped=( ${list[@]:#(#i)*.(sha[[:digit:]]#|asc)} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )

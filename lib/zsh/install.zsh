@@ -1359,6 +1359,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   return $?
 }
 # ]]]
+
 # FUNCTION: .zi-get-latest-gh-r-url-part [[[
 # Gets version string of latest release of given Github package.
 # Connects to Github releases page.
@@ -1368,6 +1369,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   REPLY=
   local user=$1 plugin=$2 urlpart=$3
+  local base-libc=$MACHTYPE
 
   if [[ -z $urlpart ]]; then
     local tag_version=${ICE[ver]}
@@ -1382,101 +1384,101 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     local url=https://$urlpart
   fi
 
+  if (( ${+commands[curl]} )) || find /lib/ -maxdepth 1 -name '*musl*' >/dev/null 2>&1; then
+    base-libc='linux-musl'
+  fi
+
   local -A matchstr
   matchstr=(
-    i386      "((amd32|386|686|linux32|x86*(#e))~*x86_84*)"
-    i686      "((amd32|386|686|linux32|x86*(#e))~*x86_64*)"
-    amd32     "((amd32|386|686|linux32|x86*(#e))~*x86_64*)"
-    x86_64    "(amd64|x86_64|intel|linux64)"
-    amd64     "(amd64|x86_64|intel|linux64)"
-    linux     "(linux|linux-gnu)"
-    darwin    "(darwin|mac|macos|macosx|osx|os-x)"
-    mingw     "(windows|windows-gnu|mingw|mingw64|mingw-w32|mingw-w64|[-_]win|win64|win32|winnt|winnt64)"
-    cygwin    "(windows|windows-gnu|cygwin|[-_]win|win64|win32|winnt|winnt64)"
-    windows   "(windows|windows-gnu|cygwin|[-_]win|win64|win32|winnt|winnt64)"
-    aarch64   "(aarch64|arm64|arm64v8|armv8|armv8l|arm64v8l)"
-    aarch64-2 "arm"
-    arm64     "(aarch64|arm64|arm64v8|armv8|armv8l|arm64v8l)"
-    arm64-2   "arm"
-    armv8l    "(aarch64|arm64|arm64v8|armv8|armv8l|arm64v8l)"
-    armv8l-2  "arm"
-    armv7l    "(arm7|armv7)"
-    armv7l-2  "arm"
-    armv6l    "(arm6|armv6)"
-    armv6l-2  "arm"
-    armv5l    "(arm5|armv5)"
-    armv5l-2  "arm"
+    aarch64 '(arm64|aarch64|arm[?v]8)'
+    arm64 '(arm64|aarch64|arm[?v]8)'
+    armv5 'arm[?v]5'
+    armv6 'arm[?v]6'
+    armv7 'armv[?v]7'
+    amd64 '(amd|amd64|x64|x86|x86_64|64bit|)*~*(linux32|eabi(hf|)|powerpc|ppc64(le|)|[-_]mips*|aarch64|riscv(64|)|s390x|[-_.]arm*)*'
+    x86_64 '(amd|amd64|x64|x86|x86_64|64bit|)*~*(linux32|eabi(hf|)|powerpc|ppc64(le|)|[-_]mips*|aarch64|riscv(64|)|s390x|[-_.]arm*)*'
+    linux "*(linux-musl|musl|linux64|linux)*~^*(linux*${MACHTYPE}|${CPUTYPE}*linux)*"
+    linux-android '(apk|android|linux-android)'
+    linux-gnu "*(linux-musl|musl|linux)*~^*(${MACHTYPE}|${CPUTYPE}|)*"
+    linux-musl "*(linux-musl|musl|linux-~gnu|linux)*~^*(${MACHTYPE}|${CPUTYPE}|)*"
+    darwin '*((#s)|/)*(apple|darwin|mac|macos|os(-|)x|dmg)*((#e)|/)*'
+    cygwin '(win((dows|32|64))|cygwin)'
+    msys '(win((dows|32|64))|cygwin)'
+    windows '(win((dows|32|64))|cygwin)'
   )
 
   local -a list init_list
-
   init_list=( ${(@f)"$( { .zi-download-file-stdout $url || .zi-download-file-stdout $url 1; } 2>/dev/null | \
     command grep -o 'href=./'$user'/'$plugin'/releases/download/[^"]\+')"} )
   init_list=( ${init_list[@]#href=?} )
-
-  local -a list2 bpicks
+  local -a stripped bpicks
   bpicks=( ${(s.;.)ICE[bpick]} )
   [[ -z $bpicks ]] && bpicks=( "" )
   local bpick
-
   reply=()
   for bpick ( "${bpicks[@]}" ) {
     list=( $init_list )
+    if [[ -n $bpick ]] { list=( ${(M)list[@]:#(#i)*/$~bpick} ) }
+    stripped=( ${list[@]:#(#i)*([3-6]86|md5|sig|asc|txt|vsix|sum|sha256*|pkg|.sh(#e))*} )
+    (( $#stripped > 0 )) && list=( ${stripped[@]} )
 
-    if [[ -n $bpick ]] {
-      list=( ${(M)list[@]:#(#i)*/$~bpick} )
-    }
+    if (( $#list > 1 && ${+commands[anbox]} == 1 )) { stripped=( ${(M)list[@]:#(#i)*${~matchstr[linux-android]}*} ) } \
+    else { stripped=( ${list[@]:#(#i)*${~matchstr[linux-android]}*} ) }
+    (( $#stripped > 0 )) && list=( ${stripped[@]} )
 
-    if (( $#list > 1 )) {
-      list2=( ${(M)list[@]:#(#i)*${~matchstr[$MACHTYPE]:-${MACHTYPE#(#i)(i|amd)}}*} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    if (( $#list > 1 && ${+commands[dpkg-deb]} == 1 )) { stripped=( ${list[@]:#(#i)*(64|)*deb(#e)} ) } \
+    else { stripped=( ${list[@]:#*deb(#e)} ) }
+    (( $#stripped > 0 )) && list=( ${stripped[@]} )
 
-    if (( ${#list} > 1 && ${#matchstr[${MACHTYPE}-2]} )) {
-      list2=( ${(M)list[@]:#(#i)*${~matchstr[${MACHTYPE}-2]:-${MACHTYPE#(#i)(i|amd)}}*} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
-
-    if (( $#list > 1 )) {
-      list2=( ${(M)list[@]:#(#i)*${~matchstr[$CPUTYPE]:-${CPUTYPE#(#i)(i|amd)}}*} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
-    }
+    if (( $#list > 1 && ${+commands[rpm]} == 1 )) { stripped=( ${list[@]:#(#i)*(64|)*rpm(#e)} ) } \
+    else { stripped=( ${list[@]:#*rpm(#e)} ) }
+    (( $#stripped > 0 )) && list=( ${stripped[@]} )
 
     if (( $#list > 1 )) {
-      list2=( ${(M)list[@]:#(#i)*${~matchstr[${${OSTYPE%(#i)-(gnu|musl)}%%(-|)[0-9.]##}]:-${${OSTYPE%(#i)-(gnu|musl)}%%(-|)[0-9.]##}}*} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
+      stripped=( ${(M)list[@]:#(#i)*${~matchstr[${$(uname)}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[${$(uname)}]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
-
     if (( $#list > 1 )) {
-      list2=( ${list[@]:#(#i)*.(sha[[:digit:]]#|asc)} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
+      stripped=( ${(M)list[@]:#(#i)*/$~base-libc} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${base-libc} \\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
-
-    if (( $#list > 1 && $+commands[dpkg-deb] )) {
-      list2=( ${list[@]:#*.deb} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
+    if (( $#list > 1 )) {
+      stripped=( ${(M)list[@]:#(#i)*${~matchstr[${OSTYPE//[0-9.]/}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[${OSTYPE//[0-9.]/}]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
-
-    if (( $#list > 1 && $+commands[rpm] )) {
-      list2=( ${list[@]:#*.rpm} )
-      (( $#list2 > 0 )) && list=( ${list2[@]} )
+    if (( $#list > 1 )) {
+      stripped=( ${(M)list[@]:#(#i)*${~matchstr[${CPUTYPE}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[${CPUTYPE}]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
     }
-
+    if (( $#list > 1 )) {
+      stripped=( ${(M)list[@]:#(#i)*${~matchstr[${OSTYPE//[0-9.]/}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[${OSTYPE//[0-9.]/}]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
+    }
+    if (( $#list > 1 )) {
+      stripped=( ${(M)list[@]:#(#i)*${~matchstr[${MACHTYPE}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[${MACHTYPE}]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
+    }
+    if (( $#list > 1 )) {
+      stripped=( ${(M)list[@]:#(#i)*${~matchstr[${$(uname)}]}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${matchstr[$(uname)]}\\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
+    }
+    if (( $#list > 1 )) {
+      stripped=( ${(M)list[@]:#(#i)*${~base-libc}*} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+      # +zi-message "{pre}gh-r{rst}:{info} ${base-libc} \\n{obj}${(pj:\n:)${(@)list[1,5]:t}}{rst}"
+    }
+    if (( $#list > 1 )) {
+      stripped=( ${list[@]:#(#i)*.(sha[[:digit:]]#|asc)} ) && (( $#stripped > 0 )) && list=( ${stripped[@]} )
+    }
     if (( !$#list )) {
-      +zi-message -n "{error}Didn't find correct Github" "release-file to download"
-      if [[ -n $bpick ]] {
-        +zi-message -n ", try adapting {obj}bpick{error}-ICE" "({auto}current bpick{ehi}:{rst} {file}${bpick}{error})"
-      } else {
-        +zi-message -n .
-      }
+      +zi-message -n "{pre}gh-r:{error} failed to find the correct GitHub release asset to download"
+      if [[ -n $bpick ]] { +zi-message -n ", modify {obj}bpick{error}-ICE (current bpick{error}: {file}${bpick}{error})." } \
+      else { +zi-message -n . }
       +zi-message '{rst}'
       return 1
     }
-
     reply+=( $list[1] )
   }
-  [[ -n $reply ]] # testable
-}
+  [[ -n $reply ]]
 # ]]]
 # FUNCTION: ziextract [[[
 # If the file is an archive, it is extracted by this function.

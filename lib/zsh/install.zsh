@@ -610,13 +610,13 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   done
 
   +zi-message "Initializing completion ({func}compinit{rst}){…}"
-  command rm -f ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump}
+  command rm -f "${ZI[ZCOMPDUMP_PATH]}"
 
   # Workaround for a nasty trick in _vim
   (( ${+functions[_vim_files]} )) && unfunction _vim_files
 
   builtin autoload -Uz compinit
-  compinit ${${(M)use_C:#1}:+-C} -d ${ZI[ZCOMPDUMP_PATH]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.zcompdump} "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+  compinit ${${(M)use_C:#1}:+-C} -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
 } # ]]]
 # FUNCTION: .zi-download-file-stdout [[[
 # Downloads file to stdout.

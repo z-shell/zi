@@ -163,16 +163,16 @@
   # Copy from .zi-recall
   local -a ice_order nval_ices
   ice_order=(
-  ${(s.|.)ZI[ice-list]}
-  # Include all additional ices – after stripping them from the possible: ''
-  ${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
+    ${(As:|:)ZI[ice-list]}
+    # Include all additional ices – after stripping them from the possible: ''
+    ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   nval_ices=(
-  ${(s.|.)ZI[nval-ice-list]}
-  # Include only those additional ices, don't have the '' in their name, i.e aren't designed to hold value
-  ${(@)${(@)${(@Akons:|:)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
-  # Must be last
-  svn
+    ${(As:|:)ZI[nval-ice-list]}
+    # Include only those additional ices, don't have the '' in their name, i.e aren't designed to hold value
+    ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}
+    # Must be last
+    svn
   )
   # Remove whitespace from beginning of URL
   ___URL="${${___URL#"${___URL%%[! $'\t']*}"}%/}"
@@ -307,16 +307,16 @@
   # Copy from .zi-recall
   local -a ice_order nval_ices
   ice_order=(
-    ${(s.|.)ZI[ice-list]}
-  # Include all additional ices – after stripping them from the possible: ''
-    ${(@)${(@Akons:|:)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
+    ${(As:|:)ZI[ice-list]}
+    # Include all additional ices – after stripping them from the possible: ''
+    ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   nval_ices=(
-  ${(s.|.)ZI[nval-ice-list]}
-  # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
-  ${(@)${(@)${(@Akons:|:)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
-  # Must be last
-  svn
+    ${(As:|:)ZI[nval-ice-list]}
+    # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
+    ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}
+    # Must be last
+    svn
   )
   command mkdir -p "$___pfx"
   local ___key ___var_name

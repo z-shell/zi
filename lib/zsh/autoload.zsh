@@ -1407,9 +1407,9 @@ ZI[EXTENDED_GLOB]=""
         # Run annexes' atpull hooks (the before atpull-ice ones).
         # The gh-r / GitHub releases block.
         reply=(
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
         )
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -1482,9 +1482,9 @@ ZI[EXTENDED_GLOB]=""
         # Run annexes' atpull hooks (the before atpull-ice ones).
         # The regular Git-plugins block.
         reply=(
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-pre <->]}
-          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
-          ${(on)ZI_EXTS2[(I)zi hook:e-\\\!atpull-post <->]}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
         )
         for key in "${reply[@]}"; do
           arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
@@ -1528,7 +1528,7 @@ ZI[EXTENDED_GLOB]=""
       # Block common for Git and gh-r plugins.
       reply=(
         ${(on)ZI_EXTS2[(I)zi hook:no-e-\\\!atpull-pre <->]}
-        ${${ICE[atpull]:#\!*}:+${(on)ZI_EXTS[(I)z-annex hook:\\\!atpull-<-> <->]}}
+        ${${ICE[atpull]:#\!*}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
         ${(on)ZI_EXTS2[(I)zi hook:no-e-\\\!atpull-post <->]}
       )
       for key in "${reply[@]}"; do
@@ -2169,8 +2169,9 @@ ZI[EXTENDED_GLOB]=""
     unpacked=( "${(Q@)${(z@)c}}" )
     [[ "${#unpacked[1]}" -gt "$longest" ]] && longest="${#unpacked[1]}"
   done
+  # unpacked=( "${(Q)${(z@)c}[@]}" )
   for c in "${packs[@]}"; do
-    unpacked=( "${(Q)${(z@)c}[@]}" )
+    unpacked=( "${(Q@)${(z@)c}}" )
     .zi-any-colorify-as-uspl2 "$unpacked[2]"
     builtin print -n "${(r:longest+1:: :)unpacked[1]} $REPLY"
 
@@ -2660,9 +2661,9 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   if [[ "$user" != "_local" && -n "$user" ]]; then
     builtin print "${ZI[col-info]}Creating Github repository${ZI[col-rst]}"
     if [[ $isorg = (y|yes) ]]; then
-      curl --silent -u "$user" https://api.github.com/orgs/$org/repos -d '{"name":"'"$plugin"'"}' >/dev/null
+      command curl --silent -u "$user" https://api.github.com/orgs/$org/repos -d '{"name":"'"$plugin"'"}' >/dev/null
     else
-      curl --silent -u "$user" https://api.github.com/user/repos -d '{"name":"'"$plugin"'"}' >/dev/null
+      command curl --silent -u "$user" https://api.github.com/user/repos -d '{"name":"'"$plugin"'"}' >/dev/null
     fi
     command git clone "https://github.com/${${${(M)isorg:#(y|yes)}:+$org}:-$user}/${plugin}.git" "${${${(M)isorg:#(y|yes)}:+$org}:-$user}---${plugin//\//---}" || {
       builtin print "${ZI[col-error]}Creation of remote repository $uspl2col ${ZI[col-error]}failed${ZI[col-rst]}"
@@ -2820,30 +2821,30 @@ EOF
   local user="${reply[-2]}" plugin="${reply[-1]}"
   .zi-exists-physically-message "$user" "$plugin" || return 1
   .zi-first "$1" "$2" || {
-  builtin print "${ZI[col-error]}No source file found, cannot stress${ZI[col-rst]}"
-  return 1
+    builtin print "${ZI[col-error]}No source file found, cannot stress${ZI[col-rst]}"
+    return 1
   }
   local pdir_path="${reply[-2]}" fname="${reply[-1]}"
   integer compiled=1
   [[ -e "${fname}.zwc" ]] && command rm -f "${fname}.zwc" || compiled=0
   local -a ZI_STRESS_TEST_OPTIONS
   ZI_STRESS_TEST_OPTIONS=(
-  "NO_SHORT_LOOPS" "IGNORE_BRACES" "IGNORE_CLOSE_BRACES"
-  "SH_GLOB" "CSH_JUNKIE_QUOTES" "NO_MULTI_FUNC_DEF"
+    "NO_SHORT_LOOPS" "IGNORE_BRACES" "IGNORE_CLOSE_BRACES"
+    "SH_GLOB" "CSH_JUNKIE_QUOTES" "NO_MULTI_FUNC_DEF"
   )
   (
-  builtin emulate -LR ksh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin unsetopt shglob kshglob
-  for i in "${ZI_STRESS_TEST_OPTIONS[@]}"; do
-    builtin setopt "$i"
-    builtin print -n "Stress-testing ${fname:t} for option $i "
-      zcompile -UR "${fname}" 2>/dev/null && {
-      builtin print "[${ZI[col-success]}Success${ZI[col-rst]}]"
-    } || {
-      builtin print "[${ZI[col-failure]}Fail${ZI[col-rst]}]"
-    }
-    builtin unsetopt "$i"
-  done
+    builtin emulate -LR ksh ${=${options[xtrace]:#off}:+-o xtrace}
+    builtin unsetopt shglob kshglob
+    for i in "${ZI_STRESS_TEST_OPTIONS[@]}"; do
+      builtin setopt "$i"
+      builtin print -n "Stress-testing ${fname:t} for option $i "
+        zcompile -UR "${fname}" 2>/dev/null && {
+        builtin print "[${ZI[col-success]}Success${ZI[col-rst]}]"
+      } || {
+        builtin print "[${ZI[col-failure]}Fail${ZI[col-rst]}]"
+      }
+      builtin unsetopt "$i"
+    done
   )
   command rm -f "${fname}.zwc"
   (( compiled )) && zcompile -U "${fname}"
@@ -2857,7 +2858,7 @@ EOF
   builtin print "Recorded compdefs:"
   local cdf
   for cdf in "${ZI_COMPDEF_REPLAY[@]}"; do
-  builtin print "compdef ${(Q)cdf}"
+    builtin print "compdef ${(Q)cdf}"
   done
 } # ]]]
 # FUNCTION: .zi-ls [[[
@@ -2909,14 +2910,14 @@ EOF
   local el val cand1 cand2 local_dir filename is_snippet
   local -a ice_order nval_ices output
   ice_order=(
-    ${(s.|.)ZI[ice-list]}
+    ${(As:|:)ZI[ice-list]}
     # Include all additional ices – after stripping them from the possible: ''
     ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
   nval_ices=(
-    ${(s.|.)ZI[nval-ice-list]}
+    ${(As:|:)ZI[nval-ice-list]}
     # Include only those additional ices, don't have the '' in their name, i.e. aren't designed to hold value
-    ${(@)${(@)${(@Akons:|:u)ZI_EXTS[ice-mods]}:#*\'\'*}/(#s)<->-/}
+    ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}
     # Must be last
     svn
   )
@@ -3118,6 +3119,6 @@ sleep 0.08 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} {mdsh}{rst} {
 .zi-registered-ice-mods() {
   +zi-message "{mmdsh}{info} Registered ice-modifiers{ehi}:{rst}"
   local -a ice_order
-  ice_order=( ${${(s.|.)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
+  ice_order=( ${${(As:|:)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
   +zi-message "${ice_order[*]}"
 } # ]]]

@@ -1,16 +1,68 @@
 {
   "conventionalCommits.scopes": [
     "maintenance",
-    "workspace",
-    "community",
-    "general",
-    "misc"
+    "library",
+    "feature",
+    "refactor",
+    "style",
+    "chore",
+    "revert",
+    "docs",
+    "deps",
+    "misc",
+    "build",
+    "perf",
+    "test",
+    "fix",
+    "ci"
   ],
-  "markdownlint.config": {
-    "extends": ".github/.markdownlint.yaml"
-  },
-  "prettier.configPath": ".github/.prettierrc",
   "shellformat.useEditorConfig": true,
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "NOTE",
+    "[ ]",
+    "[x]"
+  ],
+  "todo-tree.highlights.customHighlight": {
+    "TODO": {
+      "icon": "tools",
+      "type": "line",
+      "fontWeight": "bold",
+      "iconColour": "#2fca2f",
+      "background": "#00ff00",
+      "opacity": 0.1
+    },
+    "BUG": {
+      "icon": "bug",
+      "type": "line",
+      "fontWeight": "bold",
+      "iconColour": "#ff0000",
+      "background": "#ff0000",
+      "opacity": 0.2
+    },
+    "HACK": {
+      "icon": "tools"
+    },
+    "FIXME": {
+      "icon": "flame",
+      "type": "line",
+      "fontWeight": "bold",
+      "iconColour": "#ffff00",
+      "background": "#ffff00",
+      "opacity": 0.1
+    },
+    "NOTE": {
+      "icon": "info",
+      "type": "line",
+      "fontWeight": "bold",
+      "iconColour": "#0077ff",
+      "background": "#0077ff",
+      "opacity": 0.1
+    }
+  },
   "files.associations": {
     "*za-*": "shellscript"
   },

@@ -5,7 +5,6 @@
 # Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
 # Distributed under the terms of the MIT License.
 
-typeset -gx ZPFX PMSPEC=0fuUpiPsX
 typeset -gaH ZI_REGISTERED_PLUGINS ZI_TASKS ZI_RUN
 typeset -ga zsh_loaded_plugins
 if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
@@ -13,6 +12,9 @@ if (( !${#ZI_TASKS} )) { ZI_TASKS=( "<no-data>" ); }
 # Rename snippets URL -> NAME.
 typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS ZI_EXTS2
 typeset -gaH ZI_COMPDEF_REPLAY
+
+# The specified names are marked for automatic export to the environment of subsequently executed commands.
+typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPsX
 
 # Compatibility for previous versions.
 typeset -gAH ZINIT
@@ -26,7 +28,7 @@ multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!
 countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
 subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
 
-# In no value value, i.e. not designed to hold value.
+# In no value, i.e. not designed to hold value.
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|reset"
@@ -49,11 +51,11 @@ ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
 
 # Check if ZI[BIN_DIR] is established correctly.
 if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
-  builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ ZI ❯ Git repository is.%f"
+  builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ Zi ❯ Git repository is.%f"
   return 1
 fi
 
-# Establish ZI[HOME_DIR]
+# Zi home path for creating working directories.
 if [[ -z $ZI[HOME_DIR] ]]; then
   if [[ -d $HOME ]]; then
     ZI[HOME_DIR]="${HOME}/.zi"
@@ -66,7 +68,7 @@ if [[ -z $ZI[HOME_DIR] ]]; then
   fi
 fi
 
-# Establish ZI[CACHE_DIR]
+# Directory for Zi cache files.
 if [[ -z $ZI[CACHE_DIR] ]]; then
   if [[ -d ${HOME}/.cache ]]; then
     ZI[CACHE_DIR]="${HOME}/.cache/zi"
@@ -81,7 +83,7 @@ if [[ -z $ZI[CACHE_DIR] ]]; then
   fi
 fi
 
-# Establish ZI[CONFIG_DIR]
+# Directory for Zi configuration files.
 if [[ -z $ZI[CONFIG_DIR] ]]; then
   if [[ -d ${HOME}/.config ]]; then
     ZI[CONFIG_DIR]="${HOME}/.config/zi"
@@ -94,9 +96,16 @@ if [[ -z $ZI[CONFIG_DIR] ]]; then
   fi
 fi
 
-# Base Directory Specification
+# Base Directories
+# https://wiki.zshell.dev/docs/guides/customization#customizing-paths
+# User/Device specific directory for software/data files.
+# https://wiki.zshell.dev/community/zsh_plugin_standard#global-parameter-with-prefix
 : ${ZPFX:=${ZI[HOME_DIR]}/polaris}
+# Directory to store manpage.
 : ${ZI[MAN_DIR]:=${ZPFX}/man}
+# The cdpath variable sets the search path for the cd command.
+: ${ZI[CDPATH_DIR]:=${ZPFX}/usr/cd_path}
+: ${ZI[MAIL_DIR]:=${ZPFX}/usr/mail}
 : ${ZI[LOG_DIR]:=${ZI[CACHE_DIR]}/log}
 : ${ZI[THEMES_DIR]:=${ZI[HOME_DIR]}/themes}
 : ${ZI[PLUGINS_DIR]:=${ZI[HOME_DIR]}/plugins}
@@ -105,8 +114,11 @@ fi
 : ${ZI[ZMODULES_DIR]:=${ZI[HOME_DIR]}/zmodules}
 : ${ZI[ZCOMPDUMP_PATH]:=${ZI[CACHE_DIR]}/.zcompdump}
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
+# Additional/Optional directories for software/data files.
+: ${ZI[NODE_PATH_DIR]:=${ZPFX}/lib/node_modules}
 
 # Base Directory Specification (XDG)
+# https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 : ${XDG_ZI_HOME:=${ZI[HOME_DIR]}}
 : ${XDG_ZI_CACHE:=${ZI[CACHE_DIR]}}
 : ${XDG_ZI_CONFIG:=${ZI[CONFIG_DIR]}}
@@ -117,7 +129,9 @@ fi
 
 ZI[HOME_DIR]=${~ZI[HOME_DIR]}
 ZI[MAN_DIR]=${~ZI[MAN_DIR]}
+ZI[CDPATH_DIR]=${~ZI[CDPATH_DIR]}
 ZI[LOG_DIR]=${~ZI[LOG_DIR]}
+ZI[MAIL_DIR]=${~ZI[MAIL_DIR]}
 ZI[CACHE_DIR]=${~ZI[CACHE_DIR]}
 ZI[THEMES_DIR]=${~ZI[THEMES_DIR]}
 ZI[CONFIG_DIR]=${~ZI[CONFIG_DIR]}
@@ -127,16 +141,56 @@ ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]}
 ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
 ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]}
+ZI[NODE_PATH_DIR]=${~ZI[NODE_PATH_DIR]}
 
-typeset -gx XDG_ZI_HOME=${~ZI[HOME_DIR]} ZPFX=${~ZPFX}
-typeset -gx XDG_ZI_CACHE=${~ZI[CACHE_DIR]} XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
+ZPFX=${~ZPFX}
+XDG_ZI_HOME=${~ZI[HOME_DIR]}
+XDG_ZI_CACHE=${~ZI[CACHE_DIR]}
+XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
 
-[[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]] && manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
-[[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d "${ZPFX}/bin" ]] && path=( "${ZPFX}/bin" "${path[@]}" )
-[[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d "${ZPFX}/sbin" ]] && path=( "${ZPFX}/sbin" "${path[@]}" )
-[[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]] && fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
+if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]]; then
+  typeset -gxU manpath MANPATH
+  manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
+fi
 
-typeset -gU PATH path
+if [[ -z ${cdpath[(re)${ZI[CDPATH_DIR]}]} ]] && [[ -d ${ZI[CDPATH_DIR]} ]]; then
+  typeset -gxU cdpath CDPATH
+  builtin setopt auto_cd
+  cdpath=( "${ZI[CDPATH_DIR]}" "${cdpath[@]}" )
+fi
+
+if [[ -z ${mailpath[(re)${ZI[MAIL_DIR]}]} ]]; then
+  typeset -gxU mailpath MAILPATH
+  mailpath=( "${ZI[MAIL_DIR]}" "${mailpath[@]}" )
+fi
+
+if [[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d ${ZPFX}/bin ]]; then
+  typeset -gxU path PATH
+  path=( "${ZPFX}/bin" "${path[@]}" )
+fi
+
+if [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d ${ZPFX}/sbin ]]; then
+  typeset -gxU path PATH
+  path=( "${ZPFX}/sbin" "${path[@]}" )
+fi
+
+if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then
+  typeset -gxU fpath FPATH
+  fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
+fi
+
+# Export/assign/tie new paths.
+if [[ -z ${logpath[(re)${ZI[LOG_DIR]}]} ]] && [[ -d ${ZI[LOG_DIR]} ]]; then
+  typeset -gxU logpath LOG_PATH
+  typeset -gxTU LOG_PATH logpath
+  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
+fi
+
+if [[ -z ${nodepath[(re)${ZI[NODE_PATH_DIR]}]} ]] && [[ -d ${ZI[NODE_PATH_DIR]} ]]; then
+  typeset -gxU nodepath NODE_PATH
+  typeset -gxTU NODE_PATH nodepath
+  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
+fi
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"
 ZI[DOWNAR]=";:^[[B;:^[OB;:\\e[B;:\\eOB;:${termcap[kd]/$'\e'/^\[};:${terminfo[kcud1]/$'\e'/^\[};:"
@@ -151,7 +205,7 @@ is-at-least 5.1 && ZI[NEW_AUTOLOAD]=1 || ZI[NEW_AUTOLOAD]=0
 ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
 # ]]]
 # Parameters - ICE. [[[
-declare -gA ZI_1MAP ZI_2MAP
+typeset -gA ZI_1MAP ZI_2MAP
 ZI_1MAP=(
   OMZ:: https://github.com/ohmyzsh/ohmyzsh/trunk/
   OMZP:: https://github.com/ohmyzsh/ohmyzsh/trunk/plugins/
@@ -170,8 +224,8 @@ ZI_2MAP=(
 )
 # ]]]
 # Initiate. [[[
-zmodload zsh/zutil || { builtin print -P "%F{196}zsh/zutil module is required, aborting ❮ ZI ❯ set up.%f"; return 1; }
-zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is required, aborting ❮ ZI ❯ set up.%f"; return 1; }
+zmodload zsh/zutil || { builtin print -P "%F{196}zsh/zutil module is required, aborting ❮ Zi ❯ set up.%f"; return 1; }
+zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is required, aborting ❮ Zi ❯ set up.%f"; return 1; }
 zmodload zsh/terminfo 2>/dev/null
 zmodload zsh/termcap 2>/dev/null
 
@@ -485,7 +539,7 @@ builtin setopt noaliases
       local pname="${ZI[CUR_PLUGIN]:-_dtrace}"
       local name="${(q)pname}-main-${ZI[BINDKEY_MAIN_IDX]}"
       builtin bindkey -N "$name" main
-      # Remember occurence of main keymap substitution, to revert on unload.
+      # Remember occurrence of main keymap substitution, to revert on unload.
       local keys=_ widget=_ prev= optA=-A mapname="${name}" optR=_
       local quoted="${(q)keys} ${(q)widget} ${(q)prev} ${(q)optA} ${(q)mapname} ${(q)optR}"
       quoted="${(q)quoted}"
@@ -663,7 +717,7 @@ builtin setopt noaliases
   # dtrace then light load) "dtrace" then "compdef" (i.e.: dtrace then snippet).
   [[ ${ZI[TMP_SUBST]} != inactive ]] && builtin return 0
   ZI[TMP_SUBST]="$mode"
-  # The point about backuping is: does the key exist in functions array.
+  # The point about backups is: does the key exist in functions array.
   # If it does exist, then it will also exist as ZI[bkp-*]. Defensive code, shouldn't be needed.
   builtin unset "ZI[bkp-autoload]" "ZI[bkp-compdef]"  # 0, E.
   if [[ $mode != compdef ]]; then
@@ -1042,7 +1096,7 @@ builtin setopt noaliases
   done
 } # ]]]
 # FUNCTION: @zi-register-annex. [[[
-# Registers the z-annex inside ZI – i.e. an ZI extension
+# Registers the z-annex inside Zi – i.e. an Zi extension
 @zi-register-annex() {
   local name="$1" type="$2" handler="$3" helphandler="$4" icemods="$5" key="z-annex ${(q)2}"
   ZI_EXTS[seqno]=$(( ${ZI_EXTS[seqno]:-0} + 1 ))
@@ -2334,7 +2388,7 @@ zi() {
           # Effective handle-ID – the label under which the object will be identified / referred-to by ZI.
           ___ehid="${ICE[id-as]:-$___id}"
           # Effective remote-ID (i.e.: URL, GitHub username/repo, package name, etc.). teleid'' allows "overriding" of $1.
-          # In case of a package using teleid'', the value here is being took from the given ices, before disk-ices.
+          # In the case of a package using teleid'', the value here is being taken from the given ices, before disk-ices.
           ___etid="${ICE[teleid]:-$___id}"
           if (( ${+ICE[pack]} )); then
             ___had_wait=${+ICE[wait]}

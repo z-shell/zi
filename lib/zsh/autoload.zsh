@@ -1527,9 +1527,9 @@ ZI[EXTENDED_GLOB]=""
       # Run annexes' atpull hooks (the before atpull[^!]…-ice ones).
       # Block common for Git and gh-r plugins.
       reply=(
-        ${(on)ZI_EXTS2[(I)zi hook:no-e-\\\!atpull-pre <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:no-e-\!atpull-pre <->]}
         ${${ICE[atpull]:#\!*}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
-        ${(on)ZI_EXTS2[(I)zi hook:no-e-\\\!atpull-post <->]}
+        ${(on)ZI_EXTS2[(I)zi hook:no-e-\!atpull-post <->]}
       )
       for key in "${reply[@]}"; do
         arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )

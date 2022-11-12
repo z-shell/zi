@@ -34,7 +34,7 @@ if [[ $PMSPEC != *f* ]] {
 # RUN ON UPDATE CALL
 # #̶ =̶=̶=̶ =̶=̶=̶ =̶=̶=̶ #̶
 # 𝟝 - https://wiki.zshell.dev/community/zsh_plugin_standard#activity-indicator
-# ZI will set the $zsh_loaded_plugins array to contain all previously loaded plugins
+# Zi will set the $zsh_loaded_plugins array to contain all previously loaded plugins
 # and the plugin currently being loaded, as the last element.
 if [[ ${zsh_loaded_plugins[-1]} != */kalc && -z ${fpath[(r)${0:h}]} ]] {
   fpath+=( "${0:h}" )

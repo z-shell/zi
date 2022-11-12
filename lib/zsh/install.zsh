@@ -2,7 +2,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
 
 builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col-error]}ERROR:%f%b Couldn't find ${ZI[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
@@ -580,8 +580,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   .zi-compinit 1 1 &>/dev/null
 } # ]]]
 # FUNCTION: .zi-compinit [[[
-# User-exposed `compinit' frontend which first ensures that all completions managed by ❮ ZI ❯ are forgotten by Z-shell.
-# After that it runs normal `compinit', which should more easily detect ❮ ZI ❯ completions.
+# User-exposed `compinit' frontend which first ensures that all completions managed by ❮ Zi ❯ are forgotten by Z-shell.
+# After that it runs normal `compinit', which should more easily detect ❮ Zi ❯ completions.
 #
 # No arguments.
 .zi-compinit() {
@@ -822,7 +822,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         builtin emulate -LR zsh -o extendedglob
         if { ! zcompile -U "$first" } {
           +zi-message "{error}Warning{ehi}:{rst} Compilation failed. Don't worry, the plugin will work also without compilation"
-          +zi-message "{error}Warning{ehi}:{rst} Consider submitting an error report to ❮ ZI ❯ or to the plugin's author"
+          +zi-message "{error}Warning{ehi}:{rst} Consider submitting an error report to ❮ Zi ❯ or to the plugin's author"
         } else {
           +zi-message " {version}✔{rst}"
         }

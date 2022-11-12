@@ -12,7 +12,7 @@ commands=(
   icemods:"Shows ice-modifiers registered by annex"
   zstatus:"Check and provide status information"
   times:"Statistics on plugin loading times"
-  self-update:"Updates and compiles ❮ ZI ❯"
+  self-update:"Updates and compiles ❮ Zi ❯"
   help:"Usage information"
   man:"Manpage"
   load:"Load plugin"

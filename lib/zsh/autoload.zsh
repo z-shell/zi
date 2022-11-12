@@ -2,7 +2,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Copyright (c) 2016-2020 Sebastian Gniazdowski and contributors.
-# Copyright (c) 2021 Salvydas Lukosius and Z-Shell ZI contributors.
+# Copyright (c) 2021 Salvydas Lukosius and Z-Shell Community.
 
 builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col-error]}ERROR:%f%b Couldn't find ${ZI[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 ZI[EXTENDED_GLOB]=""
@@ -471,7 +471,7 @@ ZI[EXTENDED_GLOB]=""
   reply=( "${ZI[PLUGINS_DIR]}/$uspl"/**/_[^_.]*~*(*.zwc|*.html|*.txt|*.png|*.jpg|*.jpeg|*.js|*.md|*.yml|*.ri|_zsh_highlight*|/zsdoc/*|*.ps1)(DN) )
 } # ]]]
 # FUNCTION: .zi-check-comp-consistency [[[
-# ❮ ZI ❯ creates symlink for each installed completion.
+# ❮ Zi ❯ creates symlink for each installed completion.
 # This function checks whether given completion (i.e. file like "_mkdir") is indeed a symlink.
 # Backup file is a completion that is disabled - has the leading "_" removed.
 #
@@ -624,13 +624,13 @@ ZI[EXTENDED_GLOB]=""
   fi
 } # ]]]
 # FUNCTION: .zi-self-update [[[
-# Updates ❮ ZI ❯ code (does a git pull).
+# Updates ❮ Zi ❯ code (does a git pull).
 #
 # User-action entry point.
 .zi-self-update() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent warncreateglobal
-  [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
+  [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
   local nl=$'\n' escape=$'\x1b[' current_branch=$(command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
   (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
@@ -656,7 +656,7 @@ ZI[EXTENDED_GLOB]=""
   }
   )
   if [[ $1 != -q ]] {
-    +zi-message "{profile}Compiling »»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
+    +zi-message "{profile}Compiling »»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
   }
   command rm -f ${ZI[BIN_DIR]}/*.zwc(DN)
   command rm -f ${ZI[BIN_DIR]}/lib/zsh/*.zwc(DN)
@@ -667,7 +667,7 @@ ZI[EXTENDED_GLOB]=""
   zcompile -U ${ZI[BIN_DIR]}/lib/zsh/additional.zsh
   zcompile -U ${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh
   # Load for the current session
-  [[ $1 != -q ]] && +zi-message "{profile}Reloading »»»{rst} ❮ {happy}ZI{rst} ❯ {…}{rst}"
+  [[ $1 != -q ]] && +zi-message "{profile}Reloading »»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
   source ${ZI[BIN_DIR]}/zi.zsh
   source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
   source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
@@ -1654,7 +1654,7 @@ ZI[EXTENDED_GLOB]=""
   }
   # Reload ZI?
   if [[ $2 != restart ]] && (( ZI[mtime] + ZI[mtime-side] + ZI[mtime-install] + ZI[mtime-autoload] != sum )) {
-    +zi-message "{info2}Detected {rst}❮ {happy}ZI{rst} ❯ {info2}update in another session -" "{pre}reloading {rst}{…}"
+    +zi-message "{info2}Detected {rst}❮ {happy}Zi{rst} ❯ {info2}update in another session -" "{pre}reloading {rst}{…}"
     source ${ZI[BIN_DIR]}/zi.zsh
     source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
     source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
@@ -1844,7 +1844,7 @@ ZI[EXTENDED_GLOB]=""
   }
 } # ]]]
 # FUNCTION: .zi-show-zstatus [[[
-# Shows ❮ ZI ❯ status, i.e. number of loaded plugins,
+# Shows ❮ Zi ❯ status, i.e. number of loaded plugins,
 # of available completions, etc.
 #
 # User-action entry point.
@@ -2370,7 +2370,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 
 # FUNCTION: .zi-cd [[[
-# Jumps to plugin's directory (in ❮ ZI ❯ home directory).
+# Jumps to plugin's directory (in ❮ Zi ❯ home directory).
 #
 # User-action entry point.
 #
@@ -2415,7 +2415,7 @@ ZI[EXTENDED_GLOB]=""
   done
 } # ]]]
 # FUNCTION: .zi-delete [[[
-# Deletes plugin's or snippet's directory (in ❮ ZI ❯ home directory).
+# Deletes plugin's or snippet's directory (in ❮ Zi ❯ home directory).
 #
 # User-action entry point.
 #
@@ -2851,7 +2851,7 @@ EOF
 } # ]]]
 # FUNCTION: .zi-list-compdef-replay [[[
 # Shows recorded compdefs (called by plugins loaded earlier). Plugins often call `compdef' hoping
-# for `compinit' being already ran. ❮ ZI ❯ solves this by recording compdefs.
+# for `compinit' being already ran. ❮ Zi ❯ solves this by recording compdefs.
 #
 # User-action entry point.
 .zi-list-compdef-replay() {
@@ -2973,7 +2973,7 @@ EOF
     "{p}zi module{rst} {info}build{rst} {p}[--clean]{rst}{nl}" \
     "{p}zi module{rst} {info}info{rst} {p}[--link]{rst}{nl}" \
     "{nl}" \
-    "To start using the ❮ ZI ❯ Zsh module run{rst}{obj}:{rst}{nl}" \
+    "To start using the zpmod module run{rst}{obj}:{rst}{nl}" \
     "{p}zi module{rst} {info}build{rst}{nl}" \
     "Append {p}--clean{rst} to run {cmd}make distclean{rst}{nl}" \
     "To display the instructions on loading the module, run{rst}{obj}:{rst}{nl}" \

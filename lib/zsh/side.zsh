@@ -240,7 +240,7 @@
   # Rename Zinit > ZI
   if [[ ! -d $___zi_path && -d $___local_dir/._zinit ]]; then
     (
-      builtin print -Pr -- "${ZI[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" "FOR THE ZI -> ZI RENAME…%f"
+      builtin print -Pr -- "${ZI[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" "FOR THE ZINIT -> ZI RENAME…%f"
       builtin cd -q ${ZI[PLUGINS_DIR]} || return 1
       autoload -Uz zmv
       ( zmv -W '**/.zinit' '**/._zi' ) &>/dev/null
@@ -367,7 +367,7 @@
   local recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
   if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
     +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
-    "of the ❮ ZI ❯ module has been requested… {hi}Building{rst}…"
+    "of the zpmod module has been requested… {hi}Building{rst}…"
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     command make -C "${ZI[ZMODULES_DIR]}/zpmod" distclean &>/dev/null
     .zi-module build &>/dev/null

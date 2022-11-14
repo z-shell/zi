@@ -15,6 +15,9 @@ on:
       - "lib/zsh/autoload.zsh"
   workflow_dispatch: {}
 
+env:
+  branch_ref: $GITHUB_REF_NAME
+
 jobs:
   zunit-matrix:
     runs-on: ubuntu-latest
@@ -50,7 +53,7 @@ jobs:
         with:
           repository: "z-shell/zd"
           token: ${{ secrets.GITHUB_TOKEN }}
-      - run: command git clone --branch main --depth 1 -- https://github.com/z-shell/zi.git zi
+      - run: command git clone --branch ${{ env.branch_ref }} --depth 1 -- https://github.com/z-shell/zi.git zi
       - name: "⚡ Install dependencies"
         run: |
           sudo apt-get update && sudo apt-get install -yq zsh

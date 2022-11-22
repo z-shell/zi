@@ -1,4 +1,3 @@
-
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
@@ -148,48 +147,48 @@ XDG_ZI_HOME=${~ZI[HOME_DIR]}
 XDG_ZI_CACHE=${~ZI[CACHE_DIR]}
 XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
 
-if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]]; then
-  typeset -gxU manpath MANPATH
+if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]] && [[ -d ${ZI[MAN_DIR]} ]]; then
   manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
+  typeset -gxU manpath
 fi
 
 if [[ -z ${cdpath[(re)${ZI[CDPATH_DIR]}]} ]] && [[ -d ${ZI[CDPATH_DIR]} ]]; then
-  typeset -gxU cdpath CDPATH
   builtin setopt auto_cd
   cdpath=( "${ZI[CDPATH_DIR]}" "${cdpath[@]}" )
+  typeset -gxU cdpath CDPATH
 fi
 
 if [[ -z ${mailpath[(re)${ZI[MAIL_DIR]}]} ]]; then
-  typeset -gxU mailpath MAILPATH
   mailpath=( "${ZI[MAIL_DIR]}" "${mailpath[@]}" )
+  typeset -gxU mailpath MAILPATH
 fi
 
 if [[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d ${ZPFX}/bin ]]; then
-  typeset -gxU path PATH
   path=( "${ZPFX}/bin" "${path[@]}" )
+  typeset -gxU path PATH
 fi
 
 if [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d ${ZPFX}/sbin ]]; then
-  typeset -gxU path PATH
   path=( "${ZPFX}/sbin" "${path[@]}" )
+  typeset -gxU path PATH
 fi
 
 if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then
-  typeset -gxU fpath FPATH
   fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
+  typeset -gxU fpath FPATH
 fi
 
 # Export/assign/tie new paths.
 if [[ -z ${logpath[(re)${ZI[LOG_DIR]}]} ]] && [[ -d ${ZI[LOG_DIR]} ]]; then
+  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
   typeset -gxU logpath LOG_PATH
   typeset -gxTU LOG_PATH logpath
-  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
 fi
 
 if [[ -z ${nodepath[(re)${ZI[NODE_PATH_DIR]}]} ]] && [[ -d ${ZI[NODE_PATH_DIR]} ]]; then
+  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
   typeset -gxU nodepath NODE_PATH
   typeset -gxTU NODE_PATH nodepath
-  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
 fi
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"

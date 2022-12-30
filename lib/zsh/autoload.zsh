@@ -631,7 +631,7 @@ ZI[EXTENDED_GLOB]=""
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent warncreateglobal
   [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
-  local nl=$'\n' escape=$'\x1b[' current_branch=$(command git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  local nl=$'\n' escape=$'\x1b[' current_branch=$(builtin cd -q "$ZI[BIN_DIR]" && command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
   (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
   lines=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset || %b' ..FETCH_HEAD)"} )

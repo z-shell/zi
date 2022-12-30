@@ -630,7 +630,7 @@ ZI[EXTENDED_GLOB]=""
 .zi-self-update() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob typesetsilent warncreateglobal
-  [[ $1 = -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
+  [[ $1 != -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
   local nl=$'\n' escape=$'\x1b[' current_branch=$(builtin cd -q "$ZI[BIN_DIR]" && command git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local -a lines
   (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \

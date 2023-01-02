@@ -2611,7 +2611,7 @@ zi() {
           .zi-show-times "${@[2-correct,-1]}"
           ;;
         (self-update)
-          .zi-self-update
+          .zi-self-update "$2"
           ;;
         (unload)
           (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1

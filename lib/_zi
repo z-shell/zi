@@ -156,14 +156,15 @@ case $state in
           && ret=0
         ;;
       unload|report)
-        typeset -a plugins absolute normal
+        typeset -a plugins absolute1 absolute2 absolute3 normal
         plugins=( "${ZI_REGISTERED_PLUGINS[@]:#_local/zi}" )
         normal=( "${plugins[@]:#%*}" )
-        absolute=( "${(M)plugins[@]:#%*}" )
-        absolute=( "${absolute[@]/\%\/\//%/}" )
+        absolute1=( "${(M)plugins[@]:#%*}" )
+        absolute1=( "${absolute1[@]/\%\/\//%/}" )
         local hm="${HOME%/}"
-        absolute=( "${absolute[@]/$hm/HOME}" )
-        plugins=( $normal $absolute )
+        absolute2=( "${absolute1[@]/$hm/HOME}" )
+        absolute3=( "${absolute1[@]/\%/}" )
+        plugins=( $absolute1 $absolute2 $absolute3 $normal )
 
         _wanted plugins expl "-- Plugin --" \
           compadd "$@" -a - plugins \

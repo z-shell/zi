@@ -1778,20 +1778,20 @@ builtin setopt noaliases
       if [[ $rwmsg != *[sm]* ]]; then
         rest=$ZI[col-time]${(M)rest##[[:space:]]#[sm]}$ZI[col-rst]${rest##[[:space:]]#[sm]}
       fi
+    elif (( $+commands[$rwmsg] )); then
+      REPLY=${ZI[col-bcmd]}$rwmsg${ZI[col-rst]}
+    elif (( $+functions[$rwmsg] )); then
+      REPLY=${ZI[col-func]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == ([[:space:]]##|(#s))[0-9.]##([[:space:]]##|(#e)) ]]; then
       REPLY=${ZI[col-num]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == (#b)((http(s|)|ftp(s|)|rsync|ssh|scp|ntp|file)://[[:alnum:].:+/]##) ]]; then
       .zi-formatter-url $rwmsg
-    elif [[ $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
+    elif [[ $rwmsg == (--|)(${(~j:|:)ice_order}) || $rwmsg == (--|)(${(~j:|:)ice_order})[:=\"\'\!a-zA-Z0-9-]* ]]; then
       REPLY=${ZI[col-ice]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == (OMZ|PZT|PZTM|OMZP|OMZT|OMZL)::* || $rwmsg == [^/]##/[^/]## || -d ${ZI[PLUGINS_DIR]}/${rwmsg//\//---} ]]; then
       .zi-formatter-pid $rwmsg
     elif [[ $rwmsg == (${~ZI[cmd-list]}|${(~j:|:)ecmds}) ]]; then
       REPLY=${ZI[col-cmd]}$rwmsg${ZI[col-rst]}
-    elif (( $+commands[$1] )); then
-      REPLY=${ZI[col-bcmd]}$rwmsg${ZI[col-rst]}
-    elif (( $+functions[$1] )); then
-      REPLY=${ZI[col-func]}$rwmsg${ZI[col-rst]}
     elif [[ $rwmsg == (#b)(*)('<->'|'<–>'|'<—>')(*) || $rwmsg == (#b)(*)(…|–|—|↔|...)(*) ]]; then
       local -A map=( … … - dsh – ndsh — mdsh '<->' ↔ '<–>' ↔ '<—>' ↔ ↔ ↔ ... …)
       REPLY=$match[1]$ZI[col-$map[$rwmsg]]$match[3]
@@ -1895,7 +1895,9 @@ builtin setopt noaliases
 } # ]]]
 # FUNCTION: +zi-message. [[[
 +zi-message() {
-  builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob typeset_silent no_short_loops rc_quotes no_auto_pushd
+
   local opt msg
   [[ $1 = -* ]] && { local opt=$1; shift; }
 
@@ -1904,8 +1906,7 @@ builtin setopt noaliases
 
   # First try a dedicated formatter, marking its empty output with ←→, then
   # the general formatter and in the end filter-out the ←→ from the message.
-  msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; builtin print -rn -- "$REPLY"
-  )${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+$match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
+  msg=${${msg//(#b)(([\\]|(%F))([\{]([^\}]##)[\}])|([\{]([^\}]##)[\}])([^\%\{\\]#))/${match[4]:+${${match[3]:-$ZI[col-${ZI[__last-formatter-code]}]}:#%F}}$match[3]$match[4]${${functions[.zi-formatter-$match[7]]:+${$(.zi-formatter-$match[7] "$match[8]"; builtin print -rn -- $REPLY):-←→}}:-$(.zi-main-message-formatter "$match[6]" "$match[7]" "$match[8]"; builtin print -rn -- "$REPLY")${${ZI[__last-formatter-code]::=${${${match[7]:#(…|ndsh|mdsh|mmdsh|-…|lr)}:+$match[7]}:-${ZI[__last-formatter-code]}}}:+}}}//←→}
   # Reset color attributes at the end of the message.
   msg=$msg$ZI[col-rst]
   # Output the processed message:
@@ -1919,14 +1920,15 @@ builtin setopt noaliases
 # FUNCTION: +zi-prehelp-usage-message. [[[
 # Prints the usage message.
 +zi-prehelp-usage-message() {
-  builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob typeset_silent no_short_loops rc_quotes no_auto_pushd
 
   local cmd=$1 allowed=$2 sep="$ZI[col-msg2], $ZI[col-ehi]" sep2="$ZI[col-msg2], $ZI[col-opt]" bcol
 
   # -h/--help given?
   if (( OPTS[opt_-h,--help] )) {
     # Yes – a help message:
-+zi-message "{lhi}HELP FOR {apo}\`{cmd}$cmd{apo}\`{lhi} subcommand {mdsh}" "the available {b-lhi}options{ehi}:{rst}"
+    +zi-message "Available options for {apo}\`{cmd}$cmd{apo}\`{rst} subcommand{ehi}:{rst}"
     local opt
     for opt ( ${(kos:|:)allowed} ) {
       [[ $opt == --* ]] && continue
@@ -1941,8 +1943,7 @@ builtin setopt noaliases
   } elif [[ -n $allowed ]] {
     shift 2
     # No – an error message:
-    +zi-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
-    "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}{…} Aborting.{rst}"
+    +zi-message "{error}Error{ehi}:{rst} Incorrect options given{ehi}:{rst} ${(Mpj:$sep:)@:#-*}{rst}. Allowed for the subcommand{ehi}:{rst} {apo}\`{cmd}$cmd{apo}\`{rst} are{ehi}:{rst} {nl}{mmdsh}{opt} ${allowed//\|/$sep2}{rst}"
   } else {
     local -a cmds
     cmds=( load snippet update delete )
@@ -1961,7 +1962,8 @@ builtin setopt noaliases
 # ]]]
 # FUNCTION: +zi-parse-opts. [[[
 .zi-parse-opts() {
-  builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob typeset_silent no_short_loops rc_quotes no_auto_pushd
   reply=( "${(@)${@[2,-1]//([  $'\t']##|(#s))(#b)(${(~j.|.)${(@s.|.)___opt_map[$1]}})(#B)([  $'\t']##|(#e))/${OPTS[${___opt_map[${match[1]}]%%:*}]::=1}ß←↓→}:#1ß←↓→}" )
 } # ]]]
 
@@ -2145,7 +2147,6 @@ return retval
 #      (delay), i.e. "burst" allows to run package installations from
 #      script, not from prompt.
 #
-
 @zi-scheduler() {
   integer ___ret="${${ZI[lro-data]%:*}##*:}"
   # lro stands for lastarg-retval-option.
@@ -2244,6 +2245,17 @@ return retval
   [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
 } # ]]]
 
+# FUNCTION: .zi-set-mtime. [[[
+# Stores mtime of zi.zsh and its lib files into ZI[mtime] and ZI[mtime-{side,install,autoload,additional}].
+# This is used to determine if the files were changed and need to be reloaded.
+.zi-set-mtime() {
+  local set_mtime
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
+  for set_mtime ( side install autoload additional ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${set_mtime}.zsh" "ZI[mtime-${set_mtime}]"
+  }
+}
+
 #
 # Exposed functions.
 #
@@ -2274,9 +2286,13 @@ zi() {
     --quiet    opt_-q,--quiet
     -v         opt_-v,--verbose:"Turn on more messages from the operation."
     --verbose  opt_-v,--verbose
+    -d         opt_-d,--debug:"Turn on debug messages from the operation."
+    --debug    opt_-d,--debug
+    -D         opt_-D,--dry-run:"Turn on dry-run mode, which means that no changes will be made to the filesystem."
+    --dry-run  opt_-D,--dry-run
     -r         opt_-r,--reset:"Reset the repository before updating (or remove the files for single-file snippets and gh-r plugins)."
     --reset    opt_-r,--reset
-    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.]"
+    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] times:[Show loading times and moments.]"
     --all      opt_-a,--all
     -c         opt_-c,--clean:"Delete {b-lhi}only{rst} the {b-lhi}currently-not loaded{rst} plugins and snippets."
     --clean    opt_-c,--clean
@@ -2286,9 +2302,9 @@ zi() {
     --force    opt_-f,--force
     -p         opt_-p,--parallel:"Turn on concurrent, multi-thread update (of all objects)."
     --parallel opt_-p,--parallel
-    -s         opt_-s,--snippets:"snippets:[Update only snippets (i.e.: skip updating plugins).] times:[Show times in seconds instead of milliseconds.]"
+    -s         opt_-s,--snippets:"Update only snippets (i.e.: skip updating plugins)."
     --snippets opt_-s,--snippets
-    -L         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
+    -l         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
     --plugins  opt_-l,--plugins
     -h         opt_-h,--help:"Show this help message."
     --help     opt_-h,--help
@@ -2296,25 +2312,28 @@ zi() {
     --urge     opt_-u,--urge
     -n         opt_-n,--no-pager:"Disable the use of the pager."
     --no-pager opt_-n,--no-pager
-    -m         opt_-m,--moments:"Show the {apo}*{b-lhi}moments{apo}*{rst} of object (i.e.: a plugin or snippet) loading time."
+    -m         opt_-m,--moments:"Show the loading {apo}*{b-lhi}moments{apo}*{rst} of of the objects relative to the first prompt."
     --moments  opt_-m,--moments
+    -S         opt_-S,--seconds:"Show times in seconds."
+    --seconds  opt_-S,--seconds
     -b         opt_-b,--bindkeys:"Load in light mode, however do still track {cmd}bindkey{rst} calls (to allow remapping the keys bound)."
     --bindkeys opt_-b,--bindkeys
     -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
     --command  opt_-x,--command
     env-whitelist "-h|--help|-v|--verbose"
-    update        "-L|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose|-h|--help"
-    delete        "-a|--all|-c|--clean|-y|--yes|-q|--quiet|-h|--help"
+    update        "-h|--help|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
+    self-update   "-h|--help|-q|--quiet|-D|--dry-run"
+    delete        "-h|--help|-a|--all|-c|--clean|-y|--yes|-q|--quiet"
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
-    times         "-h|--help|-m|-s|-a"
-    light         "-h|--help|-b"
+    times         "-h|--help|-m|--moments|-S|--seconds|-a|--all"
+    light         "-h|--help|-b|--bindkeys"
     snippet       "-h|--help|-f|--force|--command|-x"
   )
 
   cmd="$1"
-  if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|cdclear|delete) ]]; then
+  if [[ $cmd == (times|unload|env-whitelist|update|self-update|snippet|load|light|cdreplay|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then
@@ -2344,17 +2363,14 @@ zi() {
       ICE=() ZI_ICE=()
       1="${1:+@}${1#@}${2:+/$2}"
       (( $# > 1 )) && { shift -p $(( $# - 1 )); }
-      [[ -z $1 ]] && {
-        +zi-message "Argument needed, try: {cmd}help."
-        return 1
-      }
+      [[ -z $1 ]] && { +zi-message "{mmdsh}{rst} {auto}Argument is missing. See \`zi help\`"; return 1; }
     } else {
       .zi-ice "$@"
       ___retval2=$?
       local ___last_ice=${@[___retval2]}
       shift ___retval2
       if [[ $# -gt 0 && $1 != for ]] {
-        +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:" "{apo}\`{cmd}$1{apo}\`{rst} "
+        +zi-message -n "{error}Error{ehi}:{rst} Unknown subcommand{ehi}:{rst} {apo}\`{cmd}$1{apo}\`{rst} "
         +zi-prehelp-usage-message rst
         return 1
       } elif (( $# == 0 )) {
@@ -2380,7 +2396,7 @@ zi() {
           ICE=( "${___ices[@]}" "${(kv)ZI_ICES[@]}" )
           ZI_ICE=( "${(kv)ICE[@]}" ) ZI_ICES=()
           integer ___msgs=${+ICE[debug]}
-          (( ___msgs )) && +zi-message "{profile}zi-main{ehi}:{faint} Processing {pname}$1{faint}{…}{rst}"
+          (( ___msgs )) && +zi-message "{mmdsh}{happy} Zi{rst} » {faint}processing {pname}$1{rst}{…}"
           # Delete up to the final space to get the previously-processed ID.
           ZI[annex-exposed-processed-IDs]+="${___id:+ $___id}"
           # Strip the ID-qualifier (`@') and GitHub domain from the ID.
@@ -2611,12 +2627,12 @@ zi() {
           .zi-show-times "${@[2-correct,-1]}"
           ;;
         (self-update)
-          .zi-self-update
+          .zi-self-update "${@[2-correct,-1]}"
           ;;
         (unload)
           (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
           if [[ -z $2 && -z $3 ]]; then
-            builtin print "Argument needed, try: help"; ___retval=1
+            +zi-message "{mmdsh}{rst} {auto}Argument is missing. See \`zi help\`"; ___retval=1
           else
             [[ $2 = -q ]] && { 5=-q; shift; }
             # Unload given plugin. Cloned directory remains intact so as are completions.
@@ -2637,7 +2653,7 @@ zi() {
           .zi-parse-opts update "$@"
           builtin set -- "${reply[@]}"
           if [[ ${OPTS[opt_-a,--all]} -eq 1 || ${OPTS[opt_-p,--parallel]} -eq 1 || ${OPTS[opt_-s,--snippets]} -eq 1 || ${OPTS[opt_-l,--plugins]} -eq 1 || -z $1$2${ICE[teleid]}${ICE[id-as]} ]]; then
-            [[ -z $1$2 && $(( OPTS[opt_-a,--all] + OPTS[opt_-p,--parallel] + OPTS[opt_-s,--snippets] + OPTS[opt_-l,--plugins] )) -eq 0 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
+            [[ -z $1$2 && $(( OPTS[opt_-a,--all] + OPTS[opt_-p,--parallel] + OPTS[opt_-s,--snippets] + OPTS[opt_-l,--plugins] )) -eq 0 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}running for all{rst}{…}"; sleep 2; }
             (( OPTS[opt_-p,--parallel] )) && OPTS[value]=${1:-15}
             .zi-update-or-status-all update; ___retval=$?
           else
@@ -2648,7 +2664,7 @@ zi() {
           ;;
         (status)
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
+            [[ -z $2 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}running for all{rst}{…}"; sleep 2; }
             .zi-update-or-status-all status; ___retval=$?
           else
             .zi-update-or-status status "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
@@ -2656,7 +2672,7 @@ zi() {
           ;;
         (report)
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 4; }
+            [[ -z $2 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}running for all{rst}{…}"; sleep 2; }
           .zi-show-all-reports
           else
             .zi-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
@@ -2677,14 +2693,14 @@ zi() {
           ;;
         (cdisable)
           if [[ -z $2 ]]; then
-            builtin print "Argument needed, try: help"; ___retval=1
+            +zi-message "{mmdsh}{rst} {auto}Argument is missing. See \`zi help\`"; ___retval=1; ___retval=1
           else
             local ___f="_${2#_}"
             # Disable completion given by completion function name with or without leading _, e.g. cp, _cp.
             if .zi-cdisable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
-              +zi-message "Initializing completion system ({func}compinit{rst}){…}"
+              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
               builtin autoload -Uz compinit
               compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
             else
@@ -2694,15 +2710,14 @@ zi() {
           ;;
         (cenable)
           if [[ -z $2 ]]; then
-            builtin print "Argument needed, try: help"; ___retval=1
+            +zi-message "{mmdsh}{rst} {auto}Argument is missing. See \`zi help\`"; ___retval=1
           else
             local ___f="_${2#_}"
-            # Enable completion given by completion function name
-            # with or without leading _, e.g. cp, _cp.
+            # Enable completion given by completion function name with or without leading _, e.g. cp, _cp.
             if .zi-cenable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
-              +zi-message "Initializing completion system ({func}compinit{rst}){…}"
+              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
               builtin autoload -Uz compinit
               compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
             else
@@ -2712,11 +2727,11 @@ zi() {
           ;;
         (creinstall)
           (( ${+functions[.zi-install-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-          # Installs completions for plugin. Enables them all. It is a
-          # reinstallation, thus every obstacle gets overwritten or removed.
+          # Installs completions for plugin. Enables them all.
+          # It is a reinstallation, thus every obstacle gets overwritten or removed.
           [[ $2 = -[qQ] ]] && { 5=$2; shift; }
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
-          [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "Initializing completion ({func}compinit{rst}){…}"
+          [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
           builtin autoload -Uz compinit
           compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           ;;
@@ -2727,7 +2742,7 @@ zi() {
             (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
             # Uninstalls completions for plugin.
             .zi-uninstall-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
-            +zi-message "Initializing completion ({func}compinit{rst}){…}"
+            +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
             builtin autoload -Uz compinit
             compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           fi
@@ -2753,7 +2768,7 @@ zi() {
         (compile)
           (( ${+functions[.zi-compile-plugin]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
+            [[ -z $2 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}running for all{rst}{…}"; sleep 2; }
             .zi-compile-uncompile-all 1; ___retval=$?
           else
             .zi-compile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
@@ -2761,7 +2776,7 @@ zi() {
           ;;
         (uncompile)
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { builtin print -r -- "Assuming --all is passed"; sleep 3; }
+            [[ -z $2 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}running for all{rst}{…}"; sleep 2; }
             .zi-compile-uncompile-all 0; ___retval=$?
           else
             .zi-uncompile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
@@ -2812,10 +2827,10 @@ zi() {
           ;;
         (*)
           if [[ -z $1 ]] {
-            +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Missing a {cmd}subcommand "
+            +zi-message -n "{error}Error{ehi}:{rst} Missing a {cmd}subcommand "
             +zi-prehelp-usage-message rst
           } else {
-            +zi-message -n "{b}{u-warn}ERROR{b-warn}:{rst} Unknown subcommand{ehi}:{rst}" "{apo}\`{error}$1{apo}\`{rst} "
+            +zi-message -n "{error}Error{ehi}:{rst} Unknown subcommand{ehi}:{rst} {apo}\`{error}$1{apo}\`{rst} "
             +zi-prehelp-usage-message rst
           }
           ___retval=1
@@ -2888,12 +2903,6 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # Default ices depth'3' and lucid, allowed values [0-9][a-c].
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-c]/wait"${1}"} "${@:2}"; }
 # ]]]
-# Compatibility functions. [[[
-❮▼❯() { zi "$@"; }
-zpcdreplay() { .zi-compdef-replay -q; }
-zpcdclear() { .zi-compdef-clear -q; }
-zpcompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
-zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 
 #
 # Source-executed code.
@@ -2912,16 +2921,10 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zini=zi zinit=zi zplugin=zi
+builtin alias zinit=zi zplugin=zi
 
 .zi-prepare-home
-
-# Remember source's timestamps for the automatic-reload feature.
-typeset -g ZI_TMP
-.zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
-for ZI_TMP ( side install autoload ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
-}
+.zi-set-mtime
 
 # Simulate existence of _local/zi plugin. This will allow to cuninstall of its completion
 ZI_REGISTERED_PLUGINS=( _local/zi "${(u)ZI_REGISTERED_PLUGINS[@]:#_local/zi}" )

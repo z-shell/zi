@@ -2278,8 +2278,12 @@ zi() {
     --reset    opt_-r,--reset
     -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.]"
     --all      opt_-a,--all
+    -B         opt_-B,--build:"Build the module, append {p}--clean{rst} to run distclean."
+    --build    opt_-B,--build
     -c         opt_-c,--clean:"Delete {b-lhi}only{rst} the {b-lhi}currently-not loaded{rst} plugins and snippets."
     --clean    opt_-c,--clean
+    -I         opt_-I,--info:"Display additional information."
+    --info     opt_-I,--info
     -y         opt_-y,--yes:"Automatically confirm any yes/no prompts."
     --yes      opt_-y,--yes
     -f         opt_-f,--force:"Force new download of the snippet file."
@@ -2308,13 +2312,14 @@ zi() {
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
+    module        "-h|--help|-B|--build|-I|--info"
     times         "-h|--help|-m|-s|-a"
     light         "-h|--help|-b"
     snippet       "-h|--help|-f|--force|--command|-x"
   )
 
   cmd="$1"
-  if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|cdclear|delete) ]]; then
+  if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|module|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then
@@ -2808,7 +2813,11 @@ zi() {
           } "$@"
           ;;
         (module)
-          .zi-module "${@[2-correct,-1]}"; ___retval=$?
+          if [[ -z $2 ]]; then
+            +zi-message "{b}{error}Error{ehi}:{rst} Argument required, try{ehi}:{rst} {cmd}zi module {opt}-h{rst}"; ___retval=1
+          else
+            .zi-module "$2" "${@[3-correct,-1]}"; ___retval=$?
+          fi
           ;;
         (*)
           if [[ -z $1 ]] {

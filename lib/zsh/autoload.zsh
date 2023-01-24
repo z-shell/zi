@@ -2942,87 +2942,74 @@ EOF
   } || builtin print -r -- "No such plugin or snippet"
 } # ]]]
 # FUNCTION: .zi-module [[[
-# Function that has sub-commands passed as long-options (with two dashes, --).
-# It's an attempt to plugin only this one function into `zi' function
-# defined in zi.zsh, to not make this file longer than it's needed.
+# Builds a module from its git repository and displays information how to load the module in .zshrc,
+# performs checks, and rebuilds the module if requested.
 .zi-module() {
-  if [[ "$1" = "build" ]]; then
+  if [[ "$1" = (-B|--build|build) ]]; then
     builtin autoload -Uz is-at-least
     if is-at-least 5.8.1; then
-      .zi-build-module "${@[2,-1]}"
+      if command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" rev-parse 2>/dev/null; then
+        command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" clean -d -f -x
+        command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" reset --hard HEAD >/dev/null
+        command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" pull --rebase --progress || {
+          +zi-message "{error}Failed to update module repository{rst}"
+          return 1
+        }
+      else
+        if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
+          mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"
+          chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
+        fi
+        command git clone --progress "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {
+          +zi-message "{error}Failed to clone module repository{rst}"
+          return 1
+        }
+      fi
+      ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
+        +zi-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
+        +zi-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
+        if [[ -f Makefile ]]; then
+          if [[ "$2" = "--clean" ]]; then
+            noglob +zi-message {p}-- make distclean --{rst}
+            make distclean
+            ((1))
+          else
+            noglob +zi-message {p}-- make clean --{rst}
+            make clean
+          fi
+        fi
+        noglob +zi-message  {p}-- ./configure --{rst}
+        INSTALL_PATH="/usr/local"
+        export PATH=$INSTALL_PATH/bin:"$PATH"
+        export LD_LIBRARY_PATH=$INSTALL_PATH/lib:"$LD_LIBRARY_PATH"
+        export CFLAGS=-I$INSTALL_PATH/include
+        export CPPFLAGS="-I$INSTALL_PATH/include" LDFLAGS="-L$INSTALL_PATH/lib"
+        CFLAGS="-g -Wall -O3" ./configure --disable-gdbm --without-tcsetpgrp --quiet
+        noglob +zi-message {p}-- make --{rst}
+        local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+        if command make --jobs=$cores -s; then
+          [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
+          noglob +zi-message "{info}Module has been built correctly.{rst}"
+          .zi-module info
+        fi
+        local EPOCHSECONDS
+        builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+      )
+
     else
       +zi-message "{warn}Zsh version{rst} {obj}5.8.1{warn} or higher required{rst}"
       return 1
     fi
-  elif [[ "$1" = "info" ]]; then
-    if [[ "$2" = "--link" ]]; then
-      +zi-message "Please submit any issues at the address below{ehi}:{rst} " \
-      "{nl}{mmdsh}{url} https://github.com/z-shell/zpmod/issues{rst}"
-    else
-      +zi-message "To load the module, add following 2 lines to .zshrc, at top:{nl}" \
-      "{nl}" \
-      "{p}    module_path+=( \"${ZI[ZMODULES_DIR]}/zpmod/Src\" ){rst}{nl}" \
-      "{p}    zmodload zi/zpmod{rst}{nl}" \
-      "{nl}" \
-      "After loading, use command \`zpmod' to communicate with the module.{nl}" \
-      "{info2}See \`zpmod -h' for more information.{rst}"
-    fi
-  elif [[ "$1" = (help|usage) ]]; then
-    +zi-message "{info2}Usage{rst}{obj}:{rst}{nl}" \
-    "{p}zi module{rst} {info}{build|info|help}{rst} {p}[options]{rst}{nl}" \
-    "{p}zi module{rst} {info}build{rst} {p}[--clean]{rst}{nl}" \
-    "{p}zi module{rst} {info}info{rst} {p}[--link]{rst}{nl}" \
+  elif [[ "$1" = (-I|--info|info) ]]; then
+    +zi-message "To load the module, add following 2 lines at the top of .zshrc{ehi}:{nl}" \
     "{nl}" \
-    "To start using the zpmod module run{rst}{obj}:{rst}{nl}" \
-    "{p}zi module{rst} {info}build{rst}{nl}" \
-    "Append {p}--clean{rst} to run {cmd}make distclean{rst}{nl}" \
-    "To display the instructions on loading the module, run{rst}{obj}:{rst}{nl}" \
-    "{p}zi module info{rst}."
+    "{p}  module_path+=( \"${ZI[ZMODULES_DIR]}/zpmod/Src\" ){rst}{nl}" \
+    "{p}  zmodload zi/zpmod{rst}{nl}" \
+    "{nl}After loading, use command \`zpmod' to communicate with the module{ehi}:{rst}" \
+    "{nl}{mmdsh}{cmd} zpmod{opt} -h{rst} for more information.{rst}"
+    +zi-message "Please submit any issues at the address below{ehi}:{rst}" \
+    "{nl}{mmdsh}{url} https://github.com/z-shell/zpmod/issues{rst}"
   fi
-} # ]]]
-# FUNCTION: .zi-build-module [[[
-# Performs ./configure && make on the module and displays information how to load the module in .zshrc.
-.zi-build-module() {
-  if command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" rev-parse 2>/dev/null; then
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" clean -d -f -f
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" reset --hard HEAD
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" pull
-  else
-    if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
-      mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"
-      chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
-    fi
-    command git clone --progress "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {
-      +zi-message "{error}Failed to clone module repository{rst}"
-      return 1
-    }
-  fi
-  ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
-    +zi-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
-    +zi-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
-    if [[ -f Makefile ]]; then
-      if [[ "$1" = "--clean" ]]; then
-        noglob +zi-message {p}-- make distclean --{rst}
-        make distclean
-        ((1))
-      else
-        noglob +zi-message {p}-- make clean --{rst}
-        make clean
-      fi
-    fi
-    noglob +zi-message  {p}-- ./configure --{rst}
-    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp
-    noglob +zi-message {p}-- make --{rst}
-    if command make -s; then
-      [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
-      noglob +zi-message "{info}Module has been built correctly.{rst}"
-      .zi-module info
-    else
-      noglob +zi-message  "{error}Module didn't build.{rst}"
-      .zi-module info --link
-    fi
-    builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
-  )
 } # ]]]
 # FUNCTION: .zi-help [[[
 # Shows usage information.

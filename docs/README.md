@@ -1,66 +1,46 @@
-<table style="background-color:transparent;">
+<table>
   <tr>
     <td>
       <h1 align="center">
         <a target="_self" href="https://github.com/z-shell/zi">
-          <img style="width: 60px; height: 60px"
-            src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.svg" alt="❮ Zi ❯ Logo" />
+          <img width=z"80" height="80" src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.png" alt="Zi Logo" />
         </a>❮ <strong>Zi</strong> ❯
       </h1>
       <h2 align="center">
         🧙‍♂️ 🪄 A Swiss Army Knife for <a href="https://zsh.sourceforge.io/"><strong>Zsh</strong></a> -
-        <a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell ✨</a>
+        <p><a href="https://en.wikipedia.org/wiki/Unix_shell">Unix Shell ✨</a></p>
       </h2>
-      <div align="center">
-        <a
-          href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+"><strong>《
-            Report an issue </strong></a>
+      <div align="center"><p>
+        <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=bug+%F0%9F%90%9E&template=01_bug_report.yml&title=bug%3A+"><strong>《 Report an issue 》</strong></a>
         ·
-        <a
-          href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+"><strong>《
-            Request a Feature 》</strong></a>
+        <a href="https://github.com/z-shell/zi/issues/new?assignees=&labels=feature-request+%F0%9F%92%A1&template=02_feature_request.yml&title=feat%3A+"><strong>《 Request a Feature 》</strong></a>
         ·
         <a href="https://discussions.zshell.dev/"><strong>《 Ask a Question 》</strong></a>
-      </div>
+      </p></div>
   </tr>
   </td>
   <tr>
     <td>
-      <div align="center">
-        <a href="https://wiki.zshell.dev/search/"><strong>《💡》Search Wiki </strong></a>
-        <a href="https://wiki.zshell.dev/docs/getting_started/installation/"><strong>《⚡️》 Install </strong></a>
-        <a
-          href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+"><strong>《💜》Join
-          </strong></a>
-        <a href="https://translate.zshell.dev/"><strong>《🌐》Localize </strong></a>
-      </div>
+      <div align="center"><p><p></p>
+        <a href="https://wiki.zshell.dev/search/"><strong>⸨ ‑ 💡 Search Wiki ‑ ⸩</strong></a>
+        <a href="https://wiki.zshell.dev/docs/getting_started/installation/"><strong>⸨ ‑ ⚡️ Install ‑ ⸩</strong></a>
+        <a href="https://github.com/z-shell/community/issues/new?assignees=&labels=%F0%9F%91%A5+member&template=membership.yml&title=team%3A+"><strong>⸨ ‑ 💜 Join ‑ ⸩</strong></a>
+        <a href="https://translate.zshell.dev/"><strong>⸨ ‑ 🌐 Localize ‑ ⸩</strong></a>
+      </p></div>
     </td>
   </tr>
   <tr>
     <td>
-      <div align="center">
-        <a title="Z-Shell Matrix" target="_self" rel="nofollow" href="https://matrix.to/#/#zshell:matrix.org">
-          <img align="center" src="https://badgen.net/matrix/members/zshell/matrix.org" alt="Zi Matrix" />
-        </a>
-        <a title="Zi Gitter Matrix" target="_self" rel="nofollow" href="https://matrix.to/#/#z-shell_zi:gitter.im">
-          <img align="center" src="https://badgen.net/matrix/members/z-shell_zi/gitter.im" alt="Zi Gitter Matrix" />
-        </a>
-        <a title="Crowdin" target="_self" href="https://translate.zshell.dev/">
-          <img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" />
-        </a>
-        <a title="Releases" target="_self" href="https://github.com/z-shell/zi/releases">
-          <img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" />
-        </a>
-        <a title="License" target="_self" href="https://github.com/z-shell/zi/blob/main/LICENSE">
-          <img align="center" src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Project License" />
-        </a>
-        <a title="VIM" target="_self" href="https://github.com/z-shell/zi-vim-syntax/">
-          <img align="center" src="https://img.shields.io/badge/--019733?logo=vim" alt="VIM" />
-        </a>
-        <a target="_self" href="https://open.vscode.dev/z-shell/zi/">
-          <img align="center" src="https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff"
-            alt="Visual Studio Code" />
-        </a>
+      <div align="center"><p>
+      <a href="https://matrix.to/#/#zi:matrix.org" rel="noopener" target="_blank"><img align="center" src="https://matrix.to/img/matrix-badge.svg" alt="Zi Matrix"></a>
+      <a href="https://gitter.im/z-shell/zi" rel="noopener" target="_blank"><img align="center" src="https://badgen.net/gitter/members/z-shell/zi" alt="Zi Gitter Matrix" /></a>
+      <a href="https://translate.zshell.dev/" rel="noopener" target="_blank"><img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" /></a>
+      <a href="https://github.com/z-shell/zi/releases" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" /></a>
+      <a href="https://github.com/z-shell/zi/blob/main/LICENSE" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Project License" /></a>
+      <a thref="https://github.com/z-shell/zi-vim-syntax/" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/--019733?logo=vim" alt="VIM" /></a>
+      <a href="https://open.vscode.dev/z-shell/zi/" rel="noopener" target="_blank">
+        <img align="center" src="https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff"alt="Visual Studio Code" />
+      </p></a>
       </div>
   </tr>
   </td>
@@ -74,10 +54,8 @@
   <tr>
     <td>
       <div align="center">
-        <img align="center" style="width: 80%; height: auto"
-          src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" />
-        <img align="center" style="width: 80%; height: auto"
-          src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/metrics.svg" />
+        <img align="center" width="80%" height="auto" src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" />
+        <img align="center" width="80%" height="auto" src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/metrics.svg" />
       </div>
   </tr>
   </td>
@@ -194,21 +172,15 @@
 <h2 align="left">⭐ Credits</h2>
 <div align="center">
   <a href="https://trunk.io" rel="nofollow">
-    <img style="width: 140px; height: 40px"
-      src="https://storage.googleapis.com/digital-space/img/brand/trunk/trunk-white.svg" alt="Trunk" />
+    <img src="https://storage.googleapis.com/digital-space/img/brand/trunk/trunk-white.svg" alt="Trunk" width="140px" height="40px" />
   </a>
   <a href="https://crowdin.com/?utm_source=badge&utm_medium=referral&utm_campaign=badge-add-on" rel="nofollow">
-    <img style="width: 140px; height: 40px"
-      src="https://storage.googleapis.com/digital-space/img/brand/crowdin/localization-at-dark-rounded%402x.png"
-      alt="Crowdin | Agile localization for tech companies" />
+    <img src="https://storage.googleapis.com/digital-space/img/brand/crowdin/localization-at-dark-rounded%402x.png" alt="Crowdin | Agile localization for tech companies" width="140px" height="40px" />
   </a>
-  <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"
-    rel="nofollow">
-    <img style="width: 140px; height: 40px" src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg"
-      alt="DigitalOcean Referral Badge" />
+  <a href="https://www.digitalocean.com/?refcode=090bdb63f800&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge" rel="nofollow">
+    <img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" width="140px" height="40px" />
   </a>
   <a href="https://cloudflare.com" rel="nofollow">
-    <img style="width: 140px; height: 40px"
-      src="https://storage.googleapis.com/digital-space/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" />
+    <img src="https://storage.googleapis.com/digital-space/img/brand/cloudflare/cf-logo-v-rgb.png" alt="Cloudflare" width="140px" height="40px" />
   </a>
 </div>

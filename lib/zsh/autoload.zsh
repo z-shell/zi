@@ -650,7 +650,7 @@ ZI[EXTENDED_GLOB]=""
     }
 
     # Recompile new ones
-    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} {bapo}»{rst} {profile}recompiling codebase{rst}{…}"
+    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}recompiling codebase{rst}{…}"
     for comp_file ( ${ZI[BIN_DIR]}/**/*.zsh*~*.zwc ) {
       zcompile -U -- ${comp_file} > /dev/null 2>&1
     } && { (( quiet )) || +zi-message " {term}✔{rst}"; }
@@ -677,22 +677,22 @@ ZI[EXTENDED_GLOB]=""
 # $1 - user given options for self-update (optional)
 .zi-self-update() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extended_glob no_short_loops rc_quotes no_auto_pushd \
-    no_ksh_glob no_ksh_arrays no_sh_word_split
+  builtin setopt extended_glob warn_create_global typeset_silent \
+    no_short_loops rc_quotes no_auto_pushd
 
-  (( OPTS[opt_-q,--quiet] )) && { local quiet=1 opt='--quiet'; } || { local quiet=0 opt='--progress'; };
-  (( OPTS[opt_-D,--dry-run] )) && { local dry_run=1; } || { local dry_run=0; };
+  (( OPTS[opt_-D,--dry-run] )) && { local dry_run=1; } || { local dry_run=0; }
+  (( OPTS[opt_-q,--quiet] )) && { local quiet=1 opt='--quiet'; } || { local quiet=0; }
 
-  [[ -z $origin_url ]] && local origin_url="https://github.com/z-shell/zi"
+  [[ -z $origin_url ]] && local origin_url="$(builtin cd -q $ZI[BIN_DIR] && command git remote get-url origin)"
 
-  local nl=$'\n' escape=$'\x1b['
   local -a lines
-  local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+  local nl=$'\n' escape=$'\x1b[' cores=$(nproc 2>/dev/null || \
+    sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
   (
     # Fetch the latest changes from the upstream repository
     (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}fetching updates{rst}{…}"
-    builtin cd -q $ZI[BIN_DIR] && command git fetch $opt --jobs $cores --tags --prune --force $origin_url main && \
+    builtin cd -q $ZI[BIN_DIR] && command git fetch $opt --jobs $cores --tags --prune --force $origin_url refs/heads/main && \
       lines=( ${(f)"$(command git log --color --abbrev-commit --decorate --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
 
     # If there are any changes then update the codebase and reload Zi
@@ -702,16 +702,16 @@ ZI[EXTENDED_GLOB]=""
       lines=( "${lines[@]/(#b)[[:space:]]#\|\|[[:space:]]#(*)(#e)/|| ${match[1]}}" )
       lines=( "${lines[@]/(#b)$escape([0-9]##)m[[:space:]]##${escape}m/$escape${match[1]}m${escape}m}" )
       lines=( "${lines[@]/(#b)[[:blank:]]#\|\|(*)(#e)/| ${${match[1]//$nl/ }[(w)1,(w)10]}}" )
-      (( quiet )) || builtin print -rl -- "${lines[@]}" | .zi-pager
+      (( quiet )) || { builtin print -rl -- "${lines[@]}" | .zi-pager; }
+
+      if (( ! dry_run )); then
+        # Update the codebase
+        command git merge -n $opt --autostash --ff-only FETCH_HEAD || \
+          { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; return 1 }
+        .zi-auto-reload $opt
+      fi
     else
       (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}up-to-date {term}✔{rst}"
-    fi
-
-    if (( ! dry_run )); then
-      # Update the codebase
-      command git merge -n $opt --autostash --allow-unrelated-histories --ff-only FETCH_HEAD || \
-        { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; return 1 }
-      .zi-auto-reload $opt
     fi
   )
 } # ]]]
@@ -1235,8 +1235,8 @@ ZI[EXTENDED_GLOB]=""
   fi
   # Print title
   builtin printf "${ZI[col-title]}Report for${ZI[col-rst]} %s%s plugin\n"\
-      "${user:+${ZI[col-uname]}$user${ZI[col-rst]}}${${user:#(%|/)*}:+/}"\
-      "${ZI[col-pname]}$plugin${ZI[col-rst]}"
+    "${user:+${ZI[col-uname]}$user${ZI[col-rst]}}${${user:#(%|/)*}:+/}"\
+    "${ZI[col-pname]}$plugin${ZI[col-rst]}"
   # Print "----------"
   local msg="Report for $user${${user:#(%|/)*}:+/}$plugin plugin"
   builtin print -- "${ZI[col-bar]}${(r:${#msg}::-:)tmp__}${ZI[col-rst]}"
@@ -1492,30 +1492,29 @@ ZI[EXTENDED_GLOB]=""
               } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
             }
           }
-          +zi-message "$line"
-        fi | command tee .zi_lastupd | .zi-pager &
-        integer pager_pid=$!
-        { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
-        { wait $pager_pid; } > /dev/null 2>&1
-        local -a log
-        { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
-        command rm -f $local_dir/.zi_lastupd
-        if [[ ${#log} -gt 0 ]] {
+          +zi-message "$line" | command tee .zi_lastupd | .zi-pager &
+          integer pager_pid=$!
+          { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
+          { wait $pager_pid; } > /dev/null 2>&1
+          local -a log
+          { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
+          command rm -f $local_dir/.zi_lastupd
+        fi
+        if [[ ${#log} -gt 0 ]]; then
           ZI[annex-multi-flag:pull-active]=2
-        } else {
-          if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )) {
+        else
+          if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )); then
             ZI[annex-multi-flag:pull-active]=1
             # Handle the snippet/plugin boundary in the messages
-            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+            if (( OPTS[opt_-q,--quiet] && !PUPDATE )); then
               .zi-any-colorify-as-uspl2 "$id_as"
-              (( ZI[first-plugin-mark] )) && {
-                ZI[first-plugin-mark]=0
-              } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
-            }
-          } else {
+              (( ZI[first-plugin-mark] )) && \
+                { ZI[first-plugin-mark]=0; } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+            fi
+          else
             ZI[annex-multi-flag:pull-active]=0
-          }
-        }
+          fi
+        fi
         if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
           ICE=( "${(kv)ice[@]}" )
           # Run annexes' atpull hooks (the before atpull-ice ones).
@@ -1544,12 +1543,11 @@ ZI[EXTENDED_GLOB]=""
     }
     if [[ -d $local_dir/.git ]]; then
       (
-        local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
         builtin cd -q "$local_dir" # || return 1 - don't return, maybe it's some hook's logic
         if (( OPTS[opt_-q,--quiet] )) {
-          command git pull --jobs=$cores --recurse-submodules ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} &> /dev/null
+          command git pull --recurse-submodules ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} &> /dev/null
         } else {
-          command git pull --jobs=$cores --recurse-submodules ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command grep -E -v '(FETCH_HEAD|up.to.date\.|From.*://)'
+          command git pull --recurse-submodules ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command grep -E -v '(FETCH_HEAD|up.to.date\.|From.*://)'
         }
       )
     fi
@@ -1684,15 +1682,13 @@ ZI[EXTENDED_GLOB]=""
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob nullglob warncreateglobal typesetsilent noshortloops
   local -F2 SECONDS=0
-  .zi-self-update -q
   integer retval
   if (( OPTS[opt_-p,--parallel] )) && [[ $1 = update ]] {
-    (( !OPTS[opt_-q,--quiet] )) && \
-    +zi-message "{mmdsh}{happy} Zi{rst} » {info3}parallelizing update{rst}{…}"
+    (( OPTS[opt_-q,--quiet] )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}parallelizing update{rst}{…}"
     .zi-update-all-parallel; retval=$?
     .zi-compinit 1 1 &>/dev/null; rehash
-    if (( !OPTS[opt_-q,--quiet] )) { \
-      +zi-message "{mmdsh}{happy} Zi{rst} » {info3}the update took {num}$SECONDS{info3} seconds{rst}{…}"; }
+    (( OPTS[opt_-q,--quiet] )) || \
+    +zi-message "{mmdsh}{happy} Zi{rst} » {info3}update took {num}$SECONDS{info3} seconds{rst}{…}"
     return $retval
   }
   local st=$1 id_as repo snip pd user plugin
@@ -1701,7 +1697,8 @@ ZI[EXTENDED_GLOB]=""
   if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
     local -a snipps
     snipps=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)(ND) )
-    [[ $st != status && ${OPTS[opt_-q,--quiet]} != 1 && -n $snipps ]] && +zi-message "{note}Note:{rst} update includes unloaded snippets"
+    [[ $st != status && ${OPTS[opt_-q,--quiet]} != 1 && -n $snipps ]] && \
+      +zi-message "{mmdsh}{happy} Zi{rst} » {faint}updating snippets{rst}{…}"
     for snip ( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(D) ) {
       [[ ! -f ${snip:h}/url ]] && continue
       [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
@@ -1711,13 +1708,11 @@ ZI[EXTENDED_GLOB]=""
     [[ -n $snipps ]] && builtin print
   }
   ICE=()
-  if (( OPTS[opt_-s,--snippets] && !OPTS[opt_-l,--plugins] )) {
-    return
-  }
+  if (( OPTS[opt_-s,--snippets] && !OPTS[opt_-l,--plugins] )) { return; }
   if [[ $st = status ]]; then
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{note}Note:{rst} status includes unloaded plugins"
+    (( OPTS[opt_-q,--quiet] )) || +zi-message "{mmdsh}{happy} Zi{rst} » {faint}status for all installed plugins{rst}{…}"
   else
-    (( !OPTS[opt_-q,--quiet] )) && +zi-message "{note}Note:{rst} update includes unloaded plugins"
+    (( OPTS[opt_-q,--quiet] )) || +zi-message "{mmdsh}{happy} Zi{rst} » {faint}updating plugins{rst}{…}"
   fi
   ZI[first-plugin-mark]=init
   for repo in ${ZI[PLUGINS_DIR]}/*; do
@@ -1741,15 +1736,14 @@ ZI[EXTENDED_GLOB]=""
     local user=${reply[-2]} plugin=${reply[-1]}
     # Must be a git repository or a binary release
     if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]]; then
-      (( !OPTS[opt_-q,--quiet] )) && \
-        +zi-message "$REPLY: not a git repository"
+      (( OPTS[opt_-q,--quiet] )) || +zi-message "$REPLY: not a git repository"
       continue
     fi
     if [[ $st = status ]]; then
       builtin print "\nStatus for plugin $REPLY"
       ( builtin cd -q "$repo"; command git status )
     else
-      (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} $REPLY{rst}" || builtin print -n .
+      (( OPTS[opt_-q,--quiet] )) || +zi-message "Updating{ehi}:{rst} $REPLY{rst}" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
       local update_rc=$?
       [[ $update_rc -ne 0 ]] && {
@@ -1759,9 +1753,8 @@ ZI[EXTENDED_GLOB]=""
     fi
   done
   .zi-compinit 1 1 &>/dev/null
-  if (( !OPTS[opt_-q,--quiet] )) {
-    +zi-message "{ok}The update took {num}${SECONDS}{ok} seconds{rst}"
-  }
+  (( OPTS[opt_-q,--quiet] )) || \
+  +zi-message "{mmdsh}{happy} Zi{rst} » {info3}update took {num}$SECONDS{info3} seconds{rst}{…}"
   return "$retval"
 } # ]]]
 # FUNCTION: .zi-update-in-parallel [[[
@@ -1855,7 +1848,7 @@ ZI[EXTENDED_GLOB]=""
     counter=0
     PUAssocArray=()
   } elif (( counter == 1 && !OPTS[opt_-q,--quiet] )) {
-    +zi-message "{info3}Spawning the next{opt} ${OPTS[value]}{info3} concurrent update jobs{ehi}:{rst} {var}${tpe}{rst} {…}"
+    +zi-message "{info3}Spawning {opt}${OPTS[value]}{info3} concurrent {var}${tpe}{info3} updates{rst}{…}"
   }
 } # ]]]
 # FUNCTION: .zi-show-zstatus [[[
@@ -1923,21 +1916,22 @@ ZI[EXTENDED_GLOB]=""
   [[ -z $sni ]] && builtin print -n " "
   builtin print '\b\b  '
 } # ]]]
-# FUNCTION: .zi-show-times [[[
+# FUNCTION: .zi-times [[[
 # Shows loading times of all loaded plugins.
 #
 # User-action entry point.
-.zi-show-times() {
-  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal noshortloops
+.zi-times() {
+builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob warn_create_global typeset_silent \
+  no_short_loops rc_quotes no_auto_pushd no_bang_hist
 
   local opt="$1 $2 $3" entry entry2 entry3 user plugin
   float -F 3 sum=0.0
   local -A sice
   local -a tmp
   [[ "$opt" = *-[a-z]#m[a-z]#* ]] && \
-    { builtin print "Plugin loading moments (relative to the first prompt):"; ((1)); } || \
-    builtin print "Plugin loading times:"
+    { +zi-message "{info2}Plugin loading moments (relative to the first prompt){ehi}:{rst}"; ((1)); } || \
+    +zi-message "{info2}Plugin loading times{ehi}:{rst}"
   for entry in "${(@on)ZI[(I)TIME_[0-9]##_*]}"; do
     entry2="${entry#TIME_[0-9]##_}"
     entry3="AT_$entry"
@@ -1956,8 +1950,8 @@ ZI[EXTENDED_GLOB]=""
     fi
     local attime=$(( ZI[$entry3] - ZI[START_TIME] ))
     if [[ "$opt" = *-[a-z]#s[a-z]#* ]]; then
-      local time="$ZI[$entry] sec"
-      attime="${(M)attime#*.???} sec"
+      local time="$ZI[$entry] s"
+      attime="${(M)attime#*.???} s"
     else
       local time="${(l:5:: :)$(( ZI[$entry] * 1000 ))%%[,.]*} ms"
       attime="${(l:5:: :)$(( attime * 1000 ))%%[,.]*} ms"
@@ -1969,20 +1963,20 @@ ZI[EXTENDED_GLOB]=""
     elif [[ "$opt" = *-[a-z]#a[a-z]#* ]]; then
       line="$attime $line"
     fi
-      line="$line - $REPLY"
+      line="$line {mdsh} $REPLY {rst}"
     if [[ ${sice[as]} == "command" ]]; then
-      line="$line (command)"
-    elif [[ -n ${sice[sbin]+abc} ]]; then
-      line="$line (sbin command)"
-    elif [[ -n ${sice[fbin]+abc} ]]; then
-      line="$line (fbin command)"
+      line="$line {mdsh} {faint}({cmd}command{rst}{faint}){rst}"
+    elif [[ -n ${sice[sbin]+abc} || -n ${sice[sbin]} ]]; then
+      line="$line {mdsh} {faint}({ice}sbin{rst} {cmd}command{rst}{faint}){rst}"
+    elif [[ -n ${sice[fbin]+abc} || -n ${sice[fbin]} ]]; then
+      line="$line {mdsh} {faint}({ice}fbin{rst} {cmd}command{rst}{faint}){rst}"
     elif [[ ( ${sice[pick]} = /dev/null || ${sice[as]} = null ) && ${+sice[make]} = 1 ]]; then
-      line="$line (/dev/null make plugin)"
+      line="$line {mdsh} {faint}({dir}/dev/null{rst} {cmd}make{rst} {p}plugin{rst}{faint}){rst}"
     fi
-    builtin print "$line"
+    +zi-message "$line"
     (( sum += ZI[$entry] ))
   done
-  builtin print "Total: $sum sec"
+  +zi-message "{mmdsh}{rst} {b}Total{ehi}:{rst} {auto}${sum}s"
 } # ]]]
 # FUNCTION: .zi-list-bindkeys [[[
 .zi-list-bindkeys() {
@@ -2618,7 +2612,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
     [[ $uspl1 = custom || $uspl1 = _local---zi ]] && continue
     pushd "$p" >/dev/null || continue
     if [[ -d .git ]]; then
-      gitout=`command git log --all --max-count=1 --since=$timespec 2>/dev/null`
+      gitout=$(command git log --all --max-count=1 --since=$timespec 2>/dev/null)
       if [[ -n $gitout ]]; then
         .zi-any-colorify-as-uspl2 "$uspl1"
         builtin print -r -- "$REPLY"
@@ -2883,9 +2877,9 @@ EOF
   elif (( ${+commands[exa]} )); then
     ZI[TREE]="${commands[exa]} --color=always -T -l -L3"
   else
-    builtin print "${ZI[col-error]}No \`tree' program, it is required by the subcommand \`ls\'${ZI[col-rst]}"
-    builtin print "Download from: http://mama.indstate.edu/users/ice/tree/"
-    builtin print "It is also available probably in all distributions and Homebrew, as package \`tree'"
+    +zi-message "{auto}Program \`tree\` not found, it is required by the subcommand \`ls\`"
+    +zi-message "Download from{ehi}:{rst} {auto}http://mama.indstate.edu/users/ice/tree/"
+    +zi-message "{auto}It is also available probably in all distributions and Homebrew, as package \`tree\`."
   fi
   (
     builtin cd -q "${ZI[SNIPPETS_DIR]}"
@@ -3046,35 +3040,35 @@ EOF
 .zi-help() {
 #  +zi-message "{hi}Welcome ${(%):-%n}"
 if (( $+commands[clear] )) { clear; }
-sleep 0.03 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Usage{ehi}:{rst}"
-sleep 0.03 && +zi-message "❯ analytics     {mdsh}{rst} {auto}Statistics, benchmarks, and information"
-sleep 0.03 && +zi-message "❯ subcmds       {mdsh}{rst} {auto}Show subcommands registered by the annexes"
-sleep 0.03 && +zi-message "❯ icemods       {mdsh}{rst} {auto}Show all registered ice-modifiers"
-sleep 0.03 && +zi-message "❯ self-update   {mdsh}{rst} {auto}Self-update and compile"
-sleep 0.04 && +zi-message "❯ compinit      {mdsh}{rst} {auto}Refresh completions"
-sleep 0.04 && +zi-message "❯ cclear        {mdsh}{rst} {auto}Clear stray and improper completions"
-sleep 0.04 && +zi-message "❯ cdreplay      {opt}[-q]{rst} {mdsh}{rst} {auto}Replay compdefs (run after compinit)"
-sleep 0.04 && +zi-message "❯ cdclear       {opt}[-q]{rst} {mdsh}{rst} {auto}Clear compdef replay list"
-sleep 0.04 && +zi-message "❯ env-whitelist {opt}[-v][-h]{rst} {mdsh}{rst} {auto}Specify names or patterns of variables left unchanged during an{rst} unload"
-sleep 0.05 && +zi-message "❯ snippet       {opt}[-f]{p} [snippet]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Source local or remote file"
-sleep 0.05 && +zi-message "❯ delete        {opt}[--all][--clean]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Remove 'plugin/snippet' from the disk"
-sleep 0.05 && +zi-message "❯ update        {opt}[-L][-s][-v][-q][-r][-p]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Git update plugins or snippets"
-sleep 0.05 && +zi-message "❯ load          {opt}[-b]{p} [plugin]{rst} {mdsh}{rst} {auto}Load plugin or absolute local path"
-sleep 0.06 && +zi-message "❯ unload        {opt}[-q]{p} [plugin]{rst} {mdsh}{rst} {auto}Unload plugin"
-sleep 0.06 && +zi-message "❯ light         {opt}[-b]{p} [plugin]{rst} {mdsh}{rst} {auto}Load plugins without 'reporting/tracking'"
-sleep 0.06 && +zi-message "❯ add-fpath     {opt}[-f]{p} [plugin]{rst}|{dir}[dir]{rst} {mdsh}{rst} {auto}Append directory to{var} \$fpath{rst}, use -f to prepend instead"
-sleep 0.06 && +zi-message "❯ run           {opt}[-l]{p} [plugin]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} {auto}Runs a command in the given plugin's directory"
-sleep 0.07 && +zi-message "❯ compile       {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} Compile plugins"
-sleep 0.07 && +zi-message "❯ uncompile     {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} Remove compiled plugins"
-sleep 0.07 && +zi-message "❯ cdisable      {p}[name]{rst} {mdsh}{rst} {auto}Disable completion"
-sleep 0.07 && +zi-message "❯ cenable       {p}[name]{rst} {mdsh}{rst} {auto}Enable completion"
-sleep 0.08 && +zi-message "❯ creinstall    {p}[plugin]{rst} {mdsh}{rst} {auto}Install completions for the plugin, can also receive absolute local path"
-sleep 0.08 && +zi-message "❯ cuninstall    {p}[plugin]{rst} {mdsh}{rst} {auto}Uninstall completions for plugin"
-sleep 0.08 && +zi-message "❯ recall        {p}[plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Fetch saved ice-modifiers and construct the command"
-sleep 0.08 && +zi-message "❯ srv           {p}[service]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} Control a service{ehi}:{rst} {auto}'stop,start,restart,next,quit'"
-sleep 0.09 && +zi-message "❯ create        {p}[plugin]{rst} {mdsh}{rst} {auto}Create a plugin"
-sleep 0.09 && +zi-message "❯ edit          {p}[plugin]{rst} {mdsh}{rst} Edit plugin's file with{var} \$EDITOR{rst}{nl}"
-sleep 0.09 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Wiki{ehi}:{rst} {url}https://wiki.zshell.dev{rst}{nl}"
+sleep 0.01 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Usage{ehi}:{rst}{nl}"
+sleep 0.01 && +zi-message "❯ analytics     {mdsh}{rst} {auto}Statistics, benchmarks, and information"
+sleep 0.01 && +zi-message "❯ subcmds       {mdsh}{rst} {auto}Show subcommands registered by the annexes"
+sleep 0.01 && +zi-message "❯ icemods       {mdsh}{rst} {auto}Show all registered ice-modifiers"
+sleep 0.01 && +zi-message "❯ compinit      {mdsh}{rst} {auto}Refresh completions"
+sleep 0.01 && +zi-message "❯ cclear        {mdsh}{rst} {auto}Clear stray and improper completions"
+sleep 0.02 && +zi-message "❯ cdreplay      {opt}[-q]{rst} {mdsh}{rst} {auto}Replay compdefs (run after compinit)"
+sleep 0.02 && +zi-message "❯ cdclear       {opt}[-q]{rst} {mdsh}{rst} {auto}Clear compdef replay list"
+sleep 0.01 && +zi-message "❯ self-update   {opt}[-q][-D]{rst} {mdsh}{rst} {auto}Self-update and compile codebase"
+sleep 0.02 && +zi-message "❯ env-whitelist {opt}[-v][-h]{rst} {mdsh}{rst} {auto}Specify names or patterns of variables left unchanged during an{rst} unload"
+sleep 0.02 && +zi-message "❯ snippet       {opt}[-f]{p} [snippet]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Source local or remote file"
+sleep 0.02 && +zi-message "❯ delete        {opt}[-a][-c][-y][-q]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Remove 'plugin' or 'snippet' from the disk"
+sleep 0.02 && +zi-message "❯ update        {opt}[-L][-s][-v][-q][-r][-p]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Git update plugins or snippets"
+sleep 0.02 && +zi-message "❯ load          {opt}[-b]{p} [plugin]{rst} {mdsh}{rst} {auto}Load plugin or absolute local path"
+sleep 0.02 && +zi-message "❯ unload        {opt}[-q]{p} [plugin]{rst} {mdsh}{rst} {auto}Unload plugin"
+sleep 0.02 && +zi-message "❯ light         {opt}[-b]{p} [plugin]{rst} {mdsh}{rst} {auto}Load plugins without 'reporting' or 'tracking'"
+sleep 0.02 && +zi-message "❯ add-fpath     {opt}[-f]{p} [plugin]{rst}|{dir}[dir]{rst} {mdsh}{rst} {auto}Append directory to{var} \$fpath{rst}, use {opt}-f{rst} {auto} to prepend instead"
+sleep 0.02 && +zi-message "❯ run           {opt}[-l]{p} [plugin]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} {auto}Runs a command in the given plugin's directory"
+sleep 0.02 && +zi-message "❯ compile       {opt}[-a]{p} [plugin]{rst} {mdsh}{rst} Compile plugins"
+sleep 0.02 && +zi-message "❯ uncompile     {opt}[-a]{p} [plugin]{rst} {mdsh}{rst} Remove compiled plugins"
+sleep 0.02 && +zi-message "❯ cdisable      {p}[name]{rst} {mdsh}{rst} {auto}Disable completion"
+sleep 0.03 && +zi-message "❯ cenable       {p}[name]{rst} {mdsh}{rst} {auto}Enable completion"
+sleep 0.03 && +zi-message "❯ creinstall    {p}[plugin]{rst} {mdsh}{rst} {auto}Install completions for the plugin, can also receive absolute local path"
+sleep 0.03 && +zi-message "❯ cuninstall    {p}[plugin]{rst} {mdsh}{rst} {auto}Uninstall completions for plugin"
+sleep 0.03 && +zi-message "❯ recall        {p}[plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Fetch saved ice-modifiers and construct the command"
+sleep 0.03 && +zi-message "❯ srv           {p}[service]{rst}|{cmd}[cmd]{rst} {mdsh}{rst} Control a service{ehi}:{rst} {auto}'stop,start,restart,next,quit'"
+sleep 0.03 && +zi-message "❯ create        {p}[plugin]{rst} {mdsh}{rst} {auto}Create a plugin"
+sleep 0.03 && +zi-message "❯ edit          {p}[plugin]{rst} {mdsh}{rst} Edit plugin's file with {var}\$EDITOR{rst}{nl}"
+sleep 0.04 && +zi-message "{mmdsh}{info} Wiki{ehi}:{rst} {url}https://wiki.zshell.dev{rst}{nl}"
 } # ]]]
 # FUNCTION: .zi-analytics-menu [[[
 # Statistics, benchmarks and information.

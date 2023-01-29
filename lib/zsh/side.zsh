@@ -358,28 +358,3 @@
   +zi-message -r -- "{b}{error}0 <running now>{rst}{…}"
   return 0
 } # ]]]
-# FUNCTION: .zi-check-module. [[[
-# Check module. Don't trust access times and verify hard stored values.
-.zi-check-module() {
-  [[ -e ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT ]] && local compiled_at_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT)"
-  [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
-  local recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
-  if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
-    +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
-    "of the zpmod module has been requested… {hi}Building{rst}…"
-    (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-    .zi-confirm "Do you want to recompile the zpmod module now?" || return 1
-    command make -C "${ZI[ZMODULES_DIR]}/zpmod" distclean &>/dev/null
-    .zi-module --build 2>&1 | command tee "${ZI[ZMODULES_DIR]}/zpmod/build.log"
-    if command make -C "${ZI[ZMODULES_DIR]}/zpmod" &>/dev/null; then
-      +zi-message "{ok}Build successful!{rst}"
-      return 0
-    else
-      builtin print -r -- "${ZI[col-error]}Compilation failed.${ZI[col-rst]}" \
-      "${ZI[col-pre]}You can enter the following command:${ZI[col-rst]}" \
-      'make -C ${ZI[ZMODULES_DIR]}/zpmod' "${ZI[col-pre]}to see the error messages and e.g.: report an issue" \
-      "at GitHub${ZI[col-rst]}"
-      return 1
-    fi
-  fi
-} # ]]]

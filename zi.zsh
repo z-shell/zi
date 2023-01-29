@@ -2274,7 +2274,7 @@ zi() {
     --quiet    opt_-q,--quiet
     -v         opt_-v,--verbose:"Turn on more messages from the operation."
     --verbose  opt_-v,--verbose
-    -r         opt_-r,--reset:"Reset the repository before updating (or remove the files for single-file snippets and gh-r plugins)."
+    -r         opt_-r,--reset:"update:[Reset/clean the repository before updating.] module:[Check and rebuild the module if needed.]"
     --reset    opt_-r,--reset
     -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.]"
     --all      opt_-a,--all
@@ -2312,7 +2312,7 @@ zi() {
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
-    module        "-h|--help|-B|--build|-I|--info"
+    module        "-h|--help|-B|--build|-I|--info|-r|--reset"
     times         "-h|--help|-m|-s|-a"
     light         "-h|--help|-b"
     snippet       "-h|--help|-f|--force|--command|-x"
@@ -2944,12 +2944,14 @@ zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;34=
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]
-# Check module built / compile status [[[
+
+# Check the module compiled timestamps and recompile if needed,
+# if no action is required, then no message will be printed. [[[
 if [[ -e "${ZI[ZMODULES_DIR]}/zpmod/Src/zi/zpmod.so" ]]; then
   if [[ ! -f ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT || \
   ( ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT -ot ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ) ]]; then
-    (( ${+functions[.zi-check-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || return 1
-    .zi-check-module
+    (( ${+functions[.zi-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+    .zi-module --reset
   fi
 fi # ]]]
 

@@ -623,61 +623,97 @@ ZI[EXTENDED_GLOB]=""
     return 0
   fi
 } # ]]]
+# FUNCTION: .zi-auto-reload [[[
+# Function checks sum of all files that are used to calculate the mtime
+# and if it is different from the stored one, then recompile, and reload.
+.zi-auto-reload() {
+  builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global
+
+  [[ $1 == (-q|--quiet) ]] && { local quiet=1; } || { local quiet=0; };
+
+  # The sum of all files that are used to calculate the mtime
+  local file rm_file comp_file src_file
+  integer sum ela elb
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" ela; (( sum += ela ))
+  for file ( side install autoload additional ) {
+    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" elb; (( sum += elb ))
+  }
+
+  # If the sum of all mtime is different from the stored one,
+  # then remove all compiled files then recompile new ones and reload.
+  if (( ZI[mtime] + ZI[mtime-side] + ZI[mtime-install] + ZI[mtime-autoload] + ZI[mtime-additional] != sum )); then
+
+    # Remove all compiled files
+    for rm_file ( ${ZI[BIN_DIR]}/**/*.zwc(DN) ) {
+      command rm -f -- ${rm_compiled} > /dev/null 2>&1
+    }
+
+    # Recompile new ones
+    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}recompiling codebase{rst}{…}"
+    for comp_file ( ${ZI[BIN_DIR]}/**/*.zsh*~*.zwc ) {
+      zcompile -U -- ${comp_file} > /dev/null 2>&1
+    } && { (( quiet )) || +zi-message " {term}✔{rst}"; }
+
+    # Reload Zi
+    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}reloading{rst}{…}"
+    for src_file ( zi side install autoload additional ) {
+      builtin source ${ZI[BIN_DIR]}/**/${src_file}.zsh > /dev/null 2>&1
+    } && { (( quiet )) || +zi-message " {term}✔{rst}"; }
+
+    # Update the stored mtime
+    .zi-set-mtime && return 0
+  fi
+} # ]]]
 # FUNCTION: .zi-self-update [[[
-# Updates ❮ Zi ❯ code (does a git pull).
+# Function manages self-update of Zi codebase.
+#
+# It will fetch the latest changes from the upstream repository and,
+# display changelog if there are any, then update the codebase and,
+# reload Zi if there are any changes.
 #
 # User-action entry point.
+#
+# $1 - user given options for self-update (optional)
 .zi-self-update() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob typesetsilent warncreateglobal
-  [[ $1 != -q ]] && +zi-message "{profile}Updating »»»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
-  local nl=$'\n' escape=$'\x1b[' current_branch=$(builtin cd -q "$ZI[BIN_DIR]" && command git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  builtin setopt extended_glob warn_create_global typeset_silent \
+    no_short_loops rc_quotes no_auto_pushd
+
+  (( OPTS[opt_-D,--dry-run] )) && { local dry_run=1; } || { local dry_run=0; }
+  (( OPTS[opt_-q,--quiet] )) && { local quiet=1 opt='--quiet'; } || { local quiet=0; }
+
+  [[ -z $origin_url ]] && local origin_url="$(builtin cd -q $ZI[BIN_DIR] && command git remote get-url origin)"
+
   local -a lines
-  (   builtin cd -q "$ZI[BIN_DIR]" && command git checkout $current_branch &>/dev/null && command git fetch --quiet && \
-  lines=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset || %b' ..FETCH_HEAD)"} )
-  if (( ${#lines} > 0 )); then
-    # Remove the (origin/master ...) segments, to expect only tags to appear
-    lines=( "${(S)lines[@]//\(([,[:blank:]]#(origin|HEAD|master|main)[^a-zA-Z]##(HEAD|origin|master|main)[,[:blank:]]#)#\)/}" )
-    # Remove " ||" if it ends the line (i.e. no additional text from the body)
-    lines=( "${lines[@]/ \|\|[[:blank:]]#(#e)/}" )
-    # If there's no ref-name, 2 consecutive spaces occur - fix this
-    lines=( "${lines[@]/(#b)[[:space:]]#\|\|[[:space:]]#(*)(#e)/|| ${match[1]}}" )
-    lines=( "${lines[@]/(#b)$escape([0-9]##)m[[:space:]]##${escape}m/$escape${match[1]}m${escape}m}" )
-    # Replace what follows "|| ..." with the same thing but with no newlines,
-    # and also only first 10 words (the (w)-flag enables word-indexing)
-    lines=( "${lines[@]/(#b)[[:blank:]]#\|\|(*)(#e)/| ${${match[1]//$nl/ }[(w)1,(w)10]}}" )
-    builtin print -rl -- "${lines[@]}" | .zi-pager
-    builtin print
-  fi
-  if [[ $1 != -q ]] {
-    command git pull --no-stat --ff-only origin $current_branch
-  } else {
-    command git pull --no-stat --quiet --ff-only origin $current_branch
-  }
+  local nl=$'\n' escape=$'\x1b[' cores=$(nproc 2>/dev/null || \
+    sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+
+  (
+    # Fetch the latest changes from the upstream repository
+    (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}fetching updates{rst}{…}"
+    builtin cd -q $ZI[BIN_DIR] && command git fetch $opt --jobs $cores --tags --prune --force $origin_url refs/heads/main && \
+      lines=( ${(f)"$(command git log --color --abbrev-commit --decorate --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
+
+    # If there are any changes then update the codebase and reload Zi
+    if (( ${#lines} > 0 )); then
+      lines=( "${(S)lines[@]//\(([,[:blank:]]#(origin|HEAD|master|main)[^a-zA-Z]##(HEAD|origin|master|main)[,[:blank:]]#)#\)/}" )
+      lines=( "${lines[@]/ \|\|[[:blank:]]#(#e)/}" )
+      lines=( "${lines[@]/(#b)[[:space:]]#\|\|[[:space:]]#(*)(#e)/|| ${match[1]}}" )
+      lines=( "${lines[@]/(#b)$escape([0-9]##)m[[:space:]]##${escape}m/$escape${match[1]}m${escape}m}" )
+      lines=( "${lines[@]/(#b)[[:blank:]]#\|\|(*)(#e)/| ${${match[1]//$nl/ }[(w)1,(w)10]}}" )
+      (( quiet )) || { builtin print -rl -- "${lines[@]}" | .zi-pager; }
+
+      if (( ! dry_run )); then
+        # Update the codebase
+        command git merge -n $opt --autostash --ff-only FETCH_HEAD || \
+          { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; return 1 }
+        .zi-auto-reload $opt
+      fi
+    else
+      (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}up-to-date {term}✔{rst}"
+    fi
   )
-  if [[ $1 != -q ]] {
-    +zi-message "{profile}Compiling »»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
-  }
-  command rm -f ${ZI[BIN_DIR]}/*.zwc(DN)
-  command rm -f ${ZI[BIN_DIR]}/lib/zsh/*.zwc(DN)
-  zcompile -U ${ZI[BIN_DIR]}/zi.zsh
-  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/side.zsh
-  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/install.zsh
-  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/autoload.zsh
-  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/additional.zsh
-  zcompile -U ${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh
-  # Load for the current session
-  [[ $1 != -q ]] && +zi-message "{profile}Reloading »»»{rst} ❮ {happy}Zi{rst} ❯ {…}{rst}"
-  source ${ZI[BIN_DIR]}/zi.zsh
-  source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
-  source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
-  source ${ZI[BIN_DIR]}/lib/zsh/autoload.zsh
-  # Read and remember the new modification timestamps
-  local file
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
-  for file ( side install autoload ) {
-    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" "ZI[mtime-${file}]"
-  }
 } # ]]]
 # FUNCTION: .zi-show-registered-plugins [[[
 # Lists loaded plugins (subcommands list, loaded).
@@ -1432,73 +1468,75 @@ ZI[EXTENDED_GLOB]=""
         ICE=()
       }
     }
-    if [[ -d $local_dir/.git ]] && ( builtin cd -q $local_dir ; git show-ref --verify --quiet refs/heads/main ); then
+    if [[ -d $local_dir/.git ]] && ( builtin cd -q $local_dir ; command git show-ref --verify --quiet refs/heads/main ); then
       local main_branch=main
-    else
+    elif [[ -d $local_dir/.git ]] && ( builtin cd -q $local_dir ; command git show-ref --verify --quiet refs/heads/master ); then
       local main_branch=master
+    else
+      local main_branch=$(builtin cd -q $local_dir ; command git rev-parse --abbrev-ref HEAD 2>/dev/null)
     fi
     if (( ! is_release )) {
       ( builtin cd -q "$local_dir" || return 1
-      integer had_output=0
-      local IFS=$'\n'
-      command git fetch --quiet && \
-      declare -a line; line=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
-      if (( ${#line} > 0 )); then
-        [[ $had_output -eq 0 ]] && {
-          had_output=1
-          if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-            .zi-any-colorify-as-uspl2 "$id_as"
-            (( ZI[first-plugin-mark] )) && {
-              ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+        integer had_output=0
+        local IFS=$'\n'
+        local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+        command git fetch --quiet --jobs $cores && \
+        local -a line; line=( ${(f)"$(command git log --color --abbrev-commit --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
+        if (( ${#line} > 0 )); then
+          [[ $had_output -eq 0 ]] && {
+            had_output=1
+            if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
+              .zi-any-colorify-as-uspl2 "$id_as"
+              (( ZI[first-plugin-mark] )) && {
+                ZI[first-plugin-mark]=0
+              } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+            }
           }
+          +zi-message "$line" | command tee .zi_lastupd | .zi-pager &
+          integer pager_pid=$!
+          { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
+          { wait $pager_pid; } > /dev/null 2>&1
+          local -a log
+          { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
+          command rm -f $local_dir/.zi_lastupd
+        fi
+        if [[ ${#log} -gt 0 ]]; then
+          ZI[annex-multi-flag:pull-active]=2
+        else
+          if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )); then
+            ZI[annex-multi-flag:pull-active]=1
+            # Handle the snippet/plugin boundary in the messages
+            if (( OPTS[opt_-q,--quiet] && !PUPDATE )); then
+              .zi-any-colorify-as-uspl2 "$id_as"
+              (( ZI[first-plugin-mark] )) && \
+                { ZI[first-plugin-mark]=0; } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
+            fi
+          else
+            ZI[annex-multi-flag:pull-active]=0
+          fi
+        fi
+        if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
+          ICE=( "${(kv)ice[@]}" )
+          # Run annexes' atpull hooks (the before atpull-ice ones).
+          # The regular Git-plugins block.
+          reply=(
+            ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+            ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+            ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
+          )
+          for key in "${reply[@]}"; do
+            arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+            "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
+            hook_rc=$?
+            # Effectively return the last != 0 rc
+            [[ "$hook_rc" -ne 0 ]] && {
+              retval="$hook_rc"
+              +zi-message "{warn}Warning{ehi}:{rst} {b}{var}${arr[5]}{rst}{msg} hook returned {b}{num}$hook_rc{rst}"
+            }
+          done
+          ICE=()
+          (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull -n ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command grep -E -v '(FETCH_HEAD|up.to.date\.|From.*://)'
         }
-        +zi-message "$line"
-      fi | command tee .zi_lastupd | .zi-pager &
-      integer pager_pid=$!
-      { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
-      { wait $pager_pid; } > /dev/null 2>&1
-      local -a log
-      { log=( ${(@f)"$(<$local_dir/.zi_lastupd)"} ); } 2>/dev/null
-      command rm -f $local_dir/.zi_lastupd
-      if [[ ${#log} -gt 0 ]] {
-        ZI[annex-multi-flag:pull-active]=2
-      } else {
-        if (( ${+ice[run-atpull]} || OPTS[opt_-u,--urge] )) {
-          ZI[annex-multi-flag:pull-active]=1
-          # Handle the snippet/plugin boundary in the messages
-          if (( OPTS[opt_-q,--quiet] && !PUPDATE )) {
-            .zi-any-colorify-as-uspl2 "$id_as"
-            (( ZI[first-plugin-mark] )) && {
-              ZI[first-plugin-mark]=0
-            } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
-          }
-        } else {
-          ZI[annex-multi-flag:pull-active]=0
-        }
-      }
-      if (( ZI[annex-multi-flag:pull-active] >= 1 )) {
-        ICE=( "${(kv)ice[@]}" )
-        # Run annexes' atpull hooks (the before atpull-ice ones).
-        # The regular Git-plugins block.
-        reply=(
-          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
-          ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
-          ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
-        )
-        for key in "${reply[@]}"; do
-          arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-          "${arr[5]}" plugin "$user" "$plugin" "$id_as" "$local_dir" "${${key##(zi|z-annex) hook:}%% <->}" update:git
-          hook_rc=$?
-          # Effectively return the last != 0 rc
-          [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
-            builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-          }
-        done
-        ICE=()
-        (( ZI[annex-multi-flag:pull-active] >= 2 )) && command git pull --no-stat ${=ice[pullopts]:---ff-only} origin ${ice[ver]:-$main_branch} |& command grep -E -v '(FETCH_HEAD|up.to.date\.|From.*://)'
-      }
         return ${ZI[annex-multi-flag:pull-active]}
       )
       ZI[annex-multi-flag:pull-active]=$?
@@ -1644,29 +1682,6 @@ ZI[EXTENDED_GLOB]=""
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob nullglob warncreateglobal typesetsilent noshortloops
   local -F2 SECONDS=0
-  .zi-self-update -q
-  [[ $2 = restart ]] && +zi-message "{msg2}Restarting the update with the new codebase loaded.{rst}"$'\n'
-  local file
-  integer sum ela elb update_rc
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" ela; (( sum += ela ))
-  for file ( side install autoload ) {
-    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" elb; (( sum += elb ))
-  }
-  # Reload ZI?
-  if [[ $2 != restart ]] && (( ZI[mtime] + ZI[mtime-side] + ZI[mtime-install] + ZI[mtime-autoload] != sum )) {
-    +zi-message "{info2}Detected {rst}❮ {happy}Zi{rst} ❯ {info2}update in another session -" "{pre}reloading {rst}{…}"
-    source ${ZI[BIN_DIR]}/zi.zsh
-    source ${ZI[BIN_DIR]}/lib/zsh/side.zsh
-    source ${ZI[BIN_DIR]}/lib/zsh/install.zsh
-    source ${ZI[BIN_DIR]}/lib/zsh/autoload.zsh
-    .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
-    for file ( side install autoload ) {
-      .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" "ZI[mtime-${file}]"
-    }
-    +zi-message "{pname}Done.{rst}"$'\n'
-    .zi-update-or-status-all "$1" restart
-    return $?
-  }
   integer retval
   if (( OPTS[opt_-p,--parallel] )) && [[ $1 = update ]] {
     (( !OPTS[opt_-q,--quiet] )) && \

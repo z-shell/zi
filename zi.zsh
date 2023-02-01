@@ -33,7 +33,7 @@ ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopt
 nocompile|reset"
 
 # Subcommands list
-ZI[cmd-list]="-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
+ZI[cmd-list]="-V|--version|version|-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
 cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|\
 uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run"
@@ -148,46 +148,46 @@ XDG_ZI_CACHE=${~ZI[CACHE_DIR]}
 XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
 
 if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]] && [[ -d ${ZI[MAN_DIR]} ]]; then
-  manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
   typeset -gxU manpath
+  manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
 fi
 
 if [[ -z ${cdpath[(re)${ZI[CDPATH_DIR]}]} ]] && [[ -d ${ZI[CDPATH_DIR]} ]]; then
   builtin setopt auto_cd
-  cdpath=( "${ZI[CDPATH_DIR]}" "${cdpath[@]}" )
   typeset -gxU cdpath CDPATH
+  cdpath=( "${ZI[CDPATH_DIR]}" "${cdpath[@]}" )
 fi
 
 if [[ -z ${mailpath[(re)${ZI[MAIL_DIR]}]} ]]; then
-  mailpath=( "${ZI[MAIL_DIR]}" "${mailpath[@]}" )
   typeset -gxU mailpath MAILPATH
+  mailpath=( "${ZI[MAIL_DIR]}" "${mailpath[@]}" )
 fi
 
 if [[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d ${ZPFX}/bin ]]; then
-  path=( "${ZPFX}/bin" "${path[@]}" )
   typeset -gxU path PATH
+  path=( "${ZPFX}/bin" "${path[@]}" )
 fi
 
 if [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d ${ZPFX}/sbin ]]; then
-  path=( "${ZPFX}/sbin" "${path[@]}" )
   typeset -gxU path PATH
+  path=( "${ZPFX}/sbin" "${path[@]}" )
 fi
 
 if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then
-  fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
   typeset -gxU fpath FPATH
+  fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
 fi
 
 # Export/assign/tie new paths.
 if [[ -z ${logpath[(re)${ZI[LOG_DIR]}]} ]] && [[ -d ${ZI[LOG_DIR]} ]]; then
-  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
   typeset -gxU logpath LOG_PATH
+  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
   typeset -gxTU LOG_PATH logpath
 fi
 
 if [[ -z ${nodepath[(re)${ZI[NODE_PATH_DIR]}]} ]] && [[ -d ${ZI[NODE_PATH_DIR]} ]]; then
-  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
   typeset -gxU nodepath NODE_PATH
+  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
   typeset -gxTU NODE_PATH nodepath
 fi
 
@@ -1147,9 +1147,6 @@ builtin setopt noaliases
   if [[ ! -d ${ZPFX}/bin ]]; then
     command mkdir -p "${ZPFX}/bin"
   fi
-  if [[ ! -d ${ZPFX}/sbin ]]; then
-    command mkdir -p "${ZPFX}/sbin"
-  fi
   if [[ ! -d ${ZPFX}/lib ]]; then
     command mkdir -p "${ZPFX}/lib"
     command chmod go-w "${ZPFX}/lib"
@@ -1961,7 +1958,8 @@ builtin setopt noaliases
 # ]]]
 # FUNCTION: +zi-parse-opts. [[[
 .zi-parse-opts() {
-  builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob typeset_silent no_short_loops rc_quotes no_auto_pushd
   reply=( "${(@)${@[2,-1]//([  $'\t']##|(#s))(#b)(${(~j.|.)${(@s.|.)___opt_map[$1]}})(#B)([  $'\t']##|(#e))/${OPTS[${___opt_map[${match[1]}]%%:*}]::=1}ß←↓→}:#1ß←↓→}" )
 } # ]]]
 
@@ -2145,7 +2143,6 @@ return retval
 #      (delay), i.e. "burst" allows to run package installations from
 #      script, not from prompt.
 #
-
 @zi-scheduler() {
   integer ___ret="${${ZI[lro-data]%:*}##*:}"
   # lro stands for lastarg-retval-option.
@@ -2244,6 +2241,17 @@ return retval
   [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
 } # ]]]
 
+# FUNCTION: .zi-set-mtime. [[[
+# Stores mtime of zi.zsh and its lib files into ZI[mtime] and ZI[mtime-{side,install,autoload,additional}].
+# This is used to determine if the files were changed and need to be reloaded.
+.zi-set-mtime() {
+  local set_mtime
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
+  for set_mtime ( side install autoload additional ) {
+  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${set_mtime}.zsh" "ZI[mtime-${set_mtime}]"
+  }
+}
+
 #
 # Exposed functions.
 #
@@ -2274,9 +2282,13 @@ zi() {
     --quiet    opt_-q,--quiet
     -v         opt_-v,--verbose:"Turn on more messages from the operation."
     --verbose  opt_-v,--verbose
+    -d         opt_-d,--debug:"Turn on debug messages from the operation."
+    --debug    opt_-d,--debug
+    -D         opt_-D,--dry-run:"Turn on dry-run mode, which means that no changes will be made to the filesystem."
+    --dry-run  opt_-D,--dry-run
     -r         opt_-r,--reset:"Reset the repository before updating (or remove the files for single-file snippets and gh-r plugins)."
     --reset    opt_-r,--reset
-    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.]"
+    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] compile:[Compile {b-lhi}all{rst} plugins] times:[Show loading times and moments.]"
     --all      opt_-a,--all
     -c         opt_-c,--clean:"Delete {b-lhi}only{rst} the {b-lhi}currently-not loaded{rst} plugins and snippets."
     --clean    opt_-c,--clean
@@ -2286,9 +2298,9 @@ zi() {
     --force    opt_-f,--force
     -p         opt_-p,--parallel:"Turn on concurrent, multi-thread update (of all objects)."
     --parallel opt_-p,--parallel
-    -s         opt_-s,--snippets:"snippets:[Update only snippets (i.e.: skip updating plugins).] times:[Show times in seconds instead of milliseconds.]"
+    -s         opt_-s,--snippets:"Update only snippets (i.e.: skip updating plugins)."
     --snippets opt_-s,--snippets
-    -L         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
+    -l         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
     --plugins  opt_-l,--plugins
     -h         opt_-h,--help:"Show this help message."
     --help     opt_-h,--help
@@ -2296,25 +2308,29 @@ zi() {
     --urge     opt_-u,--urge
     -n         opt_-n,--no-pager:"Disable the use of the pager."
     --no-pager opt_-n,--no-pager
-    -m         opt_-m,--moments:"Show the {apo}*{b-lhi}moments{apo}*{rst} of object (i.e.: a plugin or snippet) loading time."
+    -m         opt_-m,--moments:"Show the loading {apo}*{b-lhi}moments{apo}*{rst} of of the objects relative to the first prompt."
     --moments  opt_-m,--moments
+    -S         opt_-S,--seconds:"Show times in seconds."
+    --seconds  opt_-S,--seconds
     -b         opt_-b,--bindkeys:"Load in light mode, however do still track {cmd}bindkey{rst} calls (to allow remapping the keys bound)."
     --bindkeys opt_-b,--bindkeys
     -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
     --command  opt_-x,--command
     env-whitelist "-h|--help|-v|--verbose"
-    update        "-L|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose|-h|--help"
-    delete        "-a|--all|-c|--clean|-y|--yes|-q|--quiet|-h|--help"
+    update        "-h|--help|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
+    self-update   "-h|--help|-q|--quiet|-D|--dry-run"
+    compile       "-h|--help|-a|--all|-q|--quiet"
+    delete        "-h|--help|-a|--all|-c|--clean|-y|--yes|-q|--quiet"
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
-    times         "-h|--help|-m|-s|-a"
-    light         "-h|--help|-b"
+    times         "-h|--help|-m|--moments|-S|--seconds|-a|--all"
+    light         "-h|--help|-b|--bindkeys"
     snippet       "-h|--help|-f|--force|--command|-x"
   )
 
   cmd="$1"
-  if [[ $cmd == (times|unload|env-whitelist|update|snippet|load|light|cdreplay|cdclear|delete) ]]; then
+  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|snippet|load|light|cdreplay|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then
@@ -2607,12 +2623,6 @@ zi() {
         (zstatus)
           .zi-show-zstatus
           ;;
-        (times)
-          .zi-show-times "${@[2-correct,-1]}"
-          ;;
-        (self-update)
-          .zi-self-update "$2"
-          ;;
         (unload)
           (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
           if [[ -z $2 && -z $3 ]]; then
@@ -2773,7 +2783,7 @@ zi() {
         (cdlist)
           .zi-list-compdef-replay
           ;;
-        (cd|delete|recall|edit|glance|changes|create|stress)
+        (cd|delete|recall|edit|glance|changes|create|stress|self-update|times)
           .zi-"$1" "${@[2-correct,-1]%%(///|//|/)}"; ___retval=$?
           ;;
         (recently)
@@ -2809,6 +2819,14 @@ zi() {
           ;;
         (module)
           .zi-module "${@[2-correct,-1]}"; ___retval=$?
+          ;;
+        (-V|--version|version)
+          ZI[VERSION]=$(builtin cd -q "$ZI[BIN_DIR]" && git describe --tags 2>/dev/null)
+          if [[ -z $ZI[VERSION] ]]; then
+            ZI[VERSION]=$(builtin cd -q "$ZI[BIN_DIR]" && git rev-parse --short HEAD 2>/dev/null)
+            [[ -z $ZI[VERSION] ]] && ZI[VERSION]="unknown"
+          fi
+          +zi-message "{version}$ZI[VERSION]{rst}"
           ;;
         (*)
           if [[ -z $1 ]] {
@@ -2888,12 +2906,6 @@ zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # Default ices depth'3' and lucid, allowed values [0-9][a-c].
 zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-c]/wait"${1}"} "${@:2}"; }
 # ]]]
-# Compatibility functions. [[[
-❮▼❯() { zi "$@"; }
-zpcdreplay() { .zi-compdef-replay -q; }
-zpcdclear() { .zi-compdef-clear -q; }
-zpcompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
-zpcompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 
 #
 # Source-executed code.
@@ -2912,16 +2924,10 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zini=zi zinit=zi zplugin=zi
+builtin alias zinit=zi zplugin=zi
 
 .zi-prepare-home
-
-# Remember source's timestamps for the automatic-reload feature.
-typeset -g ZI_TMP
-.zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
-for ZI_TMP ( side install autoload ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${ZI_TMP}.zsh" "ZI[mtime-${ZI_TMP}]"
-}
+.zi-set-mtime
 
 # Simulate existence of _local/zi plugin. This will allow to cuninstall of its completion
 ZI_REGISTERED_PLUGINS=( _local/zi "${(u)ZI_REGISTERED_PLUGINS[@]:#_local/zi}" )

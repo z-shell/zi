@@ -2291,7 +2291,7 @@ zi() {
     --dry-run  opt_-D,--dry-run
     -r         opt_-r,--reset:"update:[Reset/clean the repository before updating.] module:[Check and rebuild the module if needed.]"
     --reset    opt_-r,--reset
-    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] compile:[Compile {b-lhi}all{rst} plugins] times:[Show loading times and moments.]"
+    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] report:[Show report of {b-lhi}all{rst} plugins and snippets.] compile:[Compile {b-lhi}all{rst} plugins] times:[Show loading times and moments.]"
     --all      opt_-a,--all
     -B         opt_-B,--build:"Build the module, append {p}--clean{rst} to run distclean."
     --build    opt_-B,--build
@@ -2334,11 +2334,12 @@ zi() {
     module        "-h|--help|-B|--build|-I|--info|-r|--reset"
     times         "-h|--help|-m|--moments|-S|--seconds|-a|--all"
     light         "-h|--help|-b|--bindkeys"
+    report        "-h|--help|-a|--all"
     snippet       "-h|--help|-f|--force|--command|-x"
   )
 
   cmd="$1"
-  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|snippet|load|light|cdreplay|module|cdclear|delete) ]]; then
+  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|snippet|load|light|report|cdreplay|module|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then

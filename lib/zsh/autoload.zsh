@@ -1964,13 +1964,13 @@ builtin setopt extended_glob warn_create_global typeset_silent \
     fi
       line="$line {mdsh} $REPLY {rst}"
     if [[ ${sice[as]} == "command" ]]; then
-      line="$line {mdsh} {faint}({cmd}command{rst}{faint}){rst}"
+      line="$line {mdsh} {faint} ({cmd}command{rst}{faint}){rst}"
     elif [[ -n ${sice[sbin]+abc} || -n ${sice[sbin]} ]]; then
-      line="$line {mdsh} {faint}({ice}sbin{rst} {cmd}command{rst}{faint}){rst}"
+      line="$line {mdsh} {faint} ({ice}sbin{rst} {cmd}command{rst}{faint}){rst}"
     elif [[ -n ${sice[fbin]+abc} || -n ${sice[fbin]} ]]; then
-      line="$line {mdsh} {faint}({ice}fbin{rst} {cmd}command{rst}{faint}){rst}"
+      line="$line {mdsh} {faint} ({ice}fbin{rst} {cmd}command{rst}{faint}){rst}"
     elif [[ ( ${sice[pick]} = /dev/null || ${sice[as]} = null ) && ${+sice[make]} = 1 ]]; then
-      line="$line {mdsh} {faint}({dir}/dev/null{rst} {cmd}make{rst} {p}plugin{rst}{faint}){rst}"
+      line="$line {mdsh} {faint} ({dir}/dev/null{rst} {cmd}make{rst} {p}plugin{rst}{faint}){rst}"
     fi
     +zi-message "$line"
     (( sum += ZI[$entry] ))

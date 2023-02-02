@@ -1,4 +1,3 @@
-
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
@@ -148,48 +147,48 @@ XDG_ZI_HOME=${~ZI[HOME_DIR]}
 XDG_ZI_CACHE=${~ZI[CACHE_DIR]}
 XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
 
-if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]]; then
-  typeset -gxU manpath MANPATH
+if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]] && [[ -d ${ZI[MAN_DIR]} ]]; then
   manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
+  typeset -gxU manpath
 fi
 
 if [[ -z ${cdpath[(re)${ZI[CDPATH_DIR]}]} ]] && [[ -d ${ZI[CDPATH_DIR]} ]]; then
-  typeset -gxU cdpath CDPATH
   builtin setopt auto_cd
   cdpath=( "${ZI[CDPATH_DIR]}" "${cdpath[@]}" )
+  typeset -gxU cdpath CDPATH
 fi
 
 if [[ -z ${mailpath[(re)${ZI[MAIL_DIR]}]} ]]; then
-  typeset -gxU mailpath MAILPATH
   mailpath=( "${ZI[MAIL_DIR]}" "${mailpath[@]}" )
+  typeset -gxU mailpath MAILPATH
 fi
 
 if [[ -z ${path[(re)${ZPFX}/bin]} ]] && [[ -d ${ZPFX}/bin ]]; then
-  typeset -gxU path PATH
   path=( "${ZPFX}/bin" "${path[@]}" )
+  typeset -gxU path PATH
 fi
 
 if [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d ${ZPFX}/sbin ]]; then
-  typeset -gxU path PATH
   path=( "${ZPFX}/sbin" "${path[@]}" )
+  typeset -gxU path PATH
 fi
 
 if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then
-  typeset -gxU fpath FPATH
   fpath=( "${ZI[COMPLETIONS_DIR]}" "${fpath[@]}" )
+  typeset -gxU fpath FPATH
 fi
 
 # Export/assign/tie new paths.
 if [[ -z ${logpath[(re)${ZI[LOG_DIR]}]} ]] && [[ -d ${ZI[LOG_DIR]} ]]; then
+  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
   typeset -gxU logpath LOG_PATH
   typeset -gxTU LOG_PATH logpath
-  logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
 fi
 
 if [[ -z ${nodepath[(re)${ZI[NODE_PATH_DIR]}]} ]] && [[ -d ${ZI[NODE_PATH_DIR]} ]]; then
+  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
   typeset -gxU nodepath NODE_PATH
   typeset -gxTU NODE_PATH nodepath
-  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
 fi
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"
@@ -999,7 +998,7 @@ builtin setopt noaliases
 # FUNCTION: .zi-register-plugin. [[[
 # Adds the plugin to ZI_REGISTERED_PLUGINS array and to the
 # zsh_loaded_plugins array (managed according to the plugin standard:
-# https://z.digitalclouds.dev/community/zsh_plugin_standard).
+# https://wiki.zshell.dev/community/zsh_plugin_standard).
 .zi-register-plugin() {
   local uspl2="$1" mode="$2" teleid="$3"
   integer ret=0
@@ -1098,6 +1097,8 @@ builtin setopt noaliases
 # FUNCTION: @zi-register-annex. [[[
 # Registers the z-annex inside Zi – i.e. an Zi extension
 @zi-register-annex() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt no_bang_hist
   local name="$1" type="$2" handler="$3" helphandler="$4" icemods="$5" key="z-annex ${(q)2}"
   ZI_EXTS[seqno]=$(( ${ZI_EXTS[seqno]:-0} + 1 ))
   ZI_EXTS[$key${${(M)type#hook:}:+ ${ZI_EXTS[seqno]}}]="${ZI_EXTS[seqno]} z-annex-data: ${(q)name} ${(q)type} ${(q)handler} ${(q)helphandler} ${(q)icemods}"
@@ -1119,7 +1120,7 @@ builtin setopt noaliases
 } # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism, see:
-# https://z.digitalclouds.dev/community/zsh_plugin_standard
+# https://wiki.zshell.dev/community/zsh_plugin_standard
 @zsh-plugin-run-on-unload() {
   ICE[ps-on-unload]="${(j.; .)@}"
   .zi-pack-ice "$id_as" ""
@@ -2610,7 +2611,7 @@ zi() {
           .zi-show-times "${@[2-correct,-1]}"
           ;;
         (self-update)
-          .zi-self-update
+          .zi-self-update "$2"
           ;;
         (unload)
           (( ${+functions[.zi-unload]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1

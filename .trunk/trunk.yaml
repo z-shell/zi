@@ -9,8 +9,8 @@ plugins:
 lint:
   enabled:
     - actionlint@1.6.22
-    - svgo@3.0.1
-    - gitleaks@8.15.0
+    - svgo@3.0.2
+    - gitleaks@8.15.1
     - markdownlint@0.32.2
     - git-diff-check
     - prettier@2.7.1

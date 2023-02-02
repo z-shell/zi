@@ -2554,10 +2554,9 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
   if (( OPTS[opt_-y,--yes] )); then
     integer retval
     eval "$2"; retval=$?
-    (( OPTS[opt_-q,--quiet] )) || builtin print "\nDone (action executed, exit code: $retval)"
+    (( OPTS[opt_-q,--quiet] )) || +zi-message "{nl}Done! (exit code{ehi}:{rst} {num}$retval{rst})"
   else
-    builtin print -Pr -- "$1"
-    builtin print "[yY/n…]"
+    builtin print -Pr -- "$1 - [y/N]?"
     local ans
     if [[ -t 0 ]] {
       read -q ans
@@ -2566,9 +2565,9 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
     }
     if [[ "$ans" = "y" ]] {
       eval "$2"
-      builtin print "\nDone (action executed, exit code: $?)"
+      +zi-message "{nl}Done! (exit code{ehi}:{rst} {num}$?{rst})"
     } else {
-      builtin print "\nBreak, no action"
+      +zi-message "{nl}Break, no action…"
       return 1
     }
   fi
@@ -2950,87 +2949,98 @@ EOF
   } || builtin print -r -- "No such plugin or snippet"
 } # ]]]
 # FUNCTION: .zi-module [[[
-# Function that has sub-commands passed as long-options (with two dashes, --).
-# It's an attempt to plugin only this one function into `zi' function
-# defined in zi.zsh, to not make this file longer than it's needed.
+# Builds a module from its git repository and displays information how to load the module in .zshrc,
+# performs checks, verify hard stored values, and rebuilds the module if requested.
 .zi-module() {
-  if [[ "$1" = "build" ]]; then
+  if [[ "$1" = (-r|--reset) ]]; then
+    [[ -e ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT ]] && \
+      local compiled_at_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT)"
+    [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
+      local recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
+    if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
+      +zi-message "{warn}Warning{warn}{ehi}:{rst} {lhi}recompilation{rst} of the {bcmd}zpmod{rst} module has been requested…"
+      (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+      .zi-confirm "Do you want to proceed?" || return 1
+      command make -C "${ZI[ZMODULES_DIR]}/zpmod" distclean &>/dev/null
+      .zi-module --build
+    fi
+  elif [[ "$1" = (-B|--build|build) ]]; then
     builtin autoload -Uz is-at-least
     if is-at-least 5.8.1; then
-      .zi-build-module "${@[2,-1]}"
+      if command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" rev-parse 2>/dev/null; then
+        command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" clean -d -f -x
+        command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" reset --hard HEAD >/dev/null
+        command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" pull --rebase --progress || {
+          +zi-message "{error}-- Failed to update module repository --{rst}"; return 1
+        }
+        if [[ "$2" = "--clean" ]]; then
+          +zi-message "{p}-- Module {ok}source is clean{p}, {cmd}make distclean{p} is not required --{rst}"
+        fi
+      else
+        if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
+          command mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"; command chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
+        fi
+        command git clone --verbose --progress "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" \
+        |& { command ${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh || cat; } || {
+          +zi-message "{error}-- Failed to clone module repository --{rst}"; return 1
+        }
+      fi
+      ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
+        +zi-message "{p}-- The module sources are located at{ehi}:{rst} {dir}"${ZI[ZMODULES_DIR]}/zpmod"{p} --{rst}"
+        if [[ -f Makefile ]]; then
+          if [[ "$2" = "--clean" ]]; then
+            +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make distclean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
+            noglob +zi-message {p}-- make distclean --{rst}
+            make distclean
+            ((1))
+          else
+            +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make clean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
+            noglob +zi-message {p}-- make clean --{rst}
+            make clean
+          fi
+        fi
+        noglob +zi-message  {p}-- ./configure --{rst}
+        INSTALL_PATH="/usr/local"
+        export PATH=$INSTALL_PATH/bin:"$PATH"
+        export LD_LIBRARY_PATH=$INSTALL_PATH/lib:"$LD_LIBRARY_PATH"
+        export CFLAGS=-I$INSTALL_PATH/include
+        export CPPFLAGS="-I$INSTALL_PATH/include" LDFLAGS="-L$INSTALL_PATH/lib"
+        CFLAGS="-g -Wall -O3" ./configure --disable-gdbm --without-tcsetpgrp --quiet
+        noglob +zi-message {p}-- make --{rst}
+        local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+        local build_log="$ZI{[LOG_DIR]}/zpmod/${EPOCHSECONDS}-build.log"
+        command mkdir -p "${ZI[LOG_DIR]}/zpmod" 2>/dev/null
+        command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" 2>&1 | command tee "${build_log}"
+        if command make -C "${ZI[ZMODULES_DIR]}/zpmod" &>/dev/null; then
+          [[ -f Src/zi/zpmod.so ]] && command cp -vf Src/zi/zpmod.{so,bundle}
+          builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+          +zi-message "{ok}-- Build successful! --{rst}"
+          +zi-message "{faint}-- Build log{ehi}:{rst} {file}$build_log{faint} --{rst}"
+          .zi-module --info
+          return 0
+        else
+          +zi-message "{error}Build failed{rst}…" \
+          "To report an issue at GitHub, please provide error messages from{ehi}:{rst}{nl}" \
+          "{ndsh} Build log{rst} {dir}${build_log}{rst} if exists{nl}" \
+          "{ndsh} Run '{cmd}make -C ${ZI[ZMODULES_DIR]}/zpmod{rst}' to reproduce{rst}{nl}" \
+          "{ndsh}{rst} {var}URL{rst} to submit{rst} {url}https://github.com/z-shell/zpmod/issues{rst}"
+          return 1
+        fi
+      )
     else
       +zi-message "{warn}Zsh version{rst} {obj}5.8.1{warn} or higher required{rst}"
       return 1
     fi
-  elif [[ "$1" = "info" ]]; then
-    if [[ "$2" = "--link" ]]; then
-      +zi-message "Please submit any issues at the address below{ehi}:{rst} " \
-      "{nl}{mmdsh}{url} https://github.com/z-shell/zpmod/issues{rst}"
-    else
-      +zi-message "To load the module, add following 2 lines to .zshrc, at top:{nl}" \
-      "{nl}" \
-      "{p}    module_path+=( \"${ZI[ZMODULES_DIR]}/zpmod/Src\" ){rst}{nl}" \
-      "{p}    zmodload zi/zpmod{rst}{nl}" \
-      "{nl}" \
-      "After loading, use command \`zpmod' to communicate with the module.{nl}" \
-      "{info2}See \`zpmod -h' for more information.{rst}"
-    fi
-  elif [[ "$1" = (help|usage) ]]; then
-    +zi-message "{info2}Usage{rst}{obj}:{rst}{nl}" \
-    "{p}zi module{rst} {info}{build|info|help}{rst} {p}[options]{rst}{nl}" \
-    "{p}zi module{rst} {info}build{rst} {p}[--clean]{rst}{nl}" \
-    "{p}zi module{rst} {info}info{rst} {p}[--link]{rst}{nl}" \
+  elif [[ "$1" = (-I|--info|info) ]]; then
+    +zi-message "{nl}To load the module, add following {info}2 lines{rst} at the top of {file}.zshrc{ehi}:{nl}" \
     "{nl}" \
-    "To start using the zpmod module run{rst}{obj}:{rst}{nl}" \
-    "{p}zi module{rst} {info}build{rst}{nl}" \
-    "Append {p}--clean{rst} to run {cmd}make distclean{rst}{nl}" \
-    "To display the instructions on loading the module, run{rst}{obj}:{rst}{nl}" \
-    "{p}zi module info{rst}."
+    "{b}{p}  module_path+=( \"${ZI[ZMODULES_DIR]}/zpmod/Src\" ){rst}{nl}" \
+    "{b}{p}  zmodload zi/zpmod{rst}{nl}" \
+    "{nl}Reload shell and use command{ehi}:{rst}" \
+    "{nl}{mmdsh}{cmd} zpmod{opt} -h{rst} for more information.{rst}{nl}" \
+    "{nl}Please submit any issues at the address below{ehi}:{rst}" \
+    "{nl}{mmdsh}{url} https://github.com/z-shell/zpmod/issues{rst}"
   fi
-} # ]]]
-# FUNCTION: .zi-build-module [[[
-# Performs ./configure && make on the module and displays information how to load the module in .zshrc.
-.zi-build-module() {
-  if command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" rev-parse 2>/dev/null; then
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" clean -d -f -f
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" reset --hard HEAD
-    command git -C "${${ZI[ZMODULES_DIR]}}/zpmod" pull
-  else
-    if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
-      mkdir -p "${${ZI[ZMODULES_DIR]}}/zpmod"
-      chmod g-rwX "${${ZI[ZMODULES_DIR]}}/zpmod"
-    fi
-    command git clone --progress "https://github.com/z-shell/zpmod.git" "${${ZI[ZMODULES_DIR]}}/zpmod" || {
-      +zi-message "{error}Failed to clone module repository{rst}"
-      return 1
-    }
-  fi
-  ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
-    +zi-message "{pname}== Building module zi/zpmod, running: make clean, then ./configure and then make =={rst}"
-    +zi-message "{pname}== The module sources are located at: "${ZI[ZMODULES_DIR]}/zpmod" =={rst}"
-    if [[ -f Makefile ]]; then
-      if [[ "$1" = "--clean" ]]; then
-        noglob +zi-message {p}-- make distclean --{rst}
-        make distclean
-        ((1))
-      else
-        noglob +zi-message {p}-- make clean --{rst}
-        make clean
-      fi
-    fi
-    noglob +zi-message  {p}-- ./configure --{rst}
-    CPPFLAGS=-I/usr/local/include CFLAGS="-g -Wall -O3" LDFLAGS=-L/usr/local/lib ./configure --disable-gdbm --without-tcsetpgrp
-    noglob +zi-message {p}-- make --{rst}
-    if command make -s; then
-      [[ -f Src/zi/zpmod.so ]] && cp -vf Src/zi/zpmod.{so,bundle}
-      noglob +zi-message "{info}Module has been built correctly.{rst}"
-      .zi-module info
-    else
-      noglob +zi-message  "{error}Module didn't build.{rst}"
-      .zi-module info --link
-    fi
-    builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
-  )
 } # ]]]
 # FUNCTION: .zi-help [[[
 # Shows usage information.
@@ -3075,30 +3085,30 @@ sleep 0.04 && +zi-message "{mmdsh}{info} Wiki{ehi}:{rst} {url}https://wiki.zshel
 # User-action entry point.
 .zi-analytics-menu() {
 if (( $+commands[clear] )) { clear; }
-sleep 0.03 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Analytics{ehi}:{rst}"
-sleep 0.03 && +zi-message "❯ compiled          {mdsh}{rst} {auto}List plugins that are compiled"
-sleep 0.03 && +zi-message "❯ zstatus           {mdsh}{rst} {auto}Overall status"
-sleep 0.03 && +zi-message "❯ module help       {mdsh}{rst} {auto}Manage zpmod"
-sleep 0.03 && +zi-message "❯ dtrace|dstart     {mdsh}{rst} {auto}Start tracking what's going on in session"
-sleep 0.04 && +zi-message "❯ dstop             {mdsh}{rst} {auto}Stop tracking what's going on in session"
-sleep 0.04 && +zi-message "❯ dreport           {mdsh}{rst} {auto}Report what was going on in session"
-sleep 0.04 && +zi-message "❯ dunload           {mdsh}{rst} {auto}Revert changes recorded between dstart and dstop"
-sleep 0.04 && +zi-message "❯ dclear            {mdsh}{rst} {auto}Clear report of what was going on in session"
-sleep 0.05 && +zi-message "❯ bindkeys          {mdsh}{rst} {auto}List bindkeys"
-sleep 0.05 && +zi-message "❯ clist|completions {mdsh}{rst} {auto}List completions in use"
-sleep 0.05 && +zi-message "❯ cdlist            {mdsh}{rst} {auto}Show compdef replay list"
-sleep 0.05 && +zi-message "❯ csearch           {mdsh}{rst} {auto}Search for available completions from any plugin"
-sleep 0.06 && +zi-message "❯ man               {mdsh}{rst} {auto}Show manual"
-sleep 0.06 && +zi-message "❯ ls                {mdsh}{rst} {auto}List snippets in formatted and colorized manner"
-sleep 0.06 && +zi-message "❯ status            {opt}[--all]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Git status for plugin or svn status for snippet"
-sleep 0.06 && +zi-message "❯ report            {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} {auto}Show reports"
-sleep 0.07 && +zi-message "❯ times             {opt}[-s][-m][-a]{rst} {mdsh}{rst} {auto}Statistics on plugin load times, sorted in order of loading"
-sleep 0.07 && +zi-message "❯ glance            {p}[plugin]{rst} {mdsh}{rst} {auto}Look at plugin's source"
-sleep 0.07 && +zi-message "❯ stress            {p}[plugin]{rst} {mdsh}{rst} {auto}Test plugin for compatibility with set of options"
-sleep 0.07 && +zi-message "❯ changes           {p}[plugin]{rst} {mdsh}{rst} {auto}View plugin's git log"
-sleep 0.08 && +zi-message "❯ recently          {p}[time]{rst} {mdsh}{rst} {auto}Show plugins that changed recently (e.g.: 1 month 2 days)"
-sleep 0.08 && +zi-message "❯ cd                {p}[plugin]{rst} {mdsh}{rst} {auto}Enter plugin's directory; also support snippets, if feed with URL"
-sleep 0.08 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} {mdsh}{rst} {auto}Show what plugins are loaded (filter: keyword)"
+sleep 0.02 && +zi-message "{mmdsh}{rst} ❮ {happy}Zi{rst} ❯ {mmdsh}{info} Analytics{ehi}:{rst}{nl}"
+sleep 0.02 && +zi-message "❯ compiled          {mdsh}{rst} {auto}List plugins that are compiled"
+sleep 0.02 && +zi-message "❯ zstatus           {mdsh}{rst} {auto}Overall status"
+sleep 0.02 && +zi-message "❯ dtrace|dstart     {mdsh}{rst} {auto}Start tracking what's going on in session"
+sleep 0.02 && +zi-message "❯ dstop             {mdsh}{rst} {auto}Stop tracking what's going on in session"
+sleep 0.02 && +zi-message "❯ dreport           {mdsh}{rst} {auto}Report what was going on in session"
+sleep 0.02 && +zi-message "❯ dunload           {mdsh}{rst} {auto}Revert changes recorded between dstart and dstop"
+sleep 0.02 && +zi-message "❯ dclear            {mdsh}{rst} {auto}Clear report of what was going on in session"
+sleep 0.03 && +zi-message "❯ bindkeys          {mdsh}{rst} {auto}List bindkeys"
+sleep 0.03 && +zi-message "❯ clist|completions {mdsh}{rst} {auto}List completions in use"
+sleep 0.03 && +zi-message "❯ cdlist            {mdsh}{rst} {auto}Show compdef replay list"
+sleep 0.03 && +zi-message "❯ csearch           {mdsh}{rst} {auto}Search for available completions from any plugin"
+sleep 0.03 && +zi-message "❯ man               {mdsh}{rst} {auto}Show manual"
+sleep 0.03 && +zi-message "❯ ls                {mdsh}{rst} {auto}List snippets in formatted and colorized manner"
+sleep 0.03 && +zi-message "❯ status            {opt}[--all]{p} [plugin]{rst}|{url}[url]{rst} {mdsh}{rst} {auto}Git status for plugin or svn status for snippet"
+sleep 0.03 && +zi-message "❯ report            {opt}[--all]{p} [plugin]{rst} {mdsh}{rst} {auto}Show reports"
+sleep 0.04 && +zi-message "❯ module            {opt}[-B][-I][-r]{rst} {mdsh}{rst} {auto}Manage zpmod"
+sleep 0.04 && +zi-message "❯ times             {opt}[-s][-m][-a]{rst} {mdsh}{rst} {auto}Statistics on plugin load times, sorted in order of loading"
+sleep 0.04 && +zi-message "❯ glance            {p}[plugin]{rst} {mdsh}{rst} {auto}Look at plugin's source"
+sleep 0.04 && +zi-message "❯ stress            {p}[plugin]{rst} {mdsh}{rst} {auto}Test plugin for compatibility with set of options"
+sleep 0.04 && +zi-message "❯ changes           {p}[plugin]{rst} {mdsh}{rst} {auto}View plugin's git log"
+sleep 0.04 && +zi-message "❯ recently          {p}[time]{rst} {mdsh}{rst} {auto}Show plugins that changed recently (e.g.: 1 month 2 days)"
+sleep 0.04 && +zi-message "❯ cd                {p}[plugin]{rst} {mdsh}{rst} {auto}Enter plugin's directory; also support snippets, if feed with URL"
+sleep 0.04 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} {mdsh}{rst} {auto}Show what plugins are loaded (filter: keyword)"
 } # ]]]
 # FUNCTION: .zi-registered-subcommands [[[
 # Shows subcommands registered by annex.

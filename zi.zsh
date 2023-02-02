@@ -2285,16 +2285,18 @@ zi() {
     --quiet    opt_-q,--quiet
     -v         opt_-v,--verbose:"Turn on more messages from the operation."
     --verbose  opt_-v,--verbose
-    -d         opt_-d,--debug:"Turn on debug messages from the operation."
-    --debug    opt_-d,--debug
     -D         opt_-D,--dry-run:"Turn on dry-run mode, which means that no changes will be made to the filesystem."
     --dry-run  opt_-D,--dry-run
-    -r         opt_-r,--reset:"Reset the repository before updating (or remove the files for single-file snippets and gh-r plugins)."
+    -r         opt_-r,--reset:"update:[Reset/clean the repository before updating.] module:[Check and rebuild the module if needed.]"
     --reset    opt_-r,--reset
     -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] compile:[Compile {b-lhi}all{rst} plugins] times:[Show loading times and moments.]"
     --all      opt_-a,--all
+    -B         opt_-B,--build:"Build the module, append {p}--clean{rst} to run distclean."
+    --build    opt_-B,--build
     -c         opt_-c,--clean:"Delete {b-lhi}only{rst} the {b-lhi}currently-not loaded{rst} plugins and snippets."
     --clean    opt_-c,--clean
+    -I         opt_-I,--info:"Display additional information."
+    --info     opt_-I,--info
     -y         opt_-y,--yes:"Automatically confirm any yes/no prompts."
     --yes      opt_-y,--yes
     -f         opt_-f,--force:"Force new download of the snippet file."
@@ -2327,13 +2329,14 @@ zi() {
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
+    module        "-h|--help|-B|--build|-I|--info|-r|--reset"
     times         "-h|--help|-m|--moments|-S|--seconds|-a|--all"
     light         "-h|--help|-b|--bindkeys"
     snippet       "-h|--help|-f|--force|--command|-x"
   )
 
   cmd="$1"
-  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|snippet|load|light|cdreplay|cdclear|delete) ]]; then
+  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|snippet|load|light|cdreplay|module|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then
@@ -2823,7 +2826,11 @@ zi() {
           } "$@"
           ;;
         (module)
-          .zi-module "${@[2-correct,-1]}"; ___retval=$?
+          if [[ -z $2 ]]; then
+            +zi-message "{b}{error}Error{ehi}:{rst} Argument required, try{ehi}:{rst} {cmd}zi module {opt}-h{rst}"; ___retval=1
+          else
+            .zi-module "$2" "${@[3-correct,-1]}"; ___retval=$?
+          fi
           ;;
         (-V|--version|version)
           ZI[VERSION]=$(builtin cd -q "$ZI[BIN_DIR]" && git describe --tags 2>/dev/null)
@@ -2946,12 +2953,14 @@ zstyle ':completion:*:zi:argument-rest:plugins' list-colors '=(#b)(*)/(*)==1;34=
 zstyle ':completion:*:zi:argument-rest:plugins' matcher 'r:|=** l:|=*'
 zstyle ':completion:*:*:zi:*' group-name ""
 # ]]]
-# Check module built / compile status [[[
+
+# Check the module compiled timestamps and recompile if needed,
+# if no action is required, then no message will be printed. [[[
 if [[ -e "${ZI[ZMODULES_DIR]}/zpmod/Src/zi/zpmod.so" ]]; then
   if [[ ! -f ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT || \
   ( ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT -ot ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ) ]]; then
-    (( ${+functions[.zi-check-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || return 1
-    .zi-check-module
+    (( ${+functions[.zi-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+    .zi-module --reset
   fi
 fi # ]]]
 

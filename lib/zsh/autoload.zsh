@@ -590,7 +590,7 @@ ZI[EXTENDED_GLOB]=""
 
 # FUNCTION: .zi-pager [[[
 .zi-pager() {
-  builtin setopt LOCAL_OPTIONS EQUALS
+  builtin setopt extended_glob no_short_loops local_options equals
   # Quiet mode ? → no pager.
   if (( OPTS[opt_-n,--no-pager] )) {
     cat
@@ -709,7 +709,7 @@ ZI[EXTENDED_GLOB]=""
 # 0. Call the Zsh Plugin's Standard *_plugin_unload function
 # 0. Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
 # 1. Delete bindkeys (...)
-# 2. Delete Zstyles
+# 2. Delete zstyles
 # 3. Restore options
 # 4. Remove aliases
 # 5. Restore Zle state
@@ -1680,8 +1680,7 @@ ZI[EXTENDED_GLOB]=""
     }
     return $retval
   }
-  local st=$1 id_as repo snip pd user plugin
-    integer PUPDATE=0
+  local st=$1 id_as repo snip pd user plugin; integer PUPDATE=0
   local -A ICE
   if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
     local -a snipps
@@ -1736,7 +1735,7 @@ ZI[EXTENDED_GLOB]=""
     else
       (( !OPTS[opt_-q,--quiet] )) && +zi-message "Updating{ehi}:{rst} $REPLY{rst}" || builtin print -n .
       .zi-update-or-status update "$user" "$plugin"
-      update_rc=$?
+      local update_rc=$?
       [[ $update_rc -ne 0 ]] && {
         +zi-message "{warn}Warning: {pid}${user}/${plugin} {warn}update returned{ehi}:{rst} {num}${update_rc}"
         retval=$?
@@ -1908,13 +1907,14 @@ ZI[EXTENDED_GLOB]=""
   [[ -z $sni ]] && builtin print -n " "
   builtin print '\b\b  '
 } # ]]]
-# FUNCTION: .zi-show-times [[[
+# FUNCTION: .zi-times [[[
 # Shows loading times of all loaded plugins.
 #
 # User-action entry point.
-.zi-show-times() {
-  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal noshortloops
+.zi-times() {
+builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob warn_create_global typeset_silent \
+  no_short_loops rc_quotes no_auto_pushd no_bang_hist
 
   local opt="$1 $2 $3" entry entry2 entry3 user plugin
   float -F 3 sum=0.0
@@ -2603,7 +2603,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
     [[ $uspl1 = custom || $uspl1 = _local---zi ]] && continue
     pushd "$p" >/dev/null || continue
     if [[ -d .git ]]; then
-      gitout=`command git log --all --max-count=1 --since=$timespec 2>/dev/null`
+      gitout=$(command git log --all --max-count=1 --since=$timespec 2>/dev/null)
       if [[ -n $gitout ]]; then
         .zi-any-colorify-as-uspl2 "$uspl1"
         builtin print -r -- "$REPLY"

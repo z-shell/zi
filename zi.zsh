@@ -2285,6 +2285,8 @@ zi() {
     --quiet    opt_-q,--quiet
     -v         opt_-v,--verbose:"Turn on more messages from the operation."
     --verbose  opt_-v,--verbose
+    -d         opt_-d,--debug:"Turn on debug messages from the operation."
+    --debug    opt_-d,--debug
     -D         opt_-D,--dry-run:"Turn on dry-run mode, which means that no changes will be made to the filesystem."
     --dry-run  opt_-D,--dry-run
     -r         opt_-r,--reset:"update:[Reset/clean the repository before updating.] module:[Check and rebuild the module if needed.]"

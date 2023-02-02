@@ -1196,7 +1196,7 @@ builtin setopt noaliases
   if [[ ! -d ${ZI[SNIPPETS_DIR]} ]]; then
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
     command chmod go-w "${ZI[SNIPPETS_DIR]}"
-    ( builtin cd ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
+    ( builtin cd -q ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
     command mkdir -p "${ZI[SERVICES_DIR]}"
     command chmod go-w "${ZI[SERVICES_DIR]}"
   fi

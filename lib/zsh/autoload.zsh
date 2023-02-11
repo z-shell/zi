@@ -540,7 +540,7 @@ ZI[EXTENDED_GLOB]=""
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-uninstall-completions() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt nullglob extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt null_glob extended_glob warn_create_global typeset_silent no_short_loops
   typeset -a completions symlinked backup_comps
   local c cfile bkpfile
   integer action global_action=0
@@ -557,8 +557,9 @@ ZI[EXTENDED_GLOB]=""
   # Delete completions if they are really there, either as completions (_fname) or backups (fname)
   for c in ${completions[@]}; do
     action=0
-    cfile=${c:t}
-    bkpfile=${cfile#_}
+    cfile="${c:t}"
+    cfile="_${cfile#_}"
+    bkpfile="${cfile#_}"
     # Remove symlink to completion
     if [[ -n ${symlinked[(r)*/$cfile]} ]]; then
       command rm -f ${ZI[COMPLETIONS_DIR]}/$cfile
@@ -581,7 +582,11 @@ ZI[EXTENDED_GLOB]=""
   if (( global_action > 0 )); then
     +zi-message "{msg}Uninstalled {num}$global_action{rst} completions"
   fi
-  .zi-compinit >/dev/null
+
+  # Workaround for a nasty trick in _vim
+  (( ${+functions[_vim_files]} )) && unfunction _vim_files
+
+  .zi-compinit 1 1 &>/dev/null
 } # ]]]
 
 #
@@ -1751,7 +1756,7 @@ ZI[EXTENDED_GLOB]=""
       }
     fi
   done
-  .zi-compinit 1 1 &>/dev/null
+  .zi-compinit 1 1 &>/dev/null; rehash
   (( OPTS[opt_-q,--quiet] )) || \
   +zi-message "{mmdsh}{happy} Zi{rst} » {info3}update took {num}$SECONDS{info3} seconds{rst}{…}"
   return "$retval"

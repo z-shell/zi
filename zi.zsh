@@ -1183,7 +1183,7 @@ builtin setopt noaliases
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     .zi-clear-completions &>/dev/null
-    .zi-compinit &>/dev/null
+    .zi-compinit 1 1 &>/dev/null
   fi
   if [[ ! -d ${ZI[COMPLETIONS_DIR]} ]]; then
     command mkdir "${ZI[COMPLETIONS_DIR]}"
@@ -1191,7 +1191,7 @@ builtin setopt noaliases
     # Symlink _zi completion into _local---zi directory.
     command ln -s "${ZI[PLUGINS_DIR]}/_local---zi/_zi" "${ZI[COMPLETIONS_DIR]}"
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-    .zi-compinit &>/dev/null
+    .zi-compinit 1 1 &>/dev/null
   fi
   if [[ ! -d ${ZI[SNIPPETS_DIR]} ]]; then
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
@@ -1330,8 +1330,8 @@ builtin setopt noaliases
     if [[ -d $local_dir/$dirname/functions ]] {
       [[ -z ${fpath[(r)$local_dir/$dirname/functions]} ]] && fpath+=( "$local_dir/$dirname/functions" )
       () {
-        builtin setopt localoptions extendedglob
-        autoload $local_dir/$dirname/functions/^([_.]*|prompt_*_setup|README*)(D-.N:t)
+        builtin setopt local_options extended_glob
+        builtin autoload $local_dir/$dirname/functions/^([_.]*|prompt_*_setup|README*)(D-.N:t)
       }
     }
     # Source.
@@ -2291,7 +2291,7 @@ zi() {
     --dry-run  opt_-D,--dry-run
     -r         opt_-r,--reset:"update:[Reset/clean the repository before updating.] module:[Check and rebuild the module if needed.]"
     --reset    opt_-r,--reset
-    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] report:[Show report of {b-lhi}all{rst} plugins and snippets.] compile:[Compile {b-lhi}all{rst} plugins] times:[Show loading times and moments.]"
+    -a         opt_-a,--all:"delete:[Delete {hi}all{rst} plugins and snippets.] update:[Update {b-lhi}all{rst} plugins and snippets.] report:[Show report of {b-lhi}all{rst} plugins and snippets.] compile:[Compile {b-lhi}all{rst} plugins and snippets] uncompile:[Uncompile {b-lhi}all{rst} plugins and snippets] times:[Show loading times and moments.]"
     --all      opt_-a,--all
     -B         opt_-B,--build:"Build the module, append {p}--clean{rst} to run distclean."
     --build    opt_-B,--build
@@ -2327,6 +2327,7 @@ zi() {
     update        "-h|--help|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
     self-update   "-h|--help|-q|--quiet|-D|--dry-run"
     compile       "-h|--help|-a|--all|-q|--quiet"
+    uncompile       "-h|--help|-a|--all|-q|--quiet"
     delete        "-h|--help|-a|--all|-c|--clean|-y|--yes|-q|--quiet"
     unload        "-h|--help|-q|--quiet"
     cdclear       "-h|--help|-q|--quiet"
@@ -2339,7 +2340,7 @@ zi() {
   )
 
   cmd="$1"
-  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|snippet|load|light|report|cdreplay|module|cdclear|delete) ]]; then
+  if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|uncompile|snippet|load|light|report|cdreplay|module|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
       if (( OPTS[opt_-h,--help] )); then
@@ -2673,7 +2674,7 @@ zi() {
         (report)
           if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
             [[ -z $2 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing report{rst}{…}"; sleep 2; }
-          .zi-show-all-reports
+            .zi-show-all-reports
           else
             .zi-show-report "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
           fi
@@ -2700,9 +2701,7 @@ zi() {
             if .zi-cdisable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
-              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
-              builtin autoload -Uz compinit
-              compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+              .zi-compinit 1 1 &>/dev/null
             else
               ___retval=1
             fi
@@ -2717,9 +2716,7 @@ zi() {
             if .zi-cenable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
-              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
-              builtin autoload -Uz compinit
-              compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+              .zi-compinit 1 1 &>/dev/null
             else
               ___retval=1
             fi
@@ -2731,27 +2728,21 @@ zi() {
           # It is a reinstallation, thus every obstacle gets overwritten or removed.
           [[ $2 = -[qQ] ]] && { 5=$2; shift; }
           .zi-install-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}" 1 "${(M)4:#-[qQ]}"; ___retval=$?
-          [[ -z ${(M)4:#-[qQ]} ]] && +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
-          builtin autoload -Uz compinit
-          compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           ;;
         (cuninstall)
           if [[ -z $2 && -z $3 ]]; then
             +zi-message "{mmdsh}{rst} {auto}Argument is missing. See \`zi help\`"; ___retval=1
           else
-            (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-            # Uninstalls completions for plugin.
+            (( ${+functions[.zi-uninstall-completions]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+            # Uninstalls completions for plugin. Disables them all.
             .zi-uninstall-completions "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
-            +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
-            builtin autoload -Uz compinit
-            compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
           fi
           ;;
         (csearch)
           .zi-search-completions
           ;;
         (compinit)
-          (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+          (( ${+functions[.zi-compinit]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
           .zi-compinit; ___retval=$?
           ;;
         (dreport)
@@ -2769,21 +2760,27 @@ zi() {
           .zi-parse-opts compile "$@"
           builtin set -- "${reply[@]}"
           (( ${+functions[.zi-compile-plugin]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-          (( OPTS[opt_-q,--quiet] )) && { local quiet=1; } || { local quiet=0; };
           if (( OPTS[opt_-a,--all] )) || [[ -z $2 && -z $3 ]]; then
-            (( quiet )) || {
-              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}compiling{rst}{…}"; sleep 2;
-              .zi-compile-uncompile-all 1; ___retval=$?;
-            }
-            .zi-compile-uncompile-all 1 >/dev/null 2>&1; ___retval=$?
+            if (( OPTS[opt_-q,--quiet] )); then
+              .zi-compile-uncompile-all 1 >/dev/null; ___retval=$?
+            else
+              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}compiling{rst}{…}"; sleep 2
+              .zi-compile-uncompile-all 1; ___retval=$?
+            fi
           else
             .zi-compile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
           fi
           ;;
         (uncompile)
-          if [[ $2 = --all || ( -z $2 && -z $3 ) ]]; then
-            [[ -z $2 ]] && { +zi-message "{mmdsh}{happy} Zi{rst} » {faint}uncompiling{rst}{…}"; sleep 2; }
-            .zi-compile-uncompile-all 0; ___retval=$?
+          .zi-parse-opts uncompile "$@"
+          builtin set -- "${reply[@]}"
+          if (( OPTS[opt_-a,--all] )) || [[ -z $2 && -z $3 ]]; then
+            if (( OPTS[opt_-q,--quiet] )); then
+              .zi-compile-uncompile-all 0 >/dev/null; ___retval=$?
+            else
+              +zi-message "{mmdsh}{happy} Zi{rst} » {faint}uncompiling{rst}{…}"; sleep 2
+              .zi-compile-uncompile-all 0; ___retval=$?
+            fi
           else
             .zi-uncompile-plugin "${2%%(///|//|/)}" "${3%%(///|//|/)}"; ___retval=$?
           fi
@@ -2872,7 +2869,7 @@ zicdclear() { .zi-compdef-clear -q; }
 # A function that can be invoked from within `atinit', `atload', etc. ice-mod.
 # It runs `autoload compinit; compinit' and respects
 # ZI[ZCOMPDUMP_PATH] and ZI[COMPINIT_OPTS].
-zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
+zicompinit() { builtin autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 # ]]]
 # FUNCTION: zicompinit_fast. [[[
 # Checking the cached .zcompdump file to see if it must be regenerated adds a noticable delay to zsh startup.
@@ -2880,7 +2877,7 @@ zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@
 # modify the compdump and compiles mapped to share (total mem reduction) run in background in multiple shells.
 # A function that can be invoked from within `atinit', `atload'
 zicompinit_fast() {
-  autoload -Uz compinit
+  builtin autoload -Uz compinit
   local zcompf="${ZI[ZCOMPDUMP_PATH]}"
   #local check_ub="$(awk -F= '/^NAME/{print $2}' /etc/os-release | grep 'Ubuntu')"
   local zcompf_a="${zcompf}.augur"
@@ -2929,12 +2926,15 @@ zi-turbo() { zi depth'3' lucid ${1/#[0-9][a-c]/wait"${1}"} "${@:2}"; }
 (( ZI[ALIASES_OPT] )) && builtin setopt aliases
 (( ZI[SOURCED] ++ )) && return
 
-autoload add-zsh-hook
+builtin autoload add-zsh-hook
+
 if { zmodload zsh/datetime } {
   add-zsh-hook -- precmd @zi-scheduler  # zsh/datetime required for wait/load/unload ice-mods
   ZI[HAVE_SCHEDULER]=1
 }
+
 functions -M -- zi_scheduler_add 1 1 -zi_scheduler_add_sh 2>/dev/null
+
 zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 

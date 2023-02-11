@@ -229,7 +229,7 @@
     (
     builtin print -Pr -- "${ZI[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" "FOR THE ZPLUGIN -> ZI RENAME…%f"
     builtin cd -q ${ZI[PLUGINS_DIR]} || return 1
-    autoload -Uz zmv
+    builtin autoload -Uz zmv
     ( zmv -W '**/._zplugin' '**/._zi' ) &>/dev/null
     builtin cd -q ${ZI[SNIPPETS_DIR]} || return 1
     ( zmv -W '**/._zplugin' '**/._zi' ) &>/dev/null
@@ -242,7 +242,7 @@
     (
       builtin print -Pr -- "${ZI[col-pre]}UPGRADING THE DIRECTORY STRUCTURE" "FOR THE ZINIT -> ZI RENAME…%f"
       builtin cd -q ${ZI[PLUGINS_DIR]} || return 1
-      autoload -Uz zmv
+      builtin autoload -Uz zmv
       ( zmv -W '**/.zinit' '**/._zi' ) &>/dev/null
       builtin cd -q ${ZI[SNIPPETS_DIR]} || return 1
       ( zmv -W '**/._zinit' '**/._zi' ) &>/dev/null

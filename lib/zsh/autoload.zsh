@@ -2974,7 +2974,7 @@ EOF
           +zi-message "{error}-- Failed to update module repository --{rst}"; return 1
         }
         if [[ "$2" = "--clean" ]]; then
-          +zi-message "{p}-- Module {ok}source is clean{p}, {cmd}make distclean{p} is not required --{rst}"
+          +zi-message "{p}-- Module {ok}source is clean{p}, {cmd}make distclean{p} not required --{rst}"
         fi
       else
         if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
@@ -2990,30 +2990,25 @@ EOF
         if [[ -f Makefile ]]; then
           if [[ "$2" = "--clean" ]]; then
             +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make distclean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
-            noglob +zi-message {p}-- make distclean --{rst}
-            make distclean
+            +zi-message "{p}-- make distclean --{rst}"
+            command make distclean
             ((1))
           else
             +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make clean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
-            noglob +zi-message {p}-- make clean --{rst}
-            make clean
+            +zi-message "{p}-- make clean --{rst}"
+            command make clean
           fi
         fi
-        noglob +zi-message  {p}-- ./configure --{rst}
-        INSTALL_PATH="/usr/local"
-        export PATH=$INSTALL_PATH/bin:"$PATH"
-        export LD_LIBRARY_PATH=$INSTALL_PATH/lib:"$LD_LIBRARY_PATH"
-        export CFLAGS=-I$INSTALL_PATH/include
-        export CPPFLAGS="-I$INSTALL_PATH/include" LDFLAGS="-L$INSTALL_PATH/lib"
-        CFLAGS="-g -Wall -O3" ./configure --disable-gdbm --without-tcsetpgrp --quiet
-        noglob +zi-message {p}-- make --{rst}
+        +zi-message "{p}-- ./configure --{rst}"
+        ./configure --enable-cflags='-g -Wall -Wextra -O3' --disable-gdbm --without-tcsetpgrp --quiet
+        +zi-message "{p}-- make --{rst}"
         local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
-        local build_log="$ZI{[LOG_DIR]}/zpmod/${EPOCHSECONDS}-build.log"
+        local build_log="${ZI[LOG_DIR]}/zpmod/${EPOCHSECONDS}-build.log"
         command mkdir -p "${ZI[LOG_DIR]}/zpmod" 2>/dev/null
-        command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" 2>&1 | command tee "${build_log}"
+        command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" | command tee "$build_log" >/dev/null
         if command make -C "${ZI[ZMODULES_DIR]}/zpmod" &>/dev/null; then
           [[ -f Src/zi/zpmod.so ]] && command cp -vf Src/zi/zpmod.{so,bundle}
-          builtin print $EPOCHSECONDS >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+          builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
           +zi-message "{ok}-- Build successful! --{rst}"
           +zi-message "{faint}-- Build log{ehi}:{rst} {file}$build_log{faint} --{rst}"
           .zi-module --info

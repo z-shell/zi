@@ -113,8 +113,6 @@ fi
 : ${ZI[ZMODULES_DIR]:=${ZI[HOME_DIR]}/zmodules}
 : ${ZI[ZCOMPDUMP_PATH]:=${ZI[CACHE_DIR]}/.zcompdump}
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
-# Additional/Optional directories for software/data files.
-: ${ZI[NODE_PATH_DIR]:=${ZPFX}/lib/node_modules}
 
 # Base Directory Specification (XDG)
 # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -122,8 +120,13 @@ fi
 : ${XDG_ZI_CACHE:=${ZI[CACHE_DIR]}}
 : ${XDG_ZI_CONFIG:=${ZI[CONFIG_DIR]}}
 
-# Options Specification
+# Disable aliases.
 : ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
+
+# Disable Zi's internal aliases.
+: ${ZI[INTERNAL_ALIASES]:=0}
+
+# Set owner of the Zi's packages. It allows to use the packages from specific user instead of the z-shell organization.
 : ${ZI[PKG_OWNER]:=z-shell}
 
 ZI[HOME_DIR]=${~ZI[HOME_DIR]}
@@ -140,7 +143,6 @@ ZI[SERVICES_DIR]=${~ZI[SERVICES_DIR]}
 ZI[ZMODULES_DIR]=${~ZI[ZMODULES_DIR]}
 ZI[ZCOMPDUMP_PATH]=${~ZI[ZCOMPDUMP_PATH]}
 ZI[COMPLETIONS_DIR]=${~ZI[COMPLETIONS_DIR]}
-ZI[NODE_PATH_DIR]=${~ZI[NODE_PATH_DIR]}
 
 ZPFX=${~ZPFX}
 XDG_ZI_HOME=${~ZI[HOME_DIR]}
@@ -170,7 +172,7 @@ fi
 
 if [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d ${ZPFX}/sbin ]]; then
   path=( "${ZPFX}/sbin" "${path[@]}" )
-  typeset -gxU path PATH
+  sudo typeset -gxU path PATH
 fi
 
 if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then
@@ -183,12 +185,6 @@ if [[ -z ${logpath[(re)${ZI[LOG_DIR]}]} ]] && [[ -d ${ZI[LOG_DIR]} ]]; then
   logpath=( "${ZI[LOG_DIR]}" "${logpath[@]}" )
   typeset -gxU logpath LOG_PATH
   typeset -gxTU LOG_PATH logpath
-fi
-
-if [[ -z ${nodepath[(re)${ZI[NODE_PATH_DIR]}]} ]] && [[ -d ${ZI[NODE_PATH_DIR]} ]]; then
-  nodepath=( "${ZI[NODE_PATH_DIR]}" "${nodepath[@]}" )
-  typeset -gxU nodepath NODE_PATH
-  typeset -gxTU NODE_PATH nodepath
 fi
 
 ZI[UPAR]=";:^[[A;:^[OA;:\\e[A;:\\eOA;:${termcap[ku]/$'\e'/^\[};:${terminfo[kcuu1]/$'\e'/^\[};:"
@@ -1199,7 +1195,7 @@ builtin setopt noaliases
   if [[ ! -d ${ZI[SNIPPETS_DIR]} ]]; then
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
     command chmod go-w "${ZI[SNIPPETS_DIR]}"
-    ( builtin cd ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
+    ( builtin cd -q ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
     command mkdir -p "${ZI[SERVICES_DIR]}"
     command chmod go-w "${ZI[SERVICES_DIR]}"
   fi
@@ -2912,7 +2908,9 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-builtin alias zini=zi zinit=zi zplugin=zi
+
+# Internal aliases for compatibility with deprecated names. Can be enabled with ZI[INTERNAL_ALIASES]=1.
+(( ZI[INTERNAL_ALIASES] )) && builtin alias zinit=zi zplugin=zi
 
 .zi-prepare-home
 

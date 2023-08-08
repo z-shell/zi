@@ -2842,34 +2842,34 @@ zicdclear() { .zi-compdef-clear -q; }
 zicompinit() { autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 # ]]]
 # FUNCTION: zicompinit_fast. [[[
-# Checking the cached .zcompdump file to see if it must be regenerated adds a noticable delay to zsh startup.
+# Checks the cached .zcompdump file to see if it must be regenerated adds a noticable delay to zsh startup.
 # This restricts checking it once a day, determines when to regenerate, as compinit doesn't always need to
 # modify the compdump and compiles mapped to share (total mem reduction) run in background in multiple shells.
-# A function that can be invoked from within `atinit', `atload'
+# A function that can be invoked from within `atinit', `atload', e.g: zi ice atinit'zicompinit_fast'.
 zicompinit_fast() {
-  autoload -Uz compinit
-  local zcompf="${ZI[ZCOMPDUMP_PATH]}"
-  #local check_ub="$(awk -F= '/^NAME/{print $2}' /etc/os-release | grep 'Ubuntu')"
-  local zcompf_a="${zcompf}.augur"
-  #[[ $check_ub ]] && export skip_global_compinit=1
+  builtin autoload -Uz compinit zrecompile
+
+  if grep -q '^ID.*=.*ubuntu' /etc/os-release 2>/dev/null; then
+    typeset -gx skip_global_compinit=1
+  fi
 
   # Globbing (#qN.mh+24):
   # - '#q' is an explicit glob qualifier that makes globbing work within zsh's [[ ]] construct.
   # - 'N' makes the glob pattern evaluate to nothing when it doesn't match (rather than throw a globbing error)
   # - '.' matches "regular files"
   # - 'mh+24' matches files, directories and etc., that are older than 24 hours.
-  if [[ -e "$zcompf_a" && -f "$zcompf_a"(#qN.mh+24) ]]; then
-    compinit -d "$zcompf"
-    command touch "$zcompf_a"
+
+  # If the .lock file exists and is older than 24 hours, then regenerate the zcompdump
+  if [[ -e "${ZI[ZCOMPDUMP_PATH]}.lock" && -f "${ZI[ZCOMPDUMP_PATH]}.lock"(#qN.mh+24) ]]; then
+    compinit -d "$ZI[ZCOMPDUMP_PATH]"
+    command touch "${ZI[ZCOMPDUMP_PATH]}.lock"
   else
-    compinit -C -d "$zcompf"
+    compinit -C -d "$ZI[ZCOMPDUMP_PATH]"
   fi
-  # if .zcompdump exists (and is non-zero), and is older than the .zwc file, then regenerate
-  if [[ -s "$zcompf" && (! -s "${zcompf}.zwc" || "$zcompf" -nt "${zcompf}.zwc") ]]; then
-    # since file is mapped, it might be mapped right now (current shells), so rename it then make a new one
-    [[ -e "$zcompf.zwc" ]] && command mv -f "$zcompf.zwc" "$zcompf.zwc.old"
-    # compile it mapped, so multiple shells can share it (total mem reduction) run in background
-    { zcompile -M "$zcompf" && command rm -f "$zcompf.zwc.old" }&!
+
+  # If zcompdump exists (and is non-zero), and is older than the .zwc file, then regenerate in the background
+  if [[ -s "$ZI[ZCOMPDUMP_PATH]" && (! -s "${ZI[ZCOMPDUMP_PATH]}.zwc" || "$ZI[ZCOMPDUMP_PATH]" -nt "${ZI[ZCOMPDUMP_PATH]}.zwc") ]]; then
+    { zrecompile -q -p "$ZI[ZCOMPDUMP_PATH]" && command rm -f "$ZI[ZCOMPDUMP_PATH].zwc.old" } &!
   fi
 }
 # ]]]

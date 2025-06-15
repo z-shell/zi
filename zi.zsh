@@ -27,6 +27,13 @@ multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!
 countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
 subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
 
+# Determine ZI[VERSION]
+if [[ -d "${ZI[BIN_DIR]:-$PWD}/.git" || -e "${ZI[BIN_DIR]:-$PWD}/.git" ]]; then
+  ZI[VERSION]=$(git -C "${ZI[BIN_DIR]:-$PWD}" describe --tags --exact-match 2>/dev/null) || ZI[VERSION]=$(git -C "${ZI[BIN_DIR]:-$PWD}" rev-parse --short HEAD 2>/dev/null) || ZI[VERSION]="unknown"
+else
+  ZI[VERSION]="unknown"
+fi
+
 # In no value, i.e. not designed to hold value.
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
@@ -36,7 +43,7 @@ nocompile|reset"
 ZI[cmd-list]="-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
 cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|\
-uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run"
+uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run|version"
 
 # Establish ZI[BIN_DIR]
 [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]] && ZI[BIN_DIR]=
@@ -1567,6 +1574,7 @@ builtin setopt noaliases
     [[ -n ${reply[1-correct]} && ! -x ${reply[1-correct]} ]] && command chmod a+x ${reply[@]}
     [[ ${ICE[atinit]} = '!'* || -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
       if [[ ${ZI[TMP_SUBST]} = inactive ]]; then
+        # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
         (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
         functions[compdef]=':zi-tmp-subst-compdef "$@";'
         ZI[TMP_SUBST]=1
@@ -1938,7 +1946,7 @@ builtin setopt noaliases
     shift 2
     # No – an error message:
     +zi-message "{b}{u-warn}ERROR{b-warn}:{rst}{msg2} Incorrect options given{ehi}:" "${(Mpj:$sep:)@:#-*}{rst}{msg2}. Allowed for the subcommand{ehi}:{rst}" \
-    "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}{…} Aborting.{rst}"
+    "{apo}\`{cmd}$cmd{apo}\`{msg2} are{ehi}:{rst}" "{nl}{mmdsh} {opt}${allowed//\|/$sep2}{msg2}." "{nl}(To see the general help message, type: {cmd}zi help{nl})" "{…} Aborting.{rst}"
   } else {
     local -a cmds
     cmds=( load snippet update delete )
@@ -2618,6 +2626,9 @@ zi() {
             # Unload given plugin. Cloned directory remains intact so as are completions.
             .zi-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
           fi
+          ;;
+        (version)
+          +zi-message "Zi version: ${ZI[VERSION]}"
           ;;
         (bindkeys)
           .zi-list-bindkeys

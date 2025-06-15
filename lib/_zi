@@ -1,6 +1,6 @@
 #compdef zi
 
-setopt local_options warn_create_global type_set_silent
+builtin setopt local_options warn_create_global type_set_silent
 
 local curcontext="$curcontext" state state_descr line ret=1
 local -a expl
@@ -61,6 +61,7 @@ commands=(
   run:"Execute code inside plugin's folder"
   env-whitelist:"Allows to specify names (also patterns) of variables left unchanged during an unload. -v - verbose"
   add-fpath:"Add plugin folder to \$fpath"
+  version:"Show Zi version"
 )
 
 _arguments -C \

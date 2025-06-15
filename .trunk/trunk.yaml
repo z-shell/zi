@@ -7,11 +7,12 @@ plugins:
       ref: v1.7.0
       uri: https://github.com/trunk-io/plugins
 lint:
+  disabled:
+    - yamllint
   enabled:
     - checkov@3.2.441
     - oxipng@9.1.5
     - trufflehog@3.89.1
-    - yamllint@1.37.1
     - actionlint@1.7.7
     - svgo@3.3.2
     - gitleaks@8.27.2

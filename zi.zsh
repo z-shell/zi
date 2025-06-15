@@ -172,7 +172,7 @@ fi
 
 if [[ -z ${path[(re)${ZPFX}/sbin]} ]] && [[ -d ${ZPFX}/sbin ]]; then
   path=( "${ZPFX}/sbin" "${path[@]}" )
-  sudo typeset -gxU path PATH
+  typeset -gxU path PATH
 fi
 
 if [[ -z ${fpath[(re)${ZI[COMPLETIONS_DIR]}]} ]]; then

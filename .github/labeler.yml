@@ -1,14 +1,22 @@
 documentation 📝:
-  - "docs/*.md"
-  - "docs/man/*"
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/*.md"
+          - "docs/man/*"
 enhancement ✨:
-  - "*.zsh"
-  - "lib/**"
+  - changed-files:
+      - any-glob-to-any-file:
+          - "*.zsh"
+          - "lib/**"
 maintenance 📈:
-  - ".github/CODEOWNERS"
-  - ".github/*.yml"
-  - ".github/*.json"
-  - ".vscode/*"
-  - ".trunk/**"
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/CODEOWNERS"
+          - ".github/*.yml"
+          - ".github/*.json"
+          - ".vscode/*"
+          - ".trunk/**"
 ci 🤖:
-  - ".github/workflows/*.yml"
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/*.yml"

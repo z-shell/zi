@@ -3,6 +3,9 @@
 builtin emulate -LR zsh
 builtin setopt extended_glob warn_create_global typeset_silent
 
+typeset -Ag ZI_USR
+[[ -z $ZI_USR[GP_COL] ]] && ZI_USR[GP_COL]=46
+
 { typeset -g COLS="$(tput cols)" } 2>/dev/null
 if (( COLS < 10 )) {
   COLS=40
@@ -41,7 +44,7 @@ local first=1
 timeline() {
   local sp='▚▞'; sp="${sp:$2%2:1}"
   # Maximal width is 24 characters
-  local bar="$(builtin print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓█████████████████████" "")"
+  local bar="$(builtin print -f "%.$2s█%0$(($3-$2-1))s" "░▒▓████████████████████" "")"
   local -a frames_splitted
   frames_splitted=( ${(@zQ)progress_frames[progress_style]} )
   if (( SECONDS - last_time >= frames_splitted[1] )) {
@@ -50,7 +53,7 @@ timeline() {
     last_time=$SECONDS
   }
   builtin print -nr -- ${frames_splitted[cur_frame+1]}" "
-  builtin print -nPr "%F{201}"
+  builtin print -nPr "%F{$ZI_USR[GP_COL]}"
   builtin print -f "%s %s" "${bar// /░}" ""
   builtin print -nPr "%f"
 }
@@ -98,10 +101,10 @@ IFS=''
 [[ $+ZI_CIVIS == 1 && -n $TERM ]] && eval $ZI_CIVIS
 
 if [[ -n $TERM ]] {
+[[ $COLORTERM == (24bit|truecolor) || ${terminfo[colors]} -eq 16777216 ]] || \
+  zmodload zsh/nearcolor &>/dev/null
 { command perl -pe 'BEGIN { $|++; $/ = \1 }; tr/\r/\n/' || \
-  gstdbuf -o0 gtr '\r' '\n' || \
-  cat } |& \
-while read -r line; do
+  gstdbuf -o0 gtr '\r' '\n' || cat; } |& while read -r line; do
   (( ++ loop_count ))
   if [[ "$line" = "Cloning into"* ]]; then
     builtin print $line

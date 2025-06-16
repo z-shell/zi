@@ -325,7 +325,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   fi
 
   command rm -f ${TMPDIR:-/tmp}/zi-execs.$$.lst ${TMPDIR:-/tmp}/zi.installed_comps.$$.lst \
-        ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zi.compiled.$$.lst
+    ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst ${TMPDIR:-/tmp}/zi.compiled.$$.lst
 
   if [[ $tpe != tarball ]] {
     if [[ -z $update ]] {
@@ -511,7 +511,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $3 - if 1, then reinstall, otherwise only install completions that aren't there
 .zi-install-completions() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt nullglob extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt null_glob extended_glob warn_create_global typeset_silent no_short_loops
 
   local id_as=$1${2:+${${${(M)1:#%}:+$2}:-/$2}}
   local reinstall=${3:-0} quiet=${${4:+1}:-0}
@@ -549,6 +549,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     ]]; then
       if [[ $reinstall = 1 ]]; then
         # Remove old files
+        command rm -f "${ZI[ZCOMPDUMP_PATH]}"
         command rm -f "${ZI[COMPLETIONS_DIR]}/${cfile}" "${ZI[COMPLETIONS_DIR]}/${bkpfile}"
       fi
       INSTALLED_COMPS+=( $cfile )
@@ -577,43 +578,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     builtin print -rl -- $SKIPPED_COMPS >! ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst
   }
 
-  .zi-compinit 1 1 &>/dev/null
+  .zi-compinit 1 1 &>/dev/null; rehash
 } # ]]]
 # FUNCTION: .zi-compinit [[[
-# User-exposed `compinit' frontend which first ensures that all completions managed by ❮ Zi ❯ are forgotten by Z-shell.
-# After that it runs normal `compinit', which should more easily detect ❮ Zi ❯ completions.
-#
-# No arguments.
 .zi-compinit() {
   [[ -n ${OPTS[opt_-p,--parallel]} && $1 != 1 ]] && return
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt nullglob extendedglob warncreateglobal typesetsilent
+  builtin setopt null_glob extended_glob warn_create_global typeset_silent
 
   integer use_C=$2
 
-  typeset -a symlinked backup_comps
-  local c cfile bkpfile action
-
-  symlinked=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc )
-  backup_comps=( "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc )
-
-  # Delete completions if they are really there,
-  # either as completions (_fname) or backups (fname)
-  for c in "${symlinked[@]}" "${backup_comps[@]}"; do
-    action=0
-    cfile="${c:t}"
-    cfile="_${cfile#_}"
-    bkpfile="${cfile#_}"
-
-    #print -Pr "${ZI[col-info]}Processing completion $cfile%f%b"
-    .zi-forget-completion "$cfile"
-  done
-
-  +zi-message "Initializing completion ({func}compinit{rst}){…}"
-  command rm -f "${ZI[ZCOMPDUMP_PATH]}"
-
-  # Workaround for a nasty trick in _vim
-  (( ${+functions[_vim_files]} )) && unfunction _vim_files
+  +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
 
   builtin autoload -Uz compinit
   compinit ${${(M)use_C:#1}:+-C} -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
@@ -773,6 +748,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   (( quiet || first )) || builtin print
 
   unfunction -- 2>/dev/null "$f"
+  .zi-compinit 1 1 &>/dev/null; rehash
 } # ]]]
 # FUNCTION: .zi-compile-plugin [[[
 # Compiles given plugin (its main source file, and also an additional "....zsh" file if it exists).
@@ -1789,9 +1765,6 @@ ziextract() {
     }
   )
 }
-# ]]]
-# FUNCTION: zpextract [[[
-zpextract() { ziextract "$@"; }
 # ]]]
 # FUNCTION: .zi-at-eval [[[
 .zi-at-eval() {

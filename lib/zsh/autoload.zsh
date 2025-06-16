@@ -2877,8 +2877,8 @@ EOF
 .zi-ls() {
   if (( ${+commands[tree]} )); then
     ZI[TREE]="${commands[tree]} -L 3 -C --charset utf-8"
-  elif (( ${+commands[exa]} )); then
-    ZI[TREE]="${commands[exa]} --color=always -T -l -L3"
+  elif (( ${+commands[eza]} )); then
+    ZI[TREE]="${commands[eza]} --color=always -T -l -L3"
   else
     +zi-message "{auto}Program \`tree\` not found, it is required by the subcommand \`ls\`"
     +zi-message "Download from{ehi}:{rst} {auto}http://mama.indstate.edu/users/ice/tree/"

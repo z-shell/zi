@@ -1,40 +1,43 @@
-# Pull request template
+<!--- Provide a general summary of your changes in the Title above -->
 
-<!--- Please provide a general summary of your changes in the title above -->
+## Description
 
-## Type of changes
+<!--- Describe your changes in detail -->
 
-<!-- Please try to limit your pull request to one type; submit multiple pull requests if needed. -->
+## Motivation and Context
 
-- [ ] CI
-- [ ] Bugfix
-- [ ] Feature
-- [ ] Generic maintenance tasks
-- [ ] Documentation content changes
-- [ ] Code style update (formatting, renaming)
-- [ ] Refactoring (no functional changes, no URL changes)
-- [ ] Improving the performance of the project (not introducing new features)
-- [ ] Other (please describe):
+<!--- Why is this change required? What problem does it solve? -->
+<!--- If it fixes an open issue, please link to the issue here. -->
 
-Issue Number: N/A
+## How Has This Been Tested?
 
-## What is the current behavior?
+<!--- Please describe in detail how you tested your changes. -->
+<!--- Include details of your testing environment, and the tests you ran to -->
+<!--- see how your change affects other areas of the code, etc. -->
 
-<!-- Please describe the current behavior that you are modifying or linking to a relevant issue. -->
+## Screenshots (if appropriate):
 
-## What is the new behavior?
+## Types of changes
 
-<!-- Please describe the behavior or changes that are being added by this PR. -->
+<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 
-### Does this introduce a breaking change?
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] Documentation update (if none of the other choices apply)
+- [ ] Chore (general maintenance, refactoring, or code style update)
 
-- [ ] Yes
-- [ ] No
+## Checklist:
 
-<!-- If this does introduce a breaking change, please describe the impact and migration path for existing applications below. -->
+<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
+<!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 
-## Other information
+- [ ] My code follows the code style of this project.
+- [ ] I have read the **CONTRIBUTING** document.
+- [ ] I have added tests to cover my changes.
+- [ ] All new and existing tests passed.
+- [ ] I have updated the documentation accordingly.
 
-<!-- Any other information that is important to this PR, such as screenshots of how the component looks before and after the change. -->
+## Other information (if applicable)
 
-N/A
+<!--- Any other information that is important to this PR such as environment variables, special considerations, etc. -->

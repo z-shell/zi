@@ -21,4 +21,4 @@ jobs:
     uses: z-shell/zd/.github/workflows/test-native.yml@d5653e7d426b1726ee4600fbf772ac41d19ea50d # main
     with:
       zi_repo: ${{ github.repository }}
-      zi_ref: ${{ github.sha }}
+      zi_ref: ${{ github.head_ref || github.ref_name }}

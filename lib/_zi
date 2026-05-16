@@ -1,6 +1,6 @@
 #compdef zi
 
-builtin setopt local_options warn_create_global type_set_silent
+builtin setopt local_options warn_create_global typeset_silent
 
 local curcontext="$curcontext" state state_descr line ret=1
 local -a expl

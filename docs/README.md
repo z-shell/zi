@@ -3,7 +3,7 @@
     <td>
       <h1 align="center">
         <a target="_self" href="https://github.com/z-shell/zi">
-          <img width=z"80" height="80" src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.png" alt="Zi Logo" />
+          <img width="80" height="80" src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.png" alt="Zi Logo" />
         </a>❮ <strong>Zi</strong> ❯
       </h1>
       <h2 align="center">

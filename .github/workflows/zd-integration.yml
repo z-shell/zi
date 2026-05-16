@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   zd-test:
-    uses: z-shell/zd/.github/workflows/test-native.yml@main
+    uses: z-shell/zd/.github/workflows/test-native.yml@<FULL_40_CHARACTER_COMMIT_SHA>
     with:
       zi_repo: ${{ github.repository }}
       zi_ref: ${{ github.sha }}

@@ -6,4 +6,4 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    target-branch: "main"
+    target-branch: "next"

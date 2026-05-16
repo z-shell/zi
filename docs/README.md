@@ -3,7 +3,7 @@
     <td>
       <h1 align="center">
         <a target="_self" href="https://github.com/z-shell/zi">
-          <img width=z"80" height="80" src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.png" alt="Zi Logo" />
+          <img width="80" height="80" src="https://raw.githubusercontent.com/z-shell/zi/main/docs/images/logo.png" alt="Zi Logo" />
         </a>❮ <strong>Zi</strong> ❯
       </h1>
       <h2 align="center">
@@ -37,10 +37,10 @@
       <a href="https://translate.zshell.dev/" rel="noopener" target="_blank"><img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" /></a>
       <a href="https://github.com/z-shell/zi/releases" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" /></a>
       <a href="https://github.com/z-shell/zi/blob/main/LICENSE" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Project License" /></a>
-      <a thref="https://github.com/z-shell/zi-vim-syntax/" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/--019733?logo=vim" alt="VIM" /></a>
+      <a href="https://github.com/z-shell/zi-vim-syntax/" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/--019733?logo=vim" alt="VIM" /></a>
       <a href="https://open.vscode.dev/z-shell/zi/" rel="noopener" target="_blank">
-        <img align="center" src="https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff"alt="Visual Studio Code" />
-      </p></a>
+        <img align="center" src="https://img.shields.io/badge/--007ACC?logo=visual%20studio%20code&logoColor=ffffff" alt="Visual Studio Code" />
+      </a></p>
       </div>
   </tr>
   </td>

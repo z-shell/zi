@@ -21,6 +21,13 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   zsh-matrix:
     runs-on: ubuntu-latest
@@ -28,7 +35,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: "Set matrix output"
         id: set-matrix
         run: |
@@ -44,7 +51,7 @@ jobs:
       matrix: ${{ fromJSON(needs.zsh-matrix.outputs.matrix) }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: "⚡ Install dependencies"
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: "⚡ zsh -n: ${{ matrix.file }}"

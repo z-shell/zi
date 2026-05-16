@@ -5,27 +5,28 @@
 - Use **Conventional Commits** format: `type(scope): short description`
 - Allowed types: `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `ci`, `chore`, `revert`
 - Subject line: imperative mood, ≤72 characters, no trailing period
-- Body: wrap at 72 characters, explain *what* and *why* (not *how*)
+- Body: wrap at 72 characters, explain _what_ and _why_ (not _how_)
 - **Never add AI co-author trailers** — do not append `Co-authored-by: Copilot`, `Co-authored-by: Claude`, `Co-authored-by: GitHub Copilot`, or any AI-generated attribution to commit messages
 - Breaking changes: add `!` after the type (`feat!:`) and include `BREAKING CHANGE:` in the footer
 
 Examples:
-```
+
+````text
 feat(loader): add lazy-loading for completions
 
 Defer completion setup until first TAB press to cut startup time
 for users with large fpath trees.
 
 BREAKING CHANGE: ZI_COMPLETION_LAZY must be set before zi is sourced.
-```
+```text
 
-```
+```text
 fix(self-update): correctly set exit code on network failure
-```
+```text
 
 ## Branch model
 
-```
+```text
 main  ← production releases (tags only, squash-merged from next)
 next  ← integration branch (PR target for all work)
   └─ feat/<name>    feature branches
@@ -34,7 +35,7 @@ next  ← integration branch (PR target for all work)
   └─ docs/<name>    documentation updates
   └─ ci/<name>      CI/workflow changes
   └─ chore/<name>   maintenance, refactors
-```
+```text
 
 - **All branches must be created from `next`**, not `main`
 - Open PRs **targeting `next`**, never `main` directly
@@ -50,3 +51,4 @@ next  ← integration branch (PR target for all work)
 - Zsh files: 2-space indent, `# vim: ft=zsh sw=2 ts=2 et` modeline, LF endings
 - Every plugin entry file must resolve `$0` via the ZERO pattern
 - Follow the [Z-Shell Plugin Standard](https://wiki.zshell.dev/community/zsh_plugin_standard)
+````

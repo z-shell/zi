@@ -44,4 +44,3 @@
 - [ ] I have read [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 - [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
 - [ ] Documentation updated if needed
-

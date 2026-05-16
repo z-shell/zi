@@ -1,0 +1,101 @@
+---
+name: "📝 Commit Lint"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - main
+      - next
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  commit-lint:
+    name: "📝 Validate Commits"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "⤵️ Check out code from GitHub"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: "📝 Lint commit messages"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DISALLOWED_TRAILER_PATTERN: ${{ secrets.DISALLOWED_TRAILER_PATTERN }}
+        run: |
+          set -euo pipefail
+
+          CONVENTIONAL_PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)(\([^)]+\))?!?: .{1,72}$'
+
+          errors=0
+          checked=0
+
+          while IFS= read -r sha; do
+            parent_count=$(git cat-file -p "$sha" | grep -c '^parent' || true)
+            [ "$parent_count" -gt 1 ] && continue
+
+            subject=$(git show -s --format='%s' "$sha")
+            checked=$((checked + 1))
+
+            if ! echo "$subject" | grep -qE "$CONVENTIONAL_PATTERN"; then
+              echo "❌ Invalid commit message (${sha:0:7}): expected type(scope): description ≤72 chars"
+              errors=$((errors + 1))
+            fi
+
+            if [ -n "${DISALLOWED_TRAILER_PATTERN:-}" ]; then
+              if git show -s --format='%B' "$sha" | grep -qE "$DISALLOWED_TRAILER_PATTERN"; then
+                echo "❌ Disallowed trailer found (${sha:0:7}): remove before merging"
+                errors=$((errors + 1))
+              fi
+            fi
+          done < <(git log --format='%H' "${BASE_SHA}..${HEAD_SHA}")
+
+          if [ "$errors" -gt 0 ]; then
+            echo "::error::$errors commit(s) failed validation — run: git rebase -i ${BASE_SHA}"
+            exit 1
+          fi
+
+          echo "✅ $checked commit(s) validated"
+
+  pr-title:
+    name: "📋 Validate PR Title"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📋 Check PR title follows Conventional Commits"
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)(\([^)]+\))?!?: .{1,72}$'
+          if ! echo "$PR_TITLE" | grep -qE "$PATTERN"; then
+            echo "::error::PR title must follow Conventional Commits: type(scope): description"
+            exit 1
+          fi
+          echo "✅ PR title valid"
+
+  branch-naming:
+    name: "🌿 Validate Branch Name"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "🌿 Check branch naming convention"
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)/[a-z0-9][a-z0-9-]*[a-z0-9]$'
+          if echo "$BRANCH" | grep -q '^dependabot/'; then
+            echo "✅ OK"
+            exit 0
+          fi
+          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
+            echo "::error::Branch name must follow type/short-description (e.g. feat/my-feature)"
+            exit 1
+          fi
+          echo "✅ Branch name valid"

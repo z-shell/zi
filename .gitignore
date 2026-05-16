@@ -128,3 +128,14 @@ CVS
 .#*
 
 .trunk/out*
+# AI assistant config files — not part of this project
+# (Copilot config belongs in .github/copilot-instructions.md only)
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.cursorignore
+.aider*
+.continue/
+.codeium/
+.tabnine*

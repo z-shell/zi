@@ -1,43 +1,47 @@
-<!--- Provide a general summary of your changes in the Title above -->
+<!--
+  Thanks for contributing to zi! Please read the checklist below.
+
+  Branch model:
+    • Create your branch FROM next:  git checkout -b fix/my-fix next
+    • Open this PR TARGETING next — never target main directly
+    • main is only updated from next via a release PR
+
+  Commit messages must follow Conventional Commits:
+    type(scope): short description   (≤72 chars, imperative mood)
+    Types: feat  fix  perf  refactor  docs  test  ci  chore  revert
+    Example: fix(self-update): correctly propagate exit code on failure
+
+  See .github/copilot-instructions.md for full guidelines.
+-->
 
 ## Description
 
-<!--- Describe your changes in detail -->
+<!-- Describe your changes clearly. What problem does this solve? -->
 
-## Motivation and Context
+## Related issues
 
-<!--- Why is this change required? What problem does it solve? -->
-<!--- If it fixes an open issue, please link to the issue here. -->
+<!-- Closes #NNN  /  Part of #NNN  /  N/A -->
 
-## How Has This Been Tested?
+## Type of change
 
-<!--- Please describe in detail how you tested your changes. -->
-<!--- Include details of your testing environment, and the tests you ran to -->
-<!--- see how your change affects other areas of the code, etc. -->
+<!-- Put an `x` in all boxes that apply -->
 
-## Screenshots (if appropriate):
+- [ ] `fix` — bug fix (non-breaking)
+- [ ] `feat` — new feature (non-breaking)
+- [ ] `feat!` / `fix!` — breaking change
+- [ ] `perf` — performance improvement
+- [ ] `refactor` — code change with no functional impact
+- [ ] `docs` — documentation only
+- [ ] `ci` — CI/workflow change
+- [ ] `chore` — maintenance / dependency bump
 
-## Types of changes
+## Checklist
 
-<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
+- [ ] My branch was created from `next` (not `main`)
+- [ ] This PR targets the `next` branch
+- [ ] Commit messages follow Conventional Commits format
+- [ ] No AI co-author trailers in commit messages
+- [ ] I have read [CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
+- [ ] Documentation updated if needed
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
-- [ ] Documentation update (if none of the other choices apply)
-- [ ] Chore (general maintenance, refactoring, or code style update)
-
-## Checklist:
-
-<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
-<!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-
-- [ ] My code follows the code style of this project.
-- [ ] I have read the **CONTRIBUTING** document.
-- [ ] I have added tests to cover my changes.
-- [ ] All new and existing tests passed.
-- [ ] I have updated the documentation accordingly.
-
-## Other information (if applicable)
-
-<!--- Any other information that is important to this PR such as environment variables, special considerations, etc. -->

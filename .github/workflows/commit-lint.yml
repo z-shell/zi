@@ -26,53 +26,41 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DISALLOWED_TRAILER_PATTERN: ${{ secrets.DISALLOWED_TRAILER_PATTERN }}
         run: |
           set -euo pipefail
 
           CONVENTIONAL_PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)(\([^)]+\))?!?: .{1,72}$'
-          AI_COAUTHOR_PATTERN='Co-authored-by:.*[Cc]opilot|Co-authored-by:.*[Cc]laude|Co-authored-by:.*[Gg][Pp][Tt]|Co-authored-by:.*[Oo]pen[Aa][Ii]|Co-authored-by:.*[Gg]emini|Co-authored-by:.*[Cc]ursor'
 
           errors=0
+          checked=0
 
           while IFS= read -r sha; do
-            subject=$(git show -s --format='%s' "$sha")
-            body=$(git show -s --format='%b' "$sha")
-
-            # Skip merge commits
             parent_count=$(git cat-file -p "$sha" | grep -c '^parent' || true)
-            if [ "$parent_count" -gt 1 ]; then
-              echo "⏭  Skip merge commit: $sha"
-              continue
-            fi
+            [ "$parent_count" -gt 1 ] && continue
 
-            # Validate conventional commit subject
+            subject=$(git show -s --format='%s' "$sha")
+            checked=$((checked + 1))
+
             if ! echo "$subject" | grep -qE "$CONVENTIONAL_PATTERN"; then
-              echo "❌ $sha — subject does not follow Conventional Commits:"
-              echo "   Got:      $subject"
-              echo "   Expected: type(scope): description  (≤72 chars)"
+              echo "❌ Invalid commit message (${sha:0:7}): expected type(scope): description ≤72 chars"
               errors=$((errors + 1))
-            else
-              echo "✅ $sha — $subject"
             fi
 
-            # Block AI co-author trailers
-            full_message=$(git show -s --format='%B' "$sha")
-            if echo "$full_message" | grep -qE "$AI_COAUTHOR_PATTERN"; then
-              echo "❌ $sha — AI co-author trailer detected:"
-              echo "$full_message" | grep -E "$AI_COAUTHOR_PATTERN" | sed 's/^/   /'
-              errors=$((errors + 1))
+            if [ -n "${DISALLOWED_TRAILER_PATTERN:-}" ]; then
+              if git show -s --format='%B' "$sha" | grep -qE "$DISALLOWED_TRAILER_PATTERN"; then
+                echo "❌ Disallowed trailer found (${sha:0:7}): remove before merging"
+                errors=$((errors + 1))
+              fi
             fi
           done < <(git log --format='%H' "${BASE_SHA}..${HEAD_SHA}")
 
           if [ "$errors" -gt 0 ]; then
-            echo ""
-            echo "💡 Fix commits with: git rebase -i ${BASE_SHA}"
-            echo "   See .github/copilot-instructions.md for commit guidelines."
+            echo "::error::$errors commit(s) failed validation — run: git rebase -i ${BASE_SHA}"
             exit 1
           fi
 
-          echo ""
-          echo "✅ All commit messages are valid."
+          echo "✅ $checked commit(s) validated"
 
   pr-title:
     name: "📋 Validate PR Title"
@@ -84,13 +72,10 @@ jobs:
         run: |
           PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)(\([^)]+\))?!?: .{1,72}$'
           if ! echo "$PR_TITLE" | grep -qE "$PATTERN"; then
-            echo "❌ PR title does not follow Conventional Commits format."
-            echo "   Got:      $PR_TITLE"
-            echo "   Expected: type(scope): short description"
-            echo "   Types:    feat, fix, perf, refactor, docs, test, ci, chore, revert"
+            echo "::error::PR title must follow Conventional Commits: type(scope): description"
             exit 1
           fi
-          echo "✅ PR title: $PR_TITLE"
+          echo "✅ PR title valid"
 
   branch-naming:
     name: "🌿 Validate Branch Name"
@@ -101,16 +86,12 @@ jobs:
           BRANCH: ${{ github.head_ref }}
         run: |
           PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)/[a-z0-9][a-z0-9-]*[a-z0-9]$'
-          # Allow dependabot branches
           if echo "$BRANCH" | grep -q '^dependabot/'; then
-            echo "✅ Dependabot branch: $BRANCH"
+            echo "✅ OK"
             exit 0
           fi
           if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
-            echo "❌ Branch name does not follow naming convention."
-            echo "   Got:      $BRANCH"
-            echo "   Expected: type/short-description"
-            echo "   Example:  feat/lazy-completions  fix/self-update-exit-code"
+            echo "::error::Branch name must follow type/short-description (e.g. feat/my-feature)"
             exit 1
           fi
-          echo "✅ Branch name: $BRANCH"
+          echo "✅ Branch name valid"

@@ -651,7 +651,7 @@ ZI[EXTENDED_GLOB]=""
 
     # Remove all compiled files
     for rm_file ( ${ZI[BIN_DIR]}/**/*.zwc(DN) ) {
-      command rm -f -- ${rm_compiled} > /dev/null 2>&1
+      command rm -f -- "${rm_file}" > /dev/null 2>&1
     }
 
     # Recompile new ones
@@ -711,7 +711,7 @@ ZI[EXTENDED_GLOB]=""
 
       if (( ! dry_run )); then
         # Update the codebase
-        command git merge -n $opt --autostash --ff-only FETCH_HEAD || \
+        command git merge -n $opt --ff-only FETCH_HEAD || \
           { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; return 1 }
         .zi-auto-reload $opt
       fi
@@ -2962,7 +2962,8 @@ EOF
       local compiled_at_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT)"
     [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
       local recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
-    if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
+    if [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
+       [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
       +zi-message "{warn}Warning{warn}{ehi}:{rst} {lhi}recompilation{rst} of the {bcmd}zpmod{rst} module has been requested…"
       (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
       .zi-confirm "Do you want to proceed?" || return 1
@@ -3010,9 +3011,9 @@ EOF
         local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
         local build_log="${ZI[LOG_DIR]}/zpmod/${EPOCHSECONDS}-build.log"
         command mkdir -p "${ZI[LOG_DIR]}/zpmod" 2>/dev/null
-        command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" | command tee "$build_log" >/dev/null
-        if command make -C "${ZI[ZMODULES_DIR]}/zpmod" &>/dev/null; then
-          [[ -f Src/zi/zpmod.so ]] && command cp -vf Src/zi/zpmod.{so,bundle}
+        command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" 2>&1 | command tee "$build_log" >/dev/null
+        if (( pipestatus[1] == 0 )); then
+          [[ -f Src/zi/zpmod.so ]] && command cp -vf Src/zi/zpmod.so Src/zi/zpmod.bundle
           builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
           +zi-message "{ok}-- Build successful! --{rst}"
           +zi-message "{faint}-- Build log{ehi}:{rst} {file}$build_log{faint} --{rst}"

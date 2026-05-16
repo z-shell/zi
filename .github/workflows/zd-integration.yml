@@ -1,0 +1,24 @@
+---
+name: "🧪 ZD Integration"
+
+on:
+  push:
+    branches: [main, next]
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+  pull_request:
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  zd-test:
+    uses: z-shell/zd/.github/workflows/test-native.yml@main
+    with:
+      zi_repo: ${{ github.repository }}
+      zi_ref: ${{ github.sha }}

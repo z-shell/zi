@@ -43,7 +43,7 @@ nocompile|reset"
 ZI[cmd-list]="-V|--version|version|-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
 cclear|cdisable|cenable|creinstall|cuninstall|csearch|compinit|dtrace|dstart|dstop|dunload|dreport|dclear|compile|\
-uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run|version"
+uncompile|compiled|cdlist|cdreplay|cdclear|srv|recall|env-whitelist|bindkeys|module|add-fpath|run"
 
 # Establish ZI[BIN_DIR]
 [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]] && ZI[BIN_DIR]=
@@ -2870,7 +2870,7 @@ zicdclear() { .zi-compdef-clear -q; }
 zicompinit() { builtin autoload -Uz compinit; compinit -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"; }
 # ]]]
 # FUNCTION: zicompinit_fast. [[[
-# Checks the cached .zcompdump file to see if it must be regenerated adds a noticable delay to zsh startup.
+# Checks the cached .zcompdump file to see if it must be regenerated; adds a noticeable delay to zsh startup.
 # This restricts checking it once a day, determines when to regenerate, as compinit doesn't always need to
 # modify the compdump and compiles mapped to share (total mem reduction) run in background in multiple shells.
 # A function that can be invoked from within `atinit', `atload', e.g: zi ice atinit'zicompinit_fast'.

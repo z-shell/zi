@@ -1186,7 +1186,7 @@ builtin setopt noaliases
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
     .zi-clear-completions &>/dev/null
-    .zi-compinit 1 1 &>/dev/null
+    .zi-compinit 1 &>/dev/null
   fi
   if [[ ! -d ${ZI[COMPLETIONS_DIR]} ]]; then
     command mkdir "${ZI[COMPLETIONS_DIR]}"
@@ -1194,7 +1194,7 @@ builtin setopt noaliases
     # Symlink _zi completion into _local---zi directory.
     command ln -s "${ZI[PLUGINS_DIR]}/_local---zi/_zi" "${ZI[COMPLETIONS_DIR]}"
     (( ${+functions[.zi-setup-plugin-dir]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
-    .zi-compinit 1 1 &>/dev/null
+    .zi-compinit 1 &>/dev/null
   fi
   if [[ ! -d ${ZI[SNIPPETS_DIR]} ]]; then
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
@@ -2707,7 +2707,7 @@ zi() {
             if .zi-cdisable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
-              .zi-compinit 1 1 &>/dev/null
+              .zi-compinit 1 &>/dev/null
             else
               ___retval=1
             fi
@@ -2722,7 +2722,7 @@ zi() {
             if .zi-cenable "$___f"; then
               (( ${+functions[.zi-forget-completion]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
               .zi-forget-completion "$___f"
-              .zi-compinit 1 1 &>/dev/null
+              .zi-compinit 1 &>/dev/null
             else
               ___retval=1
             fi

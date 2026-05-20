@@ -586,7 +586,7 @@ ZI[EXTENDED_GLOB]=""
   # Workaround for a nasty trick in _vim
   (( ${+functions[_vim_files]} )) && unfunction _vim_files
 
-  .zi-compinit 1 1 &>/dev/null
+  .zi-compinit 1 &>/dev/null
 } # ]]]
 
 #
@@ -1691,7 +1691,7 @@ ZI[EXTENDED_GLOB]=""
   if (( OPTS[opt_-p,--parallel] )) && [[ $1 = update ]] {
     (( OPTS[opt_-q,--quiet] )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}parallelizing update{rst}{…}"
     .zi-update-all-parallel; retval=$?
-    .zi-compinit 1 1 &>/dev/null; rehash
+    .zi-compinit 1 &>/dev/null; rehash
     (( OPTS[opt_-q,--quiet] )) || \
     +zi-message "{mmdsh}{happy} Zi{rst} » {info3}update took {num}$SECONDS{info3} seconds{rst}{…}"
     return $retval
@@ -1756,7 +1756,7 @@ ZI[EXTENDED_GLOB]=""
       }
     fi
   done
-  .zi-compinit 1 1 &>/dev/null; rehash
+  .zi-compinit 1 &>/dev/null; rehash
   (( OPTS[opt_-q,--quiet] )) || \
   +zi-message "{mmdsh}{happy} Zi{rst} » {info3}update took {num}$SECONDS{info3} seconds{rst}{…}"
   return "$retval"

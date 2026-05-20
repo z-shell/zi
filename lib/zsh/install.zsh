@@ -578,7 +578,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     builtin print -rl -- $SKIPPED_COMPS >! ${TMPDIR:-/tmp}/zi.skipped_comps.$$.lst
   }
 
-  .zi-compinit 1 1 &>/dev/null; rehash
+  .zi-compinit 1 &>/dev/null; rehash
 } # ]]]
 # FUNCTION: .zi-compinit [[[
 .zi-compinit() {
@@ -748,7 +748,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   (( quiet || first )) || builtin print
 
   unfunction -- 2>/dev/null "$f"
-  .zi-compinit 1 1 &>/dev/null; rehash
+  .zi-compinit 1 &>/dev/null; rehash
 } # ]]]
 # FUNCTION: .zi-compile-plugin [[[
 # Compiles given plugin (its main source file, and also an additional "....zsh" file if it exists).

@@ -1,5 +1,5 @@
 ---
-name: "🧪 ZD Integration"
+name: ZD Integration
 
 on:
   push:

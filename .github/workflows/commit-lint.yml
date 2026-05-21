@@ -1,5 +1,5 @@
 ---
-name: "📝 Commit Lint"
+name: Commit Lint
 
 on:
   pull_request:
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   commit-lint:
-    name: "📝 Validate Commits"
+    name: Validate Commits
     runs-on: ubuntu-latest
     steps:
       - name: "⤵️ Check out code from GitHub"
@@ -67,7 +67,7 @@ jobs:
           echo "✅ $checked commit(s) validated"
 
   pr-title:
-    name: "📋 Validate PR Title"
+    name: Validate PR Title
     runs-on: ubuntu-latest
     steps:
       - name: "📋 Check PR title follows Conventional Commits"
@@ -82,7 +82,7 @@ jobs:
           echo "✅ PR title valid"
 
   branch-naming:
-    name: "🌿 Validate Branch Name"
+    name: Validate Branch Name
     runs-on: ubuntu-latest
     steps:
       - name: "🌿 Check branch naming convention"

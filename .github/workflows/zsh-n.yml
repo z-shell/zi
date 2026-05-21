@@ -1,5 +1,5 @@
 ---
-name: "✅ Zsh"
+name: Zsh
 on:
   push:
     tags: ["v*.*.*"]

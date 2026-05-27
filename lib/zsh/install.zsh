@@ -587,11 +587,18 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   builtin setopt null_glob extended_glob warn_create_global typeset_silent
 
   integer use_C=$2
+  typeset -a compinit_opts
+  compinit_opts=( "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}" )
+
+  if [[ $1 = 1 ]]; then
+    use_C=0
+    compinit_opts=( "${(@)compinit_opts:#-C}" )
+  fi
 
   +zi-message "{mmdsh}{happy} Zi{rst} » {faint}initializing {func}compinit{rst}{…}"
 
   builtin autoload -Uz compinit
-  compinit ${${(M)use_C:#1}:+-C} -d "${ZI[ZCOMPDUMP_PATH]}" "${(Q@)${(z@)ZI[COMPINIT_OPTS]}}"
+  compinit ${${(M)use_C:#1}:+-C} -d "${ZI[ZCOMPDUMP_PATH]}" "${compinit_opts[@]}"
 } # ]]]
 # FUNCTION: .zi-download-file-stdout [[[
 # Downloads file to stdout.

@@ -365,7 +365,8 @@
   local compiled_at_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT)"
   [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
   local recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
-  if [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
+  if [[ -n ${recompile_request_ts} && -n ${compiled_at_ts} ]] && \
+  [[ ${recompile_request_ts} -gt ${compiled_at_ts} ]]; then
     +zi-message "{u-warn}WARNING{b-warn}:{rst}{msg} A {lhi}recompilation{rst}" \
     "of the zpmod module has been requested… {hi}Building{rst}…"
     (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1

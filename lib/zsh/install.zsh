@@ -1740,6 +1740,9 @@ ziextract() {
   }
   return 0
 } # ]]]
+# FUNCTION: zpextract [[[
+zpextract() { ziextract "$@"; }
+# ]]]
 # FUNCTION: .zi-extract() [[[
 .zi-extract() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}

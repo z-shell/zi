@@ -2310,7 +2310,7 @@ zi() {
     --force    opt_-f,--force
     -p         opt_-p,--parallel:"Turn on concurrent, multi-thread update (of all objects)."
     --parallel opt_-p,--parallel
-    -s         opt_-s,--snippets:"Update only snippets (i.e.: skip updating plugins)."
+    -s         opt_-s,--snippets:"update:[Update only snippets (i.e.: skip updating plugins).] times:[Show times in seconds.]"
     --snippets opt_-s,--snippets
     -L         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
     -l         opt_-l,--plugins
@@ -2339,7 +2339,7 @@ zi() {
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
     module        "-h|--help|-B|--build|-I|--info|-r|--reset"
-    times         "-h|--help|-m|--moments|-S|--seconds|-a|--all"
+    times         "-h|--help|-m|--moments|-s|-S|--seconds|-a|--all"
     light         "-h|--help|-b|--bindkeys"
     report        "-h|--help|-a|--all"
     snippet       "-h|--help|-f|--force|--command|-x"

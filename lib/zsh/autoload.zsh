@@ -1959,7 +1959,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
       (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
     fi
     local attime=$(( ZI[$entry3] - ZI[START_TIME] ))
-    if (( OPTS[opt_-S,--seconds] )); then
+    if (( OPTS[opt_-S,--seconds] || OPTS[opt_-s,--snippets] )); then
       local time="$ZI[$entry] s"
       attime="${(M)attime#*.???} s"
     else

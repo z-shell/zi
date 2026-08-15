@@ -47,3 +47,15 @@
 - [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
 - [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
 - [ ] Documentation updated if needed
+
+## Migration plan
+
+<!--
+Required only when Public Contract Impact reports a destructive change.
+Link or describe the migration, then add one line per reported impact:
+
+[contract-impact:reported-id] updated here
+[contract-impact:reported-id] follow-up issue linked: https://github.com/OWNER/REPO/issues/NNN
+[contract-impact:reported-id] not affected: rationale
+[contract-impact:reported-id] deprecated with removal target: version/date/issue
+-->

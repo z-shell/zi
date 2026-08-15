@@ -1,0 +1,54 @@
+---
+name: Public Contract Impact
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+concurrency:
+  group: public-contract-impact-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  contract-impact:
+    name: Public contract impact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -yq jq zsh
+
+      - name: Test public contract detector
+        run: zsh tests/public-contract-impact.zsh
+
+      - name: Prepare trusted detector
+        id: detector
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git cat-file -e "${BASE_SHA}:scripts/public-contract-impact.zsh" 2>/dev/null; then
+            git show "${BASE_SHA}:scripts/public-contract-impact.zsh" > "$RUNNER_TEMP/public-contract-impact.zsh"
+            echo "policy_arg=" >> "$GITHUB_OUTPUT"
+          else
+            cp scripts/public-contract-impact.zsh "$RUNNER_TEMP/public-contract-impact.zsh"
+            echo "policy_arg=--no-policy" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Public contract bootstrap::The base branch has no trusted detector; this introducing run is informational-only."
+          fi
+
+      - name: Compare public contract
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          POLICY_ARG: ${{ steps.detector.outputs.policy_arg }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: zsh "$RUNNER_TEMP/public-contract-impact.zsh" --base "$BASE_SHA" --head "$HEAD_SHA" ${POLICY_ARG:+"$POLICY_ARG"}

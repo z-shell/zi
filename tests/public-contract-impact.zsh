@@ -72,7 +72,6 @@ assert_contains "$output" '`zpcompinit` was removed'
 assert_contains "$output" '`zpcompdef` was removed'
 assert_contains "$output" '`zpextract` was removed'
 assert_not_contains "$output" 'false&&zpcdclear'
-assert_not_contains "$output" '`❮▼❯` was removed'
 print "ok - only executable top-level function declarations are available"
 
 repository="$(new_case_repository foreach)"
@@ -92,8 +91,26 @@ assert_contains "$output" '`pmodload` was removed'
 assert_contains "$output" '`zpcdclear` was removed'
 print "ok - nested function declarations are not top-level"
 
+repository="$(new_case_repository guards)"
+command cp "$fixture_root/guards/zi.zsh" "$repository/zi.zsh"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "test: use unsupported declaration guards"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" '`zpcdreplay` was removed'
+assert_contains "$output" '`zpcdclear` was removed'
+assert_contains "$output" '`zpcompinit` was removed'
+assert_contains "$output" '`pmodload` was removed'
+assert_contains "$output" '`@zi-register-annex` was removed'
+assert_contains "$output" '`@zi-register-hook` was removed'
+assert_contains "$output" '`extraction-policy`'
+print "ok - only manifested declaration guards are accepted"
+
 repository="$(new_case_repository addition)"
 command cp "$fixture_root/addition/zi.zsh" "$repository/zi.zsh"
+changed_manifest="${repository}/contracts/public-contract-v1.json.new"
+jq '(.surfaces[] | select(.id == "compatibility-functions").symbols) += ["zplegacy"]' \
+  "$repository/contracts/public-contract-v1.json" > "$changed_manifest"
+command mv "$changed_manifest" "$repository/contracts/public-contract-v1.json"
 command git -C "$repository" add .
 command git -C "$repository" commit -qm "feat: add contracts"
 output="$(run_detector "$repository")"
@@ -241,6 +258,24 @@ if output="$(
     run_detector "$repository" 2>&1
 )"; then
   fail "migration heading in a code fence passed the gate"
+fi
+assert_contains "$output" "Migration plan required"
+
+typeset long_fence_body='````markdown
+## Migration plan
+Hidden guidance
+```
+Still hidden after a shorter fence'
+for marker in "${impact_markers[@]}"; do
+  long_fence_body+=$'\n'"${marker} updated here"
+done
+long_fence_body+=$'\n````'
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$long_fence_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "shorter embedded fence closed a longer migration fence"
 fi
 assert_contains "$output" "Migration plan required"
 

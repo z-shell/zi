@@ -4,6 +4,7 @@ ZI[ice-list]="atclone|\
 ZI[cmd-list]="update|help|\
       load"
 
+# FUNCTION: @zi-register-annex. [[[
 @zi-register-annex () {
   # $99 in a comment must not narrow or widen the signature.
   local name="$1"
@@ -11,6 +12,7 @@ ZI[cmd-list]="update|help|\
   local helphandler="$4" icemods="$5"
 }
 
+# FUNCTION: @zi-register-hook. [[[
 @zi-register-hook() {
   local name="$1"
   local type="$2"
@@ -18,6 +20,7 @@ ZI[cmd-list]="update|help|\
   local icemods="$4"
 }
 
+# FUNCTION: pmodload. [[[
 (( ${+functions[pmodload]} )) || pmodload () {
   print -r -- "$@"
 }

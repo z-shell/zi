@@ -23,6 +23,7 @@
       "kind": "function",
       "file": "zi.zsh",
       "symbol": "@zi-register-annex",
+      "declaration_marker": "# FUNCTION: @zi-register-annex. [[[",
       "description": "Annex registration API positional signature"
     },
     {
@@ -30,6 +31,7 @@
       "kind": "function",
       "file": "zi.zsh",
       "symbol": "@zi-register-hook",
+      "declaration_marker": "# FUNCTION: @zi-register-hook. [[[",
       "description": "Hook registration API positional signature"
     },
     {
@@ -38,6 +40,14 @@
       "file": "zi.zsh",
       "start_marker": "# Compatibility functions. [[[",
       "end_marker": "# ]]]",
+      "symbols": [
+        "❮▼❯",
+        "zpcdreplay",
+        "zpcdclear",
+        "zpcompinit",
+        "zpcompdef",
+        "zpextract"
+      ],
       "description": "Named compatibility wrapper functions"
     },
     {
@@ -45,6 +55,8 @@
       "kind": "function",
       "file": "zi.zsh",
       "symbol": "pmodload",
+      "declaration_marker": "# FUNCTION: pmodload. [[[",
+      "allowed_declaration_prefix": "(( ${+functions[pmodload]} )) || ",
       "presence_only": true,
       "description": "Prezto compatibility function"
     },

@@ -62,6 +62,8 @@ repository="$(command git -C "$repository" rev-parse --show-toplevel)"
 typeset temp_dir
 temp_dir="$(command mktemp -d "${TMPDIR:-/tmp}/zi-contract.XXXXXXXX")"
 trap 'command rm -rf -- "$temp_dir"' EXIT INT TERM
+typeset violations_file="$temp_dir/extraction-violations.tsv"
+: > "$violations_file"
 
 typeset empty_manifest='{"schema_version":1,"contract_version":0,"renames":[],"surfaces":[],"consumers":[]}'
 typeset base_manifest="$temp_dir/base-manifest.json"
@@ -95,11 +97,16 @@ validate_manifest() {
         elif $surface.kind == "function" then
           ($surface.file | type == "string" and length > 0)
           and ($surface.symbol | type == "string" and length > 0)
+          and ($surface.declaration_marker | type == "string" and length > 0)
+          and (($surface.allowed_declaration_prefix // "") | type == "string")
           and (($surface.presence_only // false) | type == "boolean")
         elif $surface.kind == "function-region" then
           ($surface.file | type == "string" and length > 0)
           and ($surface.start_marker | type == "string" and length > 0)
           and ($surface.end_marker | type == "string" and length > 0)
+          and ($surface.symbols | type == "array" and length > 0)
+          and all($surface.symbols[]; type == "string" and length > 0)
+          and ($surface.symbols | length == (unique | length))
         elif $surface.kind == "aliases" then
           ($surface.file | type == "string" and length > 0)
           and ($surface.target | type == "string" and length > 0)
@@ -178,65 +185,19 @@ extract_token_set() {
   done | LC_ALL=C sort -u > "$output"
 }
 
-compound_context_start() {
-  local trimmed="${1##[[:space:]]#}"
-  case "$trimmed" in
-    if[[:space:]]*|case[[:space:]]*|for[[:space:]]*|foreach[[:space:]]*|\
-    select[[:space:]]*|\
-    while[[:space:]]*|until[[:space:]]*|repeat[[:space:]]*|'('|\
-    '('[[:space:]]*|'{'|'{'[[:space:]]*)
-      return 0
-      ;;
-  esac
-  return 1
-}
-
-compound_context_end() {
-  local trimmed="${1##[[:space:]]#}"
-  case "$trimmed" in
-    fi|fi[[:space:]]*|'fi;'*|done|done[[:space:]]*|'done;'*|\
-    end|end[[:space:]]*|'end;'*|esac|esac[[:space:]]*|'esac;'*|\
-    ')'|')'[[:space:]]*|\
-    ');'*|'}'|'}'[[:space:]]*|'};'*)
-      return 0
-      ;;
-  esac
-  return 1
-}
-
-compound_context_inline_closed() {
-  local code="$1" compact="$2"
-  local trimmed="${code##[[:space:]]#}"
-  [[ $compact == *';fi' || $compact == *';done' || $compact == *';end' ||
-    $compact == *';esac' ]] &&
-    return 0
-  [[ $compact == *'}' ]] && return 0
-  (( ${#compact} > 1 )) && [[ $trimmed == '('* && $compact == *')' ]]
-}
-
-declaration_name() {
-  local compact="$1" declaration name
-  REPLY=""
-  [[ $compact =~ '^(.+)\(\)\{' ]] || return 1
-  declaration="${match[1]}"
-  if [[ $declaration == *'||'* ]]; then
-    name="${declaration##*'||'}"
-  elif [[ $declaration == *('&&'|'|'|';')* ]]; then
-    return 1
-  else
-    name="$declaration"
-  fi
-  [[ -n $name && $name != *('&&'|'|'|';')* ]] || return 1
-  REPLY="$name"
-}
-
-function_body_arity() {
-  local source_file="$1" symbol="$2"
-  local line code compact trimmed pending="" body="" name
-  integer found=0 compound_depth=0 inside_other_function=0
-  integer function_indent=0 target_indent=0 indent=0
+inspect_canonical_function() {
+  local source_file="$1" symbol="$2" allowed_prefix="$3" marker="$4"
+  local surface_id="$5" ref="$6"
+  local line code compact pending="" body="" expected
+  integer canonical=0 invalid=0 collecting=0 marker_seen=0 awaiting_declaration=0
+  expected="${allowed_prefix//[ $'\t']/}${symbol}(){"
 
   while IFS= read -r line; do
+    if [[ $line == "$marker" ]]; then
+      marker_seen=1
+      awaiting_declaration=1
+      continue
+    fi
     code="${line%%\#*}"
     if [[ $code == *\\ ]]; then
       pending+="${code%\\}"
@@ -244,50 +205,43 @@ function_body_arity() {
     fi
     code="${pending}${code}"
     pending=""
-    trimmed="${code##[[:space:]]#}"
-    indent=$(( ${#code} - ${#trimmed} ))
     compact="${code//[ $'\t']/}"
+    [[ -n $compact ]] || continue
 
-    if (( found )); then
+    if (( collecting )); then
       body+="${code}"$'\n'
-      [[ $compact == '}' && $indent == $target_indent ]] && break
-      continue
+      [[ $code == '}'* ]] && collecting=0
     fi
 
-    if (( inside_other_function )); then
-      [[ $compact == '}' && $indent == $function_indent ]] &&
-        inside_other_function=0
-      continue
-    fi
-
-    if compound_context_end "$code"; then
-      (( compound_depth > 0 )) && compound_depth=$(( compound_depth - 1 ))
-      continue
-    fi
-
-    if declaration_name "$compact"; then
-      name="$REPLY"
-      if (( compound_depth == 0 )) && [[ $name == "$symbol" ]]; then
-        found=1
-        target_indent=$indent
+    if [[ $compact == *"${symbol}(){"* ||
+      $compact == *"function${symbol}{"* ||
+      $compact == *"function${symbol}(){"* ]]; then
+      if (( awaiting_declaration )) &&
+        [[ $code == "${code##[[:space:]]#}" && $compact == "$expected"* ]]; then
+        canonical=1
+        awaiting_declaration=0
         body+="${code}"$'\n'
-        [[ $compact == *'}' ]] && break
-      elif [[ $compact != *'}' ]]; then
-        inside_other_function=1
-        function_indent=$indent
+        [[ $compact == *'}' ]] || collecting=1
+      else
+        invalid=1
+        if [[ $ref == "$head_ref" ]]; then
+          print -r -- "${surface_id}"$'\t'"${symbol}"$'\t'"noncanonical declaration" \
+            >> "$violations_file"
+        fi
       fi
-      continue
-    fi
-
-    if compound_context_start "$code"; then
-      if ! compound_context_inline_closed "$code" "$compact"; then
-        (( compound_depth += 1 ))
-      fi
-      continue
+    elif (( awaiting_declaration )); then
+      invalid=1
+      awaiting_declaration=0
     fi
   done < "$source_file"
 
-  (( found )) || return 1
+  (( marker_seen == 1 && invalid == 0 && canonical == 1 )) || {
+    if [[ $ref == "$head_ref" && ( $marker_seen == 0 || $canonical == 0 ) ]]; then
+      print -r -- "${surface_id}"$'\t'"${symbol}"$'\t'"missing canonical declaration" \
+        >> "$violations_file"
+    fi
+    return 1
+  }
   local arity
   arity="$(print -r -- "$body" |
     command grep -oE '\$\{?[0-9]+' 2>/dev/null |
@@ -298,17 +252,24 @@ function_body_arity() {
 }
 
 extract_function_region() {
-  local source_file="$1" start_marker="$2" end_marker="$3" output="$4"
-  local line code compact trimmed name pending=""
-  integer in_region=0 compound_depth=0 inside_function=0
-  integer function_indent=0 indent=0
+  local source_file="$1" definition="$2" output="$3" ref="$4"
+  local surface_id start_marker end_marker line code compact pending=""
+  local raw="$temp_dir/region-${RANDOM}-${RANDOM}.tsv"
+  typeset -a symbols
+  integer in_region=0 inside_function=0 failed=0 index=1 match_index=0 cursor
+  surface_id="$(jq -r '.id' <<< "$definition")"
+  start_marker="$(jq -r '.start_marker' <<< "$definition")"
+  end_marker="$(jq -r '.end_marker' <<< "$definition")"
+  symbols=( "${(@f)$(jq -r '.symbols[]' <<< "$definition")}" )
+  : > "$raw"
 
   while IFS= read -r line; do
     if (( ! in_region )); then
-      [[ $line == *"$start_marker"* ]] && in_region=1
+      [[ $line == "$start_marker" ]] && in_region=1
       continue
     fi
-    [[ $line == *"$end_marker"* ]] && break
+    [[ $line == "$end_marker" ]] && break
+
     code="${line%%\#*}"
     if [[ $code == *\\ ]]; then
       pending+="${code%\\}"
@@ -316,39 +277,42 @@ extract_function_region() {
     fi
     code="${pending}${code}"
     pending=""
-    trimmed="${code##[[:space:]]#}"
-    indent=$(( ${#code} - ${#trimmed} ))
     compact="${code//[ $'\t']/}"
+    [[ -n $compact ]] || continue
 
     if (( inside_function )); then
-      [[ $compact == '}' && $indent == $function_indent ]] &&
-        inside_function=0
+      [[ $code == '}'* ]] && inside_function=0
       continue
     fi
 
-    if compound_context_end "$code"; then
-      (( compound_depth > 0 )) && compound_depth=$(( compound_depth - 1 ))
-      continue
-    fi
-
-    if declaration_name "$compact"; then
-      name="$REPLY"
-      (( compound_depth == 0 )) &&
-        print -r -- "${name}"$'\t'"variadic"
-      if [[ $compact != *'}' ]]; then
-        inside_function=1
-        function_indent=$indent
+    match_index=0
+    for (( cursor = index; cursor <= ${#symbols}; cursor += 1 )); do
+      if [[ $code == "${code##[[:space:]]#}" &&
+        $compact == "${symbols[cursor]}(){"* ]]; then
+        match_index=$cursor
+        break
       fi
-      continue
+    done
+
+    if (( match_index == 0 )); then
+      failed=1
+      if [[ $ref == "$head_ref" ]]; then
+        print -r -- "${surface_id}"$'\t'"compatibility region"$'\t'"unsupported declaration or content" \
+          >> "$violations_file"
+      fi
+      break
     fi
 
-    if compound_context_start "$code"; then
-      if ! compound_context_inline_closed "$code" "$compact"; then
-        (( compound_depth += 1 ))
-      fi
-      continue
-    fi
-  done < "$source_file" | LC_ALL=C sort -u > "$output"
+    print -r -- "${symbols[match_index]}"$'\t'"variadic" >> "$raw"
+    index=$(( match_index + 1 ))
+    [[ $compact == *'}' ]] || inside_function=1
+  done < "$source_file"
+
+  if (( failed )); then
+    : > "$output"
+  else
+    LC_ALL=C sort -u "$raw" > "$output"
+  fi
 }
 
 extract_aliases() {
@@ -370,7 +334,7 @@ extract_aliases() {
 
 extract_surface() {
   local ref="$1" definition="$2" output="$3"
-  local kind file source_file symbol arity
+  local kind file source_file symbol arity surface_id allowed_prefix marker
   : > "$output"
   kind="$(jq -r '.kind' <<< "$definition")"
 
@@ -390,8 +354,12 @@ extract_surface() {
           extract_token_set "$source_file" "$(jq -r '.assignment' <<< "$definition")" "$output"
           ;;
         function)
+          surface_id="$(jq -r '.id' <<< "$definition")"
           symbol="$(jq -r '.symbol' <<< "$definition")"
-          if arity="$(function_body_arity "$source_file" "$symbol")"; then
+          allowed_prefix="$(jq -r '.allowed_declaration_prefix // ""' <<< "$definition")"
+          marker="$(jq -r '.declaration_marker' <<< "$definition")"
+          if arity="$(inspect_canonical_function \
+            "$source_file" "$symbol" "$allowed_prefix" "$marker" "$surface_id" "$ref")"; then
             if [[ $(jq -r '.presence_only // false' <<< "$definition") == true ]]; then
               arity="present"
             fi
@@ -399,11 +367,7 @@ extract_surface() {
           fi
           ;;
         function-region)
-          extract_function_region \
-            "$source_file" \
-            "$(jq -r '.start_marker' <<< "$definition")" \
-            "$(jq -r '.end_marker' <<< "$definition")" \
-            "$output"
+          extract_function_region "$source_file" "$definition" "$output" "$ref"
           ;;
         aliases)
           extract_aliases "$source_file" "$(jq -r '.target' <<< "$definition")" "$output"
@@ -462,22 +426,43 @@ strip_html_comments() {
   print -r -- "$visible"
 }
 
+fence_run_length() {
+  local text="$1" character="$2"
+  integer count=0
+  while [[ ${text[count+1]-} == "$character" ]]; do
+    (( count += 1 ))
+  done
+  REPLY=$count
+}
+
 extract_migration_section() {
-  local body="$1" line trimmed fence=""
-  integer found=0
+  local body="$1" line trimmed first remainder fence_character=""
+  integer found=0 fence_length=0 run_length=0
   REPLY=""
 
   for line in "${(@f)body}"; do
     trimmed="${line##[[:space:]]#}"
-    if [[ -n $fence ]]; then
-      [[ $trimmed == "$fence"* ]] && fence=""
+    first="${trimmed[1]-}"
+    if [[ -n $fence_character ]]; then
+      if [[ $first == "$fence_character" ]]; then
+        fence_run_length "$trimmed" "$fence_character"
+        run_length=$REPLY
+        remainder="${trimmed[run_length+1,-1]-}"
+        if (( run_length >= fence_length )) &&
+          [[ -z ${remainder//[[:space:]]/} ]]; then
+          fence_character=""
+          fence_length=0
+        fi
+      fi
       continue
-    elif [[ $trimmed == '```'* ]]; then
-      fence='```'
-      continue
-    elif [[ $trimmed == '~~~'* ]]; then
-      fence='~~~'
-      continue
+    elif [[ $first == '`' || $first == '~' ]]; then
+      fence_run_length "$trimmed" "$first"
+      run_length=$REPLY
+      if (( run_length >= 3 )); then
+        fence_character="$first"
+        fence_length=$run_length
+        continue
+      fi
     fi
 
     if (( ! found )); then
@@ -582,8 +567,8 @@ for surface_id in "${surface_ids[@]}"; do
     continue
   fi
 
-  base_semantics="$(jq -Sc 'del(.description)' <<< "$base_definition")"
-  head_semantics="$(jq -Sc 'del(.description)' <<< "$head_definition")"
+  base_semantics="$(jq -Sc 'del(.description, .symbols)' <<< "$base_definition")"
+  head_semantics="$(jq -Sc 'del(.description, .symbols)' <<< "$head_definition")"
   if [[ $base_semantics != "$head_semantics" ]]; then
     record_impact breaking contract-definition-change "$surface_id" \
       "base-definition" "head-definition" \
@@ -597,6 +582,13 @@ for surface_id in "${surface_ids[@]}"; do
   extract_surface "$head_ref" "$head_definition" "$head_snapshot"
   compare_surface "$surface_id" "$kind" "$base_snapshot" "$head_snapshot"
 done
+
+if [[ -s $violations_file ]]; then
+  while IFS=$'\t' read -r surface_id symbol violation; do
+    record_impact breaking extraction-policy "$surface_id" "$symbol" "" \
+      "\`${symbol}\` uses a noncanonical or unsupported declaration form."
+  done < <(LC_ALL=C sort -u "$violations_file")
+fi
 
 compare_consumers() {
   local base_file="$1" head_file="$2"

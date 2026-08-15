@@ -1,0 +1,174 @@
+---
+name: Promotion Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  zsh:
+    name: Zsh syntax and compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install Zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+
+      - name: Check and compile Zsh sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          checked=0
+          while IFS= read -r -d '' file; do
+            zsh -n "${file}"
+            zsh -fc 'zcompile "$1"' _ "${file}"
+            rm -f "${file}.zwc"
+            checked=$((checked + 1))
+          done < <(
+            find . -type d -name doc -prune -o \
+              -type f \( -name '*.zsh' -o -name '_zi' \) -print0
+          )
+          if ((checked == 0)); then
+            echo "::error::No Zsh sources were found."
+            exit 1
+          fi
+
+  zd:
+    name: ZD integration
+    uses: z-shell/zd/.github/workflows/test-native.yml@da915fd260112430aa34981aed3d4e0262f33b87 # z-shell/zd#95
+    with:
+      zi_repo: ${{ github.event.pull_request.head.repo.full_name }}
+      zi_ref: ${{ github.event.pull_request.head.sha }}
+
+  trunk:
+    name: Trunk
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Run Trunk
+        uses: trunk-io/trunk-action@75699af9e26881e564e9d832ef7dc3af25ec031b
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
+        with:
+          build-mode: none
+          languages: actions
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
+        with:
+          category: /language:actions
+
+  clean-install:
+    name: Clean install and startup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+
+      - name: Install and start the exact candidate
+        shell: bash
+        env:
+          CANDIDATE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          checkout="${RUNNER_TEMP}/zi-candidate"
+          data_root="${RUNNER_TEMP}/zi-fresh-data"
+
+          test ! -e "${checkout}"
+          test ! -e "${data_root}"
+
+          git init "${checkout}"
+          git -C "${checkout}" remote add origin \
+            "https://github.com/${CANDIDATE_REPOSITORY}.git"
+          git -C "${checkout}" fetch --no-tags --depth 1 origin -- \
+            "${CANDIDATE_SHA}"
+          git -C "${checkout}" checkout --detach FETCH_HEAD
+          test "$(git -C "${checkout}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
+
+          mkdir -p \
+            "${data_root}/home" \
+            "${data_root}/cache" \
+            "${data_root}/config"
+          env \
+            CANDIDATE_SHA="${CANDIDATE_SHA}" \
+            HOME="${data_root}/home" \
+            XDG_CACHE_HOME="${data_root}/cache" \
+            XDG_CONFIG_HOME="${data_root}/config" \
+            XDG_DATA_HOME="${data_root}/data" \
+            ZDOTDIR="${data_root}/zdotdir" \
+            ZI_CHECKOUT="${checkout}" \
+            zsh -f <<'ZSH'
+          builtin source "${ZI_CHECKOUT}/zi.zsh" || exit 1
+          [[ ${ZI[BIN_DIR]} = ${ZI_CHECKOUT} ]] || exit 1
+          [[ "$(git -C "${ZI[BIN_DIR]}" rev-parse HEAD)" = ${CANDIDATE_SHA} ]] ||
+            exit 1
+          (( ${+functions[zi]} )) || exit 1
+          .zi-prepare-home || exit 1
+          [[ -d ${ZI[HOME_DIR]} ]] || exit 1
+          zi -V >/dev/null || exit 1
+          ZSH
+
+  gate:
+    name: Promotion gate
+    if: ${{ always() }}
+    needs: [zsh, zd, trunk, codeql, clean-install]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require every promotion validation
+        env:
+          ZSH_RESULT: ${{ needs.zsh.result }}
+          ZD_RESULT: ${{ needs.zd.result }}
+          TRUNK_RESULT: ${{ needs.trunk.result }}
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+          CLEAN_INSTALL_RESULT: ${{ needs.clean-install.result }}
+        run: |
+          failed=0
+          for result_name in \
+            ZSH_RESULT \
+            ZD_RESULT \
+            TRUNK_RESULT \
+            CODEQL_RESULT \
+            CLEAN_INSTALL_RESULT
+          do
+            result="${!result_name}"
+            if [[ "${result}" != success ]]; then
+              echo "::error::${result_name} was '${result}', not 'success'."
+              failed=1
+            fi
+          done
+          exit "${failed}"

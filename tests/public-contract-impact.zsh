@@ -60,6 +60,16 @@ output="$(run_detector "$repository" --no-policy)"
 assert_contains "$output" "No public-contract changes detected."
 print "ok - comments, formatting, ordering, and internal refactors are ignored"
 
+repository="$(new_case_repository conditional)"
+command cp "$fixture_root/conditional/zi.zsh" "$repository/zi.zsh"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "test: guard compatibility function with false"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" '`zpcdclear` was removed'
+assert_contains "$output" '`pmodload` was removed'
+assert_not_contains "$output" 'false&&zpcdclear'
+print "ok - dead conditional function definitions are unavailable across logical lines"
+
 repository="$(new_case_repository addition)"
 command cp "$fixture_root/addition/zi.zsh" "$repository/zi.zsh"
 command git -C "$repository" add .
@@ -108,6 +118,19 @@ for marker in "${impact_markers[@]}"; do
   pr_body+=$'\n'"${marker} updated here"
 done
 
+typeset marker_only_body="## Migration plan"
+for marker in "${impact_markers[@]}"; do
+  marker_only_body+=$'\n'"${marker} updated here"
+done
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$marker_only_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "dispositions without migration guidance passed the breaking-change gate"
+fi
+assert_contains "$output" "Migration plan required"
+
 typeset commented_body="## Migration plan
 Consumers migrate using https://github.com/z-shell/zi/issues/376."
 for marker in "${impact_markers[@]}"; do
@@ -140,6 +163,42 @@ command git -C "$repository" commit -qm "test: weaken contract definition"
 output="$(run_detector "$repository" --no-policy)"
 assert_contains "$output" '`contract-definition-change`'
 print "ok - extraction-definition changes are destructive impacts"
+
+typeset malformed_id malformed_field
+for malformed_id malformed_field in \
+  commands assignment \
+  annex-registration symbol \
+  hook-registration file \
+  compatibility-functions start_marker \
+  compatibility-aliases target \
+  installer-git-output path; do
+  repository="$(new_case_repository "malformed-${malformed_id}-${malformed_field}")"
+  changed_manifest="${repository}/contracts/public-contract-v1.json.new"
+  jq --arg id "$malformed_id" --arg field "$malformed_field" \
+    'del((.surfaces[] | select(.id == $id))[$field])' \
+    "$repository/contracts/public-contract-v1.json" > "$changed_manifest"
+  command mv "$changed_manifest" "$repository/contracts/public-contract-v1.json"
+  command git -C "$repository" add .
+  command git -C "$repository" commit -qm "test: remove required surface field"
+  if output="$(run_detector "$repository" --no-policy 2>&1)"; then
+    fail "malformed ${malformed_id}.${malformed_field} passed manifest validation"
+  fi
+  assert_contains "$output" "invalid head manifest"
+done
+print "ok - each surface kind requires its extraction fields"
+
+repository="$(new_case_repository unsafe-surface-id)"
+changed_manifest="${repository}/contracts/public-contract-v1.json.new"
+jq '.surfaces[0].id = "unsafe/id"' \
+  "$repository/contracts/public-contract-v1.json" > "$changed_manifest"
+command mv "$changed_manifest" "$repository/contracts/public-contract-v1.json"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "test: add unsafe surface id"
+if output="$(run_detector "$repository" --no-policy 2>&1)"; then
+  fail "unsafe surface ID passed manifest validation"
+fi
+assert_contains "$output" "invalid head manifest"
+print "ok - surface IDs are safe for deterministic snapshot paths"
 
 repository="$(new_case_repository invalid-evidence)"
 changed_manifest="${repository}/contracts/public-contract-v1.json.new"

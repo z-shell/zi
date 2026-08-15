@@ -66,7 +66,7 @@
     {
       "repository": "z-shell/wiki",
       "path": "ecosystem/annexes/0_overview.mdx",
-      "surfaces": ["annex-registration", "hook-registration"],
+      "surfaces": ["annex-registration"],
       "evidence": "https://github.com/z-shell/wiki/blob/7fca4272b6fbb40afeaa2c25288c1089d887c7d4/ecosystem/annexes/0_overview.mdx"
     },
     {

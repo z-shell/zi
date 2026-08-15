@@ -24,5 +24,5 @@ jobs:
   zd-test:
     uses: z-shell/zd/.github/workflows/test-native.yml@cbb1211f6a39f9d89a600297883b3766d4fa8ab9 # main
     with:
-      zi_repo: ${{ github.repository }}
+      zi_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       zi_ref: ${{ github.head_ref || github.ref_name }}

@@ -1,0 +1,28 @@
+---
+name: ZD Integration
+
+on:
+  push:
+    branches: [main, next]
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+  pull_request:
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  zd-test:
+    uses: z-shell/zd/.github/workflows/test-native.yml@cbb1211f6a39f9d89a600297883b3766d4fa8ab9 # main
+    with:
+      zi_repo: ${{ github.repository }}
+      zi_ref: ${{ github.head_ref || github.ref_name }}

@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 
 builtin emulate -R zsh ${=${options[xtrace]:#off}:+-o xtrace}
 builtin setopt extended_glob
@@ -15,7 +17,7 @@ set -- ${(s: :)$(od -j $o -N 8 -t u1 $pkg)}
 local i=$(( 256 * ( 256 * ( 256 * $2 + $3 ) + $4 ) + $5 ))
 local d=$(( 256 * ( 256 * ( 256 * $6 + $7 ) + $8 ) + $9 ))
 
-sigsize=$(( 8 + 16 * $i + $d ))
+local sigsize=$(( 8 + 16 * $i + $d ))
 o=$(( $o + $sigsize + ( 8 - ( $sigsize % 8 ) ) % 8 + 8 ))
 set -- ${(s: :)$(od -j $o -N 8 -t u1 $pkg)}
 i=$(( 256 * ( 256 * ( 256 * $2 + $3 ) + $4 ) + $5 ))

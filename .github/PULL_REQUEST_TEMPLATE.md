@@ -37,8 +37,7 @@
 
 ## Checklist
 
-- [ ] My branch was created from `next` (not `main`)
-- [ ] This PR targets the `next` branch
+- [ ] Ordinary work branches from and targets `next`; hotfixes branch from and target `main`
 - [ ] Commit messages follow Conventional Commits format
 - [ ] No AI co-author trailers in commit messages
 - [ ] I have read [CONTRIBUTING.md](docs/CONTRIBUTING.md)

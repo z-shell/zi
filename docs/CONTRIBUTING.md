@@ -6,12 +6,12 @@ Thank you for contributing! Please follow the guidelines below to keep the proje
 
 ````text
 main       production and consumable ref
+  |-- hotfix-<id>   urgent fixes that may target main
   ^
 next       integration branch; ordinary PRs target here
   ^
   |-- feature-<id>  new features
-  |-- bug-<id>      bug fixes
-  `-- hotfix-<id>   urgent fixes that may target main
+  `-- bug-<id>      bug fixes
 ```text
 
 1. Branch ordinary work from `next`: `git switch -c bug-123 next`.
@@ -42,7 +42,8 @@ BREAKING CHANGE: description of what breaks
 - Breaking changes: use `!` suffix (`feat!:`) and add `BREAKING CHANGE:` footer
 - **No AI co-author trailers** — do not add `Co-authored-by: Copilot` or similar
 
-To clean up commits before opening a PR: `git rebase -i $(git merge-base HEAD next)`
+To clean up commits before opening a PR, rebase against the intended target:
+`next` for ordinary work and `main` for hotfixes.
 
 ## What not to add
 

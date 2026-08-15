@@ -27,13 +27,6 @@ multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!
 countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
 subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
 
-# Determine ZI[VERSION]
-if [[ -d "${ZI[BIN_DIR]:-$PWD}/.git" || -e "${ZI[BIN_DIR]:-$PWD}/.git" ]]; then
-  ZI[VERSION]=$(git -C "${ZI[BIN_DIR]:-$PWD}" describe --tags --exact-match 2>/dev/null) || ZI[VERSION]=$(git -C "${ZI[BIN_DIR]:-$PWD}" rev-parse --short HEAD 2>/dev/null) || ZI[VERSION]="unknown"
-else
-  ZI[VERSION]="unknown"
-fi
-
 # In no value, i.e. not designed to hold value.
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
@@ -59,6 +52,15 @@ ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
 if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
   builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ Zi ❯ Git repository is.%f"
   return 1
+fi
+
+# Determine ZI[VERSION] after establishing the repository path.
+if [[ -d ${ZI[BIN_DIR]}/.git || -e ${ZI[BIN_DIR]}/.git ]]; then
+  ZI[VERSION]=$(git -C "${ZI[BIN_DIR]}" describe --tags --exact-match 2>/dev/null) || \
+    ZI[VERSION]=$(git -C "${ZI[BIN_DIR]}" rev-parse --short HEAD 2>/dev/null) || \
+    ZI[VERSION]="unknown"
+else
+  ZI[VERSION]="unknown"
 fi
 
 # Zi home path for creating working directories.
@@ -130,8 +132,8 @@ fi
 # Disable aliases.
 : ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
 
-# Disable Zi's internal aliases.
-: ${ZI[INTERNAL_ALIASES]:=0}
+# Configure Zi's deprecated command aliases.
+: ${ZI[INTERNAL_ALIASES]:=1}
 
 # Set owner of the Zi's packages. It allows to use the packages from specific user instead of the z-shell organization.
 : ${ZI[PKG_OWNER]:=z-shell}
@@ -2310,7 +2312,8 @@ zi() {
     --parallel opt_-p,--parallel
     -s         opt_-s,--snippets:"Update only snippets (i.e.: skip updating plugins)."
     --snippets opt_-s,--snippets
-    -l         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
+    -L         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
+    -l         opt_-l,--plugins
     --plugins  opt_-l,--plugins
     -h         opt_-h,--help:"Show this help message."
     --help     opt_-h,--help
@@ -2327,7 +2330,7 @@ zi() {
     -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
     --command  opt_-x,--command
     env-whitelist "-h|--help|-v|--verbose"
-    update        "-h|--help|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
+    update        "-h|--help|-L|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
     self-update   "-h|--help|-q|--quiet|-D|--dry-run"
     compile       "-h|--help|-a|--all|-q|--quiet"
     uncompile       "-h|--help|-a|--all|-q|--quiet"
@@ -2937,8 +2940,8 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-# Internal aliases for compatibility with deprecated names. Can be enabled with ZI[INTERNAL_ALIASES]=1.
-(( ZI[INTERNAL_ALIASES] )) && builtin alias zinit=zi zplugin=zi
+# Internal aliases preserve compatibility with deprecated command names.
+(( ZI[INTERNAL_ALIASES] )) && builtin alias zini=zi zinit=zi zplugin=zi
 
 .zi-prepare-home
 .zi-set-mtime

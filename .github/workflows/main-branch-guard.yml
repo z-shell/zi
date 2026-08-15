@@ -2,12 +2,11 @@
 name: Main Branch Source Guard
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     types: [opened, reopened, synchronize, edited]
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -28,9 +27,9 @@ jobs:
             echo "::error::Pull requests into main must come from this repository (got '${HEAD_REPOSITORY}')."
             exit 1
           fi
-          if [[ "${HEAD_REF}" == "next" || "${HEAD_REF}" == hotfix-* || "${HEAD_REF}" == copilot/* ]]; then
+          if [[ "${HEAD_REF}" == "next" || "${HEAD_REF}" == hotfix-* ]]; then
             echo "Head branch '${HEAD_REF}' is allowed to target main."
             exit 0
           fi
-          echo "::error::Pull requests into main must come from 'next', 'hotfix-*', or a temporary 'copilot/*' maintenance branch (got '${HEAD_REF}'). See ADR-0008 (z-shell/.github) for the branching model."
+          echo "::error::Pull requests into main must come from 'next' or a 'hotfix-*' branch (got '${HEAD_REF}'). See ADR-0008 (z-shell/.github) for the branching model."
           exit 1

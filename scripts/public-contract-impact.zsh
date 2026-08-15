@@ -84,9 +84,32 @@ validate_manifest() {
     and (.surfaces | type == "array")
     and (.consumers | type == "array")
     and all(.surfaces[];
-      (.id | type == "string" and length > 0)
+      . as $surface
+      | (.id | type == "string" and test("^[a-z0-9][a-z0-9._-]*$"))
       and (.kind | IN("token-set", "function", "function-region", "aliases", "path"))
       and (.description | type == "string" and length > 0)
+      and (
+        if $surface.kind == "token-set" then
+          ($surface.file | type == "string" and length > 0)
+          and ($surface.assignment | type == "string" and length > 0)
+        elif $surface.kind == "function" then
+          ($surface.file | type == "string" and length > 0)
+          and ($surface.symbol | type == "string" and length > 0)
+          and (($surface.presence_only // false) | type == "boolean")
+        elif $surface.kind == "function-region" then
+          ($surface.file | type == "string" and length > 0)
+          and ($surface.start_marker | type == "string" and length > 0)
+          and ($surface.end_marker | type == "string" and length > 0)
+        elif $surface.kind == "aliases" then
+          ($surface.file | type == "string" and length > 0)
+          and ($surface.target | type == "string" and length > 0)
+        elif $surface.kind == "path" then
+          ($surface.path | type == "string" and length > 0)
+          and (($surface.path | startswith("/")) | not)
+        else
+          false
+        end
+      )
     )
     and ([.surfaces[].id] | length == (unique | length))
     and all(.consumers[];
@@ -138,7 +161,7 @@ extract_token_set() {
       rest="${rest[2,-1]}"
       collecting=1
     else
-      rest="$line"
+      rest="${line##[[:space:]]#}"
     fi
 
     trimmed="${rest%%[[:space:]]#}"
@@ -157,15 +180,21 @@ extract_token_set() {
 
 function_body_arity() {
   local source_file="$1" symbol="$2"
-  local line code compact body=""
+  local line code compact pending="" body=""
   local needle="${symbol}(){"
   integer found=0
 
   while IFS= read -r line; do
     code="${line%%\#*}"
+    if [[ $code == *\\ ]]; then
+      pending+="${code%\\}"
+      continue
+    fi
+    code="${pending}${code}"
+    pending=""
     compact="${code//[ $'\t']/}"
     if (( ! found )); then
-      [[ $compact == *"$needle"* ]] || continue
+      [[ $compact == "$needle"* || $compact == *'||'"$needle"* ]] || continue
       found=1
     fi
     body+="${code}"$'\n'
@@ -184,7 +213,7 @@ function_body_arity() {
 
 extract_function_region() {
   local source_file="$1" start_marker="$2" end_marker="$3" output="$4"
-  local line code compact name
+  local line code compact declaration name pending=""
   integer in_region=0
 
   while IFS= read -r line; do
@@ -194,10 +223,24 @@ extract_function_region() {
     fi
     [[ $line == *"$end_marker"* ]] && break
     code="${line%%\#*}"
+    if [[ $code == *\\ ]]; then
+      pending+="${code%\\}"
+      continue
+    fi
+    code="${pending}${code}"
+    pending=""
     compact="${code//[ $'\t']/}"
-    if [[ $compact == (#b)(*)'(){'* ]]; then
-      name="${match[1]}"
-      [[ -n $name ]] && print -r -- "${name}"$'\t'"variadic"
+    if [[ $compact =~ '^([^()]*)\(\)\{' ]]; then
+      declaration="${match[1]}"
+      if [[ $declaration == *'||'* ]]; then
+        name="${declaration##*'||'}"
+      elif [[ $declaration == *('&&'|'|'|';')* ]]; then
+        continue
+      else
+        name="$declaration"
+      fi
+      [[ -n $name && $name != *('&&'|'|'|';')* ]] &&
+        print -r -- "${name}"$'\t'"variadic"
     fi
   done < "$source_file" | LC_ALL=C sort -u > "$output"
 }
@@ -442,9 +485,20 @@ if (( $(jq -r '.contract_version' "$base_manifest") > 0 )); then
 fi
 
 typeset consumers_manifest="$temp_dir/consumers.json"
-jq -s '{
-  consumers: ([.[].consumers[]] | unique_by([.repository, .path, .surfaces, .evidence]))
-}' "$base_manifest" "$head_manifest" > "$consumers_manifest"
+jq -s '
+  def by_identity:
+    map({
+      key: (.repository + "\u001f" + .path),
+      value: .
+    })
+    | from_entries;
+
+  (.[0].consumers | by_identity) as $base
+  | (.[1].consumers | by_identity) as $head
+  | {
+      consumers: (($base + $head) | to_entries | map(.value))
+    }
+' "$base_manifest" "$head_manifest" > "$consumers_manifest"
 
 typeset report="$temp_dir/report.md"
 typeset consumer_lines
@@ -526,12 +580,17 @@ if (( enforce_policy && ${#breaking_impacts} )); then
     (( policy_failures += 1 ))
   fi
 
-  typeset migration_section="" visible_migration="" migration=""
+  typeset migration_section="" visible_migration="" migration_guidance="" migration=""
   if [[ $pr_body == *"## Migration plan"* ]]; then
     migration_section="${pr_body#*"## Migration plan"}"
     migration_section="${migration_section%%$'\n## '*}"
     visible_migration="${migration_section//<!--*-->/}"
-    migration="${visible_migration//[[:space:]]/}"
+    for body_line in "${(@f)visible_migration}"; do
+      trimmed_line="${body_line##[[:space:]]#}"
+      [[ $trimmed_line == '[contract-impact:'* ]] && continue
+      migration_guidance+="${trimmed_line}"
+    done
+    migration="${migration_guidance//[[:space:]]/}"
   fi
   if (( ${#migration} < 20 )); then
     print "::error title=Migration plan required::Add a linked or descriptive ## Migration plan section to the PR body."

@@ -10,7 +10,9 @@ annexes, plugins, documentation, installers, and test environments.
 
 - `next` is the development and integration branch.
 - Ordinary work branches from and targets `next`.
-- Use `feature-<id>`, `bug-<id>`, or `hotfix-<id>` branch names.
+- Use `feature-<id>`, `bug-<id>`, or `hotfix-<id>` branch names. Tool-managed
+  branches may prepend the exact pull-request author login, such as
+  `ss-o-feature-376`; arbitrary prefixes remain invalid.
 - `next` promotes to `main`; `hotfix-*` branches may target `main` directly.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
 

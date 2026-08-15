@@ -15,7 +15,9 @@ next       integration branch; ordinary PRs target here
 ```text
 
 1. Branch ordinary work from `next`: `git switch -c bug-123 next`.
-2. Target `next` from `feature-<id>` and `bug-<id>` branches.
+2. Target `next` from `feature-<id>` and `bug-<id>` branches. Tool-managed
+   branches may prepend the exact pull-request author login (for example,
+   `octocat-feature-123`).
 3. Use `hotfix-<id>` only for urgent fixes created in this repository,
    branched from `main`, and targeting `main`. Fork pull requests must target
    `next`.

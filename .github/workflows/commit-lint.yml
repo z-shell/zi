@@ -86,6 +86,7 @@ jobs:
       - name: "🌿 Check branch naming convention"
         env:
           BRANCH: ${{ github.head_ref }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
           PATTERN='^(feature|bug|hotfix)-[1-9][0-9]*$'
           if echo "$BRANCH" | grep -qE '^(dependabot|renovate)/' || \
@@ -93,8 +94,12 @@ jobs:
             echo "✅ OK"
             exit 0
           fi
-          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
-            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id>"
+          CANDIDATE="$BRANCH"
+          if [[ "$BRANCH" == "${PR_AUTHOR}-"* ]]; then
+            CANDIDATE="${BRANCH#"${PR_AUTHOR}-"}"
+          fi
+          if ! echo "$CANDIDATE" | grep -qE "$PATTERN"; then
+            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id>, optionally prefixed by the PR author"
             exit 1
           fi
           echo "✅ Branch name valid"

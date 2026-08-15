@@ -16,7 +16,9 @@ next       integration branch; ordinary PRs target here
 
 1. Branch ordinary work from `next`: `git switch -c bug-123 next`.
 2. Target `next` from `feature-<id>` and `bug-<id>` branches.
-3. Use `hotfix-<id>` only for urgent fixes branched from and targeting `main`.
+3. Use `hotfix-<id>` only for urgent fixes created in this repository,
+   branched from `main`, and targeting `main`. Fork pull requests must target
+   `next`.
 4. Promote `next` to `main` once the integration branch is stable.
 
 ## Commit message format

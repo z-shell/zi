@@ -3,7 +3,7 @@
 
   Branch model:
     - Ordinary work: create feature-<id> or bug-<id> from next and target next
-    - Urgent production fixes: create hotfix-<id> from main and target main
+    - Urgent production fixes: use a same-repository hotfix-<id> from main to main
     - Promote next to main only after integration checks pass
 
   Commit messages must follow Conventional Commits:
@@ -37,7 +37,7 @@
 
 ## Checklist
 
-- [ ] Ordinary work branches from and targets `next`; hotfixes branch from and target `main`
+- [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
 - [ ] Commit messages follow Conventional Commits format
 - [ ] No AI co-author trailers in commit messages
 - [ ] I have read [CONTRIBUTING.md](docs/CONTRIBUTING.md)

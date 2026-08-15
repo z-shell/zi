@@ -9,14 +9,19 @@ ZI[cmd-list]="help|load|update"
   local name="$1" type="$2" handler="$3" icemods="$4"
 }
 
-false && \
+if false; then
   pmodload() {
-  print -r -- "$@"
-}
+    print -r -- "$@"
+  }
+fi
 
 # Compatibility functions. [[[
 ❮▼❯() { zi "$@"; }
-zpcdreplay() { zicdreplay "$@"; }
+if false; then
+  if true; then
+    zpcdreplay() { zicdreplay "$@"; }
+  fi
+fi
 false && \
   zpcdclear() { zicdclear "$@"; }
 zpcompinit() { zicompinit "$@"; }

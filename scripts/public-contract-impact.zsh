@@ -178,11 +178,21 @@ extract_token_set() {
   done | LC_ALL=C sort -u > "$output"
 }
 
+is_conditional_start() {
+  local trimmed="${1##[[:space:]]#}"
+  [[ $trimmed == if[[:space:]]* ]]
+}
+
+is_conditional_end() {
+  local trimmed="${1##[[:space:]]#}"
+  [[ $trimmed == fi || $trimmed == fi[[:space:]]* || $trimmed == 'fi;'* ]]
+}
+
 function_body_arity() {
   local source_file="$1" symbol="$2"
   local line code compact pending="" body=""
   local needle="${symbol}(){"
-  integer found=0
+  integer found=0 conditional_depth=0
 
   while IFS= read -r line; do
     code="${line%%\#*}"
@@ -194,6 +204,15 @@ function_body_arity() {
     pending=""
     compact="${code//[ $'\t']/}"
     if (( ! found )); then
+      if is_conditional_end "$code"; then
+        (( conditional_depth > 0 )) && conditional_depth=$(( conditional_depth - 1 ))
+        continue
+      fi
+      if is_conditional_start "$code"; then
+        (( conditional_depth += 1 ))
+        continue
+      fi
+      (( conditional_depth == 0 )) || continue
       [[ $compact == "$needle"* || $compact == *'||'"$needle"* ]] || continue
       found=1
     fi
@@ -214,7 +233,7 @@ function_body_arity() {
 extract_function_region() {
   local source_file="$1" start_marker="$2" end_marker="$3" output="$4"
   local line code compact declaration name pending=""
-  integer in_region=0
+  integer in_region=0 conditional_depth=0
 
   while IFS= read -r line; do
     if (( ! in_region )); then
@@ -230,6 +249,15 @@ extract_function_region() {
     code="${pending}${code}"
     pending=""
     compact="${code//[ $'\t']/}"
+    if is_conditional_end "$code"; then
+      (( conditional_depth > 0 )) && conditional_depth=$(( conditional_depth - 1 ))
+      continue
+    fi
+    if is_conditional_start "$code"; then
+      (( conditional_depth += 1 ))
+      continue
+    fi
+    (( conditional_depth == 0 )) || continue
     if [[ $compact =~ '^([^()]*)\(\)\{' ]]; then
       declaration="${match[1]}"
       if [[ $declaration == *'||'* ]]; then
@@ -322,6 +350,32 @@ impact_id() {
   id="${id##-##}"
   id="${id%%-##}"
   print -r -- "$id"
+}
+
+strip_html_comments() {
+  local remaining="$1" visible="" before
+  integer in_comment=0
+
+  while [[ -n $remaining ]]; do
+    if (( in_comment )); then
+      if [[ $remaining == *'-->'* ]]; then
+        remaining="${remaining#*'-->'}"
+        in_comment=0
+      else
+        remaining=""
+      fi
+    elif [[ $remaining == *'<!--'* ]]; then
+      before="${remaining%%'<!--'*}"
+      visible+="$before"
+      remaining="${remaining#*'<!--'}"
+      in_comment=1
+    else
+      visible+="$remaining"
+      remaining=""
+    fi
+  done
+
+  print -r -- "$visible"
 }
 
 record_impact() {
@@ -584,7 +638,7 @@ if (( enforce_policy && ${#breaking_impacts} )); then
   if [[ $pr_body == *"## Migration plan"* ]]; then
     migration_section="${pr_body#*"## Migration plan"}"
     migration_section="${migration_section%%$'\n## '*}"
-    visible_migration="${migration_section//<!--*-->/}"
+    visible_migration="$(strip_html_comments "$migration_section")"
     for body_line in "${(@f)visible_migration}"; do
       trimmed_line="${body_line##[[:space:]]#}"
       [[ $trimmed_line == '[contract-impact:'* ]] && continue

@@ -67,8 +67,9 @@ command git -C "$repository" commit -qm "test: guard compatibility function with
 output="$(run_detector "$repository" --no-policy)"
 assert_contains "$output" '`zpcdclear` was removed'
 assert_contains "$output" '`pmodload` was removed'
+assert_contains "$output" '`zpcdreplay` was removed'
 assert_not_contains "$output" 'false&&zpcdclear'
-print "ok - dead conditional function definitions are unavailable across logical lines"
+print "ok - dead and nested conditional function definitions are unavailable"
 
 repository="$(new_case_repository addition)"
 command cp "$fixture_root/addition/zi.zsh" "$repository/zi.zsh"
@@ -130,6 +131,21 @@ if output="$(
   fail "dispositions without migration guidance passed the breaking-change gate"
 fi
 assert_contains "$output" "Migration plan required"
+
+typeset unclosed_comment_body="## Migration plan
+<!-- Hidden migration guidance and dispositions"
+for marker in "${impact_markers[@]}"; do
+  unclosed_comment_body+=$'\n'"${marker} updated here"
+done
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$unclosed_comment_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "unterminated HTML comment passed the breaking-change gate"
+fi
+assert_contains "$output" "Migration plan required"
+assert_contains "$output" "Impact disposition required"
 
 typeset commented_body="## Migration plan
 Consumers migrate using https://github.com/z-shell/zi/issues/376."

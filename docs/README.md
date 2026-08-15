@@ -34,7 +34,7 @@
       <div align="center"><p>
       <a href="https://matrix.to/#/#zi:matrix.org" rel="noopener" target="_blank"><img align="center" src="https://matrix.to/img/matrix-badge.svg" alt="Zi Matrix"></a>
       <a href="https://gitter.im/z-shell/zi" rel="noopener" target="_blank"><img align="center" src="https://badgen.net/gitter/members/z-shell/zi" alt="Zi Gitter Matrix" /></a>
-      <a href="https://translate.zshell.dev/" rel="noopener" target="_blank"><img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" /></a>
+      <a href="https://translate.zshell.dev/" rel="noopener" target="_blank"><img align="center" src="https://badges.crowdin.net/e/f108c12713ee8526ac878d5671ad6e29/localized.svg" alt="Crowdin localization status" /></a>
       <a href="https://github.com/z-shell/zi/releases" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/github/tag/z-shell/zi.svg" alt="Version" /></a>
       <a href="https://github.com/z-shell/zi/blob/main/LICENSE" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Project License" /></a>
       <a href="https://github.com/z-shell/zi-vim-syntax/" rel="noopener" target="_blank"><img align="center" src="https://img.shields.io/badge/--019733?logo=vim" alt="VIM" /></a>
@@ -47,15 +47,15 @@
   <tr>
     <td>
       <div align="center">
-        <a href="https://asciinema.org/a/509113" target="_blank"><img src="https://asciinema.org/a/509113.svg" /></a>
+        <a href="https://asciinema.org/a/509113" target="_blank"><img src="https://asciinema.org/a/509113.svg" alt="Zi demonstration recording" /></a>
       </div>
   </tr>
   </td>
   <tr>
     <td>
       <div align="center">
-        <img align="center" width="80%" height="auto" src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" />
-        <img align="center" width="80%" height="auto" src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/metrics.svg" />
+        <img align="center" width="80%" height="auto" src="https://github.com/z-shell/.github/raw/main/metrics/plugin/followup/zi_followup.svg" alt="Zi repository activity metrics" />
+        <img align="center" width="80%" height="auto" src="https://raw.githubusercontent.com/z-shell/.github/main/metrics/plugin/metrics.svg" alt="Z-Shell organization metrics" />
       </div>
   </tr>
   </td>

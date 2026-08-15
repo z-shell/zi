@@ -5,14 +5,14 @@ on:
     branches: [main, next]
     tags: ["v*.*.*"]
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, reopened, synchronize]
   workflow_dispatch: {}
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
-permissions: read-all
+permissions: {}
 
 jobs:
   check:
@@ -21,7 +21,9 @@ jobs:
       checks: write # For trunk to post annotations
       contents: read # For repo checkout
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - name: Trunk Code Quality
-        uses: trunk-io/trunk-action@75699af9e26881e564e9d832ef7dc3af25ec031b
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run Trunk checks
+        uses: trunk-io/trunk-action@04ba50e7658c81db7356da96657e6e77f220bfa3 # v1.3.1
+        with:
+          check-mode: all

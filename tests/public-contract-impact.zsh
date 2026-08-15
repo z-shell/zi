@@ -68,8 +68,29 @@ output="$(run_detector "$repository" --no-policy)"
 assert_contains "$output" '`zpcdclear` was removed'
 assert_contains "$output" '`pmodload` was removed'
 assert_contains "$output" '`zpcdreplay` was removed'
+assert_contains "$output" '`zpcompinit` was removed'
+assert_contains "$output" '`zpcompdef` was removed'
+assert_contains "$output" '`zpextract` was removed'
 assert_not_contains "$output" 'false&&zpcdclear'
-print "ok - dead and nested conditional function definitions are unavailable"
+assert_not_contains "$output" '`❮▼❯` was removed'
+print "ok - only executable top-level function declarations are available"
+
+repository="$(new_case_repository foreach)"
+command cp "$fixture_root/foreach/zi.zsh" "$repository/zi.zsh"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "test: guard compatibility function with foreach"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" '`pmodload` was removed'
+print "ok - foreach declarations are not top-level"
+
+repository="$(new_case_repository nested)"
+command cp "$fixture_root/nested/zi.zsh" "$repository/zi.zsh"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "test: nest compatibility functions"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" '`pmodload` was removed'
+assert_contains "$output" '`zpcdclear` was removed'
+print "ok - nested function declarations are not top-level"
 
 repository="$(new_case_repository addition)"
 command cp "$fixture_root/addition/zi.zsh" "$repository/zi.zsh"
@@ -146,6 +167,82 @@ if output="$(
 fi
 assert_contains "$output" "Migration plan required"
 assert_contains "$output" "Impact disposition required"
+
+typeset spanning_comment_body="<!--
+## Migration plan
+Hidden migration guidance"
+for marker in "${impact_markers[@]}"; do
+  spanning_comment_body+=$'\n'"${marker} updated here"
+done
+spanning_comment_body+=$'\n-->'
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$spanning_comment_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "comment spanning the migration heading passed the breaking-change gate"
+fi
+assert_contains "$output" "Migration plan required"
+assert_contains "$output" "Impact disposition required"
+
+typeset prose_heading_body="Prose mentioning ## Migration plan is not a heading.
+Consumers migrate using https://github.com/z-shell/zi/issues/376."
+for marker in "${impact_markers[@]}"; do
+  prose_heading_body+=$'\n'"${marker} updated here"
+done
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$prose_heading_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "migration heading mentioned in prose passed the gate"
+fi
+assert_contains "$output" "Migration plan required"
+
+typeset spliced_heading_body="## Migration <!-- hidden
+-->plan
+Consumers migrate using https://github.com/z-shell/zi/issues/376."
+for marker in "${impact_markers[@]}"; do
+  spliced_heading_body+=$'\n'"${marker} updated here"
+done
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$spliced_heading_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "comment-spliced migration heading passed the gate"
+fi
+assert_contains "$output" "Migration plan required"
+
+typeset spliced_disposition_body="## Migration plan
+Consumers migrate using https://github.com/z-shell/zi/issues/376."
+for marker in "${impact_markers[@]}"; do
+  spliced_disposition_body+=$'\n'"${marker} <!-- hidden"$'\n'"-->updated here"
+done
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$spliced_disposition_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "comment-spliced dispositions passed the gate"
+fi
+assert_contains "$output" "Impact disposition required"
+
+typeset fenced_heading_body='```markdown
+## Migration plan
+Hidden guidance'
+for marker in "${impact_markers[@]}"; do
+  fenced_heading_body+=$'\n'"${marker} updated here"
+done
+fenced_heading_body+=$'\n```'
+if output="$(
+  PR_LABELS_JSON='["breaking-change"]' \
+  PR_BODY="$fenced_heading_body" \
+    run_detector "$repository" 2>&1
+)"; then
+  fail "migration heading in a code fence passed the gate"
+fi
+assert_contains "$output" "Migration plan required"
 
 typeset commented_body="## Migration plan
 Consumers migrate using https://github.com/z-shell/zi/issues/376."

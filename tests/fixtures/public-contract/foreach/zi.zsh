@@ -9,32 +9,19 @@ ZI[cmd-list]="help|load|update"
   local name="$1" type="$2" handler="$3" icemods="$4"
 }
 
-(
+foreach item (one)
   pmodload() {
     print -r -- "$@"
   }
-)
+end
 
 # Compatibility functions. [[[
 ❮▼❯() { zi "$@"; }
-if false; then
-  if true; then
-    zpcdreplay() { zicdreplay "$@"; }
-  fi
-fi
-false && \
-  zpcdclear() { zicdclear "$@"; }
-case enabled in
-  disabled)
-    zpcompinit() { zicompinit "$@"; }
-    ;;
-esac
-while false; do
-  zpcompdef() { zicompdef "$@"; }
-done
-until true; do
-  zpextract() { ziextract "$@"; }
-done
+zpcdreplay() { zicdreplay "$@"; }
+zpcdclear() { zicdclear "$@"; }
+zpcompinit() { zicompinit "$@"; }
+zpcompdef() { zicompdef "$@"; }
+zpextract() { ziextract "$@"; }
 # ]]]
 
 (( ZI[INTERNAL_ALIASES] )) && builtin alias zini=zi zinit=zi zplugin=zi

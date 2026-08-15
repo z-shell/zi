@@ -178,21 +178,63 @@ extract_token_set() {
   done | LC_ALL=C sort -u > "$output"
 }
 
-is_conditional_start() {
+compound_context_start() {
   local trimmed="${1##[[:space:]]#}"
-  [[ $trimmed == if[[:space:]]* ]]
+  case "$trimmed" in
+    if[[:space:]]*|case[[:space:]]*|for[[:space:]]*|foreach[[:space:]]*|\
+    select[[:space:]]*|\
+    while[[:space:]]*|until[[:space:]]*|repeat[[:space:]]*|'('|\
+    '('[[:space:]]*|'{'|'{'[[:space:]]*)
+      return 0
+      ;;
+  esac
+  return 1
 }
 
-is_conditional_end() {
+compound_context_end() {
   local trimmed="${1##[[:space:]]#}"
-  [[ $trimmed == fi || $trimmed == fi[[:space:]]* || $trimmed == 'fi;'* ]]
+  case "$trimmed" in
+    fi|fi[[:space:]]*|'fi;'*|done|done[[:space:]]*|'done;'*|\
+    end|end[[:space:]]*|'end;'*|esac|esac[[:space:]]*|'esac;'*|\
+    ')'|')'[[:space:]]*|\
+    ');'*|'}'|'}'[[:space:]]*|'};'*)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+compound_context_inline_closed() {
+  local code="$1" compact="$2"
+  local trimmed="${code##[[:space:]]#}"
+  [[ $compact == *';fi' || $compact == *';done' || $compact == *';end' ||
+    $compact == *';esac' ]] &&
+    return 0
+  [[ $compact == *'}' ]] && return 0
+  (( ${#compact} > 1 )) && [[ $trimmed == '('* && $compact == *')' ]]
+}
+
+declaration_name() {
+  local compact="$1" declaration name
+  REPLY=""
+  [[ $compact =~ '^(.+)\(\)\{' ]] || return 1
+  declaration="${match[1]}"
+  if [[ $declaration == *'||'* ]]; then
+    name="${declaration##*'||'}"
+  elif [[ $declaration == *('&&'|'|'|';')* ]]; then
+    return 1
+  else
+    name="$declaration"
+  fi
+  [[ -n $name && $name != *('&&'|'|'|';')* ]] || return 1
+  REPLY="$name"
 }
 
 function_body_arity() {
   local source_file="$1" symbol="$2"
-  local line code compact pending="" body=""
-  local needle="${symbol}(){"
-  integer found=0 conditional_depth=0
+  local line code compact trimmed pending="" body="" name
+  integer found=0 compound_depth=0 inside_other_function=0
+  integer function_indent=0 target_indent=0 indent=0
 
   while IFS= read -r line; do
     code="${line%%\#*}"
@@ -202,22 +244,47 @@ function_body_arity() {
     fi
     code="${pending}${code}"
     pending=""
+    trimmed="${code##[[:space:]]#}"
+    indent=$(( ${#code} - ${#trimmed} ))
     compact="${code//[ $'\t']/}"
-    if (( ! found )); then
-      if is_conditional_end "$code"; then
-        (( conditional_depth > 0 )) && conditional_depth=$(( conditional_depth - 1 ))
-        continue
-      fi
-      if is_conditional_start "$code"; then
-        (( conditional_depth += 1 ))
-        continue
-      fi
-      (( conditional_depth == 0 )) || continue
-      [[ $compact == "$needle"* || $compact == *'||'"$needle"* ]] || continue
-      found=1
+
+    if (( found )); then
+      body+="${code}"$'\n'
+      [[ $compact == '}' && $indent == $target_indent ]] && break
+      continue
     fi
-    body+="${code}"$'\n'
-    [[ $compact == '}' ]] && break
+
+    if (( inside_other_function )); then
+      [[ $compact == '}' && $indent == $function_indent ]] &&
+        inside_other_function=0
+      continue
+    fi
+
+    if compound_context_end "$code"; then
+      (( compound_depth > 0 )) && compound_depth=$(( compound_depth - 1 ))
+      continue
+    fi
+
+    if declaration_name "$compact"; then
+      name="$REPLY"
+      if (( compound_depth == 0 )) && [[ $name == "$symbol" ]]; then
+        found=1
+        target_indent=$indent
+        body+="${code}"$'\n'
+        [[ $compact == *'}' ]] && break
+      elif [[ $compact != *'}' ]]; then
+        inside_other_function=1
+        function_indent=$indent
+      fi
+      continue
+    fi
+
+    if compound_context_start "$code"; then
+      if ! compound_context_inline_closed "$code" "$compact"; then
+        (( compound_depth += 1 ))
+      fi
+      continue
+    fi
   done < "$source_file"
 
   (( found )) || return 1
@@ -232,8 +299,9 @@ function_body_arity() {
 
 extract_function_region() {
   local source_file="$1" start_marker="$2" end_marker="$3" output="$4"
-  local line code compact declaration name pending=""
-  integer in_region=0 conditional_depth=0
+  local line code compact trimmed name pending=""
+  integer in_region=0 compound_depth=0 inside_function=0
+  integer function_indent=0 indent=0
 
   while IFS= read -r line; do
     if (( ! in_region )); then
@@ -248,27 +316,37 @@ extract_function_region() {
     fi
     code="${pending}${code}"
     pending=""
+    trimmed="${code##[[:space:]]#}"
+    indent=$(( ${#code} - ${#trimmed} ))
     compact="${code//[ $'\t']/}"
-    if is_conditional_end "$code"; then
-      (( conditional_depth > 0 )) && conditional_depth=$(( conditional_depth - 1 ))
+
+    if (( inside_function )); then
+      [[ $compact == '}' && $indent == $function_indent ]] &&
+        inside_function=0
       continue
     fi
-    if is_conditional_start "$code"; then
-      (( conditional_depth += 1 ))
+
+    if compound_context_end "$code"; then
+      (( compound_depth > 0 )) && compound_depth=$(( compound_depth - 1 ))
       continue
     fi
-    (( conditional_depth == 0 )) || continue
-    if [[ $compact =~ '^([^()]*)\(\)\{' ]]; then
-      declaration="${match[1]}"
-      if [[ $declaration == *'||'* ]]; then
-        name="${declaration##*'||'}"
-      elif [[ $declaration == *('&&'|'|'|';')* ]]; then
-        continue
-      else
-        name="$declaration"
-      fi
-      [[ -n $name && $name != *('&&'|'|'|';')* ]] &&
+
+    if declaration_name "$compact"; then
+      name="$REPLY"
+      (( compound_depth == 0 )) &&
         print -r -- "${name}"$'\t'"variadic"
+      if [[ $compact != *'}' ]]; then
+        inside_function=1
+        function_indent=$indent
+      fi
+      continue
+    fi
+
+    if compound_context_start "$code"; then
+      if ! compound_context_inline_closed "$code" "$compact"; then
+        (( compound_depth += 1 ))
+      fi
+      continue
     fi
   done < "$source_file" | LC_ALL=C sort -u > "$output"
 }
@@ -353,29 +431,65 @@ impact_id() {
 }
 
 strip_html_comments() {
-  local remaining="$1" visible="" before
+  local input="$1" line remaining visible="" visible_line before
   integer in_comment=0
 
-  while [[ -n $remaining ]]; do
-    if (( in_comment )); then
-      if [[ $remaining == *'-->'* ]]; then
-        remaining="${remaining#*'-->'}"
-        in_comment=0
+  for line in "${(@f)input}"; do
+    remaining="$line"
+    visible_line=""
+    while [[ -n $remaining ]]; do
+      if (( in_comment )); then
+        if [[ $remaining == *'-->'* ]]; then
+          remaining="${remaining#*'-->'}"
+          visible_line+=" "
+          in_comment=0
+        else
+          remaining=""
+        fi
+      elif [[ $remaining == *'<!--'* ]]; then
+        before="${remaining%%'<!--'*}"
+        visible_line+="${before} "
+        remaining="${remaining#*'<!--'}"
+        in_comment=1
       else
+        visible_line+="$remaining"
         remaining=""
       fi
-    elif [[ $remaining == *'<!--'* ]]; then
-      before="${remaining%%'<!--'*}"
-      visible+="$before"
-      remaining="${remaining#*'<!--'}"
-      in_comment=1
-    else
-      visible+="$remaining"
-      remaining=""
-    fi
+    done
+    visible+="${visible_line}"$'\n'
   done
 
   print -r -- "$visible"
+}
+
+extract_migration_section() {
+  local body="$1" line trimmed fence=""
+  integer found=0
+  REPLY=""
+
+  for line in "${(@f)body}"; do
+    trimmed="${line##[[:space:]]#}"
+    if [[ -n $fence ]]; then
+      [[ $trimmed == "$fence"* ]] && fence=""
+      continue
+    elif [[ $trimmed == '```'* ]]; then
+      fence='```'
+      continue
+    elif [[ $trimmed == '~~~'* ]]; then
+      fence='~~~'
+      continue
+    fi
+
+    if (( ! found )); then
+      [[ ${line%%[[:space:]]#} == "## Migration plan" ]] || continue
+      found=1
+      continue
+    fi
+    [[ $line == '## '* ]] && break
+    REPLY+="${line}"$'\n'
+  done
+
+  (( found ))
 }
 
 record_impact() {
@@ -628,16 +742,16 @@ done
 if (( enforce_policy && ${#breaking_impacts} )); then
   typeset labels_json="${PR_LABELS_JSON-[]}"
   typeset pr_body="${PR_BODY-}"
-  typeset marker disposition_line disposition body_line trimmed_line
+  typeset visible_pr_body marker disposition_line disposition body_line trimmed_line
+  visible_pr_body="$(strip_html_comments "$pr_body")"
   if ! jq -e 'index("breaking-change") != null' <<< "$labels_json" >/dev/null 2>&1; then
     print "::error title=Breaking-change label required::Add the breaking-change label."
     (( policy_failures += 1 ))
   fi
 
   typeset migration_section="" visible_migration="" migration_guidance="" migration=""
-  if [[ $pr_body == *"## Migration plan"* ]]; then
-    migration_section="${pr_body#*"## Migration plan"}"
-    migration_section="${migration_section%%$'\n## '*}"
+  if extract_migration_section "$visible_pr_body"; then
+    migration_section="$REPLY"
     visible_migration="$(strip_html_comments "$migration_section")"
     for body_line in "${(@f)visible_migration}"; do
       trimmed_line="${body_line##[[:space:]]#}"

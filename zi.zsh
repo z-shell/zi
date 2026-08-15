@@ -2915,6 +2915,10 @@ zpcdreplay() { zicdreplay "$@"; }
 zpcdclear() { zicdclear "$@"; }
 zpcompinit() { zicompinit "$@"; }
 zpcompdef() { zicompdef "$@"; }
+zpextract() {
+  (( ${+functions[ziextract]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+  ziextract "$@"
+}
 # ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {

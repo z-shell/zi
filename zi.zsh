@@ -2959,11 +2959,18 @@ zstyle ':completion:*:*:zi:*' group-name ""
 # Check the module compiled timestamps and recompile if needed,
 # if no action is required, then no message will be printed. [[[
 if [[ -e "${ZI[ZMODULES_DIR]}/zpmod/Src/zi/zpmod.so" ]]; then
-  if [[ ! -f ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT || \
-  ( ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT -ot ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ) ]]; then
-    (( ${+functions[.zi-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
-    .zi-module --reset
-  fi
+  () {
+    local compiled_at_ts recompile_request_ts
+    [[ -f ${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT && \
+       -f ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] || return 0
+    compiled_at_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT)"
+    recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
+    if [[ -n ${recompile_request_ts} && -n ${compiled_at_ts} ]] && \
+       [[ ${recompile_request_ts} -gt ${compiled_at_ts} ]]; then
+      (( ${+functions[.zi-module]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
+      .zi-module --reset
+    fi
+  }
 fi # ]]]
 
 # !atpull-pre.

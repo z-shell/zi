@@ -712,13 +712,19 @@ ZI[EXTENDED_GLOB]=""
       if (( ! dry_run )); then
         # Update the codebase
         command git merge -n $opt --ff-only FETCH_HEAD || \
-          { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; return 1 }
-        .zi-auto-reload $opt
+          { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; exit 1 }
+        exit 10
       fi
     else
       (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}up-to-date {term}✔{rst}"
     fi
   )
+  local update_status=$?
+  if (( update_status == 10 )); then
+    .zi-auto-reload $opt
+    return $?
+  fi
+  return $update_status
 } # ]]]
 # FUNCTION: .zi-show-registered-plugins [[[
 # Lists loaded plugins (subcommands list, loaded).
@@ -1953,7 +1959,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
       (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
     fi
     local attime=$(( ZI[$entry3] - ZI[START_TIME] ))
-    if [[ "$opt" = *-[a-z]#s[a-z]#* ]]; then
+    if (( OPTS[opt_-S,--seconds] )); then
       local time="$ZI[$entry] s"
       attime="${(M)attime#*.???} s"
     else

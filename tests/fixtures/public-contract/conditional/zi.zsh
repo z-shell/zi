@@ -1,7 +1,5 @@
-ZI[ice-list]="wait|load|\
-  atclone"
-ZI[cmd-list]="help|load|\
-  update"
+ZI[ice-list]="wait|load|atclone"
+ZI[cmd-list]="help|load|update"
 
 @zi-register-annex() {
   local name="$1" type="$2" handler="$3" helphandler="$4" icemods="$5"
@@ -11,14 +9,16 @@ ZI[cmd-list]="help|load|\
   local name="$1" type="$2" handler="$3" icemods="$4"
 }
 
-(( ${+functions[pmodload]} )) || pmodload() {
+false && \
+  pmodload() {
   print -r -- "$@"
 }
 
 # Compatibility functions. [[[
 ❮▼❯() { zi "$@"; }
 zpcdreplay() { zicdreplay "$@"; }
-zpcdclear() { zicdclear "$@"; }
+false && \
+  zpcdclear() { zicdclear "$@"; }
 zpcompinit() { zicompinit "$@"; }
 zpcompdef() { zicompdef "$@"; }
 zpextract() { ziextract "$@"; }

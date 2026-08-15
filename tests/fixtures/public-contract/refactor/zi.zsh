@@ -1,8 +1,8 @@
 # A comment mentioning fake() and ZI[cmd-list]="removed" is not a contract.
 ZI[ice-list]="atclone|\
-wait|load"
+    wait|load"
 ZI[cmd-list]="update|help|\
-load"
+      load"
 
 @zi-register-annex () {
   # $99 in a comment must not narrow or widen the signature.

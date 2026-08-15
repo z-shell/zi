@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 
 builtin emulate -LR zsh
 builtin setopt extended_glob warn_create_global typeset_silent

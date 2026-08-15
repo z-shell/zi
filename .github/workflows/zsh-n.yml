@@ -13,12 +13,6 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
-  workflow_run:
-    workflows:
-      - "⭕ Trunk"
-    types:
-      - completed
-    branches: [main]
   workflow_dispatch: {}
 
 concurrency:
@@ -35,13 +29,13 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: "Set matrix output"
         id: set-matrix
         run: |
-          MATRIX="$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -iname '_zi' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
+          MATRIX="$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -iname '_zi' -o -path './lib/zcompile' -o -path './lib/templates/example-script' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
           echo "MATRIX=${MATRIX}" >&2
-          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
   zsh-n:
     runs-on: ubuntu-latest
@@ -51,7 +45,7 @@ jobs:
       matrix: ${{ fromJSON(needs.zsh-matrix.outputs.matrix) }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: "⚡ Install dependencies"
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: "⚡ zsh -n: ${{ matrix.file }}"

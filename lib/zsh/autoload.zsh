@@ -2962,8 +2962,8 @@ EOF
       local compiled_at_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT)"
     [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
       local recompile_request_ts="$(<${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST)"
-    if [[ -e ${ZI[ZMODULES_DIR]}/zpmod/RECOMPILE_REQUEST ]] && \
-       [[ ${recompile_request_ts:-1} -gt ${compiled_at_ts:-0} ]]; then
+    if [[ -n ${recompile_request_ts} && -n ${compiled_at_ts} ]] && \
+       [[ ${recompile_request_ts} -gt ${compiled_at_ts} ]]; then
       +zi-message "{warn}Warning{warn}{ehi}:{rst} {lhi}recompilation{rst} of the {bcmd}zpmod{rst} module has been requested…"
       (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
       .zi-confirm "Do you want to proceed?" || return 1

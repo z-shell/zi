@@ -30,7 +30,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          DISALLOWED_TRAILER_PATTERN: ${{ secrets.DISALLOWED_TRAILER_PATTERN }}
+          DISALLOWED_TRAILER_PATTERN: "^[[:space:]]*Co-authored-by:"
         run: |
           set -euo pipefail
 
@@ -51,11 +51,9 @@ jobs:
               errors=$((errors + 1))
             fi
 
-            if [ -n "${DISALLOWED_TRAILER_PATTERN:-}" ]; then
-              if git show -s --format='%B' "$sha" | grep -qE "$DISALLOWED_TRAILER_PATTERN"; then
-                echo "❌ Disallowed trailer found (${sha:0:7}): remove before merging"
-                errors=$((errors + 1))
-              fi
+            if git show -s --format='%B' "$sha" | grep -qiE "$DISALLOWED_TRAILER_PATTERN"; then
+              echo "❌ Disallowed trailer found (${sha:0:7}): remove before merging"
+              errors=$((errors + 1))
             fi
           done < <(git log --format='%H' "${BASE_SHA}..${HEAD_SHA}")
 

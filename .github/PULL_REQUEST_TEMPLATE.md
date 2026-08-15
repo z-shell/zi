@@ -2,9 +2,9 @@
   Thanks for contributing to zi! Please read the checklist below.
 
   Branch model:
-    • Create your branch FROM next:  git checkout -b fix/my-fix next
-    • Open this PR TARGETING next — never target main directly
-    • main is only updated from next via a release PR
+    - Ordinary work: create feature-<id> or bug-<id> from next and target next
+    - Urgent production fixes: create hotfix-<id> from main and target main
+    - Promote next to main only after integration checks pass
 
   Commit messages must follow Conventional Commits:
     type(scope): short description   (≤72 chars, imperative mood)

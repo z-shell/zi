@@ -2646,7 +2646,7 @@ zi() {
             .zi-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
           fi
           ;;
-        (version)
+        (-V|--version|version)
           +zi-message "Zi version: ${ZI[VERSION]}"
           ;;
         (bindkeys)
@@ -2908,6 +2908,17 @@ zicompinit_fast() {
 # Stores compdef for a replay with `zicdreplay' (turbo mode) or with `zi cdreplay' (normal mode).
 # An utility function of an undefined use case.
 zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
+# ]]]
+# Compatibility functions. [[[
+❮▼❯() { zi "$@"; }
+zpcdreplay() { zicdreplay "$@"; }
+zpcdclear() { zicdclear "$@"; }
+zpcompinit() { zicompinit "$@"; }
+zpcompdef() { zicompdef "$@"; }
+zpextract() {
+  (( ${+functions[ziextract]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+  ziextract "$@"
+}
 # ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {

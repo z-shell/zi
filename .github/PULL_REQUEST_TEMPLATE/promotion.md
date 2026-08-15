@@ -82,7 +82,7 @@ file only into `next` cannot activate it for a `next` to `main` PR.
 
 After the implementation and both ZD dependencies are merged:
 
-1. Create `hotfix-377-promotion-bootstrap` from `main`.
+1. Create `hotfix-377` from `main`.
 2. Copy the reviewed promotion workflow and templates from `next` without other
    pending `next` changes.
 3. Open the same-repository hotfix PR into protected `main`. The existing exact

@@ -3006,6 +3006,62 @@ EOF
         command mkdir -p "${ZI[LOG_DIR]}/zpmod" 2>/dev/null
         local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
+        local fetch_prebuilt=1
+        [[ "$2" = "--from-source" || "$2" = "--source" || "$3" = "--from-source" || "$3" = "--source" ]] && fetch_prebuilt=0
+
+        if (( fetch_prebuilt )); then
+          local os_name="$(uname -s)"
+          local arch_name="$(uname -m)"
+          local dl_url=""
+          if (( ${+commands[curl]} || ${+commands[wget]} )); then
+            local release_json=""
+            if (( ${+commands[curl]} )); then
+              release_json="$(command curl -fsSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
+            elif (( ${+commands[wget]} )); then
+              release_json="$(command wget -qO- "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
+            fi
+            if [[ -n "$release_json" ]]; then
+              local match_pattern="browser_download_url\": \"([^\"]*zpmod[^\"]*${os_name}[^\"]*${arch_name}[^\"]*\\.tar\\.gz)\""
+              if [[ "$release_json" =~ $match_pattern ]]; then
+                dl_url="${match[1]}"
+              fi
+            fi
+
+            if [[ -n "$dl_url" ]]; then
+              +zi-message "{p}-- Downloading prebuilt package{ehi}:{rst} {url}$dl_url{rst}"
+              local tmp_pkg="${ZI[LOG_DIR]}/zpmod/prebuilt-${EPOCHSECONDS}.tar.gz"
+              local dl_rc=1
+              if (( ${+commands[curl]} )); then
+                command curl -fsSL "$dl_url" -o "$tmp_pkg" 2>/dev/null && dl_rc=0
+              elif (( ${+commands[wget]} )); then
+                command wget -q "$dl_url" -O "$tmp_pkg" 2>/dev/null && dl_rc=0
+              fi
+              if (( dl_rc == 0 )) && [[ -f "$tmp_pkg" ]]; then
+                local tmp_extract="${ZI[LOG_DIR]}/zpmod/extract-${EPOCHSECONDS}"
+                command mkdir -p "$tmp_extract" 2>/dev/null
+                if command tar -xzf "$tmp_pkg" -C "$tmp_extract" 2>/dev/null; then
+                  local f="" staged_file=""
+                  for f in "$tmp_extract"/lib/zsh/site-modules/zpmod.*(N) "$tmp_extract"/**/zpmod.so(N) "$tmp_extract"/**/zpmod.bundle(N); do
+                    [[ -f $f ]] && { staged_file="$f"; break; }
+                  done
+                  if [[ -n "$staged_file" ]]; then
+                    command mkdir -p Src/zi 2>/dev/null
+                    command cp -vf "$staged_file" Src/zi/zpmod.so
+                    command cp -vf "$staged_file" Src/zi/zpmod.bundle
+                    command cp -vf "$staged_file" zpmod.so
+                    builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+                    command rm -rf "$tmp_extract" "$tmp_pkg" 2>/dev/null || true
+                    +zi-message "{ok}-- Prebuilt binary installed successfully! --{rst}"
+                    .zi-module --info
+                    return 0
+                  fi
+                fi
+                command rm -rf "$tmp_extract" "$tmp_pkg" 2>/dev/null || true
+              fi
+            fi
+          fi
+        fi
+
         if [[ -f CMakeLists.txt ]]; then
           +zi-message "{p}-- Building module {bcmd}zi/zpmod{p} with {cmd}CMake{p} --{rst}"
           local build_rc=0

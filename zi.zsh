@@ -1690,7 +1690,7 @@ builtin setopt noaliases
 .zi-add-report() {
   # Use zi binary module if available.
   [[ -n $1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append "$1" "$2"$'\n' || ZI_REPORTS[$1]+="$2"$'\n'; }
-  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
+  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
   return 0
 } # ]]]
 # FUNCTION: .zi-add-fpath. [[[

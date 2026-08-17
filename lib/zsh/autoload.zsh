@@ -3016,9 +3016,11 @@ EOF
           if (( ${+commands[curl]} || ${+commands[wget]} )); then
             local release_json=""
             if (( ${+commands[curl]} )); then
-              release_json="$(command curl -fsSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
+              release_json="$(command curl -fsSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/z-shell/zpmod/releases?per_page=5" 2>/dev/null)"
+              [[ -z "$release_json" ]] && release_json="$(command curl -fsSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
             elif (( ${+commands[wget]} )); then
-              release_json="$(command wget -qO- "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
+              release_json="$(command wget -qO- "https://api.github.com/repos/z-shell/zpmod/releases?per_page=5" 2>/dev/null)"
+              [[ -z "$release_json" ]] && release_json="$(command wget -qO- "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
             fi
             if [[ -n "$release_json" ]]; then
               local match_pattern="browser_download_url\": \"([^\"]*zpmod[^\"]*${os_name}[^\"]*${arch_name}[^\"]*\\.tar\\.gz)\""

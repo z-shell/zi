@@ -13,7 +13,7 @@ typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS Z
 typeset -gaH ZI_COMPDEF_REPLAY
 
 # The specified names are marked for automatic export to the environment of subsequently executed commands.
-typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPsX
+typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPs
 
 # Compatibility for previous versions.
 typeset -gAH ZINIT

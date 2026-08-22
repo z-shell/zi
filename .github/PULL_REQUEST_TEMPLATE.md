@@ -1,43 +1,51 @@
-<!--- Provide a general summary of your changes in the Title above -->
+<!--
+  Thanks for contributing to zi! Please read the checklist below.
+
+  Branch model:
+    - Ordinary work: create feature-<id> or bug-<id> from next and target next
+    - Urgent production fixes: use a same-repository hotfix-<id> from main to main
+    - Promote next to main only after integration checks pass
+    - For next-to-main promotions, use:
+      ?template=promotion.md
+
+  Commit messages must follow Conventional Commits:
+    type(scope): short description   (≤72 chars, imperative mood)
+    Types: feat  fix  perf  refactor  docs  test  build  ci  style  chore  revert
+    Example: fix(self-update): correctly propagate exit code on failure
+
+  See AGENTS.md for the repository contribution guidelines.
+-->
 
 ## Description
 
-<!--- Describe your changes in detail -->
+<!-- Describe your changes clearly. What problem does this solve? -->
 
-## Motivation and Context
+## Related issues
 
-<!--- Why is this change required? What problem does it solve? -->
-<!--- If it fixes an open issue, please link to the issue here. -->
+<!-- Closes #NNN  /  Part of #NNN  /  N/A -->
 
-## How Has This Been Tested?
+## Type of change
 
-<!--- Please describe in detail how you tested your changes. -->
-<!--- Include details of your testing environment, and the tests you ran to -->
-<!--- see how your change affects other areas of the code, etc. -->
+<!-- Put an `x` in all boxes that apply -->
 
-## Screenshots (if appropriate):
+- [ ] `fix` — bug fix (non-breaking)
+- [ ] `feat` — new feature (non-breaking)
+- [ ] `feat!` / `fix!` — breaking change
+- [ ] `perf` — performance improvement
+- [ ] `refactor` — code change with no functional impact
+- [ ] `docs` — documentation only
+- [ ] `test` — test addition or correction
+- [ ] `build` — build system or dependency change
+- [ ] `ci` — CI/workflow change
+- [ ] `style` — formatting with no behavior change
+- [ ] `chore` — maintenance / dependency bump
+- [ ] `revert` — revert of an earlier change
 
-## Types of changes
+## Checklist
 
-<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
-
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
-- [ ] Documentation update (if none of the other choices apply)
-- [ ] Chore (general maintenance, refactoring, or code style update)
-
-## Checklist:
-
-<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
-<!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-
-- [ ] My code follows the code style of this project.
-- [ ] I have read the **CONTRIBUTING** document.
-- [ ] I have added tests to cover my changes.
-- [ ] All new and existing tests passed.
-- [ ] I have updated the documentation accordingly.
-
-## Other information (if applicable)
-
-<!--- Any other information that is important to this PR such as environment variables, special considerations, etc. -->
+- [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
+- [ ] Commit messages follow Conventional Commits format
+- [ ] No `Co-authored-by` trailers in commit messages
+- [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
+- [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
+- [ ] Documentation updated if needed

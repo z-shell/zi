@@ -1,4 +1,5 @@
 <!--- Provide a general summary of your changes in the Title above -->
+<!--- For next-to-main promotions, open the PR with ?template=promotion.md -->
 
 ## Description
 

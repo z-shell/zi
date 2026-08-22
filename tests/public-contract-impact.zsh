@@ -62,6 +62,14 @@ output="$(run_detector "$repository" --no-policy)"
 assert_contains "$output" "No public-contract changes detected."
 print "ok - comments, formatting, ordering, and internal refactors are ignored"
 
+repository="$(new_case_repository one-line-functions)"
+command cp "$fixture_root/one-line-functions/zi.zsh" "$repository/zi.zsh"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "refactor: use one-line registration functions"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" "No public-contract changes detected."
+print "ok - one-line registration functions do not absorb later argument references"
+
 repository="$(new_case_repository conditional)"
 command cp "$fixture_root/conditional/zi.zsh" "$repository/zi.zsh"
 command git -C "$repository" add .

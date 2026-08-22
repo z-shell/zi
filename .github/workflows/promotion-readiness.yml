@@ -69,7 +69,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Trunk
-        uses: trunk-io/trunk-action@75699af9e26881e564e9d832ef7dc3af25ec031b
+        uses: trunk-io/trunk-action@e1234e67a86010d61ddac8d8ebf4b783e2ffd2fa
 
   codeql:
     name: CodeQL

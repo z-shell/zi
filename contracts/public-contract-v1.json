@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "contract_version": 1,
+  "evidence_reviewed": "2026-08-15",
+  "renames": [],
+  "surfaces": [
+    {
+      "id": "commands",
+      "kind": "token-set",
+      "file": "zi.zsh",
+      "assignment": "ZI[cmd-list]",
+      "description": "Tokens accepted as Zi subcommands"
+    },
+    {
+      "id": "ices",
+      "kind": "token-set",
+      "file": "zi.zsh",
+      "assignment": "ZI[ice-list]",
+      "description": "Built-in ice modifier tokens"
+    },
+    {
+      "id": "annex-registration",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "@zi-register-annex",
+      "declaration_marker": "# FUNCTION: @zi-register-annex. [[[",
+      "description": "Annex registration API positional signature"
+    },
+    {
+      "id": "hook-registration",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "@zi-register-hook",
+      "declaration_marker": "# FUNCTION: @zi-register-hook. [[[",
+      "description": "Hook registration API positional signature"
+    },
+    {
+      "id": "compatibility-functions",
+      "kind": "function-region",
+      "file": "zi.zsh",
+      "start_marker": "# Compatibility functions. [[[",
+      "end_marker": "# ]]]",
+      "symbols": [
+        "❮▼❯",
+        "zpcdreplay",
+        "zpcdclear",
+        "zpcompinit",
+        "zpcompdef",
+        "zpextract"
+      ],
+      "description": "Named compatibility wrapper functions"
+    },
+    {
+      "id": "prezto-compatibility",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "pmodload",
+      "declaration_marker": "# FUNCTION: pmodload. [[[",
+      "allowed_declaration_prefix": "(( ${+functions[pmodload]} )) || ",
+      "presence_only": true,
+      "description": "Prezto compatibility function"
+    },
+    {
+      "id": "compatibility-aliases",
+      "kind": "aliases",
+      "file": "zi.zsh",
+      "target": "zi",
+      "description": "Deprecated command-name aliases targeting zi (currently zini, zinit, and zplugin)"
+    },
+    {
+      "id": "installer-git-output",
+      "kind": "path",
+      "path": "lib/zsh/git-process-output.zsh",
+      "description": "Installer-facing progress filter consumed by z-shell/src"
+    }
+  ],
+  "consumers": [
+    {
+      "repository": "z-shell/wiki",
+      "path": "ecosystem/annexes/0_overview.mdx",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/wiki/blob/7fca4272b6fbb40afeaa2c25288c1089d887c7d4/ecosystem/annexes/0_overview.mdx"
+    },
+    {
+      "repository": "z-shell/docs",
+      "path": "code/zsdoc/asciidoc/zi.zsh.adoc",
+      "surfaces": [
+        "commands",
+        "ices",
+        "annex-registration",
+        "hook-registration",
+        "compatibility-functions",
+        "prezto-compatibility",
+        "compatibility-aliases"
+      ],
+      "evidence": "https://github.com/z-shell/docs/blob/77f0d7d30eb090ce335fcb6fe21fd09c55dc6bd7/code/zsdoc/asciidoc/zi.zsh.adoc"
+    },
+    {
+      "repository": "z-shell/src",
+      "path": "public/sh/install.sh",
+      "surfaces": ["installer-git-output"],
+      "evidence": "https://github.com/z-shell/src/blob/5e301f2bb9d6e70c5aebb30b83217ac07b794025/public/sh/install.sh"
+    },
+    {
+      "repository": "z-shell/src",
+      "path": "public/zsh/init.zsh",
+      "surfaces": ["installer-git-output"],
+      "evidence": "https://github.com/z-shell/src/blob/5e301f2bb9d6e70c5aebb30b83217ac07b794025/public/zsh/init.zsh"
+    },
+    {
+      "repository": "z-shell/zd",
+      "path": "tests/helpers.zsh",
+      "surfaces": [
+        "commands",
+        "ices",
+        "annex-registration",
+        "hook-registration",
+        "compatibility-functions",
+        "prezto-compatibility",
+        "compatibility-aliases",
+        "installer-git-output"
+      ],
+      "evidence": "https://github.com/z-shell/zd/blob/3380ddef839309c5886ee0addb4fcb114639d7c4/tests/helpers.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-rust",
+      "path": "z-a-rust.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-rust/blob/c896c792baf4bc5d24468e0109534a174316afb9/z-a-rust.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-patch-dl",
+      "path": "z-a-patch-dl.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-patch-dl/blob/abd2e081725ccc4d50924a88ad6214178abe138c/z-a-patch-dl.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-submods",
+      "path": "z-a-submods.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-submods/blob/a2fe5a60260879470dc7d4dc2c2ca6c05e145623/z-a-submods.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-readurl",
+      "path": "z-a-readurl.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-readurl/blob/60a2dfdfcc7f9fd416c894b2f875c582d2b45c64/z-a-readurl.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-bin-gem-node",
+      "path": "z-a-bin-gem-node.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-bin-gem-node/blob/5584f8a451b175c466a2d3f1b620b7187868226f/z-a-bin-gem-node.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-default-ice",
+      "path": "z-a-default-ice.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-default-ice/blob/9a5eda0d6eedc8a6c3af1fbbda1c444d47062fe1/z-a-default-ice.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-linkman",
+      "path": "z-a-linkman.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-linkman/blob/81e91309ab490c4e6167e7eeab20d1e925a7eb30/z-a-linkman.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-unscope",
+      "path": "z-a-unscope.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-unscope/blob/137dad6ff2fa552015d274e23f91beabe93b0d1c/z-a-unscope.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-man",
+      "path": "z-a-man.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-man/blob/d8ab407a445d394a7738296daf2fcb7951d9cc93/z-a-man.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-meta-plugins",
+      "path": "z-a-meta-plugins.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-meta-plugins/blob/caf156e15148031df6a144f0a8f8c88627eda78a/z-a-meta-plugins.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/z-a-test",
+      "path": "z-a-test.plugin.zsh",
+      "surfaces": ["annex-registration"],
+      "evidence": "https://github.com/z-shell/z-a-test/blob/7a75709aab32988279676b1574bf24a824acb2ff/z-a-test.plugin.zsh"
+    },
+    {
+      "repository": "z-shell/F-Sy-H",
+      "path": "chroma/-zi.ch",
+      "surfaces": ["ices"],
+      "evidence": "https://github.com/z-shell/F-Sy-H/blob/e9f6487a654ae870154fd9e3384853f37ae01087/chroma/-zi.ch"
+    },
+    {
+      "repository": "z-shell/zsh-lint",
+      "path": "legacy/functions/zsh-lint",
+      "surfaces": ["ices"],
+      "evidence": "https://github.com/z-shell/zsh-lint/blob/5c6cf1337803921a062560eec477cc93f2e590b8/legacy/functions/zsh-lint"
+    },
+    {
+      "repository": "z-shell/pm-perf-test",
+      "path": "zi-turbo/.zshrc",
+      "surfaces": ["compatibility-functions"],
+      "evidence": "https://github.com/z-shell/pm-perf-test/blob/c705f881837f8e3cc6c04a3efebcd1ba9c338742/zi-turbo/.zshrc"
+    },
+    {
+      "repository": "z-shell/subversion",
+      "path": "docs/README.md",
+      "surfaces": ["compatibility-functions"],
+      "evidence": "https://github.com/z-shell/subversion/blob/6d4f18be2b0c61790bf94325d8bc857625328253/docs/README.md"
+    }
+  ]
+}

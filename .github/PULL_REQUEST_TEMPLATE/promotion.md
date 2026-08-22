@@ -52,6 +52,11 @@ Link documentation and consumer follow-ups identified by the
 [#376 public-contract impact review](https://github.com/z-shell/zi/issues/376).
 Write `None` only with a rationale.
 
+- [ ] If the candidate introduces monitoring for a contract surface that is
+      absent from the base, manually inventory that surface across the complete
+      compare. The detector can report the new monitoring definition, but it
+      cannot classify changes that predate that baseline.
+
 ## Rollback readiness
 
 - Rollback owner: `@________________`

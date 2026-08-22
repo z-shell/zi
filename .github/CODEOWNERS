@@ -1,1 +1,34 @@
-* @z-shell/tsc
+# CODEOWNERS — zi
+#
+# GitHub evaluates rules top-to-bottom; the LAST matching rule wins.
+# Sections are ordered from broadest to most specific so that narrower
+# rules can override the default without removing coverage elsewhere.
+#
+# Team:  @z-shell/tsc  — Technical Steering Committee (final sign-off)
+# Owner: @ss-o         — Primary maintainer (day-to-day reviews)
+
+# ── Default ──────────────────────────────────────────────────────────────────
+# Catch-all: everything not matched by a more specific rule below.
+*                                   @ss-o
+
+# ── Core Zsh runtime ─────────────────────────────────────────────────────────
+# Changes here affect every Zi user; require TSC review.
+/zi.zsh                             @z-shell/tsc
+/lib/                               @z-shell/tsc
+/contracts/                         @z-shell/tsc
+/scripts/public-contract-impact.zsh @z-shell/tsc
+
+# ── CI / Workflows ───────────────────────────────────────────────────────────
+# Workflow changes reviewed by primary maintainer; no TSC sign-off required.
+/.github/workflows/                 @ss-o
+/.github/dependabot.yml             @ss-o
+
+# ── Documentation & templates ────────────────────────────────────────────────
+/docs/                              @ss-o
+/.github/ISSUE_TEMPLATE/            @ss-o
+/.github/PULL_REQUEST_TEMPLATE.md   @ss-o
+/.github/copilot-instructions.md    @ss-o
+
+# ── Governance (must be last — highest specificity) ───────────────────────────
+# CODEOWNERS itself requires TSC approval to change.
+/.github/CODEOWNERS                 @z-shell/tsc

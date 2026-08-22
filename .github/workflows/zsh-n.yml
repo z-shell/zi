@@ -9,10 +9,12 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/version-reporting.zsh"
   pull_request:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
 concurrency:
@@ -59,3 +61,14 @@ jobs:
         run: |
           zsh -fc "zcompile ${ZSH_FILE}"; rc=$?
           ls -al "${ZSH_FILE}.zwc"; exit "$rc"
+
+  version-reporting:
+    name: Version reporting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test version reporting
+        run: zsh tests/version-reporting.zsh

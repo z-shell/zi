@@ -47,10 +47,11 @@ jobs:
 
   zd:
     name: ZD integration
-    uses: z-shell/zd/.github/workflows/test-native.yml@191642eaf9587e64f910c79aaf750d2cfe237241 # z-shell/zd#95, #96
+    uses: z-shell/zd/.github/workflows/test-native.yml@fd0995d6f7958fea6c4abbc4fff81a6da2277b66 # z-shell/zd#95, #96, #107
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name }}
       zi_ref: ${{ github.event.pull_request.head.sha }}
+      include_compat: ${{ github.head_ref == 'next' }}
 
   trunk:
     name: Trunk
@@ -62,7 +63,7 @@ jobs:
       - name: Check out the candidate
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
       - name: Run Trunk
         uses: trunk-io/trunk-action@75699af9e26881e564e9d832ef7dc3af25ec031b
@@ -139,7 +140,6 @@ jobs:
           (( ${+functions[zi]} )) || exit 1
           .zi-prepare-home || exit 1
           [[ -d ${ZI[HOME_DIR]} ]] || exit 1
-          zi -V >/dev/null || exit 1
           ZSH
 
   gate:

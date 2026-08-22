@@ -5,6 +5,8 @@
     - Ordinary work: create feature-<id> or bug-<id> from next and target next
     - Urgent production fixes: use a same-repository hotfix-<id> from main to main
     - Promote next to main only after integration checks pass
+    - For next-to-main promotions, use:
+      ?template=promotion.md
 
   Commit messages must follow Conventional Commits:
     type(scope): short description   (≤72 chars, imperative mood)

@@ -41,12 +41,18 @@ typeset -gAH ZI
 ZI[BIN_DIR]="$ZI_TEST_CHECKOUT"
 builtin source "${ZI[BIN_DIR]}/zi.zsh"
 
-[[ ${ZI[VERSION]} == "$ZI_TEST_EXPECTED" ]]
+if [[ ${ZI[VERSION]} != "$ZI_TEST_EXPECTED" ]]; then
+  print -u2 -r -- "expected ZI[VERSION] '$ZI_TEST_EXPECTED', got '${ZI[VERSION]}'"
+  return 1
+fi
 
 typeset argument output
 for argument in version --version -V; do
   output="$(zi "$argument")"
-  [[ $output == *"Zi version: ${ZI_TEST_EXPECTED}"* ]]
+  if [[ $output != *"Zi version: ${ZI_TEST_EXPECTED}"* ]]; then
+    print -u2 -r -- "expected '$argument' to report '$ZI_TEST_EXPECTED', got '${(q)output}'"
+    return 1
+  fi
 done
 ZSH
 
@@ -71,6 +77,6 @@ command git -C "$tagged_checkout" tag zi-version-test
 run_case tagged "$tagged_checkout" zi-version-test
 
 typeset archive_checkout="${temp_root}/archive-checkout"
-command cp -R "$project_root" "$archive_checkout"
-command rm -f -- "$archive_checkout/.git"
+command mkdir -p "$archive_checkout"
+command git -C "$project_root" archive HEAD | command tar -x -C "$archive_checkout"
 run_case archive "$archive_checkout" unknown

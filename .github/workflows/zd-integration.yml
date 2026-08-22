@@ -5,16 +5,18 @@ on:
   push:
     branches: [main, next]
     paths:
+      - ".github/workflows/zd-integration.yml"
       - "zi.zsh"
       - "lib/**"
   pull_request:
     paths:
+      - ".github/workflows/zd-integration.yml"
       - "zi.zsh"
       - "lib/**"
   workflow_dispatch: {}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-caller
   cancel-in-progress: true
 
 permissions:
@@ -22,7 +24,8 @@ permissions:
 
 jobs:
   zd-test:
-    uses: z-shell/zd/.github/workflows/test-native.yml@191642eaf9587e64f910c79aaf750d2cfe237241 # z-shell/zd#95, #96
+    uses: z-shell/zd/.github/workflows/test-native.yml@fd0995d6f7958fea6c4abbc4fff81a6da2277b66 # z-shell/zd#95, #96, #107
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       zi_ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      include_compat: false

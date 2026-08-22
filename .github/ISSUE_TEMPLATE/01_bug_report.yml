@@ -1,110 +1,50 @@
 name: "🐞 Bug report"
-description: File a bug report
+description: Report reproducible incorrect Zi behavior
 title: "[bug]: "
-labels: ["bug 🐞", "triage 📑"]
+labels: ["type:bug", "status:triage"]
 assignees: ["ss-o"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are greatly appreciated.
   - type: input
     id: environment
     attributes:
       label: Environment
-      description: >
-        Please describe your environment in as much detail as possible. Otherwise, we may not be able to reproduce the issue.
-      placeholder: >
-        Example:
-          print "Device: $VENDOR | $OSTYPE | $CPUTYPE"
-          print "Shell: $SHELL | $ZSH_ARGZERO | $ZSH_PATCHLEVEL"
-          print "Zi: $(git -C $ZI[BIN_DIR] rev-parse HEAD)"
+      description: Include your OS, Zsh version, and Zi commit.
+      placeholder: zsh --version; git -C "${ZI[BIN_DIR]}" rev-parse HEAD
     validations:
       required: true
   - type: textarea
-    id: repro
+    id: reproduction
     attributes:
-      label: Reproduction steps
-      description: "How do you trigger this bug? Please walk us through it step by step."
-      value: |
-        1.
-        2.
-        3.
-        4.
-        5.
-        ...
-      render: bash
+      label: Minimal reproduction
+      description: Provide the smallest Zsh commands or configuration that reproduce the problem.
+      render: zsh
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include complete error output or logs where relevant.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected behavior
-      description: "Please describe the expected behavior"
-      value: |
-        1.
-        2.
-        3.
-        4.
-        5.
-        ...
-      render: bash
-    validations:
-      required: true
-  - type: textarea
-    id: current
-    attributes:
-      label: Current behavior
-      description: "Please describe how the bug manifests"
-      value: |
-        1.
-        2.
-        3.
-        4.
-        5.
-        ...
-      render: bash
-    validations:
-      required: true
-  - type: textarea
-    id: code-snippet
-    attributes:
-      label: Code snippet
-      description: "Please insert your zshrc or just a short code snippet in concern."
-    validations:
-      required: true
-  - type: textarea
-    id: additional
-    attributes:
-      label: Additional information
-      description: "List any other information that is relevant to your issue. For reports and stats run `zi analytics`"
     validations:
       required: true
   - type: checkboxes
+    id: self-service
     attributes:
       label: Self-service
-      description: |
-        If you feel like you could contribute to this issue, please check the box below. This would tell us and other people looking for contributions that someone's working on it.
-        If you do check this box, please send a pull request within 7 days so we can still delegate this to someone else.
       options:
-        - label: I'd be willing to address this documentation request myself.
+        - label: I would be willing to submit a fix for this bug.
   - type: checkboxes
+    id: policies
     attributes:
-      label: Have you read the Contributing Guidelines?
+      label: Project policies
       options:
-        - label: I have read the [Contributing Guidelines](https://github.com/z-shell/community/blob/main/docs/CONTRIBUTING_GUIDELINES.md).
+        - label: I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md).
           required: true
-  - type: checkboxes
-    attributes:
-      label: Are you familiar with the Contributor Covenant Code of Conduct?
-      options:
-        - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
+        - label: I agree to follow the [Code of Conduct](https://github.com/z-shell/.github/blob/main/.github/CODE_OF_CONDUCT.md).
           required: true
-  - type: input
-    id: contact
-    attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false

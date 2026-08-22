@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "⤵️ Check out code from GitHub"
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          CONVENTIONAL_PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)(\([^)]+\))?!?: .{1,72}$'
+          CONVENTIONAL_PATTERN='^(feat|fix|perf|refactor|docs|test|build|ci|style|chore|revert)(\([^)]+\))?!?: .{1,72}$'
 
           errors=0
           checked=0
@@ -72,7 +72,7 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          PATTERN='^(feat|fix|perf|refactor|docs|test|ci|chore|revert)(\([^)]+\))?!?: .{1,72}$'
+          PATTERN='^(feat|fix|perf|refactor|docs|test|build|ci|style|chore|revert)(\([^)]+\))?!?: .{1,72}$'
           if ! echo "$PR_TITLE" | grep -qE "$PATTERN"; then
             echo "::error::PR title must follow Conventional Commits: type(scope): description"
             exit 1

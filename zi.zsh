@@ -13,7 +13,7 @@ typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS Z
 typeset -gaH ZI_COMPDEF_REPLAY
 
 # The specified names are marked for automatic export to the environment of subsequently executed commands.
-typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPsX
+typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPs
 
 # Compatibility for previous versions.
 typeset -gAH ZINIT
@@ -1690,7 +1690,7 @@ builtin setopt noaliases
 .zi-add-report() {
   # Use zi binary module if available.
   [[ -n $1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append "$1" "$2"$'\n' || ZI_REPORTS[$1]+="$2"$'\n'; }
-  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
+  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
   return 0
 } # ]]]
 # FUNCTION: .zi-add-fpath. [[[

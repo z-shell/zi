@@ -1,66 +1,48 @@
 name: "📚 Documentation"
-description: The issue request for changes in documentation
+description: Request a correction or improvement to Zi documentation
 title: "[docs]: "
-labels: ["documentation 📝"]
+labels: ["type:docs", "area:docs"]
 assignees: ["ss-o"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        This template is strictly used for documentation requests, including:
-
-        - Elaborating on a particular topic;
-        - Updating external links;
-        - Anything else that doesn't require touching the codebase itself.
-
-        If you followed the documentation but things don't work, take some time to consider if it's the documentation or the code that's wrong. In the latter, prefer using the "bug" template.
-
-        You may proceed directly to sending a pull request without filing this issue, and we can improve your work.
-        If you think some of the requirements above are not met, or if you are not able to contribute yourself, the issue is still welcomed.
-
-  - type: textarea
-    id: request-info
-    attributes:
-      label: Description
-      description: Tell us, what can be done better or a clear and concise description of what the issue is.
-    validations:
-      required: true
   - type: dropdown
-    id: ecosystem
+    id: area
     attributes:
-      label: Select the area that is associated with this issue.
-      multiple: true
+      label: Documentation area
       options:
-        - ZI (this repository)
+        - Zi repository
+        - Wiki
         - Annexes
         - Plugins
         - Packages
         - Other
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Link to the page or identify the file and section.
+    validations:
+      required: true
+  - type: textarea
+    id: request
+    attributes:
+      label: Requested change
+      description: Explain what is missing, unclear, or incorrect and suggest replacement wording if possible.
+    validations:
+      required: true
   - type: checkboxes
+    id: self-service
     attributes:
       label: Self-service
-      description: |
-        If you feel like you could contribute to this issue, please check the box below. This would tell us and other people looking for contributions that someone's working on it.
-        If you do check this box, please send a pull request within 7 days so we can still delegate this to someone else.
       options:
-        - label: I'd be willing to address this documentation request myself.
+        - label: I would be willing to update this documentation.
   - type: checkboxes
+    id: policies
     attributes:
-      label: Have you read the Contributing Guidelines?
+      label: Project policies
       options:
-        - label: I have read the [Contributing Guidelines](https://github.com/z-shell/community/blob/main/docs/CONTRIBUTING_GUIDELINES.md).
+        - label: I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md).
           required: true
-  - type: checkboxes
-    attributes:
-      label: Are you familiar with the Contributor Covenant Code of Conduct?
-      options:
-        - label: I have read the [Contributor Covenant Code of Conduct](https://github.com/z-shell/zi/blob/main/docs/CODE_OF_CONDUCT.md).
+        - label: I agree to follow the [Code of Conduct](https://github.com/z-shell/.github/blob/main/.github/CODE_OF_CONDUCT.md).
           required: true
-  - type: input
-    id: contact
-    attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false

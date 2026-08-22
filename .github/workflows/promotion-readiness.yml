@@ -47,7 +47,7 @@ jobs:
 
   zd:
     name: ZD integration
-    uses: z-shell/zd/.github/workflows/test-native.yml@da915fd260112430aa34981aed3d4e0262f33b87 # z-shell/zd#95
+    uses: z-shell/zd/.github/workflows/test-native.yml@191642eaf9587e64f910c79aaf750d2cfe237241 # z-shell/zd#95, #96
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name }}
       zi_ref: ${{ github.event.pull_request.head.sha }}

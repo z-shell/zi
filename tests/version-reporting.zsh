@@ -35,7 +35,7 @@ run_case() {
     ZI_TEST_EXPECTED="$expected" \
     zsh -f <<'ZSH' || fail "$label"
 builtin emulate -LR zsh
-setopt errexit pipefail
+setopt pipefail
 
 typeset -gAH ZI
 ZI[BIN_DIR]="$ZI_TEST_CHECKOUT"

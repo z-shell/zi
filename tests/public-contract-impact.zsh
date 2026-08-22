@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 
 emulate -LR zsh
 setopt errexit nounset pipefail
@@ -74,6 +76,16 @@ assert_contains "$output" '`zpextract` was removed'
 assert_not_contains "$output" 'false&&zpcdclear'
 print "ok - only executable top-level function declarations are available"
 
+repository="$(new_case_repository dead-alias)"
+command cp "$fixture_root/dead-alias/zi.zsh" "$repository/zi.zsh"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "test: guard compatibility aliases with false"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" '`zini` was removed'
+assert_contains "$output" '`zinit` was removed'
+assert_contains "$output" '`zplugin` was removed'
+print "ok - statically dead alias declarations are unavailable"
+
 repository="$(new_case_repository foreach)"
 command cp "$fixture_root/foreach/zi.zsh" "$repository/zi.zsh"
 command git -C "$repository" add .
@@ -129,6 +141,25 @@ assert_contains "$output" '`load` was removed'
 assert_contains "$output" '`fetch` was added'
 assert_not_contains "$output" '`rename`'
 print "ok - independent removals and additions are not inferred as renames"
+
+repository="$(new_case_repository multiple-renames)"
+command cp "$fixture_root/multiple-renames/zi.zsh" "$repository/zi.zsh"
+changed_manifest="${repository}/contracts/public-contract-v1.json.new"
+jq '.renames += [
+  {"surface":"commands","from":"load","to":"fetch"},
+  {"surface":"commands","from":"update","to":"upgrade"}
+]' "$repository/contracts/public-contract-v1.json" > "$changed_manifest"
+command mv "$changed_manifest" "$repository/contracts/public-contract-v1.json"
+command git -C "$repository" add .
+command git -C "$repository" commit -qm "feat: rename multiple commands"
+output="$(run_detector "$repository" --no-policy)"
+assert_contains "$output" '`load` was replaced by `fetch`'
+assert_contains "$output" '`update` was replaced by `upgrade`'
+assert_not_contains "$output" '`load` was removed'
+assert_not_contains "$output" '`update` was removed'
+assert_not_contains "$output" '`fetch` was added'
+assert_not_contains "$output" '`upgrade` was added'
+print "ok - each declared rename is matched independently"
 
 repository="$(new_case_repository breaking)"
 command cp "$fixture_root/breaking/zi.zsh" "$repository/zi.zsh"

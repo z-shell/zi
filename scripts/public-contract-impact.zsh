@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 
 emulate -LR zsh
 setopt errexit nounset pipefail extendedglob
@@ -317,11 +319,14 @@ extract_function_region() {
 
 extract_aliases() {
   local source_file="$1" target="$2" output="$3"
-  local line code token name alias_target
+  local line code prefix compact_prefix token name alias_target
 
   while IFS= read -r line; do
     code="${line%%\#*}"
     [[ $code == *"builtin alias"* ]] || continue
+    prefix="${code%%builtin alias*}"
+    compact_prefix="${prefix//[ $'\t']/}"
+    [[ $compact_prefix == false'&&'* || $compact_prefix == true'||'* ]] && continue
     for token in ${(z)code}; do
       [[ $token == *=* ]] || continue
       name="${token%%=*}"
@@ -486,9 +491,9 @@ record_impact() {
 
 compare_surface() {
   local surface_id="$1" kind="$2" base_snapshot="$3" head_snapshot="$4"
-  typeset -A base_items=() head_items=()
+  typeset -A base_items=() head_items=() matched_removals=() matched_additions=()
   typeset -a additions=() removals=()
-  local item detail
+  local item detail rename_to
 
   while IFS=$'\t' read -r item detail; do
     [[ -n $item ]] && base_items[$item]="$detail"
@@ -504,23 +509,28 @@ compare_surface() {
     (( ${+base_items[$item]} )) || additions+=( "$item" )
   done
 
-  if (( ${#removals} == 1 && ${#additions} == 1 )) &&
-    jq -e \
+  for item in "${removals[@]}"; do
+    rename_to="$(jq -r \
       --arg surface "$surface_id" \
-      --arg from "$removals[1]" \
-      --arg to "$additions[1]" \
-      'any(.renames[]?; .surface == $surface and .from == $from and .to == $to)' \
-      "$head_manifest" >/dev/null; then
-    record_impact breaking rename "$surface_id" "$removals[1]" "$additions[1]" \
-      "\`${removals[1]}\` was replaced by \`${additions[1]}\`."
-  else
-    for item in "${removals[@]}"; do
+      --arg from "$item" \
+      '[.renames[]? | select(.surface == $surface and .from == $from) | .to][0] // empty' \
+      "$head_manifest")"
+    [[ -n $rename_to && ${+head_items[$rename_to]} == 1 &&
+      ${+matched_additions[$rename_to]} == 0 ]] || continue
+    matched_removals[$item]=1
+    matched_additions[$rename_to]=1
+    record_impact breaking rename "$surface_id" "$item" "$rename_to" \
+      "\`${item}\` was replaced by \`${rename_to}\`."
+  done
+
+  for item in "${removals[@]}"; do
+    (( ${+matched_removals[$item]} )) ||
       record_impact breaking removal "$surface_id" "$item" "" "\`${item}\` was removed."
-    done
-    for item in "${additions[@]}"; do
+  done
+  for item in "${additions[@]}"; do
+    (( ${+matched_additions[$item]} )) ||
       record_impact info addition "$surface_id" "" "$item" "\`${item}\` was added."
-    done
-  fi
+  done
 
   for item in ${(ok)base_items}; do
     (( ${+head_items[$item]} )) || continue

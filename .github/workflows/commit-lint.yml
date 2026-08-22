@@ -30,7 +30,8 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          DISALLOWED_TRAILER_PATTERN: "^[[:space:]]*Co-authored-by:"
+          POLICY_BASELINE_SHA: d092066be26d4ec5aedc7a19ed3d85e03a343b35
+          DISALLOWED_TRAILER_PATTERN: '^[[:space:]]*Co-authored-by:.*(\[bot\]|noreply@anthropic\.com|noreply@openai\.com|noreply@x\.ai|codex@openai\.com|copilot@github\.com|claude@anthropic\.com)'
         run: |
           set -euo pipefail
 
@@ -47,6 +48,13 @@ jobs:
 
             parent_count=$(git cat-file -p "$sha" | grep -c '^parent' || true)
             [ "$parent_count" -gt 1 ] && continue
+
+            # The repository adopted enforced Conventional Commits at this
+            # baseline. Preserve older history instead of requiring a rewrite
+            # when the persistent next branch is promoted.
+            if git merge-base --is-ancestor "$sha" "$POLICY_BASELINE_SHA"; then
+              continue
+            fi
 
             subject=$(git show -s --format='%s' "$sha")
             checked=$((checked + 1))

@@ -13,7 +13,7 @@ typeset -gAH ZI ZI_SNIPPETS ZI_REPORTS ZI_ICES ZI_SICE ZI_CUR_BIND_MAP ZI_EXTS Z
 typeset -gaH ZI_COMPDEF_REPLAY
 
 # The specified names are marked for automatic export to the environment of subsequently executed commands.
-typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPsX
+typeset -gx ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG PMSPEC=0fuUpiPs
 
 # Compatibility for previous versions.
 typeset -gAH ZINIT
@@ -26,13 +26,6 @@ ver|silent|lucid|notify|mv|cp|atinit|atclone|atload|atpull|nocd|run-atpull|has|c
 multisrc|compile|nocompile|nocompletions|reset-prompt|wrap|reset|sh|\!sh|bash|\!bash|ksh|\!ksh|csh|\!csh|aliases|\
 countdown|ps-on-unload|ps-on-update|trigger-load|light-mode|is-snippet|atdelete|pack|git|verbose|on-update-of|\
 subscribe|extract|param|opts|autoload|subst|install|pullopts|debug|null|binary"
-
-# Determine ZI[VERSION]
-if [[ -d "${ZI[BIN_DIR]:-$PWD}/.git" || -e "${ZI[BIN_DIR]:-$PWD}/.git" ]]; then
-  ZI[VERSION]=$(git -C "${ZI[BIN_DIR]:-$PWD}" describe --tags --exact-match 2>/dev/null) || ZI[VERSION]=$(git -C "${ZI[BIN_DIR]:-$PWD}" rev-parse --short HEAD 2>/dev/null) || ZI[VERSION]="unknown"
-else
-  ZI[VERSION]="unknown"
-fi
 
 # In no value, i.e. not designed to hold value.
 ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|nocompletions|sh|\!sh|bash|\!bash|\
@@ -59,6 +52,15 @@ ZI[BIN_DIR]="${${(M)ZI[BIN_DIR]:#/*}:-$PWD/${ZI[BIN_DIR]}}"
 if [[ ! -e ${ZI[BIN_DIR]}/zi.zsh ]]; then
   builtin print -P "%F{196}Could not establish ZI[BIN_DIR] hash field. It should point where ❮ Zi ❯ Git repository is.%f"
   return 1
+fi
+
+# Determine ZI[VERSION] after establishing the repository path.
+if [[ -d ${ZI[BIN_DIR]}/.git || -e ${ZI[BIN_DIR]}/.git ]]; then
+  ZI[VERSION]=$(git -C "${ZI[BIN_DIR]}" describe --tags --exact-match 2>/dev/null) || \
+    ZI[VERSION]=$(git -C "${ZI[BIN_DIR]}" rev-parse --short HEAD 2>/dev/null) || \
+    ZI[VERSION]="unknown"
+else
+  ZI[VERSION]="unknown"
 fi
 
 # Zi home path for creating working directories.
@@ -130,8 +132,8 @@ fi
 # Disable aliases.
 : ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
 
-# Disable Zi's internal aliases.
-: ${ZI[INTERNAL_ALIASES]:=0}
+# Configure Zi's deprecated command aliases.
+: ${ZI[INTERNAL_ALIASES]:=1}
 
 # Set owner of the Zi's packages. It allows to use the packages from specific user instead of the z-shell organization.
 : ${ZI[PKG_OWNER]:=z-shell}
@@ -1688,7 +1690,7 @@ builtin setopt noaliases
 .zi-add-report() {
   # Use zi binary module if available.
   [[ -n $1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append "$1" "$2"$'\n' || ZI_REPORTS[$1]+="$2"$'\n'; }
-  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
+  [[ ${ZI[DTRACE]} = 1 ]] && { (( ${+builtins[zpmod]} && 0 )) && zpmod report-append _dtrace/_dtrace "$2"$'\n' || ZI_REPORTS[_dtrace/_dtrace]+="$2"$'\n'; }
   return 0
 } # ]]]
 # FUNCTION: .zi-add-fpath. [[[
@@ -2308,9 +2310,10 @@ zi() {
     --force    opt_-f,--force
     -p         opt_-p,--parallel:"Turn on concurrent, multi-thread update (of all objects)."
     --parallel opt_-p,--parallel
-    -s         opt_-s,--snippets:"Update only snippets (i.e.: skip updating plugins)."
+    -s         opt_-s,--snippets:"update:[Update only snippets (i.e.: skip updating plugins).] times:[Show times in seconds.]"
     --snippets opt_-s,--snippets
-    -l         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
+    -L         opt_-l,--plugins:"Update only plugins (i.e.: skip updating snippets)."
+    -l         opt_-l,--plugins
     --plugins  opt_-l,--plugins
     -h         opt_-h,--help:"Show this help message."
     --help     opt_-h,--help
@@ -2327,7 +2330,7 @@ zi() {
     -x         opt_-x,--command:"Load the snippet as a {cmd}command{rst}, i.e.: add it to {var}\$PATH{rst} and set {b-lhi}+x{rst} on it."
     --command  opt_-x,--command
     env-whitelist "-h|--help|-v|--verbose"
-    update        "-h|--help|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
+    update        "-h|--help|-L|-l|--plugins|-s|--snippets|-p|--parallel|-a|--all|-q|--quiet|-r|--reset|-u|--urge|-n|--no-pager|-v|--verbose"
     self-update   "-h|--help|-q|--quiet|-D|--dry-run"
     compile       "-h|--help|-a|--all|-q|--quiet"
     uncompile       "-h|--help|-a|--all|-q|--quiet"
@@ -2336,7 +2339,7 @@ zi() {
     cdclear       "-h|--help|-q|--quiet"
     cdreplay      "-h|--help|-q|--quiet"
     module        "-h|--help|-B|--build|-I|--info|-r|--reset"
-    times         "-h|--help|-m|--moments|-S|--seconds|-a|--all"
+    times         "-h|--help|-m|--moments|-s|-S|--seconds|-a|--all"
     light         "-h|--help|-b|--bindkeys"
     report        "-h|--help|-a|--all"
     snippet       "-h|--help|-f|--force|--command|-x"
@@ -2643,7 +2646,7 @@ zi() {
             .zi-unload "${2%%(///|//|/)}" "${${3:#-q}%%(///|//|/)}" "${${(M)4:#-q}:-${(M)3:#-q}}"; ___retval=$?
           fi
           ;;
-        (version)
+        (-V|--version|version)
           +zi-message "Zi version: ${ZI[VERSION]}"
           ;;
         (bindkeys)
@@ -2906,6 +2909,17 @@ zicompinit_fast() {
 # An utility function of an undefined use case.
 zicompdef() { ZI_COMPDEF_REPLAY+=( "${(j: :)${(q)@}}" ); }
 # ]]]
+# Compatibility functions. [[[
+❮▼❯() { zi "$@"; }
+zpcdreplay() { zicdreplay "$@"; }
+zpcdclear() { zicdclear "$@"; }
+zpcompinit() { zicompinit "$@"; }
+zpcompdef() { zicompdef "$@"; }
+zpextract() {
+  (( ${+functions[ziextract]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
+  ziextract "$@"
+}
+# ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {
   :zi-tmp-subst-autoload -Uz ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
@@ -2937,8 +2951,8 @@ zmodload zsh/zpty zsh/system 2>/dev/null
 zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 
 # code. [[[
-# Internal aliases for compatibility with deprecated names. Can be enabled with ZI[INTERNAL_ALIASES]=1.
-(( ZI[INTERNAL_ALIASES] )) && builtin alias zinit=zi zplugin=zi
+# Internal aliases preserve compatibility with deprecated command names.
+(( ZI[INTERNAL_ALIASES] )) && builtin alias zini=zi zinit=zi zplugin=zi
 
 .zi-prepare-home
 .zi-set-mtime

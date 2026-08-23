@@ -2,16 +2,18 @@
   Thanks for contributing to zi! Please read the checklist below.
 
   Branch model:
-    • Create your branch FROM next:  git checkout -b fix/my-fix next
-    • Open this PR TARGETING next — never target main directly
-    • main is only updated from next via a release PR
+    - Ordinary work: create feature-<id> or bug-<id> from next and target next
+    - Urgent production fixes: use a same-repository hotfix-<id> from main to main
+    - Promote next to main only after integration checks pass
+    - For next-to-main promotions, use:
+      ?template=promotion.md
 
   Commit messages must follow Conventional Commits:
     type(scope): short description   (≤72 chars, imperative mood)
-    Types: feat  fix  perf  refactor  docs  test  ci  chore  revert
+    Types: feat  fix  perf  refactor  docs  test  build  ci  style  chore  revert
     Example: fix(self-update): correctly propagate exit code on failure
 
-  See .github/copilot-instructions.md for full guidelines.
+  See AGENTS.md for the repository contribution guidelines.
 -->
 
 ## Description
@@ -32,15 +34,30 @@
 - [ ] `perf` — performance improvement
 - [ ] `refactor` — code change with no functional impact
 - [ ] `docs` — documentation only
+- [ ] `test` — test addition or correction
+- [ ] `build` — build system or dependency change
 - [ ] `ci` — CI/workflow change
+- [ ] `style` — formatting with no behavior change
 - [ ] `chore` — maintenance / dependency bump
+- [ ] `revert` — revert of an earlier change
 
 ## Checklist
 
-- [ ] My branch was created from `next` (not `main`)
-- [ ] This PR targets the `next` branch
+- [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
 - [ ] Commit messages follow Conventional Commits format
-- [ ] No AI co-author trailers in commit messages
-- [ ] I have read [CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- [ ] No `Co-authored-by` trailers in commit messages
+- [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
 - [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
 - [ ] Documentation updated if needed
+
+## Migration plan
+
+<!--
+Required only when Public Contract Impact reports a destructive change.
+Link or describe the migration, then add one line per reported impact:
+
+[contract-impact:reported-id] updated here
+[contract-impact:reported-id] follow-up issue linked: https://github.com/OWNER/REPO/issues/NNN
+[contract-impact:reported-id] not affected: rationale
+[contract-impact:reported-id] deprecated with removal target: version/date/issue
+-->

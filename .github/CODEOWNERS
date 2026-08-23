@@ -15,6 +15,8 @@
 # Changes here affect every Zi user; require TSC review.
 /zi.zsh                             @z-shell/tsc
 /lib/                               @z-shell/tsc
+/contracts/                         @z-shell/tsc
+/scripts/public-contract-impact.zsh @z-shell/tsc
 
 # ── CI / Workflows ───────────────────────────────────────────────────────────
 # Workflow changes reviewed by primary maintainer; no TSC sign-off required.

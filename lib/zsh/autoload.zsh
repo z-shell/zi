@@ -712,13 +712,19 @@ ZI[EXTENDED_GLOB]=""
       if (( ! dry_run )); then
         # Update the codebase
         command git merge -n $opt --ff-only FETCH_HEAD || \
-          { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; return 1 }
-        .zi-auto-reload $opt
+          { (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}update failed {quos}✘{rst}"; exit 1 }
+        exit 10
       fi
     else
       (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}up-to-date {term}✔{rst}"
     fi
   )
+  local update_status=$?
+  if (( update_status == 10 )); then
+    .zi-auto-reload $opt
+    return $?
+  fi
+  return $update_status
 } # ]]]
 # FUNCTION: .zi-show-registered-plugins [[[
 # Lists loaded plugins (subcommands list, loaded).
@@ -1953,7 +1959,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
       (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
     fi
     local attime=$(( ZI[$entry3] - ZI[START_TIME] ))
-    if [[ "$opt" = *-[a-z]#s[a-z]#* ]]; then
+    if (( OPTS[opt_-S,--seconds] || OPTS[opt_-s,--snippets] )); then
       local time="$ZI[$entry] s"
       attime="${(M)attime#*.???} s"
     else
@@ -2967,8 +2973,11 @@ EOF
       +zi-message "{warn}Warning{warn}{ehi}:{rst} {lhi}recompilation{rst} of the {bcmd}zpmod{rst} module has been requested…"
       (( ${+functions[.zi-confirm]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" || return 1
       .zi-confirm "Do you want to proceed?" || return 1
-      command make -C "${ZI[ZMODULES_DIR]}/zpmod" distclean &>/dev/null
-      .zi-module --build
+      if [[ -f "${ZI[ZMODULES_DIR]}/zpmod/Makefile" ]]; then
+        command make -C "${ZI[ZMODULES_DIR]}/zpmod" distclean &>/dev/null
+      fi
+      command rm -rf "${ZI[ZMODULES_DIR]}/zpmod/build-cmake" "${ZI[ZMODULES_DIR]}/zpmod/build" 2>/dev/null
+      .zi-module --build --clean
     fi
   elif [[ "$1" = (-B|--build|build) ]]; then
     builtin autoload -Uz is-at-least
@@ -2980,7 +2989,7 @@ EOF
           +zi-message "{error}-- Failed to update module repository --{rst}"; return 1
         }
         if [[ "$2" = "--clean" ]]; then
-          +zi-message "{p}-- Module {ok}source is clean{p}, {cmd}make distclean{p} not required --{rst}"
+          +zi-message "{p}-- Module {ok}source is clean{p}, {cmd}clean{p} not required --{rst}"
         fi
       else
         if ! test -d "${${ZI[ZMODULES_DIR]}}/zpmod"; then
@@ -2993,38 +3002,141 @@ EOF
       fi
       ( builtin cd -q "${ZI[ZMODULES_DIR]}/zpmod"
         +zi-message "{p}-- The module sources are located at{ehi}:{rst} {dir}"${ZI[ZMODULES_DIR]}/zpmod"{p} --{rst}"
-        if [[ -f Makefile ]]; then
-          if [[ "$2" = "--clean" ]]; then
-            +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make distclean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
-            +zi-message "{p}-- make distclean --{rst}"
-            command make distclean
-            ((1))
-          else
-            +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make clean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
-            +zi-message "{p}-- make clean --{rst}"
-            command make clean
-          fi
-        fi
-        +zi-message "{p}-- ./configure --{rst}"
-        ./configure --enable-cflags='-g -Wall -Wextra -O3' --disable-gdbm --without-tcsetpgrp --quiet
-        +zi-message "{p}-- make --{rst}"
-        local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
         local build_log="${ZI[LOG_DIR]}/zpmod/${EPOCHSECONDS}-build.log"
         command mkdir -p "${ZI[LOG_DIR]}/zpmod" 2>/dev/null
-        command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" 2>&1 | command tee "$build_log" >/dev/null
-        if (( pipestatus[1] == 0 )); then
-          [[ -f Src/zi/zpmod.so ]] && command cp -vf Src/zi/zpmod.so Src/zi/zpmod.bundle
-          builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
-          +zi-message "{ok}-- Build successful! --{rst}"
-          +zi-message "{faint}-- Build log{ehi}:{rst} {file}$build_log{faint} --{rst}"
-          .zi-module --info
-          return 0
-        else
+        local cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+
+        local fetch_prebuilt=1
+        [[ "$2" = "--from-source" || "$2" = "--source" || "$3" = "--from-source" || "$3" = "--source" ]] && fetch_prebuilt=0
+
+        if (( fetch_prebuilt )); then
+          local os_name="$(uname -s)"
+          local arch_name="$(uname -m)"
+          local dl_url=""
+          if (( ${+commands[curl]} || ${+commands[wget]} )); then
+            local release_json=""
+            if (( ${+commands[curl]} )); then
+              release_json="$(command curl -fsSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/z-shell/zpmod/releases?per_page=5" 2>/dev/null)"
+              [[ -z "$release_json" ]] && release_json="$(command curl -fsSL -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
+            elif (( ${+commands[wget]} )); then
+              release_json="$(command wget -qO- "https://api.github.com/repos/z-shell/zpmod/releases?per_page=5" 2>/dev/null)"
+              [[ -z "$release_json" ]] && release_json="$(command wget -qO- "https://api.github.com/repos/z-shell/zpmod/releases/latest" 2>/dev/null)"
+            fi
+            if [[ -n "$release_json" ]]; then
+              local match_pattern="browser_download_url\": \"([^\"]*zpmod[^\"]*${os_name}[^\"]*${arch_name}[^\"]*\\.tar\\.gz)\""
+              if [[ "$release_json" =~ $match_pattern ]]; then
+                dl_url="${match[1]}"
+              fi
+            fi
+
+            if [[ -n "$dl_url" ]]; then
+              +zi-message "{p}-- Downloading prebuilt package{ehi}:{rst} {url}$dl_url{rst}"
+              local tmp_pkg="${ZI[LOG_DIR]}/zpmod/prebuilt-${EPOCHSECONDS}.tar.gz"
+              local dl_rc=1
+              if (( ${+commands[curl]} )); then
+                command curl -fsSL "$dl_url" -o "$tmp_pkg" 2>/dev/null && dl_rc=0
+              elif (( ${+commands[wget]} )); then
+                command wget -q "$dl_url" -O "$tmp_pkg" 2>/dev/null && dl_rc=0
+              fi
+              if (( dl_rc == 0 )) && [[ -f "$tmp_pkg" ]]; then
+                local tmp_extract="${ZI[LOG_DIR]}/zpmod/extract-${EPOCHSECONDS}"
+                command mkdir -p "$tmp_extract" 2>/dev/null
+                if command tar -xzf "$tmp_pkg" -C "$tmp_extract" 2>/dev/null; then
+                  local f="" staged_file=""
+                  for f in "$tmp_extract"/lib/zsh/site-modules/zpmod.*(N) "$tmp_extract"/**/zpmod.so(N) "$tmp_extract"/**/zpmod.bundle(N); do
+                    [[ -f $f ]] && { staged_file="$f"; break; }
+                  done
+                  if [[ -n "$staged_file" ]]; then
+                    command mkdir -p Src/zi 2>/dev/null
+                    command cp -vf "$staged_file" Src/zi/zpmod.so
+                    command cp -vf "$staged_file" Src/zi/zpmod.bundle
+                    command cp -vf "$staged_file" zpmod.so
+                    builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+                    command rm -rf "$tmp_extract" "$tmp_pkg" 2>/dev/null || true
+                    +zi-message "{ok}-- Prebuilt binary installed successfully! --{rst}"
+                    .zi-module --info
+                    return 0
+                  fi
+                fi
+                command rm -rf "$tmp_extract" "$tmp_pkg" 2>/dev/null || true
+              fi
+            fi
+          fi
+        fi
+
+        if [[ -f CMakeLists.txt ]]; then
+          +zi-message "{p}-- Building module {bcmd}zi/zpmod{p} with {cmd}CMake{p} --{rst}"
+          local build_rc=0
+          if [[ -x scripts/cmake.configure.zsh ]]; then
+            local -a cmake_opts
+            cmake_opts=( --generator make --build-type Release -j "$cores" )
+            [[ "$2" = "--clean" ]] && cmake_opts+=( --clean )
+            ./scripts/cmake.configure.zsh "${cmake_opts[@]}" 2>&1 | command tee "$build_log" >/dev/null
+            build_rc=${pipestatus[1]}
+          else
+            [[ "$2" = "--clean" ]] && command rm -rf build-cmake
+            command cmake -S . -B build-cmake -DCMAKE_BUILD_TYPE=Release 2>&1 | command tee "$build_log" >/dev/null && \
+            command cmake --build build-cmake -j "$cores" 2>&1 | command tee -a "$build_log" >/dev/null && \
+            command cmake --install build-cmake --prefix build-cmake/stage 2>&1 | command tee -a "$build_log" >/dev/null
+            build_rc=${pipestatus[1]}
+          fi
+          if (( build_rc == 0 )); then
+            local f="" staged_file=""
+            for f in build-cmake/stage/lib/zsh/site-modules/zpmod.*(N) build-cmake/out/lib/zpmod.*(N) build/out/lib/zpmod.*(N) Src/zi/zpmod.so(N); do
+              [[ -f $f ]] && { staged_file="$f"; break; }
+            done
+            if [[ -n $staged_file ]]; then
+              command mkdir -p Src/zi 2>/dev/null
+              command cp -vf "$staged_file" Src/zi/zpmod.so
+              command cp -vf "$staged_file" Src/zi/zpmod.bundle
+              command cp -vf "$staged_file" zpmod.so
+              builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+              +zi-message "{ok}-- Build successful! --{rst}"
+              +zi-message "{faint}-- Build log{ehi}:{rst} {file}$build_log{faint} --{rst}"
+              .zi-module --info
+              return 0
+            fi
+          fi
           +zi-message "{error}Build failed{rst}…" \
           "To report an issue at GitHub, please provide error messages from{ehi}:{rst}{nl}" \
           "{ndsh} Build log{rst} {dir}${build_log}{rst} if exists{nl}" \
-          "{ndsh} Run '{cmd}make -C ${ZI[ZMODULES_DIR]}/zpmod{rst}' to reproduce{rst}{nl}" \
+          "{ndsh} Run '{cmd}cmake --build build-cmake{rst}' to reproduce{rst}{nl}" \
           "{ndsh}{rst} {var}URL{rst} to submit{rst} {url}https://github.com/z-shell/zpmod/issues{rst}"
+          return 1
+        elif [[ -f Makefile || -f configure || -f configure.ac ]]; then
+          if [[ -f Makefile ]]; then
+            if [[ "$2" = "--clean" ]]; then
+              +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make distclean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
+              +zi-message "{p}-- make distclean --{rst}"
+              command make distclean
+              ((1))
+            else
+              +zi-message "{p}-- Building module {bcmd}zi/zpmod{p}, running: {cmd}make clean{p}, then {cmd}./configure{p} and then {cmd}make{p} --{rst}"
+              +zi-message "{p}-- make clean --{rst}"
+              command make clean
+            fi
+          fi
+          +zi-message "{p}-- ./configure --{rst}"
+          ./configure --enable-cflags='-g -Wall -Wextra -O3' --disable-gdbm --without-tcsetpgrp --quiet
+          +zi-message "{p}-- make --{rst}"
+          command make --jobs=$cores -C "${ZI[ZMODULES_DIR]}/zpmod" 2>&1 | command tee "$build_log" >/dev/null
+          if (( pipestatus[1] == 0 )); then
+            [[ -f Src/zi/zpmod.so ]] && command cp -vf Src/zi/zpmod.so Src/zi/zpmod.bundle
+            builtin print "$EPOCHSECONDS" >! "${ZI[ZMODULES_DIR]}/zpmod/COMPILED_AT"
+            +zi-message "{ok}-- Build successful! --{rst}"
+            +zi-message "{faint}-- Build log{ehi}:{rst} {file}$build_log{faint} --{rst}"
+            .zi-module --info
+            return 0
+          else
+            +zi-message "{error}Build failed{rst}…" \
+            "To report an issue at GitHub, please provide error messages from{ehi}:{rst}{nl}" \
+            "{ndsh} Build log{rst} {dir}${build_log}{rst} if exists{nl}" \
+            "{ndsh} Run '{cmd}make -C ${ZI[ZMODULES_DIR]}/zpmod{rst}' to reproduce{rst}{nl}" \
+            "{ndsh}{rst} {var}URL{rst} to submit{rst} {url}https://github.com/z-shell/zpmod/issues{rst}"
+            return 1
+          fi
+        else
+          +zi-message "{error}No supported build system found in ${ZI[ZMODULES_DIR]}/zpmod (expected CMakeLists.txt or configure){rst}"
           return 1
         fi
       )

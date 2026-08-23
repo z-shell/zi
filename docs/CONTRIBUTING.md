@@ -5,21 +5,21 @@ Thank you for contributing! Please follow the guidelines below to keep the proje
 ## Branch model
 
 ````text
-main  ←─── production (tagged releases only)
-  ↑
-next  ←─── integration branch  ← open all PRs here
-  ↑
-  ├── feat/<name>      new features
-  ├── fix/<name>       bug fixes
-  ├── perf/<name>      performance improvements
-  ├── refactor/<name>  code refactors
-  ├── docs/<name>      documentation updates
-  └── ci/<name>        CI / workflow changes
+main       production and consumable ref
+  |-- hotfix-<id>   urgent fixes that may target main
+  ^
+next       integration branch; ordinary PRs target here
+  ^
+  |-- feature-<id>  new features
+  `-- bug-<id>      bug fixes
 ```text
 
-1. **Always branch from `next`**: `git checkout -b fix/my-issue next`
-2. **Open PRs targeting `next`** — never target `main` directly
-3. `next` → `main` happens via a release PR once `next` is stable
+1. Branch ordinary work from `next`: `git switch -c bug-123 next`.
+2. Target `next` from `feature-<id>` and `bug-<id>` branches.
+3. Use `hotfix-<id>` only for urgent fixes created in this repository,
+   branched from `main`, and targeting `main`. Fork pull requests must target
+   `next`.
+4. Promote `next` to `main` once the integration branch is stable.
 
 ## Commit message format
 
@@ -44,11 +44,13 @@ BREAKING CHANGE: description of what breaks
 - Breaking changes: use `!` suffix (`feat!:`) and add `BREAKING CHANGE:` footer
 - **No AI co-author trailers** — do not add `Co-authored-by: Copilot` or similar
 
-To clean up commits before opening a PR: `git rebase -i $(git merge-base HEAD next)`
+To clean up commits before opening a PR, rebase against the intended target:
+`next` for ordinary work and `main` for hotfixes.
 
 ## What not to add
 
-- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursorrules`, or any AI-specific config files
+- Root `CLAUDE.md`, `GEMINI.md`, `.cursorrules`, or duplicate agent policy files.
+  Extend the repository's `AGENTS.md` instead.
 - Secrets, credentials, or tokens of any kind
 
 ## Discussion and issues

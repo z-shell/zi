@@ -628,47 +628,99 @@ ZI[EXTENDED_GLOB]=""
     return 0
   fi
 } # ]]]
+# FUNCTION: .zi-self-update-lock-path [[[
+# Resolves the repository-local advisory lock used for checkout and dump changes.
+.zi-self-update-lock-path() {
+  local lock_path
+  lock_path="$(command git -C "${ZI[BIN_DIR]}" rev-parse --git-path zi-self-update.lock 2>/dev/null)" || return 1
+  [[ $lock_path = /* ]] || lock_path="${ZI[BIN_DIR]}/${lock_path}"
+  command touch -- "$lock_path" || return 1
+  REPLY="$lock_path"
+} # ]]]
 # FUNCTION: .zi-auto-reload [[[
-# Function checks sum of all files that are used to calculate the mtime
-# and if it is different from the stored one, then recompile, and reload.
+# Recompiles and re-sources Zi when the checkout revision differs from the
+# revision loaded by this shell. Re-sourcing cannot remove definitions deleted
+# by an update; restarting the shell is required for a completely clean state.
 .zi-auto-reload() {
-  builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extended_glob warn_create_global
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob typeset_silent no_short_loops
 
-  [[ $1 == (-q|--quiet) ]] && { local quiet=1; } || { local quiet=0; };
+  [[ $1 == (-q|--quiet) ]] && { local quiet=1; } || { local quiet=0; }
 
-  # The sum of all files that are used to calculate the mtime
-  local file rm_file comp_file src_file
-  integer sum ela elb
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" ela; (( sum += ela ))
-  for file ( side install autoload additional ) {
-    .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${file}.zsh" elb; (( sum += elb ))
+  local checkout_revision lock_file comp_file src_file
+  local -a compile_files source_files
+  integer lock_fd reload_status=0
+
+  zmodload zsh/system 2>/dev/null || {
+    builtin print -u2 -r -- "Zi self-update: zsh/system is required for reload locking"
+    return 1
   }
-
-  # If the sum of all mtime is different from the stored one,
-  # then remove all compiled files then recompile new ones and reload.
-  if (( ZI[mtime] + ZI[mtime-side] + ZI[mtime-install] + ZI[mtime-autoload] + ZI[mtime-additional] != sum )); then
-
-    # Remove all compiled files
-    for rm_file ( ${ZI[BIN_DIR]}/**/*.zwc(DN) ) {
-      command rm -f -- "${rm_file}" > /dev/null 2>&1
-    }
-
-    # Recompile new ones
-    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}recompiling codebase{rst}{…}"
-    for comp_file ( ${ZI[BIN_DIR]}/**/*.zsh*~*.zwc ) {
-      zcompile -U -- ${comp_file} > /dev/null 2>&1
-    } && { (( quiet )) || +zi-message " {term}✔{rst}"; }
-
-    # Reload Zi
-    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}reloading{rst}{…}"
-    for src_file ( zi side install autoload additional ) {
-      builtin source ${ZI[BIN_DIR]}/**/${src_file}.zsh > /dev/null 2>&1
-    } && { (( quiet )) || +zi-message " {term}✔{rst}"; }
-
-    # Update the stored mtime
-    .zi-set-mtime && return 0
+  .zi-self-update-lock-path || {
+    builtin print -u2 -r -- "Zi self-update: cannot create the reload lock"
+    return 1
+  }
+  lock_file="$REPLY"
+  zsystem flock -t "${ZI[SELF_UPDATE_LOCK_TIMEOUT]:-5}" -f lock_fd "$lock_file" || {
+    builtin print -u2 -r -- "Zi self-update: timed out waiting for reload lock ${lock_file}"
+    return 1
+  }
+  checkout_revision="$(command git -C "${ZI[BIN_DIR]}" rev-parse HEAD 2>/dev/null)" || {
+    builtin print -u2 -r -- "Zi self-update: cannot determine checkout revision after locking ${ZI[BIN_DIR]}"
+    zsystem flock -u "$lock_fd"
+    return 1
+  }
+  if [[ $checkout_revision == ${ZI[LOADED_REVISION]} ]]; then
+    zsystem flock -u "$lock_fd"
+    return 0
   fi
+
+  compile_files=(
+    "${ZI[BIN_DIR]}/zi.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/side.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/install.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/git-process-output.zsh"
+  )
+  source_files=(
+    "${ZI[BIN_DIR]}/zi.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/side.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/install.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh"
+    "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+  )
+
+  (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}recompiling codebase{rst}{…}"
+  for comp_file in "${compile_files[@]}"; do
+    if ! zcompile -U -- "$comp_file" >/dev/null 2>&1; then
+      builtin print -u2 -r -- "Zi self-update: failed to compile ${comp_file}"
+      reload_status=1
+      break
+    fi
+  done
+  (( reload_status || quiet )) || +zi-message " {term}✔{rst}"
+
+  if (( ! reload_status )); then
+    (( quiet )) || +zi-message -n "{mmdsh}{happy} Zi{rst} » {profile}reloading{rst}{…}"
+    for src_file in "${source_files[@]}"; do
+      if ! builtin source "$src_file" >/dev/null 2>&1; then
+        builtin print -u2 -r -- "Zi self-update: failed to source ${src_file}"
+        reload_status=1
+        break
+      fi
+    done
+  fi
+
+  if (( ! reload_status )); then
+    ZI[LOADED_REVISION]="$checkout_revision"
+    (( quiet )) || {
+      +zi-message " {term}✔{rst}"
+      +zi-message "{mmdsh}{happy} Zi{rst} » {faint}restart the shell to remove definitions deleted by the update{rst}"
+    }
+  fi
+
+  zsystem flock -u "$lock_fd"
+  return "$reload_status"
 } # ]]]
 # FUNCTION: .zi-self-update [[[
 # Function manages self-update of Zi codebase.
@@ -695,10 +747,25 @@ ZI[EXTENDED_GLOB]=""
     sysctl -n hw.ncpu 2>/dev/null || command getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
   (
+    zmodload zsh/system 2>/dev/null || {
+      builtin print -u2 -r -- "Zi self-update: zsh/system is required for update locking"
+      exit 1
+    }
+    .zi-self-update-lock-path || {
+      builtin print -u2 -r -- "Zi self-update: cannot create the update lock"
+      exit 1
+    }
+    integer update_lock_fd
+    zsystem flock -t "${ZI[SELF_UPDATE_LOCK_TIMEOUT]:-5}" -f update_lock_fd "$REPLY" || {
+      builtin print -u2 -r -- "Zi self-update: timed out waiting for update lock ${REPLY}"
+      exit 1
+    }
+
     # Fetch the latest changes from the upstream repository
     (( quiet )) || +zi-message "{mmdsh}{happy} Zi{rst} » {profile}fetching updates{rst}{…}"
-    builtin cd -q $ZI[BIN_DIR] && command git fetch $opt --jobs $cores --tags --prune --force $origin_url refs/heads/main && \
-      lines=( ${(f)"$(command git log --color --abbrev-commit --decorate --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} )
+    builtin cd -q $ZI[BIN_DIR] || exit 1
+    command git fetch $opt --jobs $cores --tags --prune --force $origin_url refs/heads/main || exit $?
+    lines=( ${(f)"$(command git log --color --abbrev-commit --decorate --date=short --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %C(bold blue)<%an>%Creset' ..FETCH_HEAD)"} ) || exit $?
 
     # If there are any changes then update the codebase and reload Zi
     if (( ${#lines} > 0 )); then
@@ -720,7 +787,7 @@ ZI[EXTENDED_GLOB]=""
     fi
   )
   local update_status=$?
-  if (( update_status == 10 )); then
+  if (( (update_status == 0 || update_status == 10) && !dry_run )); then
     .zi-auto-reload $opt
     return $?
   fi

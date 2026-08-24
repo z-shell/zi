@@ -9,11 +9,13 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/self-update-reload.zsh"
       - "tests/version-reporting.zsh"
   pull_request:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/self-update-reload.zsh"
       - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
@@ -72,3 +74,14 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
+
+  self-update-reload:
+    name: Self-update reload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test self-update reload
+        run: zsh tests/self-update-reload.zsh

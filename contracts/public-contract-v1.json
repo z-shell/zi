@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": 1,
-  "evidence_reviewed": "2026-08-15",
+  "evidence_reviewed": "2026-08-24",
   "renames": [],
   "surfaces": [
     {
@@ -191,8 +191,8 @@
     {
       "repository": "z-shell/F-Sy-H",
       "path": "chroma/-zi.ch",
-      "surfaces": ["ices"],
-      "evidence": "https://github.com/z-shell/F-Sy-H/blob/e9f6487a654ae870154fd9e3384853f37ae01087/chroma/-zi.ch"
+      "surfaces": ["commands", "ices"],
+      "evidence": "https://github.com/z-shell/F-Sy-H/blob/84d964944b1d0297264b668e469473f15083071c/chroma/-zi.ch"
     },
     {
       "repository": "z-shell/zsh-lint",

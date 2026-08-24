@@ -48,6 +48,9 @@ jobs:
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
 
+      - name: Test self-update reload
+        run: zsh tests/self-update-reload.zsh
+
   zd:
     name: ZD integration
     uses: z-shell/zd/.github/workflows/test-native.yml@fd0995d6f7958fea6c4abbc4fff81a6da2277b66 # z-shell/zd#95, #96, #107

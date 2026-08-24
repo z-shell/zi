@@ -59,8 +59,12 @@ if [[ -d ${ZI[BIN_DIR]}/.git || -e ${ZI[BIN_DIR]}/.git ]]; then
   ZI[VERSION]=$(git -C "${ZI[BIN_DIR]}" describe --tags --exact-match 2>/dev/null) || \
     ZI[VERSION]=$(git -C "${ZI[BIN_DIR]}" rev-parse --short HEAD 2>/dev/null) || \
     ZI[VERSION]="unknown"
+  [[ -n ${ZI[LOADED_REVISION]} ]] || \
+    ZI[LOADED_REVISION]=$(git -C "${ZI[BIN_DIR]}" rev-parse HEAD 2>/dev/null) || \
+    ZI[LOADED_REVISION]="unknown"
 else
   ZI[VERSION]="unknown"
+  [[ -n ${ZI[LOADED_REVISION]} ]] || ZI[LOADED_REVISION]="unknown"
 fi
 
 # Zi home path for creating working directories.
@@ -2249,17 +2253,6 @@ return retval
   [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
 } # ]]]
 
-# FUNCTION: .zi-set-mtime. [[[
-# Stores mtime of zi.zsh and its lib files into ZI[mtime] and ZI[mtime-{side,install,autoload,additional}].
-# This is used to determine if the files were changed and need to be reloaded.
-.zi-set-mtime() {
-  local set_mtime
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/zi.zsh" "ZI[mtime]"
-  for set_mtime ( side install autoload additional ) {
-  .zi-get-mtime-into "${ZI[BIN_DIR]}/lib/zsh/${set_mtime}.zsh" "ZI[mtime-${set_mtime}]"
-  }
-}
-
 #
 # Exposed functions.
 #
@@ -2955,7 +2948,6 @@ zmodload -F zsh/stat b:zstat 2>/dev/null && ZI[HAVE_ZSTAT]=1
 (( ZI[INTERNAL_ALIASES] )) && builtin alias zini=zi zinit=zi zplugin=zi
 
 .zi-prepare-home
-.zi-set-mtime
 
 # Simulate existence of _local/zi plugin. This will allow to cuninstall of its completion
 ZI_REGISTERED_PLUGINS=( _local/zi "${(u)ZI_REGISTERED_PLUGINS[@]:#_local/zi}" )

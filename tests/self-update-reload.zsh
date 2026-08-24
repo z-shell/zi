@@ -30,7 +30,9 @@ new_checkout() {
   command cp -- "$project_root/zi.zsh" "$REPLY/zi.zsh"
   command cp -- "$project_root/lib/zsh/autoload.zsh" "$REPLY/lib/zsh/autoload.zsh"
   "$git_bin" -C "$REPLY" add zi.zsh lib/zsh/autoload.zsh
-  "$git_bin" -C "$REPLY" commit -qm "test: install self-update code under test"
+  if ! "$git_bin" -C "$REPLY" diff --cached --quiet; then
+    "$git_bin" -C "$REPLY" commit -qm "test: install self-update code under test"
+  fi
   command rm -f -- "$REPLY"/*.zwc(N) "$REPLY"/lib/zsh/*.zwc(N)
 }
 

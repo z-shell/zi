@@ -47,8 +47,8 @@ commit_change() {
 load_zi() {
   typeset -gAH ZI
   ZI[BIN_DIR]="$1"
-  builtin source "${ZI[BIN_DIR]}/zi.zsh" >/dev/null
-  builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" >/dev/null
+  builtin source "${ZI[BIN_DIR]}/zi.zsh" >/dev/null || fail "source Zi fixture"
+  builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" >/dev/null || fail "source autoload fixture"
 }
 
 # A current checkout is a true no-op: it neither compiles nor changes the

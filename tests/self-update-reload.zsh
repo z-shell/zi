@@ -141,6 +141,10 @@ pass "log failure"
 (
   new_checkout second-shell
   typeset checkout="$REPLY"
+  "$git_bin" -C "$checkout" branch -M main
+  typeset remote="${temp_root}/second-shell-remote.git"
+  "$git_bin" clone -q --bare "$checkout" "$remote"
+  "$git_bin" -C "$checkout" remote set-url origin "$remote"
   load_zi "$checkout"
   commit_change "$checkout" lib/zsh/additional.zsh '# second-shell revision'
   typeset changed_revision="$REPLY"

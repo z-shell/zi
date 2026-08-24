@@ -72,7 +72,7 @@ pass "no-op reload"
 (
   new_checkout current-shell
   typeset checkout="$REPLY"
-  "$git_bin" -C "$checkout" branch -M main
+  "$git_bin" -C "$checkout" switch -q -C main
   typeset remote="${temp_root}/current-shell-remote.git"
   typeset publisher="${temp_root}/current-shell-publisher"
   "$git_bin" clone -q --bare "$checkout" "$remote"
@@ -141,7 +141,7 @@ pass "log failure"
 (
   new_checkout second-shell
   typeset checkout="$REPLY"
-  "$git_bin" -C "$checkout" branch -M main
+  "$git_bin" -C "$checkout" switch -q -C main
   typeset remote="${temp_root}/second-shell-remote.git"
   "$git_bin" clone -q --bare "$checkout" "$remote"
   "$git_bin" -C "$checkout" remote set-url origin "$remote"

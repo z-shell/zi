@@ -11,6 +11,22 @@ typeset temp_root
 temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-self-update-test.XXXXXXXX")"
 trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
 
+typeset -gx HOME="${temp_root}/home"
+typeset -gx ZDOTDIR="${temp_root}/zdotdir"
+typeset -gx XDG_DATA_HOME="${temp_root}/data"
+typeset -gx XDG_CACHE_HOME="${temp_root}/cache"
+typeset -gx XDG_CONFIG_HOME="${temp_root}/config"
+typeset -gx TMPDIR="${temp_root}/tmp"
+typeset -gx ZPFX="${temp_root}/prefix"
+command mkdir -p -- \
+  "$HOME" \
+  "$ZDOTDIR" \
+  "$XDG_DATA_HOME" \
+  "$XDG_CACHE_HOME" \
+  "$XDG_CONFIG_HOME" \
+  "$TMPDIR" \
+  "$ZPFX"
+
 fail() {
   print -u2 -r -- "not ok - $1"
   exit 1
@@ -49,6 +65,10 @@ load_zi() {
   ZI[BIN_DIR]="$1"
   builtin source "${ZI[BIN_DIR]}/zi.zsh" >/dev/null || fail "source Zi fixture"
   builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" >/dev/null || fail "source autoload fixture"
+  [[ ${ZI[HOME_DIR]} == "${HOME}/.zi" ]] || fail "Zi fixture uses isolated home"
+  [[ ${ZI[CACHE_DIR]} == "${XDG_CACHE_HOME}/zi" ]] || fail "Zi fixture uses isolated cache"
+  [[ ${ZI[CONFIG_DIR]} == "${XDG_CONFIG_HOME}/zi" ]] || fail "Zi fixture uses isolated config"
+  [[ -d ${ZI[HOME_DIR]} ]] || fail "Zi fixture prepares isolated home"
 }
 
 # A current checkout is a true no-op: it neither compiles nor changes the

@@ -23,8 +23,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install Zsh
-        run: sudo apt-get update && sudo apt-get install -yq zsh
+      - name: Install Zsh and archive tools
+        run: sudo apt-get update && sudo apt-get install -yq zsh zip unzip
 
       - name: Check and compile Zsh sources
         shell: bash
@@ -50,6 +50,9 @@ jobs:
 
       - name: Test self-update reload
         run: zsh tests/self-update-reload.zsh
+
+      - name: Test archive extraction
+        run: zsh tests/archive-extraction.zsh
 
   zd:
     name: ZD integration

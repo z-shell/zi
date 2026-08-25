@@ -54,6 +54,9 @@ jobs:
       - name: Test archive extraction
         run: zsh tests/archive-extraction.zsh
 
+      - name: Test completion refresh
+        run: zsh tests/completion-refresh.zsh
+
   zd:
     name: ZD integration
     uses: z-shell/zd/.github/workflows/test-native.yml@fd0995d6f7958fea6c4abbc4fff81a6da2277b66 # z-shell/zd#95, #96, #107

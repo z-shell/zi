@@ -49,7 +49,7 @@ jobs:
         run: zsh tests/version-reporting.zsh
 
       - name: Test self-update reload
-        run: zsh tests/self-update-reload.zsh
+        run: zsh -f tests/self-update-reload.zsh
 
       - name: Test archive extraction
         run: zsh tests/archive-extraction.zsh

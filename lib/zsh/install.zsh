@@ -1519,27 +1519,40 @@ ziextract() {
           local infname=$fname
           [[ -f $fname.out ]] && fname=$fname.out
           files=( *.tar(ND) )
-          if [[ -f $fname || -f ${fname:r} ]] {
-            local -aU output2 archives2
-            output2=( ${(@f)"$(command file -- "$fname"(N) "${fname:r}"(N) $files[1](N) 2>&1)"} )
+          if [[ -f $fname || -f ${fname:r} || ${#files} -gt 0 ]] {
+            local -aU output2 archives2 stage2_candidates
+            local stage2_output file2 type2
+            local -i nested_status nested_failed=0
+            stage2_candidates=( "$fname"(N) "${fname:r}"(N) "${files[@]}" )
+            stage2_output=$(command file -- "${stage2_candidates[@]}" 2>&1)
+            nested_status=$?
+            if (( nested_status )) {
+              ret_val+=nested_status
+              continue
+            }
+            output2=( ${(@f)stage2_output} )
             archives2=( ${(M)output2[@]:#(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) *} )
-            local file2
             for file2 ( $archives2 ) {
               fname=${file2%:*} desc=${file2##*:}
-              local type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
+              type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
               if [[ $type != $type2 && $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar) ]] {
-                # TODO: #115 If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
-                [[ $fname != $infname && $norm -eq 0 ]] && command rm -f "$infname"
                 (( !OPTS[opt_-q,--quiet] )) && \
                 +zi-message "{annex}ziextract{ehi}:{rst} {note}Detected a {obj2}${type2}{note} archive in the file{ehi}:{rst} {file}${fname}{rst}"
-                ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm ${${${#archives}:#1}:+--nobkp}
-                ret_val+=$?
+                # The outer extraction already applied the requested backup policy.
+                # Re-backing up here can hide sibling archives before they run.
+                ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm --nobkp
+                nested_status=$?
+                ret_val+=nested_status
+                (( nested_status )) && nested_failed=1
                 stage2_processed+=( $fname )
                 if [[ $fname == *.out ]] {
                   [[ -f $fname ]] && command mv -f "$fname" "${fname%.out}"
                   stage2_processed+=( ${fname%.out} )
                 }
               }
+            }
+            if (( !nested_failed && !norm )) && [[ -e $infname ]] {
+              command rm -f -- "$infname" || (( ++ret_val ))
             }
           }
         }

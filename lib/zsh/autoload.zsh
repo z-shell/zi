@@ -1721,6 +1721,8 @@ ZI[EXTENDED_GLOB]=""
 # $1 - "status" or "update"
 # $2 - snippet URL
 .zi-update-or-status-snippet() {
+  builtin emulate -L zsh
+  builtin setopt extendedglob
   local st="$1" URL="${2%/}" local_dir filename is_snippet
   (( ${#ICE[@]} > 0 )) && { ZI_SICE[$URL]=""; local nf="-nftid"; }
   local -A ICE2
@@ -1729,7 +1731,14 @@ ZI[EXTENDED_GLOB]=""
   if [[ "$st" = "status" ]]; then
     if (( ${+ICE2[svn]} )); then
       builtin print -r -- "${ZI[col-info]}Status for ${${${local_dir:h}:t}##*--}/${local_dir:t}${ZI[col-rst]}"
-      ( builtin cd -q "$local_dir"; command svn status -vu )
+      if [[ -f $local_dir/._zi/mirror-backend && "$(<$local_dir/._zi/mirror-backend)" = git-sparse ]]; then
+        (( ${+functions[.zi-mirror-using-git]} )) || builtin source ${ZI[BIN_DIR]}"/lib/zsh/install.zsh"
+        local mirror_url=${ICE2[teleid]:-$URL}
+        mirror_url=${mirror_url/(#s)(#m)(${(~kj.|.)ZI_1MAP})/$ZI_1MAP[$MATCH]}
+        .zi-mirror-using-git "$mirror_url" -s "$local_dir"
+      else
+        ( builtin cd -q "$local_dir"; command svn status -vu )
+      fi
       retval=$?
       builtin print
     else

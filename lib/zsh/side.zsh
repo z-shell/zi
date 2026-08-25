@@ -126,12 +126,13 @@
 
   .zi-get-object-path snippet "$url1"
   local_dirA=$reply[-3] dirnameA=$reply[-2]
-  [[ -d "$local_dirA/$dirnameA/.svn" ]] && {
-    svn_dirA=".svn"
+  local mirror_marker="$local_dirA/$dirnameA/._zi/mirror-backend"
+  if [[ -d "$local_dirA/$dirnameA/.svn" || ( -f $mirror_marker && "$(<$mirror_marker)" = git-sparse ) ]]; then
+    [[ -d "$local_dirA/$dirnameA/.svn" ]] && svn_dirA=.svn || svn_dirA=._zi/mirror-backend
     if { .zi-first % "$local_dirA/$dirnameA"; } {
       fileB_there=( ${reply[-1]} )
     }
-  }
+  fi
 
   .zi-get-object-path snippet "$url2"
   local_dirB=$reply[-3] dirnameB=$reply[-2]

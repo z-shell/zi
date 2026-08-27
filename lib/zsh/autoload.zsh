@@ -1721,6 +1721,8 @@ ZI[EXTENDED_GLOB]=""
 # $1 - "status" or "update"
 # $2 - snippet URL
 .zi-update-or-status-snippet() {
+  builtin emulate -L zsh
+  builtin setopt extendedglob
   local st="$1" URL="${2%/}" local_dir filename is_snippet
   (( ${#ICE[@]} > 0 )) && { ZI_SICE[$URL]=""; local nf="-nftid"; }
   local -A ICE2
@@ -1729,7 +1731,14 @@ ZI[EXTENDED_GLOB]=""
   if [[ "$st" = "status" ]]; then
     if (( ${+ICE2[svn]} )); then
       builtin print -r -- "${ZI[col-info]}Status for ${${${local_dir:h}:t}##*--}/${local_dir:t}${ZI[col-rst]}"
-      ( builtin cd -q "$local_dir"; command svn status -vu )
+      if [[ -f $local_dir/._zi/mirror-backend && "$(<$local_dir/._zi/mirror-backend)" = git-sparse ]]; then
+        (( ${+functions[.zi-mirror-using-git]} )) || builtin source ${ZI[BIN_DIR]}"/lib/zsh/install.zsh"
+        local mirror_url=${ICE2[teleid]:-$URL}
+        mirror_url=${mirror_url/(#s)(#m)(${(~kj.|.)ZI_1MAP})/$ZI_1MAP[$MATCH]}
+        .zi-mirror-using-git "$mirror_url" -s "$local_dir"
+      else
+        ( builtin cd -q "$local_dir"; command svn status -vu )
+      fi
       retval=$?
       builtin print
     else
@@ -2948,6 +2957,9 @@ EOF
 } # ]]]
 # FUNCTION: .zi-ls [[[
 .zi-ls() {
+  builtin emulate -L zsh
+  builtin setopt extendedglob
+
   if (( ${+commands[tree]} )); then
     ZI[TREE]="${commands[tree]} -L 3 -C --charset utf-8"
   elif (( ${+commands[eza]} )); then
@@ -2964,12 +2976,12 @@ EOF
     list=( "${(f@)"$(${=ZI[TREE]})"}" )
     # Oh-My-Zsh single file
     list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--raw--master(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
-    # Oh-My-Zsh SVN
-    list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--trunk(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](SVN)$ZI[col-rst] ${match[1]}}" )
+    # Oh-My-Zsh Git sparse directory
+    list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--trunk(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](Git sparse)$ZI[col-rst] ${match[1]}}" )
     # Prezto single file
     list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--raw--master(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
-    # Prezto SVN
-    list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--trunk(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](SVN)$ZI[col-rst] ${match[1]}}" )
+    # Prezto Git sparse directory
+    list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--trunk(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](Git sparse)$ZI[col-rst] ${match[1]}}" )
     # First-level names
     list=( "${list[@]//(#b)(#s)(│   └──|    └──|    ├──|│   ├──) (*)/${match[1]} $ZI[col-p]${match[2]}$ZI[col-rst]}" )
     list[-1]+=", at ZI[SNIPPETS_DIR] - (${ZI[SNIPPETS_DIR]})"

@@ -1377,7 +1377,7 @@ builtin setopt noaliases
     (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt noaliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
   elif [[ -n ${opts[(r)--command]} || ${ICE[as]} = command ]]; then
     [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${id_as:t}"
-    # Subversion - directory and multiple files possible.
+    # Directory snippet - a directory and multiple files are possible.
     if (( ${+ICE[svn]} )); then
       if [[ -n ${ICE[pick]} ]]; then
         list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )

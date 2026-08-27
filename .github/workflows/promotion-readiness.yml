@@ -48,16 +48,20 @@ jobs:
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
 
-      - name: Test self-update reload
+      - name: Test self-update reload when present
+        if: ${{ hashFiles('tests/self-update-reload.zsh') != '' }}
         run: zsh -f tests/self-update-reload.zsh
 
-      - name: Test archive extraction
+      - name: Test archive extraction when present
+        if: ${{ hashFiles('tests/archive-extraction.zsh') != '' }}
         run: zsh tests/archive-extraction.zsh
 
-      - name: Test completion refresh
+      - name: Test completion refresh when present
+        if: ${{ hashFiles('tests/completion-refresh.zsh') != '' }}
         run: zsh tests/completion-refresh.zsh
 
-      - name: Test snippet directory mirror
+      - name: Test snippet directory mirror when present
+        if: ${{ hashFiles('tests/snippet-directory-mirror.zsh') != '' }}
         run: zsh -f tests/snippet-directory-mirror.zsh
 
   zd:

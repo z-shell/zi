@@ -19,4 +19,6 @@ annexes, plugins, documentation, installers, and test environments.
 - Write Zsh-first code and avoid Bash-only syntax.
 - Run the existing Zsh syntax, integration, and focused tests for changed paths.
 - Keep user-facing documentation in the canonical wiki when practical.
-- Follow the organization commit policy and never add `Co-authored-by` trailers.
+- Follow the organization commit policy. A `Co-authored-by` trailer may credit a
+  real human, including the pull-request author; never credit a bot, AI agent,
+  or automation as a co-author.

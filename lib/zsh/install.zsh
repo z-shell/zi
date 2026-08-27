@@ -683,8 +683,162 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   return 0
 } # ]]]
+# FUNCTION: .zi-parse-github-svn-url [[[
+# Parses a legacy GitHub Subversion trunk URL into a Git repository URL and
+# repository-relative directory.
+#
+# $1 - URL in https://github.com/OWNER/REPOSITORY/trunk/PATH form
+.zi-parse-github-svn-url() {
+  builtin emulate -L zsh
+  builtin setopt extendedglob
+
+  local url=${1%/}
+  [[ $url = http(|s)://github.com/* ]] || return 1
+  url=${url/#http:/https:}
+
+  local path=${url#https://github.com/}
+  local owner=${path%%/*}
+  path=${path#*/}
+  local repository=${path%%/*}
+  path=${path#*/}
+
+  repository=${repository%.git}
+  [[ $owner = [[:alnum:]][[:alnum:]._-]# && $repository = [[:alnum:]][[:alnum:]._-]# ]] || return 1
+  [[ $path = trunk/* ]] || return 1
+
+  local subpath=${path#trunk/}
+  local -a components
+  components=( ${(s:/:)subpath} )
+  [[ -n $subpath && $subpath != *[\?\#]* && ${components[(I)(|.|..)]} -eq 0 ]] || return 1
+
+  reply=( "https://github.com/$owner/$repository.git" "$subpath" )
+  return 0
+}
+# ]]]
+# FUNCTION: .zi-mirror-using-git [[[
+# Downloads a GitHub repository directory through a shallow sparse checkout.
+# The selected directory is activated as a complete snapshot, while Zi's
+# metadata is preserved under ._zi.
+#
+# $1 - legacy GitHub Subversion trunk URL
+# $2 - mode, "" - install, "-u" - update, "-t" - test, "-s" - status
+# $3 - installed directory
+.zi-mirror-using-git() {
+  builtin emulate -L zsh
+  builtin setopt extendedglob
+
+  local url=$1 mode=$2 directory=$3
+  (( ${+commands[git]} )) || {
+    +zi-message "{error}Error{ehi}:{rst} Git is required for GitHub directory snippets"
+    return 4
+  }
+
+  .zi-parse-github-svn-url "$url" || {
+    +zi-message "{error}Error{ehi}:{rst} Unsupported GitHub directory URL{ehi}:{rst} {url}$url{rst}"
+    +zi-message "{mmdsh}{rst} Expected {url}https://github.com/OWNER/REPOSITORY/trunk/PATH{rst}"
+    return 4
+  }
+  local repository_url=$reply[1] subpath=$reply[2]
+  local remote_output remote_revision local_revision
+
+  if [[ $mode = -t || $mode = -s ]]; then
+    remote_output=$(command git ls-remote --exit-code "$repository_url" HEAD 2>/dev/null) || {
+      +zi-message "{error}Error{ehi}:{rst} Cannot query GitHub directory snippet revision{ehi}:{rst} {url}$repository_url{rst}"
+      return 4
+    }
+    remote_revision=${remote_output%%[[:space:]]*}
+    [[ -n $remote_revision ]] || return 4
+    [[ -f $directory/._zi/mirror-revision ]] && local_revision="$(<$directory/._zi/mirror-revision)"
+
+    if [[ $mode = -s ]]; then
+      builtin print -r -- "Installed revision: ${local_revision:-unknown}"
+      builtin print -r -- "Remote revision:    $remote_revision"
+      [[ -n $local_revision && $local_revision = $remote_revision ]] && \
+        builtin print -r -- "Directory snapshot is up to date." || \
+        builtin print -r -- "Directory snapshot has an update available."
+      return 0
+    fi
+
+    [[ -n $local_revision && $local_revision = $remote_revision ]] && return 1
+    return 0
+  fi
+
+  [[ -z $mode || $mode = -u ]] || return 4
+  [[ -n $directory && $directory != (.|..) && $directory = ${directory:t} ]] || {
+    +zi-message "{error}Error{ehi}:{rst} Invalid GitHub directory snippet target{ehi}:{rst} {file}$directory{rst}"
+    return 4
+  }
+  [[ ! -L $directory && ! -L $directory/._zi ]] || {
+    +zi-message "{error}Error{ehi}:{rst} Refusing to replace a symlinked GitHub directory snippet or metadata directory"
+    return 4
+  }
+
+  local temp_root
+  temp_root=$(command mktemp -d ".zi-git-mirror.XXXXXXXX") || return 4
+  local repository_dir=$temp_root/repository payload_dir=$temp_root/payload
+  local previous_dir=$temp_root/previous source_dir
+  integer previous_moved=0 activated=0 restore_failed=0
+
+  {
+    command git clone --quiet --depth=1 --filter=blob:none --sparse --single-branch \
+      "$repository_url" "$repository_dir" || return 4
+    command git -C "$repository_dir" sparse-checkout set --cone -- "$subpath" || return 4
+    source_dir=$repository_dir/$subpath
+    [[ -d $source_dir ]] || return 4
+
+    remote_revision=$(command git -C "$repository_dir" rev-parse HEAD) || return 4
+    command mkdir -p -- "$payload_dir" || return 4
+    local -a entries
+    entries=( "$source_dir"/*(DN) )
+    (( ${#entries} )) || return 4
+    command mv -- "${entries[@]}" "$payload_dir/" || return 4
+
+    command rm -rf -- "$payload_dir/._zi" || return 4
+    if [[ -d $directory/._zi ]]; then
+      command cp -Rp -- "$directory/._zi" "$payload_dir/._zi" || return 4
+    else
+      command mkdir -p -- "$payload_dir/._zi" || return 4
+    fi
+    command rm -f -- \
+      "$payload_dir/._zi/mirror-backend" \
+      "$payload_dir/._zi/mirror-revision" || return 4
+    builtin print -r -- git-sparse >! "$payload_dir/._zi/mirror-backend" || return 4
+    builtin print -r -- "$remote_revision" >! "$payload_dir/._zi/mirror-revision" || return 4
+
+    if [[ -e $directory || -L $directory ]]; then
+      command mv -- "$directory" "$previous_dir" || return 4
+      previous_moved=1
+    fi
+    command mv -- "$payload_dir" "$directory" || return 4
+    activated=1
+  } always {
+    if (( previous_moved && !activated )) && [[ ! -e $directory && ! -L $directory && -e $previous_dir ]]; then
+      command mv -- "$previous_dir" "$directory" || {
+        restore_failed=1
+        +zi-message "{error}Error{ehi}:{rst} Could not restore the previous directory snippet; its recovery directory was retained"
+      }
+    fi
+    (( restore_failed )) || command rm -rf -- "$temp_root"
+  }
+
+  (( activated )) || return 4
+  return 0
+}
+# ]]]
+# FUNCTION: .zi-mirror-directory [[[
+# Selects Git sparse checkout for GitHub trunk URLs and preserves Subversion
+# compatibility for other directory-snippet sources.
+.zi-mirror-directory() {
+  builtin emulate -L zsh
+  if [[ $1 = http(|s)://github.com/* ]]; then
+    .zi-mirror-using-git "$@"
+  else
+    .zi-mirror-using-svn "$@"
+  fi
+}
+# ]]]
 # FUNCTION: .zi-mirror-using-svn [[[
-# Used to clone subdirectories from Github.
+# Used to clone subdirectories from non-GitHub Subversion servers.
 # If in update mode (see $2), then invokes `svn update',
 # in normal mode invokes `svn checkout --non-interactive -q <URL>'.
 # In test mode only compares remote and local revision and outputs true if update is needed.
@@ -693,11 +847,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - mode, "" - normal, "-u" - update, "-t" - test
 # $3 - subdirectory (not path) with working copy, needed for -t and -u
 .zi-mirror-using-svn() {
-  builtin setopt localoptions extendedglob warncreateglobal
+  builtin emulate -L zsh
+  builtin setopt extendedglob warncreateglobal
   local url="$1" update="$2" directory="$3"
 
-  (( ${+commands[svn]} )) || \
-    +zi-message "{error}Warning{ehi}:{rst} Subversion not found{nl}{mmdsh}{rst} {auto}Please install it to use \`svn' ice"
+  (( ${+commands[svn]} )) || {
+    +zi-message "{error}Error{ehi}:{rst} Subversion not found{nl}{mmdsh}{rst} {auto}Please install it for non-GitHub \`svn' ice sources"
+    return 4
+  }
 
   if [[ "$update" = "-t" ]]; then
     ( () { builtin setopt localoptions noautopushd; builtin cd -q "$directory"; }
@@ -840,9 +997,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   return 0
 } # ]]]
 # FUNCTION: .zi-download-snippet [[[
-# Downloads snippet – either a file – with curl, wget, lftp or lynx, or a directory,
-# with Subversion – when svn-ICE is active. Github supports Subversion protocol and allows
-# to clone subdirectories. This is used to provide a layer of support for Oh-My-Zsh and Prezto.
+# Downloads a snippet file with curl, wget, lftp or lynx. Directory snippets
+# use Git sparse checkout on GitHub and Subversion for other servers when the
+# svn ice is active. This provides a layer of support for Oh-My-Zsh and Prezto.
 .zi-download-snippet() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extendedglob warncreateglobal typesetsilent
@@ -910,20 +1067,26 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # URL
       (
         () { builtin setopt localoptions noautopushd; builtin cd -q "$local_dir"; } || return 4
+        local mirror_name=Subversion
+        [[ $url = http(|s)://github.com/* ]] && mirror_name="Git sparse checkout"
         (( !OPTS[opt_-q,--quiet] )) && \
-        +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with Subversion{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
+        +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with $mirror_name{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
 
         if (( ${+ICE[svn]} )) {
           if [[ $update = -u ]] {
             # Test if update available
-            if ! .zi-mirror-using-svn "$url" "-t" "$dirname"; then
+            .zi-mirror-directory "$url" "-t" "$dirname"
+            integer mirror_rc=$?
+            if (( mirror_rc == 1 )); then
               if (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) {
                 ZI[annex-multi-flag:pull-active]=1
               } else { return 0; }
               # Will return when no updates so atpull'' code below doesn't need any checks.
               # This return 0 statement also sets the pull-active flag outside this subshell.
-            else
+            elif (( mirror_rc == 0 )); then
               ZI[annex-multi-flag:pull-active]=2
+            else
+              return 4
             fi
             # Run annexes' atpull hooks (the before atpull-ice ones). The SVN block.
             reply=(
@@ -947,15 +1110,15 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
               if (( OPTS[opt_-q,--quiet] )); then
                 local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
                 +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
-                +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with Subversion{rst}){…}"
+                +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with $mirror_name{rst}){…}"
               fi
-              .zi-mirror-using-svn "$url" "-u" "$dirname" || return 4
+              .zi-mirror-directory "$url" "-u" "$dirname" || return 4
             }
           } else {
-            .zi-mirror-using-svn "$url" "" "$dirname" || return 4
+            .zi-mirror-directory "$url" "" "$dirname" || return 4
           }
 
-          # Redundant code, just to compile SVN snippet
+          # Redundant code, just to compile a directory snippet.
           if [[ ${ICE[as]} != command ]]; then
             if [[ -n ${ICE[pick]} ]]; then
               list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )
@@ -1519,27 +1682,40 @@ ziextract() {
           local infname=$fname
           [[ -f $fname.out ]] && fname=$fname.out
           files=( *.tar(ND) )
-          if [[ -f $fname || -f ${fname:r} ]] {
-            local -aU output2 archives2
-            output2=( ${(@f)"$(command file -- "$fname"(N) "${fname:r}"(N) $files[1](N) 2>&1)"} )
+          if [[ -f $fname || -f ${fname:r} || ${#files} -gt 0 ]] {
+            local -aU output2 archives2 stage2_candidates
+            local stage2_output file2 type2
+            local -i nested_status nested_failed=0
+            stage2_candidates=( "$fname"(N) "${fname:r}"(N) "${files[@]}" )
+            stage2_output=$(command file -- "${stage2_candidates[@]}" 2>&1)
+            nested_status=$?
+            if (( nested_status )) {
+              ret_val+=nested_status
+              continue
+            }
+            output2=( ${(@f)stage2_output} )
             archives2=( ${(M)output2[@]:#(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) *} )
-            local file2
             for file2 ( $archives2 ) {
               fname=${file2%:*} desc=${file2##*:}
-              local type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
+              type2=${(L)desc/(#b)(#i)(* |(#s))(zip|rar|xz|7-zip|gzip|bzip2|tar|exe|PE32) */$match[2]}
               if [[ $type != $type2 && $type2 = (zip|rar|xz|7-zip|gzip|bzip2|tar) ]] {
-                # TODO: #115 If multiple archives are really in the archive, this might delete too soon… However, it's unusual case.
-                [[ $fname != $infname && $norm -eq 0 ]] && command rm -f "$infname"
                 (( !OPTS[opt_-q,--quiet] )) && \
                 +zi-message "{annex}ziextract{ehi}:{rst} {note}Detected a {obj2}${type2}{note} archive in the file{ehi}:{rst} {file}${fname}{rst}"
-                ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm ${${${#archives}:#1}:+--nobkp}
-                ret_val+=$?
+                # The outer extraction already applied the requested backup policy.
+                # Re-backing up here can hide sibling archives before they run.
+                ziextract "$fname" "$type2" $opt_move $opt_move2 $opt_norm --nobkp
+                nested_status=$?
+                ret_val+=nested_status
+                (( nested_status )) && nested_failed=1
                 stage2_processed+=( $fname )
                 if [[ $fname == *.out ]] {
                   [[ -f $fname ]] && command mv -f "$fname" "${fname%.out}"
                   stage2_processed+=( ${fname%.out} )
                 }
               }
+            }
+            if (( !nested_failed && !norm )) && [[ -e $infname ]] {
+              command rm -f -- "$infname" || (( ++ret_val ))
             }
           }
         }

@@ -9,11 +9,19 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/archive-extraction.zsh"
+      - "tests/completion-refresh.zsh"
+      - "tests/self-update-reload.zsh"
+      - "tests/snippet-directory-mirror.zsh"
       - "tests/version-reporting.zsh"
   pull_request:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/archive-extraction.zsh"
+      - "tests/completion-refresh.zsh"
+      - "tests/self-update-reload.zsh"
+      - "tests/snippet-directory-mirror.zsh"
       - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
@@ -72,3 +80,47 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
+
+  self-update-reload:
+    name: Self-update reload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test self-update reload
+        run: zsh -f tests/self-update-reload.zsh
+
+  archive-extraction:
+    name: Archive extraction
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh and archive tools
+        run: sudo apt update && sudo apt-get install -yq zsh zip unzip
+      - name: Test archive extraction
+        run: zsh tests/archive-extraction.zsh
+
+  completion-refresh:
+    name: Completion refresh
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test completion refresh
+        run: zsh tests/completion-refresh.zsh
+
+  snippet-directory-mirror:
+    name: Snippet directory mirror
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test snippet directory mirror
+        run: zsh -f tests/snippet-directory-mirror.zsh

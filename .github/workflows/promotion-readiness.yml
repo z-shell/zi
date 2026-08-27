@@ -23,8 +23,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install Zsh
-        run: sudo apt-get update && sudo apt-get install -yq zsh
+      - name: Install Zsh and archive tools
+        run: sudo apt-get update && sudo apt-get install -yq zsh zip unzip
 
       - name: Check and compile Zsh sources
         shell: bash
@@ -47,6 +47,22 @@ jobs:
 
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
+
+      - name: Test self-update reload when present
+        if: ${{ hashFiles('tests/self-update-reload.zsh') != '' }}
+        run: zsh -f tests/self-update-reload.zsh
+
+      - name: Test archive extraction when present
+        if: ${{ hashFiles('tests/archive-extraction.zsh') != '' }}
+        run: zsh tests/archive-extraction.zsh
+
+      - name: Test completion refresh when present
+        if: ${{ hashFiles('tests/completion-refresh.zsh') != '' }}
+        run: zsh tests/completion-refresh.zsh
+
+      - name: Test snippet directory mirror when present
+        if: ${{ hashFiles('tests/snippet-directory-mirror.zsh') != '' }}
+        run: zsh -f tests/snippet-directory-mirror.zsh
 
   zd:
     name: ZD integration

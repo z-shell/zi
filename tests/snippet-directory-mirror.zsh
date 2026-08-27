@@ -36,6 +36,9 @@ typeset svn_log="$temp_root/svn.log"
 command mkdir -p -- \
   "$source_repo/plugins/example" \
   "$source_repo/plugins/sibling" \
+  "$source_repo/modules/archive/functions" \
+  "$source_repo/modules/directory" \
+  "$source_repo/modules/utility" \
   "$shim_dir" \
   "$install_parent" \
   "$temp_root/home" \
@@ -46,6 +49,9 @@ command mkdir -p -- \
 
 builtin print -r -- v1 >| "$source_repo/plugins/example/example.plugin.zsh"
 builtin print -r -- sibling >| "$source_repo/plugins/sibling/ignored.plugin.zsh"
+builtin print -r -- 'builtin print -r -- archive' >| "$source_repo/modules/archive/functions/archive"
+builtin print -r -- directory >| "$source_repo/modules/directory/init.zsh"
+builtin print -r -- utility >| "$source_repo/modules/utility/init.zsh"
 "$real_git" -C "$source_repo" init -q --initial-branch=main || fail "initialize source repository"
 "$real_git" -C "$source_repo" config user.name "Snippet Mirror Test"
 "$real_git" -C "$source_repo" config user.email "snippet-mirror@example.invalid"
@@ -86,7 +92,13 @@ builtin print -r -- sibling >| "$source_repo/plugins/sibling/ignored.plugin.zsh"
   builtin print -r -- 'exit 0'
 } >| "$shim_dir/svn" || fail "write Subversion shim"
 
-command chmod +x -- "$shim_dir/git" "$shim_dir/mv" "$shim_dir/svn" || fail "make command shims executable"
+{
+  builtin print -r -- '#!/bin/sh'
+  builtin print -r -- 'printf "%s\n" https--github.com--sorin-ionescu--prezto--trunk--modules--archive'
+} >| "$shim_dir/tree" || fail "write tree shim"
+
+command chmod +x -- "$shim_dir/git" "$shim_dir/mv" "$shim_dir/svn" "$shim_dir/tree" || \
+  fail "make command shims executable"
 
 typeset -gx HOME="$temp_root/home"
 typeset -gx ZDOTDIR="$temp_root/zdotdir"
@@ -115,6 +127,28 @@ mirror() {
   )
 }
 
+# The legacy PZTM shorthand still selects the GitHub directory URL when the
+# svn compatibility ice is present, then exposes the selected module's
+# functions from the Git sparse-checkout snapshot.
+typeset saved_snippets_dir=${ZI[SNIPPETS_DIR]}
+ZI[SNIPPETS_DIR]="$install_parent/prezto-objects"
+zi ice svn silent nocompile
+zi snippet PZTM::archive >/dev/null || fail "load PZTM archive directory snippet"
+.zi-get-object-path snippet PZTM::archive 2>/dev/null
+typeset prezto_local_dir=$reply[-3] prezto_dirname=$reply[-2]
+typeset prezto_object="$prezto_local_dir/$prezto_dirname"
+[[ $(<"$prezto_object/._zi/mirror-backend") = git-sparse ]] || fail "record PZTM Git backend"
+[[ -n ${fpath[(r)$prezto_object/functions]} ]] || fail "add PZTM functions directory to fpath"
+(( ${+functions[archive]} )) || fail "autoload PZTM archive function"
+[[ ! -e "$prezto_object/directory/init.zsh" ]] || fail "exclude sibling Prezto module"
+builtin source "$project_root/lib/zsh/autoload.zsh" >/dev/null || fail "source autoload library"
+typeset list_output
+list_output="$(.zi-ls)" || fail "list Git sparse directory snippet"
+[[ $list_output = *"(Git sparse)"* ]] || fail "label PZTM Git sparse backend"
+[[ $list_output != *"(SVN)"* ]] || fail "avoid stale PZTM Subversion label"
+ZI[SNIPPETS_DIR]=$saved_snippets_dir
+pass "load PZTM directory snippet through Git sparse checkout"
+
 # A fresh GitHub directory install contains only the selected subtree and
 # records enough metadata for later update and status checks.
 mirror "$github_url" "" installed || fail "install GitHub directory snippet"
@@ -128,7 +162,6 @@ pass "install selected GitHub directory"
 
 # Zi's object-path and status layers recognize the new metadata marker instead
 # of treating the copied snapshot as either a single file or an SVN checkout.
-typeset saved_snippets_dir=${ZI[SNIPPETS_DIR]}
 typeset status_output
 ZI[SNIPPETS_DIR]="$install_parent/object-paths"
 .zi-get-object-path snippet "$github_url" 2>/dev/null

@@ -1118,7 +1118,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             .zi-mirror-directory "$url" "" "$dirname" || return 4
           }
 
-          # Redundant code, just to compile SVN snippet
+          # Redundant code, just to compile a directory snippet.
           if [[ ${ICE[as]} != command ]]; then
             if [[ -n ${ICE[pick]} ]]; then
               list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )

@@ -2957,6 +2957,9 @@ EOF
 } # ]]]
 # FUNCTION: .zi-ls [[[
 .zi-ls() {
+  builtin emulate -L zsh
+  builtin setopt extendedglob
+
   if (( ${+commands[tree]} )); then
     ZI[TREE]="${commands[tree]} -L 3 -C --charset utf-8"
   elif (( ${+commands[eza]} )); then
@@ -2973,12 +2976,12 @@ EOF
     list=( "${(f@)"$(${=ZI[TREE]})"}" )
     # Oh-My-Zsh single file
     list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--raw--master(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
-    # Oh-My-Zsh SVN
-    list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--trunk(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](SVN)$ZI[col-rst] ${match[1]}}" )
+    # Oh-My-Zsh Git sparse directory
+    list=( "${list[@]//(#b)(https--github.com--(ohmyzsh|robbyrussel)l--oh-my-zsh--trunk(--)(#c0,1)(*))/$ZI[col-info]Oh-My-Zsh$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](Git sparse)$ZI[col-rst] ${match[1]}}" )
     # Prezto single file
     list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--raw--master(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](single-file)$ZI[col-rst] ${match[1]}}" )
-    # Prezto SVN
-    list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--trunk(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](SVN)$ZI[col-rst] ${match[1]}}" )
+    # Prezto Git sparse directory
+    list=( "${list[@]//(#b)(https--github.com--sorin-ionescu--prezto--trunk(--)(#c0,1)(*))/$ZI[col-info]Prezto$ZI[col-error]${match[2]/--//}$ZI[col-pname]${match[3]//--/$ZI[col-error]/$ZI[col-pname]} $ZI[col-info](Git sparse)$ZI[col-rst] ${match[1]}}" )
     # First-level names
     list=( "${list[@]//(#b)(#s)(│   └──|    └──|    ├──|│   ├──) (*)/${match[1]} $ZI[col-p]${match[2]}$ZI[col-rst]}" )
     list[-1]+=", at ZI[SNIPPETS_DIR] - (${ZI[SNIPPETS_DIR]})"

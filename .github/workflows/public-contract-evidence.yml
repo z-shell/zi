@@ -1,0 +1,40 @@
+---
+name: Public Contract Evidence
+
+# Consumer evidence pins in contracts/public-contract-v1.json cite a fixed
+# commit. Nothing detects when the consumer file moves on, so a pin can
+# silently describe a version that no longer exists. This scheduled report
+# surfaces those pins for maintainer review; it never edits the manifest.
+
+on:
+  schedule:
+    # Weekly, Monday, offset off the hour to avoid the scheduler peak.
+    - cron: "23 7 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-contract-evidence
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    name: Consumer evidence freshness
+    if: github.repository == 'z-shell/zi'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -yq jq zsh
+
+      - name: Report stale consumer evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: zsh scripts/public-contract-evidence.zsh

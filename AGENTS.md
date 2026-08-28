@@ -11,7 +11,12 @@ annexes, plugins, documentation, installers, and test environments.
 - `next` is the development and integration branch.
 - Ordinary work branches from and targets `next`.
 - Use `feature-<id>`, `bug-<id>`, or `hotfix-<id>` branch names.
-- `next` promotes to `main`; `hotfix-*` branches may target `main` directly.
+- Promote `next` to stable `main` with a merge commit, never squash or rebase.
+- Neither `main` nor `next` may require linear history; both promotion and
+  hotfix synchronization preserve merge ancestry.
+- A successful promotion needs no routine back-merge. Merge a `main` hotfix
+  forward into `next` before ordinary development continues.
+- `hotfix-*` branches may target `main` directly.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
 
 ## Implementation

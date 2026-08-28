@@ -19,7 +19,11 @@ next       integration branch; ordinary PRs target here
 3. Use `hotfix-<id>` only for urgent fixes created in this repository,
    branched from `main`, and targeting `main`. Fork pull requests must target
    `next`.
-4. Promote `next` to `main` once the integration branch is stable.
+4. Promote `next` to `main` once the integration branch is stable. Use **Create
+   a merge commit**, never squash or rebase, so the reviewed candidate remains
+   a parent of stable `main`.
+5. A successful promotion needs no routine back-merge. After a direct `main`
+   hotfix, merge `main` forward into `next` before ordinary work continues.
 
 ## Commit message format
 
@@ -46,6 +50,10 @@ BREAKING CHANGE: description of what breaks
 
 To clean up commits before opening a PR, rebase against the intended target:
 `next` for ordinary work and `main` for hotfixes.
+
+Repository rules intentionally omit linear-history requirements on both
+persistent branches so promotion and hotfix synchronization can preserve their
+merge commits.
 
 ## What not to add
 

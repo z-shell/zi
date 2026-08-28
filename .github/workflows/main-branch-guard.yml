@@ -31,5 +31,5 @@ jobs:
             echo "Head branch '${HEAD_REF}' is allowed to target main."
             exit 0
           fi
-          echo "::error::Pull requests into main must come from 'next' or a 'hotfix-*' branch (got '${HEAD_REF}'). See ADR-0008 (z-shell/.github) for the branching model."
+          echo "::error::Pull requests into main must come from 'next' or a 'hotfix-*' branch (got '${HEAD_REF}'). See ADR-0019 (z-shell/.github) for the branching model."
           exit 1

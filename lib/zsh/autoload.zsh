@@ -1955,6 +1955,11 @@ ZI[EXTENDED_GLOB]=""
   +zi-message "{msg}Modules{ehi}:{rst} {tab}{tab}{tab}{tab}{dir}${ZI[ZMODULES_DIR]}{rst}"
   +zi-message "{msg}User-land{ehi}:{rst} {tab}{tab}{dir}${ZPFX}{rst}"
   +zi-message "{msg}Completions{ehi}:{rst}{tab}{dir}${ZI[COMPLETIONS_DIR]}{rst}"
+  if [[ ${ZI[HOME_LAYOUT]} == legacy ]]; then
+    +zi-message "{info3}Legacy Zi home retained{ehi}:{rst} {dir}${ZI[HOME_DIR]}{rst}. Set {var}ZI[HOME_DIR]{rst} before sourcing Zi to opt in to a different root; no data was moved."
+  elif [[ ${ZI[HOME_LAYOUT]} == ambiguous-* ]]; then
+    +zi-message "{info3}Both legacy and XDG Zi homes were detected{ehi}.{rst} Zi selected {dir}${ZI[HOME_DIR]}{rst}. Set {var}ZI[HOME_DIR]{rst} before sourcing Zi to resolve the ambiguity; no data was moved."
+  fi
   # Without _zlocal/zi
   +zi-message "{info}Loaded plugins{ehi}:{rst} {num}$(( ${#ZI_REGISTERED_PLUGINS[@]} - 1 )){rst}"
   # Count light-loaded plugins

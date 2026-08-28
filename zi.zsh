@@ -67,46 +67,73 @@ else
   [[ -n ${ZI[LOADED_REVISION]} ]] || ZI[LOADED_REVISION]="unknown"
 fi
 
-# Zi home path for creating working directories.
-if [[ -z $ZI[HOME_DIR] ]]; then
-  if [[ -d $HOME ]]; then
-    ZI[HOME_DIR]="${HOME}/.zi"
-  elif [[ -d $ZDOTDIR ]]; then
-    ZI[HOME_DIR]="${ZDOTDIR}/.zi"
-  elif [[ -d $XDG_DATA_HOME ]]; then
-    ZI[HOME_DIR]="${XDG_DATA_HOME}/.zi"
-  else
-    ZI[HOME_DIR]="${HOME}/.zi"
-  fi
-fi
+# Resolve Zi application roots without depending on caller options or creating
+# directories. Explicit ZI values win. A recognized legacy home is retained;
+# otherwise fresh installs use valid absolute XDG bases and specification
+# fallbacks. When both homes exist, the sourced installation identity wins,
+# with the legacy home as the conservative fallback for an external checkout.
+# https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+() {
+  builtin emulate -L zsh
 
-# Directory for Zi cache files.
-if [[ -z $ZI[CACHE_DIR] ]]; then
-  if [[ -d ${HOME}/.cache ]]; then
-    ZI[CACHE_DIR]="${HOME}/.cache/zi"
-  elif [[ -d $XDG_CACHE_HOME ]]; then
-    ZI[CACHE_DIR]="${XDG_CACHE_HOME}/zi"
-  elif [[ -d ${ZDOTDIR}/.cache ]]; then
-    ZI[CACHE_DIR]="${ZDOTDIR}/.cache/zi"
-  elif [[ -d ${XDG_DATA_HOME}/.cache ]]; then
-    ZI[CACHE_DIR]="${XDG_DATA_HOME}/.cache/zi"
-  else
-    ZI[CACHE_DIR]="${HOME}/.cache/zi"
-  fi
-fi
+  local data_base cache_base config_base legacy_home xdg_home marker
+  integer legacy_present=0 xdg_present=0
 
-# Directory for Zi configuration files.
-if [[ -z $ZI[CONFIG_DIR] ]]; then
-  if [[ -d ${HOME}/.config ]]; then
-    ZI[CONFIG_DIR]="${HOME}/.config/zi"
-  elif [[ -d $XDG_CONFIG_HOME ]]; then
-    ZI[CONFIG_DIR]="${XDG_CONFIG_HOME}/zi"
-  elif [[ -d ${XDG_DATA_HOME}/.config ]]; then
-    ZI[CONFIG_DIR]="${XDG_DATA_HOME}/.config/zi"
+  if [[ -n $XDG_DATA_HOME && $XDG_DATA_HOME == /* ]]; then
+    data_base="$XDG_DATA_HOME"
   else
-    ZI[CONFIG_DIR]="${HOME}/.config/zi"
+    data_base="${HOME}/.local/share"
   fi
-fi
+  if [[ -n $XDG_CACHE_HOME && $XDG_CACHE_HOME == /* ]]; then
+    cache_base="$XDG_CACHE_HOME"
+  else
+    cache_base="${HOME}/.cache"
+  fi
+  if [[ -n $XDG_CONFIG_HOME && $XDG_CONFIG_HOME == /* ]]; then
+    config_base="$XDG_CONFIG_HOME"
+  else
+    config_base="${HOME}/.config"
+  fi
+
+  legacy_home="${HOME}/.zi"
+  xdg_home="${data_base}/zi"
+
+  if [[ -z ${ZI[HOME_DIR]} ]]; then
+    for marker in bin/zi.zsh plugins snippets completions zmodules; do
+      if [[ -e "${legacy_home}/${marker}" ]]; then
+        legacy_present=1
+        break
+      fi
+    done
+    for marker in bin/zi.zsh plugins snippets completions zmodules; do
+      if [[ -e "${xdg_home}/${marker}" ]]; then
+        xdg_present=1
+        break
+      fi
+    done
+
+    if (( legacy_present && xdg_present )); then
+      if [[ ${ZI[BIN_DIR]} == "${xdg_home}/bin" || ${ZI[BIN_DIR]} == "${xdg_home}/bin/"* ]]; then
+        ZI[HOME_DIR]="$xdg_home"
+        ZI[HOME_LAYOUT]=ambiguous-xdg
+      else
+        ZI[HOME_DIR]="$legacy_home"
+        ZI[HOME_LAYOUT]=ambiguous-legacy
+      fi
+    elif (( legacy_present )); then
+      ZI[HOME_DIR]="$legacy_home"
+      ZI[HOME_LAYOUT]=legacy
+    else
+      ZI[HOME_DIR]="$xdg_home"
+      ZI[HOME_LAYOUT]=xdg
+    fi
+  elif [[ -z ${ZI[HOME_LAYOUT]} ]]; then
+    ZI[HOME_LAYOUT]=explicit
+  fi
+
+  [[ -n ${ZI[CACHE_DIR]} ]] || ZI[CACHE_DIR]="${cache_base}/zi"
+  [[ -n ${ZI[CONFIG_DIR]} ]] || ZI[CONFIG_DIR]="${config_base}/zi"
+}
 
 # Base Directories
 # https://wiki.zshell.dev/docs/guides/customization#customizing-paths
@@ -127,11 +154,8 @@ fi
 : ${ZI[ZCOMPDUMP_PATH]:=${ZI[CACHE_DIR]}/.zcompdump}
 : ${ZI[COMPLETIONS_DIR]:=${ZI[HOME_DIR]}/completions}
 
-# Base Directory Specification (XDG)
-# https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-: ${XDG_ZI_HOME:=${ZI[HOME_DIR]}}
-: ${XDG_ZI_CACHE:=${ZI[CACHE_DIR]}}
-: ${XDG_ZI_CONFIG:=${ZI[CONFIG_DIR]}}
+# XDG_ZI_* are exported, derived compatibility outputs. Configure paths with
+# ZI[HOME_DIR], ZI[CACHE_DIR], and ZI[CONFIG_DIR] before sourcing Zi.
 
 # Disable aliases.
 : ${ZI[ALIASES_OPT]:=${${options[aliases]:#off}:+1}}
@@ -1150,7 +1174,7 @@ builtin setopt noaliases
   ZI[HOME_READY]=1
   if [[ ! -d ${ZI[HOME_DIR]} ]]; then
     command mkdir -p "${ZI[HOME_DIR]}"
-    command chmod go-w "${ZI[HOME_DIR]}"
+    command chmod 700 "${ZI[HOME_DIR]}"
   fi
   # Set up $ZPFX
   if [[ ! -d ${ZPFX}/bin ]]; then
@@ -1170,15 +1194,15 @@ builtin setopt noaliases
   fi
   if [[ ! -d ${ZI[CACHE_DIR]} ]]; then
     command mkdir -p "${ZI[CACHE_DIR]}"
-    command chmod go-w "${ZI[CACHE_DIR]}"
+    command chmod 700 "${ZI[CACHE_DIR]}"
   fi
   if [[ ! -d ${ZI[CONFIG_DIR]} ]]; then
     command mkdir -p "${ZI[CONFIG_DIR]}"
-    command chmod go-w "${ZI[CONFIG_DIR]}"
+    command chmod 700 "${ZI[CONFIG_DIR]}"
   fi
   if [[ ! -d ${ZI[LOG_DIR]} ]]; then
     command mkdir -p "${ZI[LOG_DIR]}"
-    command chmod go-w "${ZI[LOG_DIR]}"
+    command chmod 700 "${ZI[LOG_DIR]}"
   fi
   if [[ ! -d ${ZI[ZMODULES_DIR]} ]]; then
     command mkdir -p "${ZI[ZMODULES_DIR]}"

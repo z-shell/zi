@@ -65,10 +65,11 @@ load_zi() {
   ZI[BIN_DIR]="$1"
   builtin source "${ZI[BIN_DIR]}/zi.zsh" >/dev/null || fail "source Zi fixture"
   builtin source "${ZI[BIN_DIR]}/lib/zsh/autoload.zsh" >/dev/null || fail "source autoload fixture"
-  [[ ${ZI[HOME_DIR]} == "${HOME}/.zi" ]] || fail "Zi fixture uses isolated home"
+  [[ ${ZI[HOME_DIR]} == "${XDG_DATA_HOME}/zi" ]] || fail "Zi fixture uses isolated home"
   [[ ${ZI[CACHE_DIR]} == "${XDG_CACHE_HOME}/zi" ]] || fail "Zi fixture uses isolated cache"
   [[ ${ZI[CONFIG_DIR]} == "${XDG_CONFIG_HOME}/zi" ]] || fail "Zi fixture uses isolated config"
   [[ -d ${ZI[HOME_DIR]} ]] || fail "Zi fixture prepares isolated home"
+  [[ ${ZI[HOME_LAYOUT]} == xdg ]] || fail "Zi fixture preserves resolved layout"
 }
 
 # A current checkout is a true no-op: it neither compiles nor changes the
@@ -103,6 +104,8 @@ pass "no-op reload"
   "$git_bin" -C "$publisher" config commit.gpgsign false
 
   load_zi "$checkout"
+  typeset resolved_home="${ZI[HOME_DIR]}"
+  typeset resolved_layout="${ZI[HOME_LAYOUT]}"
   print -r -- '# current-shell revision' >> "${publisher}/lib/zsh/additional.zsh"
   "$git_bin" -C "$publisher" add lib/zsh/additional.zsh
   "$git_bin" -C "$publisher" commit -qm "test: publish self-update fixture"
@@ -115,6 +118,8 @@ pass "no-op reload"
   [[ -z $output ]] || fail "current-shell quiet update emits no progress output"
   [[ $("$git_bin" -C "$checkout" rev-parse HEAD) == "$published_revision" ]] || fail "self-update fast-forwards checkout"
   [[ ${ZI[LOADED_REVISION]} == "$published_revision" ]] || fail "self-update loads merged revision"
+  [[ ${ZI[HOME_DIR]} == "$resolved_home" ]] || fail "self-update reload preserves resolved home"
+  [[ ${ZI[HOME_LAYOUT]} == "$resolved_layout" ]] || fail "self-update reload preserves resolved layout"
 )
 pass "current-shell self-update"
 

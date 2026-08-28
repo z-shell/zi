@@ -4,7 +4,8 @@
   Branch model:
     - Ordinary work: create feature-<id> or bug-<id> from next and target next
     - Urgent production fixes: use a same-repository hotfix-<id> from main to main
-    - Promote next to main only after integration checks pass
+    - Promote next to main only after integration checks pass, using a merge
+      commit rather than squash or rebase
     - For next-to-main promotions, use:
       ?template=promotion.md
 
@@ -44,8 +45,10 @@
 ## Checklist
 
 - [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
+- [ ] A `next` to `main` promotion uses a merge commit and records both parent SHAs
 - [ ] Commit messages follow Conventional Commits format
-- [ ] No `Co-authored-by` trailers in commit messages
+- [ ] Any `Co-authored-by` trailer credits a real human, never a bot, AI agent,
+      or automation
 - [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
 - [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
 - [ ] Documentation updated if needed

@@ -20,6 +20,16 @@ ZI[cmd-list]="update|help|\
   local icemods="$4"
 }
 
+# FUNCTION: +zi-message. [[[
++zi-message () {
+  print -r -- "$@"
+}
+
+# FUNCTION: +zi-progress. [[[
++zi-progress () {
+  print -r -- "$@"
+}
+
 # FUNCTION: pmodload. [[[
 (( ${+functions[pmodload]} )) || pmodload () {
   print -r -- "$@"

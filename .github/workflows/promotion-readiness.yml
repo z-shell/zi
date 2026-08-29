@@ -52,6 +52,10 @@ jobs:
         if: ${{ hashFiles('tests/self-update-reload.zsh') != '' }}
         run: zsh -f tests/self-update-reload.zsh
 
+      - name: Test path resolution when present
+        if: ${{ hashFiles('tests/path-resolution.zsh') != '' }}
+        run: zsh -f tests/path-resolution.zsh
+
       - name: Test archive extraction when present
         if: ${{ hashFiles('tests/archive-extraction.zsh') != '' }}
         run: zsh tests/archive-extraction.zsh
@@ -158,6 +162,9 @@ jobs:
             exit 1
           (( ${+functions[zi]} )) || exit 1
           .zi-prepare-home || exit 1
+          [[ ${ZI[HOME_DIR]} = ${XDG_DATA_HOME}/zi ]] || exit 1
+          [[ ${ZI[CACHE_DIR]} = ${XDG_CACHE_HOME}/zi ]] || exit 1
+          [[ ${ZI[CONFIG_DIR]} = ${XDG_CONFIG_HOME}/zi ]] || exit 1
           [[ -d ${ZI[HOME_DIR]} ]] || exit 1
           ZSH
 

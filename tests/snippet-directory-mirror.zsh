@@ -239,6 +239,38 @@ mirror "$github_url" -u legacy || fail "migrate GitHub Subversion working copy"
 [[ $(<"$install_parent/legacy/._zi/mirror-backend") = git-sparse ]] || fail "record migrated backend"
 pass "migrate existing GitHub Subversion directory"
 
+# Nested metadata symlinks are rejected before staging so metadata copying
+# cannot preserve a user-controlled link into a newly activated snapshot.
+command mkdir -p -- "$temp_root/external-metadata" || fail "create nested metadata symlink target"
+command ln -s -- "$temp_root/external-metadata" "$install_parent/installed/._zi/linked-entry" || \
+  fail "create nested metadata symlink fixture"
+if mirror "$github_url" -u installed >/dev/null 2>&1; then
+  fail "nested metadata symlink reports success"
+fi
+[[ -L "$install_parent/installed/._zi/linked-entry" ]] || fail "nested metadata symlink was replaced"
+[[ $(<"$install_parent/installed/example.plugin.zsh") = v2 ]] || fail "replace payload with unsafe metadata"
+command rm -f -- "$install_parent/installed/._zi/linked-entry" || fail "remove nested metadata symlink fixture"
+pass "reject nested metadata symlinks"
+
+# Repository-controlled symlinks are rejected before activation because a
+# sourced or executed link could escape the selected directory snapshot.
+command ln -s -- ../../modules/utility/init.zsh "$source_repo/plugins/example/unsafe-link" || \
+  fail "create source symlink fixture"
+"$real_git" -C "$source_repo" add plugins/example/unsafe-link
+"$real_git" -C "$source_repo" commit -qm "test: add unsafe directory symlink" || fail "commit source symlink fixture"
+"$real_git" -C "$source_repo" push -q "$remote_repo" main || fail "publish source symlink fixture"
+
+typeset migration_revision="$(<"$install_parent/legacy/._zi/mirror-revision")"
+if mirror "$github_url" -u legacy >/dev/null 2>&1; then
+  fail "source symlink reports success"
+fi
+[[ $(<"$install_parent/legacy/example.plugin.zsh") = v3 ]] || fail "preserve payload after source symlink rejection"
+[[ ! -e "$install_parent/legacy/unsafe-link" && ! -L "$install_parent/legacy/unsafe-link" ]] || \
+  fail "activate repository-controlled symlink"
+[[ $(<"$install_parent/legacy/._zi/mirror-revision") = $migration_revision ]] || \
+  fail "preserve revision after source symlink rejection"
+pass "reject repository-controlled symlinks"
+
 # GitHub URLs outside the supported legacy trunk shape fail closed instead of
 # falling through to Subversion, while other hosts retain Subversion behavior.
 if mirror https://github.com/example/project/tree/main/plugins/example "" unsupported >/dev/null 2>&1; then

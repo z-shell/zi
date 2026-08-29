@@ -7,6 +7,14 @@ plugins:
       ref: v1.11.0
       uri: https://github.com/trunk-io/plugins
 lint:
+  definitions:
+    # This repository is consumed as a submodule, so `.git` is a file whose
+    # gitdir is relative to the superproject. Trunk's sandbox copy breaks that
+    # relative path, so anchor the command at the real workspace.
+    - name: git-diff-check
+      commands:
+        - name: lint
+          run: git -C "${workspace}" diff --check ${target}
   enabled:
     - oxipng@9.1.5
     - trufflehog@3.90.13

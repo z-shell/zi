@@ -258,12 +258,14 @@ ZI_2MAP=(
 # Initiate. [[[
 zmodload zsh/zutil || { builtin print -P "%F{196}zsh/zutil module is required, aborting ❮ Zi ❯ set up.%f"; return 1; }
 zmodload zsh/parameter || { builtin print -P "%F{196}zsh/parameter module is required, aborting ❮ Zi ❯ set up.%f"; return 1; }
-zmodload zsh/terminfo 2>/dev/null
-zmodload zsh/termcap 2>/dev/null
+zmodload zsh/terminfo 2>/dev/null || builtin true
+zmodload zsh/termcap 2>/dev/null || builtin true
 
-# Terminal color codes. The palette is always available so an explicit
+# Terminal color codes. Keep a complete private palette so an explicit
 # --color=always request works even when Zi was sourced from a non-terminal.
-# Automatic color is decided later for the selected output descriptor.
+# The public ZI palette retains the legacy SOURCED suppression used by direct
+# consumers; +zi-message overlays missing entries only for its dynamic scope.
+typeset -gAH ZI_MESSAGE_PALETTE
 if [[ ${ZI[term-colors]} != <-> ]]; then
   ZI[term-colors]=0
   [[ ${terminfo[colors]} == <-> ]] && ZI[term-colors]=${terminfo[colors]}
@@ -333,9 +335,12 @@ fi
     col-↔       ${${${(M)LANG:#*UTF-8*}:+$'\e[32m↔\e[0m'}:-$'\e[32m«-»\e[0m'}
     )
   fi
-  for key in ${(k)palette}; do
-    (( ${+ZI[$key]} )) || ZI[$key]=${palette[$key]}
-  done
+  ZI_MESSAGE_PALETTE=( "${(@kv)palette}" )
+  if [[ -z $SOURCED ]]; then
+    for key in ${(k)palette}; do
+      (( ${+ZI[$key]} )) || ZI[$key]=${palette[$key]}
+    done
+  fi
 }
 
 # List of hooks.
@@ -2112,6 +2117,15 @@ builtin setopt no_aliases
   local message_kind=$1 auto_mode=default color_mode=default level=plain message REPLY
   integer output_fd=1 newline=1 line_mode=0 literal_mode=0 color_enabled=0 render_status
   shift
+
+  if [[ -n $SOURCED ]]; then
+    local -A message_zi=( "${(@kv)ZI}" )
+    local -A ZI=( "${(@kv)message_zi}" )
+    local palette_key
+    for palette_key in ${(k)ZI_MESSAGE_PALETTE}; do
+      (( ${+ZI[$palette_key]} )) || ZI[$palette_key]=${ZI_MESSAGE_PALETTE[$palette_key]}
+    done
+  fi
 
   while (( $# )); do
     case $1 in

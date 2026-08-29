@@ -209,6 +209,22 @@ assert_contains "$output" '38;5' '256-color palette'
 pass 'palette follows terminal color capability'
 
 output=$(
+  SOURCED=1 TERM=xterm-256color ZI_TEST_ROOT=$temp_root ZI_TEST_PROJECT=$project_root zsh -f <<'ZSH'
+typeset -gx HOME=$ZI_TEST_ROOT/sourced-home ZDOTDIR=$ZI_TEST_ROOT/sourced-zdotdir
+typeset -gx XDG_CACHE_HOME=$ZI_TEST_ROOT/sourced-cache XDG_CONFIG_HOME=$ZI_TEST_ROOT/sourced-config XDG_DATA_HOME=$ZI_TEST_ROOT/sourced-data
+command mkdir -p -- "$HOME" "$ZDOTDIR"
+typeset -gAH ZI
+ZI[BIN_DIR]=$ZI_TEST_PROJECT
+builtin source "$ZI_TEST_PROJECT/zi.zsh" >/dev/null
+builtin print -r -- "legacy=${ZI[col-url]-}"
++zi-message -n --color=always --auto=off -- '{url}https://example.com{rst}'
+ZSH
+)
+assert_equal "${${(f)output}[1]}" 'legacy=' 'SOURCED suppresses the legacy public palette'
+assert_contains "${${(f)output}[2]}" $'\e[' 'explicit color uses the private message palette'
+pass 'SOURCED compatibility does not weaken explicit message color'
+
+output=$(
   TERM=xterm-256color ZI_TEST_ROOT=$temp_root ZI_TEST_PROJECT=$project_root zsh -f <<'ZSH'
 typeset -gx HOME=$ZI_TEST_ROOT/custom-home ZDOTDIR=$ZI_TEST_ROOT/custom-zdotdir
 typeset -gx XDG_CACHE_HOME=$ZI_TEST_ROOT/custom-cache XDG_CONFIG_HOME=$ZI_TEST_ROOT/custom-config XDG_DATA_HOME=$ZI_TEST_ROOT/custom-data

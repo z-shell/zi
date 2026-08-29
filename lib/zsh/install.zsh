@@ -1759,13 +1759,16 @@ ziextract() {
     builtin emulate -LR zsh
     builtin setopt extendedglob
 
-    local stage="$1" target_dir="$2" staged_file relative target_component target_path resolved
+    local stage="$1" target_dir="$2" staged_file relative target_component target_path resolved link_target
     local -a staged_files
     staged_files=( "$stage"/**/*(DN) )
     for staged_file in "${staged_files[@]}"; do
       relative=${staged_file#${stage}/}
       if [[ -L $staged_file ]]; then
-        resolved=${staged_file:A}
+        link_target="$(command readlink "$staged_file")" || return 1
+        [[ $link_target != /* && $link_target != [[:alpha:]]:[/\\]* && $link_target != *\\* ]] || return 1
+        resolved=${staged_file:h}/${link_target}
+        resolved=${resolved:A}
         [[ $resolved == ${stage:A} || $resolved == ${stage:A}/* ]] || return 1
       fi
       target_path=$target_dir

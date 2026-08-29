@@ -193,7 +193,7 @@ pass "preserve safe archive symlinks"
 (
   new_fixture unsafe-archive-link
   typeset fixture_root="$REPLY"
-  command ln -s -- "$fixture_root/external" "$fixture_root/staging/linked" || fail "create unsafe archive symlink"
+  command ln -s -- ../external "$fixture_root/staging/linked" || fail "create unsafe archive symlink"
   command tar -cf "$fixture_root/work/unsafe-link.tar" -C "$fixture_root/staging" linked || \
     fail "create unsafe archive link fixture"
   load_zi "$fixture_root"

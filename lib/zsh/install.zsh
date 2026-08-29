@@ -10,7 +10,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # Retrievies the ice-list from given profile from the JSON of the package.json.
 .zi-parse-json() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent
+  builtin setopt extended_glob warn_create_global typeset_silent
 
   local -A ___pos_to_level ___level_to_pos ___pair_map ___final_pairs ___Strings ___Counts
   local ___input=$1 ___workbuf=$1 ___key=$2 ___varname=$3 ___style ___quoting
@@ -284,7 +284,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - plugin
 .zi-setup-plugin-dir() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal noshortloops rcquotes
+  builtin setopt extended_glob warn_create_global no_short_loops rc_quotes
 
   local user=$1 plugin=$2 id_as=$3 remote_url_path=${1:+$1/}$2 local_path tpe=$4 update=$5 version=$6
 
@@ -357,7 +357,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       command mkdir -p "$local_path"
       [[ -d "$local_path" ]] || return 1
       (
-        () { builtin setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
+        () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_path"; } || return 1
         integer count
 
         for REPLY ( $reply ) {
@@ -395,7 +395,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       command mkdir -p "$local_path/._zi"
       [[ -d "$local_path" ]] || return 1
       (
-        () { builtin setopt localoptions noautopushd; builtin cd -q "$local_path"; } || return 1
+        () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_path"; } || return 1
         .zi-get-cygwin-package "$remote_url_path" || return 1
         builtin print -r -- $REPLY >! ._zi/is_release
         ziextract "$REPLY"
@@ -600,7 +600,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 .zi-download-file-stdout() {
   local url="$1" restart="$2" progress="${(M)3:#1}"
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt localtraps extendedglob
+  builtin setopt local_traps extended_glob
 
   if (( restart )) {
     (( ${path[(I)/usr/local/bin]} )) || {
@@ -651,7 +651,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local url="$1" IFS line header
   local -a cmd
 
-  builtin setopt localoptions localtraps
+  builtin setopt local_options local_traps
 
   (( !${path[(I)/usr/local/bin]} )) && {
     path+=( "/usr/local/bin" );
@@ -690,7 +690,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - URL in https://github.com/OWNER/REPOSITORY/trunk/PATH form
 .zi-parse-github-svn-url() {
   builtin emulate -L zsh
-  builtin setopt extendedglob
+  builtin setopt extended_glob
 
   local url=${1%/}
   [[ $url = http(|s)://github.com/* ]] || return 1
@@ -725,7 +725,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $3 - installed directory
 .zi-mirror-using-git() {
   builtin emulate -L zsh
-  builtin setopt extendedglob
+  builtin setopt extended_glob
 
   local url=$1 mode=$2 directory=$3
   (( ${+commands[git]} )) || {
@@ -860,7 +860,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $3 - subdirectory (not path) with working copy, needed for -t and -u
 .zi-mirror-using-svn() {
   builtin emulate -L zsh
-  builtin setopt extendedglob warncreateglobal
+  builtin setopt extended_glob warn_create_global
   local url="$1" update="$2" directory="$3"
 
   (( ${+commands[svn]} )) || {
@@ -869,7 +869,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   }
 
   if [[ "$update" = "-t" ]]; then
-    ( () { builtin setopt localoptions noautopushd; builtin cd -q "$directory"; }
+    ( () { builtin setopt local_options no_auto_pushd; builtin cd -q "$directory"; }
       local -a out1 out2
       out1=( "${(f@)"$(LANG=C svn info -r HEAD)"}" )
       out2=( "${(f@)"$(LANG=C svn info)"}" )
@@ -882,7 +882,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     return $?
   fi
   if [[ "$update" = "-u" && -d "$directory" && -d "$directory/.svn" ]]; then
-    ( () { builtin setopt localoptions noautopushd; builtin cd -q "$directory"; }
+    ( () { builtin setopt local_options no_auto_pushd; builtin cd -q "$directory"; }
     command svn update
     return $? )
   else
@@ -898,7 +898,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $1 - completion function name, e.g. "_cp"; can also be "cp"
 .zi-forget-completion() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob typesetsilent warncreateglobal
+  builtin setopt extended_glob typeset_silent warn_create_global
 
   local f="$1" quiet="$2"
 
@@ -926,7 +926,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-compile-plugin() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes
 
   local id_as=$1${2:+${${${(M)1:#%}:+$2}:-/$2}} first plugin_dir filename is_snippet
   local -a list
@@ -964,7 +964,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     +zi-message -n "Compiling{ehi}:{rst} {b}{file}$fname{rst}{…}"
     if [[ -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} ]] {
       () {
-        builtin emulate -LR zsh -o extendedglob
+        builtin emulate -LR zsh -o extended_glob
         if { ! zcompile -U "$first" } {
           +zi-message "{error}Warning{ehi}:{rst} Compilation failed. Don't worry, the plugin will work also without compilation"
           +zi-message "{error}Warning{ehi}:{rst} Consider submitting an error report to ❮ Zi ❯ or to the plugin's author"
@@ -991,7 +991,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       integer retval
       for first in $list; do
         () {
-          builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+          builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
           zcompile -U "$first"; retval+=$?
         }
       done
@@ -1014,7 +1014,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # svn ice is active. This provides a layer of support for Oh-My-Zsh and Prezto.
 .zi-download-snippet() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent
+  builtin setopt extended_glob warn_create_global typeset_silent
 
   local save_url=$1 url=$2 id_as=$3 local_dir=$4 dirname=$5 filename=$6 update=$7
 
@@ -1078,7 +1078,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     if [[ $url = (http|https|ftp|ftps|scp)://* ]] {
       # URL
       (
-        () { builtin setopt localoptions noautopushd; builtin cd -q "$local_dir"; } || return 4
+        () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir"; } || return 4
         local mirror_name=Subversion
         [[ $url = http(|s)://github.com/* ]] && mirror_name="Git sparse checkout"
         (( !OPTS[opt_-q,--quiet] )) && \
@@ -1142,7 +1142,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
             fi
             if [[ -e ${list[1]} && ${list[1]} != */dev/null && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && ${+ICE[nocompile]} -eq 0 ]] {
               () {
-                builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+                builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
                 zcompile -U "${list[1]}" &>/dev/null || \
                   +zi-message "{error}Warning{ehi}:{rst} Couldn't compile {apo}\`{file}${list[1]}{rst}'"
               }
@@ -1231,7 +1231,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         fi
         if [[ -e $file_path && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && $file_path != */dev/null && ${+ICE[nocompile]} -eq 0 ]] {
           () {
-            builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+            builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
             if ! zcompile -U "$file_path" 2>/dev/null; then
               builtin print -r "Couldn't compile \`${file_path:t}', it MIGHT be wrongly downloaded"
               builtin print -r "(snippet URL points to a directory instead of a file?"
@@ -1424,12 +1424,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-update-snippet [[[
 .zi-update-snippet() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes
 
   local -a tmp opts
   local url=$1
   integer correct=0
-  [[ -o ksharrays ]] && correct=1
+  [[ -o ksh_arrays ]] && correct=1
   opts=( -u ) # for z-a-readurl
 
   # Create a local copy of OPTS,
@@ -1644,7 +1644,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # $2 - file
 ziextract() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob typesetsilent noshortloops # warncreateglobal
+  builtin setopt extended_glob typeset_silent no_short_loops # warn_create_global
 
   if (( $+commands[file] != 1 )) { +zi-message "{annex}ziextract{ehi}:{rst} {error}The {cmd}file{error} command is required for recognizing the type of data to be processed{rst}"
     return 1
@@ -1752,7 +1752,7 @@ ziextract() {
 
   .zi-archive-members-safe() {
     builtin emulate -LR zsh
-    builtin setopt extendedglob
+    builtin setopt extended_glob
 
     local member component
     for member in "${(@f)1}"; do
@@ -1769,7 +1769,7 @@ ziextract() {
 
   .zi-extraction-targets-safe() {
     builtin emulate -LR zsh
-    builtin setopt extendedglob
+    builtin setopt extended_glob
 
     local stage="$1" target_dir="$2" staged_file relative target_component target_path resolved link_target
     local -a staged_files
@@ -2020,7 +2020,7 @@ ziextract() {
 # FUNCTION: .zi-extract() [[[
 .zi-extract() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent
+  builtin setopt extended_glob warn_create_global typeset_silent
   local tpe=$1 extract=$2 local_dir=$3
   (
     builtin cd -q "$local_dir" || {
@@ -2142,7 +2142,7 @@ ziextract() {
 # FUNCTION zicp [[[
 zicp() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes
   local -a mbegin mend match
   local cmd=cp
   if [[ $1 = (-m|--mv) ]] { cmd=mv; shift; }
@@ -2298,13 +2298,13 @@ zimv() {
     local ___oldcd=$PWD
     (( ${+ICE[nocd]} == 0 )) && {
       () {
-        builtin setopt localoptions noautopushd
+        builtin setopt local_options no_auto_pushd
         builtin cd -q "$dir"
       }
     }
     eval "$atclone"
     rc="$?"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
+    () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }
   }
   return "$rc"
 } # ]]]
@@ -2328,7 +2328,7 @@ zimv() {
   @zi-substitute from to
   local -a mv_args=("-f")
   local -a afr
-    ( () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+    ( () { builtin setopt local_options no_auto_pushd; builtin cd -q "$dir"; } || return 1
       afr=( ${~from}(DN) )
       if (( ! ${#afr} )) {
         +zi-message "{warn}Warning{ehi}:{rst} {auto}mv ice didn't match any file{rst} [{error}$ICE[mv]{rst}]" \
@@ -2359,7 +2359,7 @@ zimv() {
   @zi-substitute from to
 
   local -a afr retval
-  ( () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; } || return 1
+  ( () { builtin setopt local_options no_auto_pushd; builtin cd -q "$dir"; } || return 1
     afr=( ${~from}(DN) )
     if (( ${#afr} )); then
       if (( !OPTS[opt_-q,--quiet] )); then
@@ -2383,7 +2383,7 @@ zimv() {
     if [[ -z $ICE[(i)(\!|)(sh|bash|ksh|csh)] ]] {
       () {
         builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-        builtin setopt extendedglob warncreateglobal
+        builtin setopt extended_glob warn_create_global
         if [[ $tpe == snippet ]] {
           .zi-compile-plugin "%$dir" ""
         } else {
@@ -2405,11 +2405,11 @@ zimv() {
   .zi-countdown atpull && {
     local ___oldcd=$PWD
     (( ${+ICE[nocd]} == 0 )) && {
-      () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; }
+      () { builtin setopt local_options no_auto_pushd; builtin cd -q "$dir"; }
     }
     .zi-at-eval "$atpull" "$ICE[atclone]"
     rc="$?"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
+    () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; };
   }
   return "$rc"
 } # ]]]
@@ -2425,11 +2425,11 @@ zimv() {
   .zi-countdown atpull && {
     local ___oldcd=$PWD
     (( ${+ICE[nocd]} == 0 )) && {
-      () { builtin setopt localoptions noautopushd; builtin cd -q "$dir"; }
+      () { builtin setopt local_options no_auto_pushd; builtin cd -q "$dir"; }
     }
     .zi-at-eval "$atpull" $ICE[atclone]
     rc="$?"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; };
+    () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; };
   }
   return "$rc"
 } # ]]]

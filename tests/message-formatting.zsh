@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 builtin emulate -LR zsh
-builtin setopt err_exit pipe_fail extended_glob
+builtin setopt pipe_fail extended_glob
 
 typeset project_root=${0:A:h:h}
 typeset temp_root
@@ -15,6 +15,7 @@ typeset -gx ZDOTDIR=$temp_root/zdotdir
 typeset -gx XDG_CACHE_HOME=$temp_root/cache
 typeset -gx XDG_CONFIG_HOME=$temp_root/config
 typeset -gx XDG_DATA_HOME=$temp_root/data
+typeset -gx TERM=xterm-256color
 command mkdir -p -- "$HOME" "$ZDOTDIR"
 
 typeset -gAH ZI

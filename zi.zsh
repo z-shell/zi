@@ -266,6 +266,7 @@ zmodload zsh/termcap 2>/dev/null || builtin true
 # The public ZI palette retains the legacy SOURCED suppression used by direct
 # consumers; +zi-message overlays missing entries only for its dynamic scope.
 typeset -gAH ZI_MESSAGE_PALETTE
+typeset -g ZI_MESSAGE_PUBLIC_PALETTE_READY
 if [[ ${ZI[term-colors]} != <-> ]]; then
   ZI[term-colors]=0
   [[ ${terminfo[colors]} == <-> ]] && ZI[term-colors]=${terminfo[colors]}
@@ -336,10 +337,11 @@ fi
     )
   fi
   ZI_MESSAGE_PALETTE=( "${(@kv)palette}" )
-  if [[ -z $SOURCED ]]; then
+  if [[ -z $SOURCED ]] && (( ${ZI[term-colors]} > 0 )); then
     for key in ${(k)palette}; do
       (( ${+ZI[$key]} )) || ZI[$key]=${palette[$key]}
     done
+    ZI_MESSAGE_PUBLIC_PALETTE_READY=1
   fi
 }
 
@@ -2118,7 +2120,7 @@ builtin setopt no_aliases
   integer output_fd=1 newline=1 line_mode=0 literal_mode=0 color_enabled=0 render_status
   shift
 
-  if [[ -n $SOURCED ]]; then
+  if [[ $ZI_MESSAGE_PUBLIC_PALETTE_READY != 1 ]]; then
     local -A message_zi=( "${(@kv)ZI}" )
     local -A ZI=( "${(@kv)message_zi}" )
     local palette_key

@@ -981,7 +981,13 @@ builtin setopt no_aliases
     done
   done
   if [[ $2 = begin ]]; then
-    [[ -z ${ZI[ZSH_HOOKS_BEFORE__$1]} ]] && ZI[ZSH_HOOKS_BEFORE__$1]="${snapshot[*]}"
+    # Snapshot presence is tracked separately because an empty hook set is a
+    # valid baseline. Keep the first baseline across overwrite-loads so one
+    # unload still owns entries added by the first load.
+    if [[ -z ${ZI[ZSH_HOOKS_DIFFED__$1]} ]]; then
+      ZI[ZSH_HOOKS_BEFORE__$1]="${snapshot[*]}"
+      ZI[ZSH_HOOKS_DIFFED__$1]=1
+    fi
   else
     ZI[ZSH_HOOKS_AFTER__$1]="${snapshot[*]}"
   fi

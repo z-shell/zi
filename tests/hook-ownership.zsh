@@ -232,11 +232,19 @@ add-zsh-hook -d precmd user_victim 2>/dev/null
 # 5. Repeated loads of the same plugin do not leave a stale hook entry behind
 #    after a single unload.
 #
-#    Scope: this asserts the hook-ownership contract only. The related defect
-#    where the function itself survives repeated loads belongs to the per-load
-#    identity work in #113, because Zi's function diff attributes a function to
-#    the first load that defined it. That is deliberately not asserted here.
+#    Start with every tracked array absent. Zi normally registers its scheduler
+#    in precmd_functions, which would make the first snapshot non-empty and
+#    conceal a bug that confuses "captured empty" with "not captured".
 #
+#    Scope: this asserts only the hook-ownership contract. Function ownership
+#    across repeated loads remains part of the broader per-load identity work
+#    coordinated in #113 and is deliberately not asserted here.
+#
+
+typeset hook_array
+for hook_array in "${ZI_ZSH_HOOKS_LIST[@]}"; do
+  unset -- "$hook_array"
+done
 
 make_plugin repeated '
 builtin autoload -Uz add-zsh-hook

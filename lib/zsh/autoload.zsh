@@ -190,8 +190,9 @@ ZI[EXTENDED_GLOB]=""
 .zi-diff-hooks-compute() {
   builtin emulate -L zsh -o no_ksh_arrays -o extended_glob
   local uspl2="$1"
-  # A light load takes no snapshot, so there is nothing to attribute.
-  [[ -z ${ZI[ZSH_HOOKS_AFTER__$uspl2]} && -z ${ZI[ZSH_HOOKS_BEFORE__$uspl2]} ]] && return 1
+  # A light load takes no snapshot. Test the explicit marker rather than the
+  # serialized values because a normal load can start and end with no hooks.
+  [[ ${ZI[ZSH_HOOKS_DIFFED__$uspl2]} = 1 ]] || return 1
   typeset -a before after added removed
   before=( "${(z)ZI[ZSH_HOOKS_BEFORE__$uspl2]}" )
   after=( "${(z)ZI[ZSH_HOOKS_AFTER__$uspl2]}" )
@@ -282,6 +283,7 @@ ZI[EXTENDED_GLOB]=""
   ZI[ZSH_HOOKS_REMOVED__$REPLY]=""
   ZI[ZSH_HOOKS_BEFORE__$REPLY]=""
   ZI[ZSH_HOOKS_AFTER__$REPLY]=""
+  ZI[ZSH_HOOKS_DIFFED__$REPLY]=""
 } # ]]]
 # FUNCTION: .zi-exists-message [[[
 # Checks if plugin is loaded. Testable. Also outputs error message if plugin is not loaded.

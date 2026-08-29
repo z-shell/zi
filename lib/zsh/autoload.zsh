@@ -1570,7 +1570,7 @@ ZI[EXTENDED_GLOB]=""
               } || +zi-message "{nl}Updating{ehi}:{rst} $REPLY{rst}"
             }
           }
-          +zi-message "$line" | command tee .zi_lastupd | .zi-pager &
+          +zi-message --literal -- "$line" | command tee .zi_lastupd | .zi-pager &
           integer pager_pid=$!
           { sleep 20 && kill -9 $pager_pid 2>/dev/null 1>&2; } &!
           { wait $pager_pid; } > /dev/null 2>&1
@@ -1822,7 +1822,7 @@ ZI[EXTENDED_GLOB]=""
     local user=${reply[-2]} plugin=${reply[-1]}
     # Must be a git repository or a binary release
     if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]]; then
-      (( OPTS[opt_-q,--quiet] )) || +zi-message "$REPLY: not a git repository"
+      (( OPTS[opt_-q,--quiet] )) || +zi-message -- "$REPLY: not a git repository"
       continue
     fi
     if [[ $st = status ]]; then
@@ -2064,7 +2064,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
     elif [[ ( ${sice[pick]} = /dev/null || ${sice[as]} = null ) && ${+sice[make]} = 1 ]]; then
       line="$line {mdsh} {faint} ({dir}/dev/null{rst} {cmd}make{rst} {p}plugin{rst}{faint}){rst}"
     fi
-    +zi-message "$line"
+    +zi-message -- "$line"
     (( sum += ZI[$entry] ))
   done
   +zi-message "{mmdsh}{rst} {b}Total{ehi}:{rst} {auto}${sum}s"
@@ -2137,10 +2137,10 @@ builtin setopt extended_glob warn_create_global typeset_silent \
     if [[ "$cur_plugin" != "$uspl1" ]]; then
       [[ -n "$cur_plugin" ]] && builtin print # newline
       .zi-any-colorify-as-uspl2 "$user" "$plugin"
-      +zi-message "$REPLY:"
+      +zi-message -- "$REPLY:"
       cur_plugin="$uspl1"
     fi
-    +zi-message "$file"
+    +zi-message --literal -- "$file"
   done
 } # ]]]
 # FUNCTION: .zi-compile-uncompile-all [[[
@@ -2190,7 +2190,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
       +zi-message "not compiled"
     else
       .zi-any-colorify-as-uspl2 "$user" "$plugin"
-      +zi-message "$REPLY not compiled"
+      +zi-message -- "$REPLY not compiled"
     fi
     return 1
   fi
@@ -2324,7 +2324,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
     fi
     if (( unknown == 1 || stray == 1 )); then
       +zi-message -n "Removing completion{ehi}:{rst} ${(r:longest+1:: :)c} $REPLY"
-      (( disabled )) && +zi-message -n " {error}[disabled]{col-rst]}"
+      (( disabled )) && +zi-message -n " {error}[disabled]{rst}"
       (( unknown )) && +zi-message -n " {error}[unknown file]{rst}"
       (( stray )) && +zi-message -n " {error}[stray]{rst}"
       builtin print
@@ -3335,5 +3335,5 @@ sleep 0.04 && +zi-message "❯ loaded|lists      {p}[keyword]{rst} {mdsh}{rst} {
   +zi-message "{mmdsh}{info} Registered ice-modifiers{ehi}:{rst}"
   local -a ice_order
   ice_order=( ${${(As:|:)ZI[ice-list]}:#teleid} ${(@)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}:#(.*|dynamic-unscope)} )
-  +zi-message "${ice_order[*]}"
+  +zi-message -- "${ice_order[*]}"
 } # ]]]

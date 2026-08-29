@@ -122,6 +122,8 @@ assert_contains "$output" '`zpcompinit` was removed'
 assert_contains "$output" '`pmodload` was removed'
 assert_contains "$output" '`@zi-register-annex` was removed'
 assert_contains "$output" '`@zi-register-hook` was removed'
+assert_contains "$output" '`+zi-message` was removed'
+assert_contains "$output" '`+zi-progress` was removed'
 assert_contains "$output" '`extraction-policy`'
 print "ok - only manifested declaration guards are accepted"
 

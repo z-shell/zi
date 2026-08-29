@@ -13,6 +13,16 @@ ZI[cmd-list]="help|load|\
   local name="$1" type="$2" handler="$3" icemods="$4"
 }
 
+# FUNCTION: +zi-message. [[[
++zi-message() {
+  print -r -- "$@"
+}
+
+# FUNCTION: +zi-progress. [[[
++zi-progress() {
+  print -r -- "$@"
+}
+
 # FUNCTION: pmodload. [[[
 (( ${+functions[pmodload]} )) || pmodload() {
   print -r -- "$@"

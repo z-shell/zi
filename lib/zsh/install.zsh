@@ -772,6 +772,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     +zi-message "{error}Error{ehi}:{rst} Refusing to replace a symlinked GitHub directory snippet or metadata directory"
     return 4
   }
+  local -a metadata_symlinks
+  metadata_symlinks=( "$directory/._zi"/**/*(@DN) )
+  (( !${#metadata_symlinks} )) || {
+    +zi-message "{error}Error{ehi}:{rst} Refusing GitHub directory snippet metadata containing symlinks"
+    return 4
+  }
 
   local temp_root
   temp_root=$(command mktemp -d ".zi-git-mirror.XXXXXXXX") || return 4
@@ -785,6 +791,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     command git -C "$repository_dir" sparse-checkout set --cone -- "$subpath" || return 4
     source_dir=$repository_dir/$subpath
     [[ -d $source_dir ]] || return 4
+    local -a source_symlinks
+    source_symlinks=( "$source_dir"/**/*(@DN) )
+    (( !${#source_symlinks} )) || {
+      +zi-message "{error}Error{ehi}:{rst} Refusing a GitHub directory snippet containing symlinks"
+      return 4
+    }
 
     remote_revision=$(command git -C "$repository_dir" rev-parse HEAD) || return 4
     command mkdir -p -- "$payload_dir" || return 4

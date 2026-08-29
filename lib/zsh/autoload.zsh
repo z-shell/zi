@@ -821,7 +821,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 # FUNCTION: .zi-unload [[[
 # 0. Call the Zsh Plugin's Standard *_plugin_unload function
-# 0. Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+# 0. Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload
 # 1. Delete bindkeys (...)
 # 2. Delete zstyles
 # 3. Restore options
@@ -840,6 +840,7 @@ ZI[EXTENDED_GLOB]=""
   .zi-any-to-user-plugin "$1" "$2"
   local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" user="${reply[-2]}" plugin="${reply[-1]}" quiet="${${3:+1}:-0}"
   local k
+  integer callback_rc=0
   .zi-any-colorify-as-uspl2 "$uspl2"
   (( quiet )) || builtin print -r -- "${ZI[col-bar]}---${ZI[col-rst]} Unloading plugin: $REPLY ${ZI[col-bar]}---${ZI[col-rst]}"
   local ___dir
@@ -864,7 +865,7 @@ ZI[EXTENDED_GLOB]=""
   (( ${+functions[${plugin}_plugin_unload]} )) && ${plugin}_plugin_unload
 
   #
-  # Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+  # Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload
   #
 
   local -a tmp
@@ -873,10 +874,8 @@ ZI[EXTENDED_GLOB]=""
   (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
   if [[ -n ${sice[ps-on-unload]} ]]; then
     (( quiet )) || builtin print -r "Running plugin's provided unload code: ${ZI[col-info]}${sice[ps-on-unload][1,50]}${sice[ps-on-unload][51]:+…}${ZI[col-rst]}"
-    local ___oldcd="$PWD"
-    () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___dir"; }
-    eval "${sice[ps-on-unload]}"
-    () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }
+    .zi-run-plugin-standard-unload-callback "${sice[ps-on-unload]}" "$___dir" "$@"
+    callback_rc=$?
   fi
 
   #
@@ -1295,6 +1294,7 @@ ZI[EXTENDED_GLOB]=""
     .zi-clear-report-for "$user" "$plugin"
     (( quiet )) || +zi-message "Plugin's report saved to {var}\$LASTREPORT{rst}"
   fi
+  return "$callback_rc"
 } # ]]]
 # FUNCTION: .zi-show-report [[[
 # Displays report of the plugin given.
@@ -1847,90 +1847,112 @@ ZI[EXTENDED_GLOB]=""
 .zi-update-all-parallel() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent no_short_loops no_monitor no_notify
-  local id_as repo snip uspl user plugin PUDIR="$(mktemp -d)"
+  local id_as repo snip uspl user plugin pid PUDIR
+  PUDIR="$(command mktemp -d "${TMPDIR:-/tmp}/zi-update.XXXXXXXX")" || return 1
+  local MATCH
+  integer MBEGIN MEND
   local -A PUAssocArray map
   map=( / --  "=" -EQ-  "?" -QM-  "&" -AMP-  : - )
   local -a files
-  integer main_counter counter PUPDATE=1
-  files=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(ND) )
-  main_counter=${#files}
-  if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
-    for snip ( "${files[@]}" ) {
-      main_counter=main_counter-1
-      # The continue may cause the tail of processes to
-      # fall-through to the following plugins-specific `wait'
-      # Should happen only in a very special conditions
-      # TODO #114 handle this
-      [[ ! -f ${snip:h}/url ]] && continue
-      [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
-      counter+=1
-      local ef_id="${id_as:-$(<${snip:h}/url)}"
-      local PUFILEMAIN=${${ef_id#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
-      local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
-      .zi-update-or-status-snippet "$st" "$ef_id" &>! $PUFILE &
-      PUAssocArray[$!]=$PUFILE
-      .zi-wait-for-update-jobs snippets
+  integer counter=0 PUPDATE=1 retval=0
+  builtin trap 'retval=130; for pid in ${(k)PUAssocArray}; do builtin kill -TERM "$pid" 2>/dev/null; done; return 130' INT
+  builtin trap 'retval=129; for pid in ${(k)PUAssocArray}; do builtin kill -TERM "$pid" 2>/dev/null; done; return 129' HUP
+  builtin trap 'retval=143; for pid in ${(k)PUAssocArray}; do builtin kill -TERM "$pid" 2>/dev/null; done; return 143' TERM
+  {
+    files=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(ND) )
+    if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
+      for snip ( "${files[@]}" ) {
+        [[ ! -f ${snip:h}/url ]] && continue
+        [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
+        (( ++counter ))
+        local ef_id="${id_as:-$(<${snip:h}/url)}"
+        local PUFILEMAIN=${${ef_id#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
+        local PUFILE=$PUDIR/${(l:8::0:)counter}_$PUFILEMAIN.out
+        .zi-update-or-status-snippet "$st" "$ef_id" &>! "$PUFILE" &
+        PUAssocArray[$!]=$PUFILE
+        .zi-wait-for-update-jobs snippets
+      }
+      .zi-wait-for-update-jobs snippets flush
     }
-  }
 
-  counter=0
-  PUAssocArray=()
-  if (( OPTS[opt_-l,--plugins] || !OPTS[opt_-s,--snippets] )) {
-    local -a files2
-    files=( ${ZI[PLUGINS_DIR]}/*(ND/) )
-    # Pre-process plugins
-    for repo ( $files ) {
-      uspl=${repo:t}
-      # Two special cases
-      [[ $uspl = custom || $uspl = _local---zi ]] && continue
-      # Check if repository has a remote set
-      if [[ -f $repo/.git/config ]] {
-        local -a config
-        config=( ${(f)"$(<$repo/.git/config)"} )
-        if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]] {
+    counter=0
+    PUAssocArray=()
+    if (( OPTS[opt_-l,--plugins] || !OPTS[opt_-s,--snippets] )) {
+      local -a files2
+      files=( ${ZI[PLUGINS_DIR]}/*(ND/) )
+      # Pre-process plugins
+      for repo ( $files ) {
+        uspl=${repo:t}
+        # Two special cases
+        [[ $uspl = custom || $uspl = _local---zi ]] && continue
+        # Check if repository has a remote set
+        if [[ -f $repo/.git/config ]] {
+          local -a config
+          config=( ${(f)"$(<$repo/.git/config)"} )
+          if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]] {
+            continue
+          }
+        }
+        .zi-any-to-user-plugin "$uspl"
+        local user=${reply[-2]} plugin=${reply[-1]}
+        # Must be a git repository or a binary release
+        if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]] {
           continue
         }
+        files2+=( $repo )
       }
-      .zi-any-to-user-plugin "$uspl"
-      local user=${reply[-2]} plugin=${reply[-1]}
-      # Must be a git repository or a binary release
-      if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]] {
-        continue
+      for repo ( "${files2[@]}" ) {
+        uspl=${repo:t}
+        id_as=${uspl//---//}
+        (( ++counter ))
+        local PUFILEMAIN=${${id_as#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
+        local PUFILE=$PUDIR/${(l:8::0:)counter}_$PUFILEMAIN.out
+        .zi-any-colorify-as-uspl2 "$uspl"
+        +zi-message "Updating{ehi}:{rst} $REPLY{rst}" >! "$PUFILE"
+        .zi-any-to-user-plugin "$uspl"
+        local user=${reply[-2]} plugin=${reply[-1]}
+        .zi-update-or-status update "$user" "$plugin" &>>! "$PUFILE" &
+        PUAssocArray[$!]=$PUFILE
+        .zi-wait-for-update-jobs plugins
       }
-      files2+=( $repo )
+      .zi-wait-for-update-jobs plugins flush
     }
-    main_counter=${#files2}
-    for repo ( "${files2[@]}" ) {
-      main_counter=main_counter-1
-      uspl=${repo:t}
-      id_as=${uspl//---//}
-      counter+=1
-      local PUFILEMAIN=${${id_as#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
-      local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
-      .zi-any-colorify-as-uspl2 "$uspl"
-      +zi-message "Updating{ehi}:{rst} $REPLY{rst}" >! $PUFILE
-      .zi-any-to-user-plugin "$uspl"
-      local user=${reply[-2]} plugin=${reply[-1]}
-      .zi-update-or-status update "$user" "$plugin" &>>! $PUFILE &
-      PUAssocArray[$!]=$PUFILE
-      .zi-wait-for-update-jobs plugins
-    }
+  } always {
+    # Reap every child before removing its output directory, including when an
+    # error or signal interrupts a phase between normal flushes.
+    (( ${#PUAssocArray} )) && .zi-wait-for-update-jobs cleanup flush
+    [[ -n $PUDIR && -d $PUDIR ]] && command rm -rf -- "$PUDIR"
   }
-  # Shouldn't happen
-  # (( ${#PUAssocArray} > 0 )) && wait ${(k)PUAssocArray}
+  return "$retval"
 }
 # ]]]
 # FUNCTION: .zi-wait-for-update-jobs [[[
 .zi-wait-for-update-jobs() {
-  local tpe=$1
-  if (( counter > OPTS[value] || main_counter == 0 )) {
-    wait ${(k)PUAssocArray}
-    local ind_file
-    for ind_file ( ${^${(von)PUAssocArray}}.ind(DN.) ) {
-      command cat ${ind_file:r}
-      (( !OPTS[opt_-d,--debug] && !ZI[DEBUG_MODE] )) && command rm -f $ind_file
-    }
-    (( !OPTS[opt_-d,--debug] && !ZI[DEBUG_MODE] )) && command rm -f ${(v)PUAssocArray}
+  local tpe="$1"
+  integer force_flush=0 max_jobs=${OPTS[value]:-1}
+  [[ $2 == flush ]] && force_flush=1
+  (( max_jobs > 0 )) || max_jobs=1
+  if (( ${#PUAssocArray} && ( counter >= max_jobs || force_flush ) )) {
+    local pid output_file
+    integer wait_rc output_rc
+    local -A failed_files
+    for pid in ${(on)${(k)PUAssocArray}}; do
+      wait "$pid"
+      wait_rc=$?
+      if (( wait_rc != 0 )); then
+        (( retval == 0 )) && retval=$wait_rc
+        failed_files[${PUAssocArray[$pid]}]=$wait_rc
+      fi
+    done
+    for output_file in ${(on)${(v)PUAssocArray}}; do
+      if [[ -f $output_file.ind || -n ${failed_files[$output_file]} ]] ||
+        (( OPTS[opt_-d,--debug] || ZI[DEBUG_MODE] )); then
+        command cat -- "$output_file"
+        output_rc=$?
+        (( output_rc != 0 && retval == 0 )) && retval=$output_rc
+      fi
+      command rm -f -- "$output_file.ind" "$output_file"
+    done
     counter=0
     PUAssocArray=()
   } elif (( counter == 1 && !OPTS[opt_-q,--quiet] )) {

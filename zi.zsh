@@ -188,7 +188,12 @@ XDG_ZI_CONFIG=${~ZI[CONFIG_DIR]}
 
 if [[ -z ${manpath[(re)${ZI[MAN_DIR]}]} ]] && [[ -d ${ZI[MAN_DIR]} ]]; then
   typeset -gxU manpath
-  manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
+  if (( ${#manpath} )); then
+    manpath=( "${ZI[MAN_DIR]}" "${manpath[@]}" )
+  else
+    # An empty component keeps the system default manual paths available.
+    manpath=( "${ZI[MAN_DIR]}" "" )
+  fi
 fi
 
 if [[ -z ${cdpath[(re)${ZI[CDPATH_DIR]}]} ]] && [[ -d ${ZI[CDPATH_DIR]} ]]; then

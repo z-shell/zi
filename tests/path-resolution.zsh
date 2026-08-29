@@ -244,6 +244,108 @@ run_case() (
   fi
 )
 
+run_manpath_case() (
+  builtin emulate -LR zsh
+  setopt err_exit pipe_fail
+
+  local label="$1" case_root="${temp_root}/manpath-$1"
+  local custom_manpath="$case_root/custom-man" expected_manpath
+  integer expected_count expected_export
+
+  command mkdir -p -- \
+    "$case_root/home" \
+    "$case_root/zdotdir" \
+    "$case_root/tmp" \
+    "$case_root/zi-home/prefix/man/man1" \
+    "$case_root/cache" \
+    "$case_root/config"
+
+  case "$label" in
+    unset)
+      expected_manpath="${case_root}/zi-home/prefix/man:"
+      expected_count=2
+      expected_export=0
+      ;;
+    export-only)
+      expected_manpath="${case_root}/zi-home/prefix/man:"
+      expected_count=2
+      expected_export=1
+      ;;
+    assigned-empty)
+      expected_manpath="${case_root}/zi-home/prefix/man:"
+      expected_count=2
+      expected_export=1
+      ;;
+    custom)
+      expected_manpath="${case_root}/zi-home/prefix/man:${custom_manpath}"
+      expected_count=2
+      expected_export=1
+      ;;
+    default-first)
+      expected_manpath="${case_root}/zi-home/prefix/man::${custom_manpath}"
+      expected_count=3
+      expected_export=1
+      ;;
+    default-last)
+      expected_manpath="${case_root}/zi-home/prefix/man:${custom_manpath}:"
+      expected_count=3
+      expected_export=1
+      ;;
+    *)
+      fail "unknown manpath case: $label"
+      ;;
+  esac
+
+  command env -u MANPATH zsh -f -c '
+    local project_root="$1" case_root="$2" label="$3"
+    local expected_manpath="$4" custom_manpath="$case_root/custom-man"
+    integer expected_count="$5" expected_export="$6"
+
+    typeset -gx HOME="$case_root/home"
+    typeset -gx ZDOTDIR="$case_root/zdotdir"
+    typeset -gx TMPDIR="$case_root/tmp"
+    unset XDG_DATA_HOME XDG_CACHE_HOME XDG_CONFIG_HOME
+    unset ZPFX XDG_ZI_HOME XDG_ZI_CACHE XDG_ZI_CONFIG
+
+    case "$label" in
+      unset) ;;
+      export-only) export MANPATH ;;
+      assigned-empty) typeset -gx MANPATH="" ;;
+      custom) typeset -gx MANPATH="$custom_manpath" ;;
+      default-first) typeset -gx MANPATH=":${custom_manpath}" ;;
+      default-last) typeset -gx MANPATH="${custom_manpath}:" ;;
+    esac
+
+    typeset -gAH ZI
+    ZI=()
+    ZI[BIN_DIR]="$project_root"
+    ZI[HOME_DIR]="$case_root/zi-home"
+    ZI[CACHE_DIR]="$case_root/cache"
+    ZI[CONFIG_DIR]="$case_root/config"
+    typeset -gx ZPFX="$case_root/zi-home/prefix"
+
+    builtin source "$project_root/zi.zsh" >/dev/null || exit 11
+    [[ $MANPATH == "$expected_manpath" ]] || {
+      builtin print -u2 -r -- "not ok - $label MANPATH: expected ${(qqq)expected_manpath}, got ${(qqq)MANPATH}"
+      exit 12
+    }
+    (( $#manpath == expected_count )) || {
+      builtin print -u2 -r -- "not ok - $label manpath element count: expected $expected_count, got $#manpath"
+      exit 13
+    }
+    if (( expected_export )); then
+      [[ ${(t)MANPATH} == *export* ]] || exit 14
+    else
+      [[ ${(t)MANPATH} != *export* ]] || exit 15
+    fi
+
+    builtin source "$project_root/zi.zsh" >/dev/null || exit 16
+    [[ $MANPATH == "$expected_manpath" ]] || exit 17
+    (( $#manpath == expected_count )) || exit 18
+  ' _ "$project_root" "$case_root" "$label" "$expected_manpath" "$expected_count" "$expected_export" || \
+    fail "$label manpath resolution"
+)
+
 typeset case_name
 for case_name in \
   explicit \
@@ -259,4 +361,15 @@ for case_name in \
   both-xdg-source; do
   run_case "$case_name"
   pass "$case_name path resolution"
+done
+
+for case_name in \
+  unset \
+  export-only \
+  assigned-empty \
+  custom \
+  default-first \
+  default-last; do
+  run_manpath_case "$case_name"
+  pass "$case_name manpath resolution"
 done

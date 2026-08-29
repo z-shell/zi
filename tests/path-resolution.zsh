@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 builtin emulate -LR zsh
-setopt errexit pipefail
+setopt err_exit pipe_fail
 
 typeset project_root="${0:A:h:h}"
 typeset temp_root
@@ -61,7 +61,7 @@ assert_paths() {
 
 run_case() (
   builtin emulate -LR zsh
-  setopt errexit pipefail
+  setopt err_exit pipe_fail
 
   local label="$1" case_root="${temp_root}/$1"
   local source_path="$project_root/zi.zsh"

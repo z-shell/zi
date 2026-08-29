@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 emulate -LR zsh
-setopt errexit nounset pipefail extendedglob
+setopt err_exit no_unset pipe_fail extended_glob
 
 typeset repository="."
 typeset manifest_path="contracts/public-contract-v1.json"

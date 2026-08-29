@@ -32,7 +32,7 @@ ZI[EXTENDED_GLOB]=""
   local uspl2="$1"
   # Cannot run diff if *_BEFORE or *_AFTER variable is not set
   # Following is paranoid for *_BEFORE and *_AFTER being only spaces
-  builtin setopt localoptions extendedglob nokshglob noksharrays
+  builtin setopt local_options extended_glob no_ksh_glob no_ksh_arrays
   [[ "${ZI[FUNCTIONS_BEFORE__$uspl2]}" != *[$'! \t']* || "${ZI[FUNCTIONS_AFTER__$uspl2]}" != *[$'! \t']* ]] && return 1
   typeset -A func
   local i
@@ -61,7 +61,7 @@ ZI[EXTENDED_GLOB]=""
   local uspl2="$1"
   # Cannot run diff if *_BEFORE or *_AFTER variable is not set
   # Following is paranoid for *_BEFORE and *_AFTER being only spaces
-  builtin setopt localoptions extendedglob nokshglob noksharrays
+  builtin setopt local_options extended_glob no_ksh_glob no_ksh_arrays
   [[ "${ZI[OPTIONS_BEFORE__$uspl2]}" != *[$'! \t']* || "${ZI[OPTIONS_AFTER__$uspl2]}" != *[$'! \t']* ]] && return 1
   typeset -A opts_before opts_after opts
   opts_before=( "${(z)ZI[OPTIONS_BEFORE__$uspl2]}" )
@@ -90,7 +90,7 @@ ZI[EXTENDED_GLOB]=""
   typeset -a tmp
   # Cannot run diff if *_BEFORE or *_AFTER variable is not set
   # Following is paranoid for *_BEFORE and *_AFTER being only spaces
-  builtin setopt localoptions extendedglob nokshglob noksharrays
+  builtin setopt local_options extended_glob no_ksh_glob no_ksh_arrays
   [[ "${ZI[PATH_BEFORE__$uspl2]}" != *[$'! \t']* || "${ZI[PATH_AFTER__$uspl2]}" != *[$'! \t']* ]] && return 1
   [[ "${ZI[FPATH_BEFORE__$uspl2]}" != *[$'! \t']* || "${ZI[FPATH_AFTER__$uspl2]}" != *[$'! \t']* ]] && return 1
   typeset -A path_state fpath_state
@@ -140,7 +140,7 @@ ZI[EXTENDED_GLOB]=""
   typeset -a tmp
   # Cannot run diff if *_BEFORE or *_AFTER variable is not set
   # Following is paranoid for *_BEFORE and *_AFTER being only spaces
-  builtin setopt localoptions extendedglob nokshglob noksharrays
+  builtin setopt local_options extended_glob no_ksh_glob no_ksh_arrays
   [[ "${ZI[PARAMETERS_BEFORE__$uspl2]}" != *[$'! \t']* || "${ZI[PARAMETERS_AFTER__$uspl2]}" != *[$'! \t']* ]] && return 1
   # Un-concatenated parameters from moment of diff start and of diff end
   typeset -A params_before params_after
@@ -185,17 +185,17 @@ ZI[EXTENDED_GLOB]=""
   .zi-any-to-user-plugin "$1" "$2"
   [[ "${reply[-2]}" = "%" ]] && REPLY="${reply[-2]}${reply[-1]}" || REPLY="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]//---//}"
 } # ]]]
-# FUNCTION: .zi-save-set-extendedglob [[[
-# Enables extendedglob-option first saving if it was already
+# FUNCTION: .zi-save-set-extended_glob [[[
+# Enables extended_glob-option first saving if it was already
 # enabled, for restoration of this state later.
-.zi-save-set-extendedglob() {
-  [[ -o "extendedglob" ]] && ZI[EXTENDED_GLOB]="1" || ZI[EXTENDED_GLOB]="0"
-  builtin setopt extendedglob
+.zi-save-set-extended_glob() {
+  [[ -o "extended_glob" ]] && ZI[EXTENDED_GLOB]="1" || ZI[EXTENDED_GLOB]="0"
+  builtin setopt extended_glob
 } # ]]]
-# FUNCTION: .zi-restore-extendedglob [[[
-# Restores extendedglob-option from state saved earlier.
-.zi-restore-extendedglob() {
-  [[ "${ZI[EXTENDED_GLOB]}" = "0" ]] && builtin unsetopt extendedglob || builtin setopt extendedglob
+# FUNCTION: .zi-restore-extended_glob [[[
+# Restores extended_glob-option from state saved earlier.
+.zi-restore-extended_glob() {
+  [[ "${ZI[EXTENDED_GLOB]}" = "0" ]] && builtin unsetopt extended_glob || builtin setopt extended_glob
 } # ]]]
 # FUNCTION: .zi-prepare-readlink [[[
 # Prepares readlink command, used for establishing completion's owner.
@@ -322,9 +322,9 @@ ZI[EXTENDED_GLOB]=""
   REPLY=""
   # Paranoid, don't want bad key/value pair error
   integer empty=0
-  .zi-save-set-extendedglob
+  .zi-save-set-extended_glob
   [[ "${ZI[OPTIONS__$uspl2]}" != *[$'! \t']* ]] && empty=1
-  .zi-restore-extendedglob
+  .zi-restore-extended_glob
   (( empty )) && return 0
   typeset -A opts
   opts=( "${(z)ZI[OPTIONS__$uspl2]}" )
@@ -371,7 +371,7 @@ ZI[EXTENDED_GLOB]=""
 # $1 - user/plugin (i.e. uspl2 format of plugin-spec)
 .zi-format-parameter() {
   local uspl2="$1" infoc="${ZI[col-info]}" k
-  builtin setopt localoptions extendedglob nokshglob noksharrays
+  builtin setopt local_options extended_glob no_ksh_glob no_ksh_arrays
   REPLY=""
   [[ "${ZI[PARAMETERS_PRE__$uspl2]}" != *[$'! \t']* || "${ZI[PARAMETERS_POST__$uspl2]}" != *[$'! \t']* ]] && return 0
   typeset -A elem_pre elem_post
@@ -419,7 +419,7 @@ ZI[EXTENDED_GLOB]=""
 # $1 - absolute path to completion file (in COMPLETIONS_DIR)
 # $2 - readlink command (":" or "readlink")
 .zi-get-completion-owner() {
-  builtin setopt localoptions extendedglob nokshglob noksharrays noshwordsplit
+  builtin setopt local_options extended_glob no_ksh_glob no_ksh_arrays no_sh_word_split
 
   local cpath="$1"
   local readlink_cmd="$2"
@@ -464,7 +464,7 @@ ZI[EXTENDED_GLOB]=""
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user, plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-find-completions-of-plugin() {
-  builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
+  builtin setopt local_options null_glob extended_glob no_ksh_glob no_ksh_arrays
   .zi-any-to-user-plugin "${1}" "${2}"
   local user="${reply[-2]}" plugin="${reply[-1]}" uspl
   [[ "$user" = "%" ]] && uspl="${user}${plugin}" || uspl="${reply[-2]}${reply[-2]:+---}${reply[-1]//\//---}"
@@ -799,7 +799,7 @@ ZI[EXTENDED_GLOB]=""
 # User-action entry point.
 .zi-show-registered-plugins() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops
   typeset -a filtered
   local keyword="$1"
   keyword="${keyword## ##}"
@@ -821,7 +821,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 # FUNCTION: .zi-unload [[[
 # 0. Call the Zsh Plugin's Standard *_plugin_unload function
-# 0. Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+# 0. Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload
 # 1. Delete bindkeys (...)
 # 2. Delete zstyles
 # 3. Restore options
@@ -840,13 +840,14 @@ ZI[EXTENDED_GLOB]=""
   .zi-any-to-user-plugin "$1" "$2"
   local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" user="${reply[-2]}" plugin="${reply[-1]}" quiet="${${3:+1}:-0}"
   local k
+  integer callback_rc=0
   .zi-any-colorify-as-uspl2 "$uspl2"
   (( quiet )) || builtin print -r -- "${ZI[col-bar]}---${ZI[col-rst]} Unloading plugin: $REPLY ${ZI[col-bar]}---${ZI[col-rst]}"
   local ___dir
   [[ "$user" = "%" ]] && ___dir="$plugin" || ___dir="${ZI[PLUGINS_DIR]}/${user:+${user}---}${plugin//\//---}"
-  # KSH_ARRAYS immunity
+  # ksh_arrays immunity
   integer correct=0
-  [[ -o "KSH_ARRAYS" ]] && correct=1
+  [[ -o "ksh_arrays" ]] && correct=1
   # Allow unload for debug user
   if [[ "$uspl2" != "_dtrace/_dtrace" ]]; then
     .zi-exists-message "$1" "$2" || return 1
@@ -864,7 +865,7 @@ ZI[EXTENDED_GLOB]=""
   (( ${+functions[${plugin}_plugin_unload]} )) && ${plugin}_plugin_unload
 
   #
-  # Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+  # Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload
   #
 
   local -a tmp
@@ -873,10 +874,8 @@ ZI[EXTENDED_GLOB]=""
   (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
   if [[ -n ${sice[ps-on-unload]} ]]; then
     (( quiet )) || builtin print -r "Running plugin's provided unload code: ${ZI[col-info]}${sice[ps-on-unload][1,50]}${sice[ps-on-unload][51]:+…}${ZI[col-rst]}"
-    local ___oldcd="$PWD"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___dir"; }
-    eval "${sice[ps-on-unload]}"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
+    .zi-run-plugin-standard-unload-callback "${sice[ps-on-unload]}" "$___dir" "$@"
+    callback_rc=$?
   fi
 
   #
@@ -902,7 +901,7 @@ ZI[EXTENDED_GLOB]=""
     if [[ "$sw_arr4" = "-M" && "$sw_arr6" != "-R" ]]; then
       if [[ -n "$sw_arr3" ]]; then
         () {
-          builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+          builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
           (( quiet )) || builtin print -r "Restoring bindkey ${${(q)sw_arr1}//(#m)\\[\^\?\]\[\)\(\'\"\}\{\`]/${MATCH#\\}} $sw_arr3 ${ZI[col-info]}in map ${ZI[col-rst]}$sw_arr5"
         }
         bindkey -M "$sw_arr5" "$sw_arr1" "$sw_arr3"
@@ -935,7 +934,7 @@ ZI[EXTENDED_GLOB]=""
     else
       if [[ -n "$sw_arr3" ]]; then
         () {
-          builtin emulate -LR zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+          builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
           (( quiet )) || builtin print -r "Restoring bindkey ${${(q)sw_arr1}//(#m)\\[\^\?\]\[\)\(\'\"\}\{\`]/${MATCH#\\}} $sw_arr3"
         }
         bindkey "$sw_arr1" "$sw_arr3"
@@ -973,9 +972,9 @@ ZI[EXTENDED_GLOB]=""
   # Paranoid, don't want bad key/value pair error
   .zi-diff-options-compute "$uspl2"
   integer empty=0
-  .zi-save-set-extendedglob
+  .zi-save-set-extended_glob
   [[ "${ZI[OPTIONS__$uspl2]}" != *[$'! \t']* ]] && empty=1
-  .zi-restore-extendedglob
+  .zi-restore-extended_glob
   if (( empty != 1 )); then
     typeset -A opts
     opts=( "${(z)ZI[OPTIONS__$uspl2]}" )
@@ -1053,7 +1052,7 @@ ZI[EXTENDED_GLOB]=""
   keys=( "${(@on)ZI[(I)TIME_<->_*]}" )
   integer keys_size=${#keys}
   () {
-    builtin setopt localoptions extendedglob noksharrays typesetsilent
+    builtin setopt local_options extended_glob no_ksh_arrays typeset_silent
     typeset -a restore_widgets skip_delete
     local wid
     restore_widgets=( "${(z)ZI[WIDGETS_SAVED__$uspl2]}" )
@@ -1228,9 +1227,9 @@ ZI[EXTENDED_GLOB]=""
 
   .zi-diff-parameter-compute "$uspl2"
   empty=0
-  .zi-save-set-extendedglob
+  .zi-save-set-extended_glob
   [[ "${ZI[PARAMETERS_POST__$uspl2]}" != *[$'! \t']* ]] && empty=1
-  .zi-restore-extendedglob
+  .zi-restore-extended_glob
   if (( empty != 1 )); then
     typeset -A elem_pre elem_post
     elem_pre=( "${(z)ZI[PARAMETERS_PRE__$uspl2]}" )
@@ -1295,6 +1294,7 @@ ZI[EXTENDED_GLOB]=""
     .zi-clear-report-for "$user" "$plugin"
     (( quiet )) || +zi-message "Plugin's report saved to {var}\$LASTREPORT{rst}"
   fi
+  return "$callback_rc"
 } # ]]]
 # FUNCTION: .zi-show-report [[[
 # Displays report of the plugin given.
@@ -1304,7 +1304,7 @@ ZI[EXTENDED_GLOB]=""
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user (+ plugin in $2), plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-show-report() {
-  builtin setopt localoptions extendedglob warncreateglobal typesetsilent noksharrays
+  builtin setopt local_options extended_glob warn_create_global typeset_silent no_ksh_arrays
   .zi-any-to-user-plugin "$1" "$2"
   local user="${reply[-2]}" plugin="${reply[-1]}" uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}"
   # Allow debug report
@@ -1326,7 +1326,7 @@ ZI[EXTENDED_GLOB]=""
   )
   # Print report gathered via shadowing
   () {
-    builtin setopt localoptions extendedglob
+    builtin setopt local_options extended_glob
     builtin print -rl -- "${(@)${(f@)ZI_REPORTS[$uspl2]}/(#b)(#s)([^[:space:]]##)([[:space:]]##)/${map[${match[1]}]:-${ZI[col-keyword]}}${match[1]}${ZI[col-rst]}${match[2]}}"
   }
   # Print report gathered via $functions-diffing
@@ -1407,9 +1407,9 @@ ZI[EXTENDED_GLOB]=""
 # $2 - plugin spec (4 formats: user---plugin, user/plugin, user (+ plugin in $2), plugin)
 # $3 - plugin (only when $1 - i.e. user - given)
 .zi-update-or-status() {
-  # Set the localtraps option.
+  # Set the local_traps option.
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob nullglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob null_glob warn_create_global typeset_silent no_short_loops
   local -a arr
   ZI[first-plugin-mark]=${${ZI[first-plugin-mark]:#init}:-1}
   ZI[-r/--reset-opt-hook-has-been-run]=0
@@ -1722,7 +1722,7 @@ ZI[EXTENDED_GLOB]=""
 # $2 - snippet URL
 .zi-update-or-status-snippet() {
   builtin emulate -L zsh
-  builtin setopt extendedglob
+  builtin setopt extended_glob
   local st="$1" URL="${2%/}" local_dir filename is_snippet
   (( ${#ICE[@]} > 0 )) && { ZI_SICE[$URL]=""; local nf="-nftid"; }
   local -A ICE2
@@ -1767,7 +1767,7 @@ ZI[EXTENDED_GLOB]=""
 # User-action entry point.
 .zi-update-or-status-all() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob nullglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob null_glob warn_create_global typeset_silent no_short_loops
   local -F2 SECONDS=0
   integer retval
   if (( OPTS[opt_-p,--parallel] )) && [[ $1 = update ]] {
@@ -1846,91 +1846,113 @@ ZI[EXTENDED_GLOB]=""
 # FUNCTION: .zi-update-in-parallel [[[
 .zi-update-all-parallel() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops nomonitor nonotify
-  local id_as repo snip uspl user plugin PUDIR="$(mktemp -d)"
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops no_monitor no_notify
+  local id_as repo snip uspl user plugin pid PUDIR
+  PUDIR="$(command mktemp -d "${TMPDIR:-/tmp}/zi-update.XXXXXXXX")" || return 1
+  local MATCH
+  integer MBEGIN MEND
   local -A PUAssocArray map
   map=( / --  "=" -EQ-  "?" -QM-  "&" -AMP-  : - )
   local -a files
-  integer main_counter counter PUPDATE=1
-  files=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(ND) )
-  main_counter=${#files}
-  if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
-    for snip ( "${files[@]}" ) {
-      main_counter=main_counter-1
-      # The continue may cause the tail of processes to
-      # fall-through to the following plugins-specific `wait'
-      # Should happen only in a very special conditions
-      # TODO #114 handle this
-      [[ ! -f ${snip:h}/url ]] && continue
-      [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
-      counter+=1
-      local ef_id="${id_as:-$(<${snip:h}/url)}"
-      local PUFILEMAIN=${${ef_id#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
-      local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
-      .zi-update-or-status-snippet "$st" "$ef_id" &>! $PUFILE &
-      PUAssocArray[$!]=$PUFILE
-      .zi-wait-for-update-jobs snippets
+  integer counter=0 PUPDATE=1 retval=0
+  builtin trap 'retval=130; for pid in ${(k)PUAssocArray}; do builtin kill -TERM "$pid" 2>/dev/null; done; return 130' INT
+  builtin trap 'retval=129; for pid in ${(k)PUAssocArray}; do builtin kill -TERM "$pid" 2>/dev/null; done; return 129' HUP
+  builtin trap 'retval=143; for pid in ${(k)PUAssocArray}; do builtin kill -TERM "$pid" 2>/dev/null; done; return 143' TERM
+  {
+    files=( ${ZI[SNIPPETS_DIR]}/**/(._zi|._zinit|._zplugin)/mode(ND) )
+    if (( OPTS[opt_-s,--snippets] || !OPTS[opt_-l,--plugins] )) {
+      for snip ( "${files[@]}" ) {
+        [[ ! -f ${snip:h}/url ]] && continue
+        [[ -f ${snip:h}/id-as ]] && id_as="$(<${snip:h}/id-as)" || id_as=
+        (( ++counter ))
+        local ef_id="${id_as:-$(<${snip:h}/url)}"
+        local PUFILEMAIN=${${ef_id#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
+        local PUFILE=$PUDIR/${(l:8::0:)counter}_$PUFILEMAIN.out
+        .zi-update-or-status-snippet "$st" "$ef_id" &>! "$PUFILE" &
+        PUAssocArray[$!]=$PUFILE
+        .zi-wait-for-update-jobs snippets
+      }
+      .zi-wait-for-update-jobs snippets flush
     }
-  }
 
-  counter=0
-  PUAssocArray=()
-  if (( OPTS[opt_-l,--plugins] || !OPTS[opt_-s,--snippets] )) {
-    local -a files2
-    files=( ${ZI[PLUGINS_DIR]}/*(ND/) )
-    # Pre-process plugins
-    for repo ( $files ) {
-      uspl=${repo:t}
-      # Two special cases
-      [[ $uspl = custom || $uspl = _local---zi ]] && continue
-      # Check if repository has a remote set
-      if [[ -f $repo/.git/config ]] {
-        local -a config
-        config=( ${(f)"$(<$repo/.git/config)"} )
-        if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]] {
+    counter=0
+    PUAssocArray=()
+    if (( OPTS[opt_-l,--plugins] || !OPTS[opt_-s,--snippets] )) {
+      local -a files2
+      files=( ${ZI[PLUGINS_DIR]}/*(ND/) )
+      # Pre-process plugins
+      for repo ( $files ) {
+        uspl=${repo:t}
+        # Two special cases
+        [[ $uspl = custom || $uspl = _local---zi ]] && continue
+        # Check if repository has a remote set
+        if [[ -f $repo/.git/config ]] {
+          local -a config
+          config=( ${(f)"$(<$repo/.git/config)"} )
+          if [[ ${#${(M)config[@]:#\[remote[[:blank:]]*\]}} -eq 0 ]] {
+            continue
+          }
+        }
+        .zi-any-to-user-plugin "$uspl"
+        local user=${reply[-2]} plugin=${reply[-1]}
+        # Must be a git repository or a binary release
+        if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]] {
           continue
         }
+        files2+=( $repo )
       }
-      .zi-any-to-user-plugin "$uspl"
-      local user=${reply[-2]} plugin=${reply[-1]}
-      # Must be a git repository or a binary release
-      if [[ ! -d $repo/.git && ! -f $repo/._zi/is_release ]] {
-        continue
+      for repo ( "${files2[@]}" ) {
+        uspl=${repo:t}
+        id_as=${uspl//---//}
+        (( ++counter ))
+        local PUFILEMAIN=${${id_as#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
+        local PUFILE=$PUDIR/${(l:8::0:)counter}_$PUFILEMAIN.out
+        .zi-any-colorify-as-uspl2 "$uspl"
+        +zi-message "Updating{ehi}:{rst} $REPLY{rst}" >! "$PUFILE"
+        .zi-any-to-user-plugin "$uspl"
+        local user=${reply[-2]} plugin=${reply[-1]}
+        .zi-update-or-status update "$user" "$plugin" &>>! "$PUFILE" &
+        PUAssocArray[$!]=$PUFILE
+        .zi-wait-for-update-jobs plugins
       }
-      files2+=( $repo )
+      .zi-wait-for-update-jobs plugins flush
     }
-    main_counter=${#files2}
-    for repo ( "${files2[@]}" ) {
-      main_counter=main_counter-1
-      uspl=${repo:t}
-      id_as=${uspl//---//}
-      counter+=1
-      local PUFILEMAIN=${${id_as#/}//(#m)[\/=\?\&:]/${map[$MATCH]}}
-      local PUFILE=$PUDIR/${counter}_$PUFILEMAIN.out
-      .zi-any-colorify-as-uspl2 "$uspl"
-      +zi-message "Updating{ehi}:{rst} $REPLY{rst}" >! $PUFILE
-      .zi-any-to-user-plugin "$uspl"
-      local user=${reply[-2]} plugin=${reply[-1]}
-      .zi-update-or-status update "$user" "$plugin" &>>! $PUFILE &
-      PUAssocArray[$!]=$PUFILE
-      .zi-wait-for-update-jobs plugins
-    }
+  } always {
+    # Reap every child before removing its output directory, including when an
+    # error or signal interrupts a phase between normal flushes.
+    (( ${#PUAssocArray} )) && .zi-wait-for-update-jobs cleanup flush
+    [[ -n $PUDIR && -d $PUDIR ]] && command rm -rf -- "$PUDIR"
   }
-  # Shouldn't happen
-  # (( ${#PUAssocArray} > 0 )) && wait ${(k)PUAssocArray}
+  return "$retval"
 }
 # ]]]
 # FUNCTION: .zi-wait-for-update-jobs [[[
 .zi-wait-for-update-jobs() {
-  local tpe=$1
-  if (( counter > OPTS[value] || main_counter == 0 )) {
-    wait ${(k)PUAssocArray}
-    local ind_file
-    for ind_file ( ${^${(von)PUAssocArray}}.ind(DN.) ) {
-      command cat ${ind_file:r}
-      (( !OPTS[opt_-d,--debug] && !ZI[DEBUG_MODE] )) && command rm -f $ind_file
-    }
-    (( !OPTS[opt_-d,--debug] && !ZI[DEBUG_MODE] )) && command rm -f ${(v)PUAssocArray}
+  local tpe="$1"
+  integer force_flush=0 max_jobs=${OPTS[value]:-1}
+  [[ $2 == flush ]] && force_flush=1
+  (( max_jobs > 0 )) || max_jobs=1
+  if (( ${#PUAssocArray} && ( counter >= max_jobs || force_flush ) )) {
+    local pid output_file
+    integer wait_rc output_rc
+    local -A failed_files
+    for pid in ${(on)${(k)PUAssocArray}}; do
+      wait "$pid"
+      wait_rc=$?
+      if (( wait_rc != 0 )); then
+        (( retval == 0 )) && retval=$wait_rc
+        failed_files[${PUAssocArray[$pid]}]=$wait_rc
+      fi
+    done
+    for output_file in ${(on)${(v)PUAssocArray}}; do
+      if [[ -f $output_file.ind || -n ${failed_files[$output_file]} ]] ||
+        (( OPTS[opt_-d,--debug] || ZI[DEBUG_MODE] )); then
+        command cat -- "$output_file"
+        output_rc=$?
+        (( output_rc != 0 && retval == 0 )) && retval=$output_rc
+      fi
+      command rm -f -- "$output_file.ind" "$output_file"
+    done
     counter=0
     PUAssocArray=()
   } elif (( counter == 1 && !OPTS[opt_-q,--quiet] )) {
@@ -1943,7 +1965,7 @@ ZI[EXTENDED_GLOB]=""
 #
 # User-action entry point.
 .zi-show-zstatus() {
-  builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
+  builtin setopt local_options null_glob extended_glob no_ksh_glob no_ksh_arrays
 
   local infoc="${ZI[col-info2]}"
   +zi-message "{info}Directories set{ehi}:{rst} "
@@ -2073,9 +2095,9 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 .zi-list-bindkeys() {
   local uspl2 uspl2col sw first=1
   local -a string_widget
-  # KSH_ARRAYS immunity
+  # ksh_arrays immunity
   integer correct=0
-  [[ -o "KSH_ARRAYS" ]] && correct=1
+  [[ -o "ksh_arrays" ]] && correct=1
   for uspl2 in "${(@ko)ZI[(I)BINDKEYS__*]}"; do
     [[ -z "${ZI[$uspl2]}" ]] && continue
     (( !first )) && builtin print
@@ -2119,7 +2141,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 #
 # User-action entry point.
 .zi-compiled() {
-  builtin setopt localoptions nullglob
+  builtin setopt local_options null_glob
 
   typeset -a matches m
   matches=( ${ZI[PLUGINS_DIR]}/*/*.zwc(DN) )
@@ -2148,7 +2170,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 #
 # User-action entry point.
 .zi-compile-uncompile-all() {
-  builtin setopt localoptions nullglob
+  builtin setopt local_options null_glob
 
   local compile="$1"
   typeset -a plugins
@@ -2176,7 +2198,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 # $1 - plugin spec (4 formats: user---plugin, user/plugin, user (+ plugin in $2), plugin)
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-uncompile-plugin() {
-  builtin setopt localoptions nullglob
+  builtin setopt local_options null_glob
   .zi-any-to-user-plugin "${1}" "${2}"
   local user="${reply[-2]}" plugin="${reply[-1]}" silent="$3"
   # There are plugins having ".plugin.zsh"
@@ -2209,7 +2231,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 #
 # User-action entry point.
 .zi-show-completions() {
-  builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
+  builtin setopt local_options null_glob extended_glob no_ksh_glob no_ksh_arrays
 
   local count="${1:-3}"
   typeset -a completions
@@ -2289,7 +2311,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 #
 # User-action entry point.
 .zi-clear-completions() {
-  builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
+  builtin setopt local_options null_glob extended_glob no_ksh_glob no_ksh_arrays
 
   typeset -a completions
   completions=( "${ZI[COMPLETIONS_DIR]}"/_[^_.]*~*.zwc "${ZI[COMPLETIONS_DIR]}"/[^_.]*~*.zwc )
@@ -2339,7 +2361,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 #
 # User-action entry point.
 .zi-search-completions() {
-  builtin setopt localoptions nullglob extendedglob nokshglob noksharrays
+  builtin setopt local_options null_glob extended_glob no_ksh_glob no_ksh_arrays
 
   typeset -a plugin_paths
   plugin_paths=( "${ZI[PLUGINS_DIR]}"/*(DN) )
@@ -2478,7 +2500,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-cd() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent rcquotes
+  builtin setopt extended_glob warn_create_global typeset_silent rc_quotes
 
   .zi-get-path "$1" "$2" && {
     if [[ -e $REPLY ]]; then
@@ -2523,7 +2545,7 @@ builtin setopt extended_glob warn_create_global typeset_silent \
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-delete() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent
+  builtin setopt extended_glob warn_create_global typeset_silent
 
   local -a opts match mbegin mend
   local MATCH; integer MBEGIN MEND _retval
@@ -2688,7 +2710,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 # $1 - time spec, e.g. "1 week"
 .zi-recently() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt nullglob extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt null_glob extended_glob warn_create_global typeset_silent no_short_loops
   local IFS=.
   local gitout
   local timespec=${*// ##/.}
@@ -2720,7 +2742,7 @@ builtin print -Pr \"\$ZI[col-obj]Done (with the exit code: \$_retval).%f%b\""
 # $2 - (optional) plugin (only when $1 - i.e. user - given)
 .zi-create() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt localoptions extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin setopt local_options extended_glob warn_create_global typeset_silent no_short_loops rc_quotes
 
   .zi-any-to-user-plugin "$1" "$2"
   local user="${reply[-2]}" plugin="${reply[-1]}"
@@ -2933,7 +2955,7 @@ EOF
   )
   (
     builtin emulate -LR ksh ${=${options[xtrace]:#off}:+-o xtrace}
-    builtin unsetopt shglob kshglob
+    builtin unsetopt sh_glob ksh_glob
     for i in "${ZI_STRESS_TEST_OPTIONS[@]}"; do
       builtin setopt "$i"
       builtin print -n "Stress-testing ${fname:t} for option $i "
@@ -2963,7 +2985,7 @@ EOF
 # FUNCTION: .zi-ls [[[
 .zi-ls() {
   builtin emulate -L zsh
-  builtin setopt extendedglob
+  builtin setopt extended_glob
 
   if (( ${+commands[tree]} )); then
     ZI[TREE]="${commands[tree]} -L 3 -C --charset utf-8"
@@ -2998,7 +3020,7 @@ EOF
 # ("%" "/home/..." and also "%SNIPPETS/..." etc.), or a plugin nickname (i.e. id-as'' ice-mod), or a snippet nickname.
 .zi-get-path() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops
   [[ $1 == % ]] && local id_as=%$2 || local id_as=$1${1:+/}$2
   .zi-get-object-path snippet "$id_as" || .zi-get-object-path plugin "$id_as"
   return $(( 1 - reply[3] ))
@@ -3006,7 +3028,7 @@ EOF
 # FUNCTION: .zi-recall [[[
 .zi-recall() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops
 
   local -A ice
   local el val cand1 cand2 local_dir filename is_snippet

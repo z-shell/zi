@@ -22,7 +22,7 @@
   local ___data="$(<$1)"
 
   () {
-    builtin emulate -LR zsh -o extendedglob -o interactivecomments ${=${options[xtrace]:#off}:+-o xtrace}
+    builtin emulate -LR zsh -o extended_glob -o interactive_comments ${=${options[xtrace]:#off}:+-o xtrace}
     local ___subst ___tabspc=$'\t'
     for ___subst ( "${___substs[@]}" ) {
       ___ab=( "${(@)${(@)${(@s:->:)___subst}##[[:space:]]##}%%[[:space:]]##}" )
@@ -43,7 +43,7 @@
 # $3 - id - URL or plugin ID or alias name (from id-as'')
 .zi-service() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops
   local ___tpe="$1" ___mode="$2" ___id="$3" ___fle="${ZI[SERVICES_DIR]}/${ICE[service]}.lock" ___fd ___cmd ___tmp ___lckd ___strd=0
   { builtin print -n >! "$___fle"; } 2>/dev/null 1>&2
   [[ ! -e ${___fle:r}.fifo ]] && command mkfifo "${___fle:r}.fifo" 2>/dev/null 1>&2

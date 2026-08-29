@@ -1750,10 +1750,76 @@ ziextract() {
     command mv -f *~(._zi*|._backup|.git|.svn|.hg|$file)(DN) ._backup 2>/dev/null
   }
 
+  .zi-archive-members-safe() {
+    builtin emulate -LR zsh
+    builtin setopt extendedglob
+
+    local member component
+    for member in "${(@f)1}"; do
+      while [[ $member == ./* ]]; do
+        member=${member#./}
+      done
+      [[ -z $member || $member == . ]] && continue
+      [[ $member != /* && $member != [[:alpha:]]:[/\\]* && $member != *\\* ]] || return 1
+      for component in "${(@s:/:)member}"; do
+        [[ $component != .. ]] || return 1
+      done
+    done
+  }
+
+  .zi-extraction-targets-safe() {
+    builtin emulate -LR zsh
+    builtin setopt extendedglob
+
+    local stage="$1" target_dir="$2" staged_file relative target_component target_path resolved link_target
+    local -a staged_files
+    staged_files=( "$stage"/**/*(DN) )
+    for staged_file in "${staged_files[@]}"; do
+      relative=${staged_file#${stage}/}
+      if [[ -L $staged_file ]]; then
+        link_target="$(command readlink "$staged_file")" || return 1
+        [[ $link_target != /* && $link_target != [[:alpha:]]:[/\\]* && $link_target != *\\* ]] || return 1
+        resolved=${staged_file:h}/${link_target}
+        resolved=${resolved:A}
+        [[ $resolved == ${stage:A} || $resolved == ${stage:A}/* ]] || return 1
+      fi
+      target_path=$target_dir
+      for target_component in "${(@s:/:)relative}"; do
+        target_path+="/$target_component"
+        [[ ! -L $target_path ]] || return 1
+      done
+    done
+  }
+
   .zi-extract-wrapper() {
-    local file="$1" fun="$2" retval
+    local file="$1" fun="$2" retval=0 original_file="$1" original_dir="$PWD"
+    local source_file="${1:A}" stage listing
     (( !OPTS[opt_-q,--quiet] )) && +zi-message "{annex}ziextract{ehi}:{rst} Unpacking the files from{ehi}:{rst} \`{file}$file{rst}'{…}{rst}"
-    $fun; retval=$?
+    file=$source_file
+    if [[ $(typeset -f + →zi-list) == "→zi-list" ]]; then
+      listing="$(→zi-list)" || retval=$?
+      (( retval )) || .zi-archive-members-safe "$listing" || retval=1
+    fi
+    if (( !retval && stage_extract )); then
+      stage="$(command mktemp -d "${TMPDIR:-/tmp}/zi-extract.XXXXXXXX")" || retval=1
+      if (( !retval )); then
+        builtin cd -q "$stage" || retval=1
+      fi
+      if (( !retval )); then
+        $fun || retval=$?
+      fi
+      builtin cd -q "$original_dir" || retval=1
+      if (( !retval )); then
+        .zi-extraction-targets-safe "$stage" "$original_dir" || retval=1
+      fi
+      if (( !retval )); then
+        command cp -a "$stage"/. "$original_dir"/ || retval=$?
+      fi
+      [[ -z $stage ]] || command rm -rf -- "$stage"
+    elif (( !retval )); then
+      $fun || retval=$?
+    fi
+    file=$original_file
     if (( retval == 0 )) {
       local -a files
       files=( *~(._zi*|._backup|.git|.svn|.hg|$file)(DN) )
@@ -1763,27 +1829,42 @@ ziextract() {
   }
 
   →zi-check() { (( ${+commands[$1]} )) || +zi-message "{annex}ziextract{ehi}:{rst} {error}No command {cmd}$1{msg2},{error} it is required to unpack {file}$2{rst}"; }
+  integer stage_extract=0
 
   case "${${ext:+.$ext}:-$file}" in
     ((#i)*.zip)
+      stage_extract=1
+      →zi-list() { command unzip -Z1 "$file"; }
       →zi-extract() { →zi-check unzip "$file" || return 1; command unzip -o "$file"; }
       ;;
     ((#i)*.rar)
+      stage_extract=1
+      →zi-list() { command unrar lb "$file"; }
       →zi-extract() { →zi-check unrar "$file" || return 1; command unrar x "$file"; }
       ;;
     ((#i)*.tar.bz2|(#i)*.tbz|(#i)*.tbz2)
+      stage_extract=1
+      →zi-list() { command bzip2 -dc "$file" | command tar -tf -; local -a statuses=( $pipestatus ); (( !statuses[1] && !statuses[2] )); }
       →zi-extract() { →zi-check bzip2 "$file" || return 1; command bzip2 -dc "$file" | command tar -xf -; }
       ;;
     ((#i)*.tar.gz|(#i)*.tgz)
+      stage_extract=1
+      →zi-list() { command gzip -dc "$file" | command tar -tf -; local -a statuses=( $pipestatus ); (( !statuses[1] && !statuses[2] )); }
       →zi-extract() { →zi-check gzip "$file" || return 1; command gzip -dc "$file" | command tar -xf -; }
       ;;
     ((#i)*.tar.xz|(#i)*.txz)
+      stage_extract=1
+      →zi-list() { command xz -dc "$file" | command tar -tf -; local -a statuses=( $pipestatus ); (( !statuses[1] && !statuses[2] )); }
       →zi-extract() { →zi-check xz "$file" || return 1; command xz -dc "$file" | command tar -xf -; }
       ;;
     ((#i)*.tar.7z|(#i)*.t7z)
+      stage_extract=1
+      →zi-list() { command 7z x -so "$file" | command tar -tf -; local -a statuses=( $pipestatus ); (( !statuses[1] && !statuses[2] )); }
       →zi-extract() { →zi-check 7z "$file" || return 1; command 7z x -so "$file" | command tar -xf -; }
       ;;
     ((#i)*.tar)
+      stage_extract=1
+      →zi-list() { command tar -tf "$file"; }
       →zi-extract() { →zi-check tar "$file" || return 1; command tar -xf "$file"; }
       ;;
     ((#i)*.gz|(#i)*.gzip)
@@ -1829,9 +1910,12 @@ ziextract() {
       }
       ;;
     ((#i)*.7z|(#i)*.7-zip)
+      stage_extract=1
+      →zi-list() { command 7z l -ba -slt "$file" | command sed -n 's/^Path = //p'; }
       →zi-extract() { →zi-check 7z "$file" || return 1; command 7z x "$file" >/dev/null;  }
       ;;
     ((#i)*.dmg)
+      stage_extract=1
       →zi-extract() {
         local prog
         for prog ( hdiutil cp ) { →zi-check $prog "$file" || return 1; }
@@ -1848,9 +1932,13 @@ ziextract() {
       }
       ;;
     ((#i)*.deb)
+      stage_extract=1
+      →zi-list() { command dpkg-deb --fsys-tarfile "$file" | command tar -tf -; local -a statuses=( $pipestatus ); (( !statuses[1] && !statuses[2] )); }
       →zi-extract() { →zi-check dpkg-deb "$file" || return 1; command dpkg-deb -R "$file" .; }
       ;;
     ((#i)*.rpm)
+      stage_extract=1
+      →zi-list() { "$ZI[BIN_DIR]"/lib/zsh/rpm2cpio.zsh "$file" | command cpio -t; local -a statuses=( $pipestatus ); (( !statuses[1] && !statuses[2] )); }
       →zi-extract() { →zi-check cpio "$file" || return 1; $ZI[BIN_DIR]/lib/zsh/rpm2cpio.zsh "$file" | command cpio -imd --no-absolute-filenames; }
       ;;
     ((#i)*.exe|(#i)*.pe32)
@@ -1871,14 +1959,15 @@ ziextract() {
         command mv ._backup/*(DN) . 2>/dev/null
       }
       +zi-message ".{rst}"
-      unfunction -- →zi-extract →zi-check 2>/dev/null
+      unfunction -- →zi-extract →zi-check →zi-list 2>/dev/null
+      unfunction -- .zi-archive-members-safe .zi-extraction-targets-safe 2>/dev/null
       return 1
     }
-    unfunction -- →zi-extract →zi-check
+    unfunction -- →zi-extract →zi-check →zi-list 2>/dev/null
   } else {
     integer warning=1
   }
-  unfunction -- .zi-extract-wrapper
+  unfunction -- .zi-extract-wrapper .zi-archive-members-safe .zi-extraction-targets-safe
 
   local -a execs
   execs=( **/*~(._zi(|/*)|.git(|/*)|.svn(|/*)|.hg(|/*)|._backup(|/*))(DN-.) )

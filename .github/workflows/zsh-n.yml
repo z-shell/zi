@@ -11,6 +11,7 @@ on:
       - "lib/**"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/hook-ownership.zsh"
       - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
@@ -25,6 +26,7 @@ on:
       - "lib/**"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/hook-ownership.zsh"
       - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
@@ -156,6 +158,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test completion refresh
         run: zsh tests/completion-refresh.zsh
+
+  hook-ownership:
+    name: Hook ownership
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test hook ownership
+        run: zsh -f tests/hook-ownership.zsh
 
   message-formatting:
     name: Message formatting

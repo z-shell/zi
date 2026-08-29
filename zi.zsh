@@ -345,6 +345,20 @@ fi
   fi
 }
 
+# List of standard add-zsh-hook arrays whose entries are tracked per plugin.
+# Ownership is a property of the registration, not of who defined the function,
+# so these are diffed across a load rather than inferred from function deletion.
+typeset -gaH ZI_ZSH_HOOKS_LIST
+ZI_ZSH_HOOKS_LIST=(
+  chpwd_functions
+  precmd_functions
+  preexec_functions
+  periodic_functions
+  zshaddhistory_functions
+  zshexit_functions
+  zsh_directory_name_functions
+)
+
 # List of hooks.
 typeset -gAH ZI_ZLE_HOOKS_LIST
 ZI_ZLE_HOOKS_LIST=(
@@ -946,6 +960,38 @@ builtin setopt no_aliases
     ZI[PARAMETERS_AFTER__$1]+=" ${(j: :)${(qkv)parameters[@]}}"
   }
 } # ]]]
+# FUNCTION: .zi-diff-hooks. [[[
+# Implements detection of changes to the standard add-zsh-hook arrays.
+# Performs data gathering, computation is done in *-compute().
+#
+# Each snapshot records every tracked array as "array:entry" pairs, so a
+# registration is attributed to the plugin that made it regardless of which
+# actor defined the underlying function.
+#
+# $1 - user/plugin (i.e. uspl2 format)
+# $2 - command, can be "begin" or "end"
+.zi-diff-hooks() {
+  builtin emulate -L zsh -o no_ksh_arrays
+  local hook_array entry
+  typeset -a snapshot
+  for hook_array in "${ZI_ZSH_HOOKS_LIST[@]}"; do
+    (( ${(P)+hook_array} )) || continue
+    for entry in "${(@P)hook_array}"; do
+      snapshot+=( "${(q)hook_array}:${(q)entry}" )
+    done
+  done
+  if [[ $2 = begin ]]; then
+    # Snapshot presence is tracked separately because an empty hook set is a
+    # valid baseline. Keep the first baseline across overwrite-loads so one
+    # unload still owns entries added by the first load.
+    if [[ -z ${ZI[ZSH_HOOKS_DIFFED__$1]} ]]; then
+      ZI[ZSH_HOOKS_BEFORE__$1]="${snapshot[*]}"
+      ZI[ZSH_HOOKS_DIFFED__$1]=1
+    fi
+  else
+    ZI[ZSH_HOOKS_AFTER__$1]="${snapshot[*]}"
+  fi
+} # ]]]
 # FUNCTION: .zi-diff. [[[
 # Performs diff actions of all types
 .zi-diff() {
@@ -953,6 +999,7 @@ builtin setopt no_aliases
   .zi-diff-options "$1" "$2"
   .zi-diff-env "$1" "$2"
   .zi-diff-parameter "$1" "$2"
+  .zi-diff-hooks "$1" "$2"
 } # ]]]
 
 #

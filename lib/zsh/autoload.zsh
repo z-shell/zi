@@ -175,6 +175,43 @@ ZI[EXTENDED_GLOB]=""
   ZI[PARAMETERS_POST__$uspl2]="${(j: :)${(qkv)params_post[@]}}"
   return 0
 } # ]]]
+# FUNCTION: .zi-diff-hooks-compute [[[
+# Computes ZI[ZSH_HOOKS__…] and ZI[ZSH_HOOKS_REMOVED__…] from the snapshots
+# gathered by .zi-diff-hooks().
+#
+# ZSH_HOOKS__ holds the entries the plugin added, which unload owns and may
+# remove. ZSH_HOOKS_REMOVED__ holds the entries that existed before the load
+# and were gone by the end of it, which unload reports but does not restore,
+# because a plugin removing a hook can be deliberate.
+#
+# Both are stored as quoted "array:entry" pairs.
+#
+# $1 - user/plugin
+.zi-diff-hooks-compute() {
+  builtin emulate -L zsh -o no_ksh_arrays -o extended_glob
+  local uspl2="$1"
+  # A light load takes no snapshot. Test the explicit marker rather than the
+  # serialized values because a normal load can start and end with no hooks.
+  [[ ${ZI[ZSH_HOOKS_DIFFED__$uspl2]} = 1 ]] || return 1
+  typeset -a before after added removed
+  before=( "${(z)ZI[ZSH_HOOKS_BEFORE__$uspl2]}" )
+  after=( "${(z)ZI[ZSH_HOOKS_AFTER__$uspl2]}" )
+  local pair
+  # An entry present afterwards but not before was registered during the load.
+  # Duplicate registrations collapse, because add-zsh-hook itself refuses to
+  # add an entry twice; the pair is either owned or it is not.
+  for pair in "${after[@]}"; do
+    [[ -z $pair ]] && continue
+    (( ${before[(I)$pair]} )) || added+=( "$pair" )
+  done
+  for pair in "${before[@]}"; do
+    [[ -z $pair ]] && continue
+    (( ${after[(I)$pair]} )) || removed+=( "$pair" )
+  done
+  ZI[ZSH_HOOKS__$uspl2]="${added[*]}"
+  ZI[ZSH_HOOKS_REMOVED__$uspl2]="${removed[*]}"
+  return 0
+} # ]]]
 # FUNCTION: .zi-any-to-uspl2 [[[
 # Converts given plugin-spec to format that's used in keys for hash tables.
 # So basically, creates string "user/plugin" (this format is called: uspl2).
@@ -241,6 +278,12 @@ ZI[EXTENDED_GLOB]=""
   ZI[PARAMETERS_POST__$REPLY]=""
   ZI[PARAMETERS_BEFORE__$REPLY]=""
   ZI[PARAMETERS_AFTER__$REPLY]=""
+  # Standard hook-array diffing
+  ZI[ZSH_HOOKS__$REPLY]=""
+  ZI[ZSH_HOOKS_REMOVED__$REPLY]=""
+  ZI[ZSH_HOOKS_BEFORE__$REPLY]=""
+  ZI[ZSH_HOOKS_AFTER__$REPLY]=""
+  ZI[ZSH_HOOKS_DIFFED__$REPLY]=""
 } # ]]]
 # FUNCTION: .zi-exists-message [[[
 # Checks if plugin is loaded. Testable. Also outputs error message if plugin is not loaded.
@@ -1181,12 +1224,42 @@ ZI[EXTENDED_GLOB]=""
     f="${(Q)f}"
     (( quiet )) || +zi-message "Deleting function $f"
     (( ${+functions[$f]} )) && unfunction -- "$f"
-    (( ${+precmd_functions} )) && precmd_functions=( ${precmd_functions[@]:#$f} )
-    (( ${+preexec_functions} )) && preexec_functions=( ${preexec_functions[@]:#$f} )
-    (( ${+chpwd_functions} )) && chpwd_functions=( ${chpwd_functions[@]:#$f} )
-    (( ${+periodic_functions} )) && periodic_functions=( ${periodic_functions[@]:#$f} )
-    (( ${+zshaddhistory_functions} )) && zshaddhistory_functions=( ${zshaddhistory_functions[@]:#$f} )
-    (( ${+zshexit_functions} )) && zshexit_functions=( ${zshexit_functions[@]:#$f} )
+  done
+
+  #
+  # 6a. Remove plugin-owned add-zsh-hook entries
+  #
+
+  # Ownership comes from the load-time snapshot, not from function deletion, so
+  # an entry the plugin registered for a function it did not define is still
+  # removed, and an entry another actor registered for a function the plugin
+  # did define is still preserved.
+  .zi-diff-hooks-compute "$uspl2"
+  typeset -a owned_hooks removed_hooks
+  owned_hooks=( "${(z)ZI[ZSH_HOOKS__$uspl2]}" )
+  local pair hook_array entry
+  for pair in "${owned_hooks[@]}"; do
+    [[ -z "$pair" ]] && continue
+    hook_array="${(Q)pair%%:*}"
+    entry="${(Q)pair#*:}"
+    [[ -z "$hook_array" || -z "$entry" ]] && continue
+    (( ${(P)+hook_array} )) || continue
+    # Only remove the entry if it is still the one recorded at load time.
+    (( ${${(@P)hook_array}[(I)$entry]} )) || continue
+    (( quiet )) || +zi-message "Removing hook {info}$entry{rst} from {var}\$$hook_array{rst}"
+    set -A "$hook_array" "${(@)${(@P)hook_array}:#$entry}"
+  done
+  # Entries the plugin removed during load are reported, never silently
+  # restored: a plugin removing a hook can be deliberate, and the user's
+  # original registration cannot be distinguished from a stale one here.
+  removed_hooks=( "${(z)ZI[ZSH_HOOKS_REMOVED__$uspl2]}" )
+  for pair in "${removed_hooks[@]}"; do
+    [[ -z "$pair" ]] && continue
+    hook_array="${(Q)pair%%:*}"
+    entry="${(Q)pair#*:}"
+    [[ -z "$hook_array" || -z "$entry" ]] && continue
+    (( ${(P)+hook_array} )) && (( ${${(@P)hook_array}[(I)$entry]} )) && continue
+    (( quiet )) || +zi-message "{warn}Note{rst}: the plugin removed {info}$entry{rst} from {var}\$$hook_array{rst}; not restoring it"
   done
 
   #
@@ -1246,9 +1319,10 @@ ZI[EXTENDED_GLOB]=""
       if [[ $v2 != '""' ]]; then
         # Don't unset readonly variables
         [[ ${(tP)k} == *-readonly(|-*) ]] && continue
-        # Don't unset arrays managed by add-zsh-hook,
-        # also ignore a few special parameters
-        # TODO: #108 remember and remove hooks
+        # Don't unset arrays managed by add-zsh-hook, also ignore a few
+        # special parameters. Individual plugin-owned entries are removed in
+        # step 6a from the load-time ownership record; the arrays themselves
+        # are shared and must survive.
         case "$k" in
           (chpwd_functions|precmd_functions|preexec_functions|periodic_functions|zshaddhistory_functions|zshexit_functions|zsh_directory_name_functions)
             continue

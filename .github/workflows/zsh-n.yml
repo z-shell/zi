@@ -13,6 +13,8 @@ on:
       - "tests/completion-refresh.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
+      - "tests/plugin-standard-callbacks.zsh"
+      - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
       - "tests/version-reporting.zsh"
@@ -24,6 +26,8 @@ on:
       - "tests/completion-refresh.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
+      - "tests/plugin-standard-callbacks.zsh"
+      - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
       - "tests/version-reporting.zsh"
@@ -106,6 +110,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test parallel update
         run: zsh -f tests/parallel-update.zsh
+
+  plugin-standard-callbacks:
+    name: Plugin Standard Callbacks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test plugin standard callbacks
+        run: zsh -f tests/plugin-standard-callbacks.zsh
 
   self-update-reload:
     name: Self-update reload

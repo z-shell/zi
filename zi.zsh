@@ -1151,18 +1151,43 @@ builtin setopt noaliases
   ZI_EXTS2[$key${${(M)type#hook:}:+ ${ZI_EXTS2[seqno]}}]="${ZI_EXTS2[seqno]} z-annex-data: ${(q)name} ${(q)type} ${(q)handler} '' ${(q)icemods}"
   ZI_EXTS2[ice-mods]="${ZI_EXTS2[ice-mods]}${icemods:+|}$icemods"
 } # ]]]
-# FUNCTION: @zsh-plugin-run-on-update. [[[
+# FUNCTION: .zi-run-plugin-standard-unload-callback. [[[
+# Runs a persisted Plugin Standard unload callback in the current shell while
+# containing `return` to the callback frame and restoring the caller's cwd.
+.zi-run-plugin-standard-unload-callback() {
+  local callback="$1" callback_dir="$2" callback_oldcd="$PWD"
+  integer callback_rc
+  shift 2
+  () { builtin setopt local_options no_auto_pushd; builtin cd -q "$callback_dir"; } || return 1
+  () { eval "$callback"; } "$@"
+  callback_rc=$?
+  () { builtin setopt local_options no_auto_pushd; builtin cd -q "$callback_oldcd"; }
+  return "$callback_rc"
+} # ]]]
+# FUNCTION: @zsh-plugin-run-on-unload. [[[
 # The Plugin Standard required mechanism, see:
 # https://wiki.zshell.dev/community/zsh_plugin_standard
 @zsh-plugin-run-on-unload() {
+  builtin emulate -L zsh
+  local current_id="${ZI[CUR_USPL2]}"
+  if [[ -z $current_id ]]; then
+    builtin print -u2 -r -- "@zsh-plugin-run-on-unload: no plugin or snippet load is active"
+    return 1
+  fi
   ICE[ps-on-unload]="${(j.; .)@}"
-  .zi-pack-ice "$id_as" ""
+  .zi-pack-ice "$current_id" ""
 } # ]]]
 # FUNCTION: @zsh-plugin-run-on-update. [[[
 # The Plugin Standard required mechanism
 @zsh-plugin-run-on-update() {
+  builtin emulate -L zsh
+  local current_id="${ZI[CUR_USPL2]}"
+  if [[ -z $current_id ]]; then
+    builtin print -u2 -r -- "@zsh-plugin-run-on-update: no plugin or snippet load is active"
+    return 1
+  fi
   ICE[ps-on-update]="${(j.; .)@}"
-  .zi-pack-ice "$id_as" ""
+  .zi-pack-ice "$current_id" ""
 } # ]]]
 
 # Remaining functions.

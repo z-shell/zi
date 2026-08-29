@@ -35,6 +35,22 @@
       "description": "Hook registration API positional signature"
     },
     {
+      "id": "message-output",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "+zi-message",
+      "declaration_marker": "# FUNCTION: +zi-message. [[[",
+      "description": "Byte-preserving semantic message renderer and emitter"
+    },
+    {
+      "id": "message-progress",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "+zi-progress",
+      "declaration_marker": "# FUNCTION: +zi-progress. [[[",
+      "description": "Carriage-return progress emitter sharing the message renderer"
+    },
+    {
       "id": "compatibility-functions",
       "kind": "function-region",
       "file": "zi.zsh",
@@ -75,6 +91,18 @@
     }
   ],
   "consumers": [
+    {
+      "repository": "z-shell/wiki",
+      "path": "docs/guides/04_messages.mdx",
+      "surfaces": ["message-output", "message-progress"],
+      "evidence": "https://github.com/z-shell/wiki/blob/32a2d7c33f4575df0876de600d8718d7446b4b4c/docs/guides/04_messages.mdx"
+    },
+    {
+      "repository": "z-shell/wiki",
+      "path": "docs/getting_started/02_overview.mdx",
+      "surfaces": ["message-output"],
+      "evidence": "https://github.com/z-shell/wiki/blob/958209c2998023b387688a9e738a692dfe032ef1/docs/getting_started/02_overview.mdx"
+    },
     {
       "repository": "z-shell/wiki",
       "path": "ecosystem/annexes/0_overview.mdx",

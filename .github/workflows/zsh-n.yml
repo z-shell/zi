@@ -11,6 +11,7 @@ on:
       - "lib/**"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
       - "tests/plugin-standard-callbacks.zsh"
@@ -24,6 +25,7 @@ on:
       - "lib/**"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
       - "tests/plugin-standard-callbacks.zsh"
@@ -154,6 +156,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test completion refresh
         run: zsh tests/completion-refresh.zsh
+
+  message-formatting:
+    name: Message formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test message formatting
+        run: zsh -f tests/message-formatting.zsh
 
   snippet-directory-mirror:
     name: Snippet directory mirror

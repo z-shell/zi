@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": 1,
-  "evidence_reviewed": "2026-08-24",
+  "evidence_reviewed": "2026-08-28",
   "renames": [],
   "surfaces": [
     {
@@ -127,13 +127,13 @@
       "repository": "z-shell/src",
       "path": "public/sh/install.sh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/5e301f2bb9d6e70c5aebb30b83217ac07b794025/public/sh/install.sh"
+      "evidence": "https://github.com/z-shell/src/blob/5ac79863d55baf056796e5e3afce5970506b8871/public/sh/install.sh"
     },
     {
       "repository": "z-shell/src",
       "path": "public/zsh/init.zsh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/5e301f2bb9d6e70c5aebb30b83217ac07b794025/public/zsh/init.zsh"
+      "evidence": "https://github.com/z-shell/src/blob/5ac79863d55baf056796e5e3afce5970506b8871/public/zsh/init.zsh"
     },
     {
       "repository": "z-shell/zd",

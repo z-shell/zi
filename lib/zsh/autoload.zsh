@@ -821,7 +821,7 @@ ZI[EXTENDED_GLOB]=""
 } # ]]]
 # FUNCTION: .zi-unload [[[
 # 0. Call the Zsh Plugin's Standard *_plugin_unload function
-# 0. Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+# 0. Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload
 # 1. Delete bindkeys (...)
 # 2. Delete zstyles
 # 3. Restore options
@@ -840,6 +840,7 @@ ZI[EXTENDED_GLOB]=""
   .zi-any-to-user-plugin "$1" "$2"
   local uspl2="${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}" user="${reply[-2]}" plugin="${reply[-1]}" quiet="${${3:+1}:-0}"
   local k
+  integer callback_rc=0
   .zi-any-colorify-as-uspl2 "$uspl2"
   (( quiet )) || builtin print -r -- "${ZI[col-bar]}---${ZI[col-rst]} Unloading plugin: $REPLY ${ZI[col-bar]}---${ZI[col-rst]}"
   local ___dir
@@ -864,7 +865,7 @@ ZI[EXTENDED_GLOB]=""
   (( ${+functions[${plugin}_plugin_unload]} )) && ${plugin}_plugin_unload
 
   #
-  # Call the code provided by the Zsh Plugin's Standard @zsh-plugin-run-at-update
+  # Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload
   #
 
   local -a tmp
@@ -873,10 +874,8 @@ ZI[EXTENDED_GLOB]=""
   (( ${#tmp} > 1 && ${#tmp} % 2 == 0 )) && sice=( "${(Q)tmp[@]}" ) || sice=()
   if [[ -n ${sice[ps-on-unload]} ]]; then
     (( quiet )) || builtin print -r "Running plugin's provided unload code: ${ZI[col-info]}${sice[ps-on-unload][1,50]}${sice[ps-on-unload][51]:+…}${ZI[col-rst]}"
-    local ___oldcd="$PWD"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___dir"; }
-    eval "${sice[ps-on-unload]}"
-    () { builtin setopt localoptions noautopushd; builtin cd -q "$___oldcd"; }
+    .zi-run-plugin-standard-unload-callback "${sice[ps-on-unload]}" "$___dir" "$@"
+    callback_rc=$?
   fi
 
   #
@@ -1295,6 +1294,7 @@ ZI[EXTENDED_GLOB]=""
     .zi-clear-report-for "$user" "$plugin"
     (( quiet )) || +zi-message "Plugin's report saved to {var}\$LASTREPORT{rst}"
   fi
+  return "$callback_rc"
 } # ]]]
 # FUNCTION: .zi-show-report [[[
 # Displays report of the plugin given.

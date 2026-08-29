@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 builtin emulate -LR zsh
-setopt errexit pipefail
+setopt err_exit pipe_fail
 
 typeset project_root="${0:A:h:h}"
 typeset git_bin="${commands[git]}"

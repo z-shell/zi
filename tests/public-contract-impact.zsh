@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 emulate -LR zsh
-setopt errexit nounset pipefail
+setopt err_exit no_unset pipe_fail
 
 typeset project_root="${0:A:h:h}"
 typeset fixture_root="${project_root}/tests/fixtures/public-contract"

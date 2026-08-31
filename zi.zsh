@@ -2489,10 +2489,18 @@ return retval
 @zi-scheduler() {
   integer ___ret="${${ZI[lro-data]%:*}##*:}"
   # lro stands for lastarg-retval-option.
-  [[ $1 = following ]] && sched +1 'ZI[lro-data]="$_:$?:${options[print_exit_value]}"; @zi-scheduler following "${ZI[lro-data]%:*:*}"'
   [[ -n $1 && $1 != (following*|burst) ]] && { local THEFD="$1"; zle -F "$THEFD"; exec {THEFD}<&-; }
   [[ $1 = burst ]] && local -h EPOCHSECONDS=$(( EPOCHSECONDS+10000 ))
   ZI[START_TIME]="${ZI[START_TIME]:-$EPOCHREALTIME}"
+  if (( ${#ZI_TASKS} <= 1 && ${#ZI_RUN} == 0 )); then
+    # Keep the prompt hook dormant so a later Zi command can reactivate the scheduler.
+    if [[ -n $1 ]]; then
+      add-zsh-hook -d -- chpwd @zi-scheduler
+      add-zsh-hook -- precmd @zi-scheduler
+    fi
+    [[ ${ZI[lro-data]##*:} = on ]] && return 0 || return ___ret
+  fi
+  [[ $1 = following ]] && sched +1 'ZI[lro-data]="$_:$?:${options[print_exit_value]}"; @zi-scheduler following "${ZI[lro-data]%:*:*}"'
 
   integer ___t=EPOCHSECONDS ___i correct
   local -a match mbegin mend reply

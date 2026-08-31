@@ -16,11 +16,19 @@ Replace `BASE_SHA` and `HEAD_SHA` with the exact SHAs above. Immediately before
 merge, fetch again and confirm the pull request base and head still equal the
 recorded SHAs.
 
-- [ ] `git merge-base --is-ancestor <prior-main> <candidate-next>` succeeds.
+- [ ] `git diff --name-only <candidate-next>...<prior-main>` produces no output.
 - [ ] `git rev-parse '<candidate-next>^{tree}'` equals the recorded tree SHA.
 
-If `main` is not an ancestor of `next`, stop. Merge the stable-only hotfix or
-other commit forward into `next` through a reviewed pull request first.
+Do **not** test whether `<prior-main>` is an ancestor of `<candidate-next>`.
+That check cannot pass once any promotion has landed, because the promotion
+merge commit exists only on `main`. The empty three-dot diff is the real
+precondition: it confirms `main` holds no content the candidate lacks, and it
+still fails when a genuine stable-only commit is missing.
+
+If the diff is not empty, stop. Identify the omitted commit with
+`git log --oneline <candidate-next>..<prior-main>` and merge the stable-only
+hotfix or other commit forward into `next` through a reviewed pull request
+first.
 
 ## Required validation
 

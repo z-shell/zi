@@ -28,7 +28,7 @@
 # $2 - plugin (only when $1 - i.e. user - given)
 .zi-exists-physically-message() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob warncreateglobal typesetsilent noshortloops rcquotes
+  builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes
   if ! .zi-exists-physically "$1" "$2"; then
     .zi-any-to-user-plugin "$1" "$2"
     if [[ $reply[1] = % ]] {
@@ -77,7 +77,7 @@
     reply=( "$dname" "" )
     return 1
   fi
-  # Take first entry (ksharrays resilience)
+  # Take first entry (ksh_arrays resilience)
   reply=( "$dname" "${reply[-${#reply}]}" )
   return 0
 } # ]]]
@@ -116,7 +116,7 @@
 # returns 2 possible paths for further examination
 .zi-two-paths() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob typesetsilent warncreateglobal noshortloops
+  builtin setopt extended_glob typeset_silent warn_create_global no_short_loops
 
   local url=$1 url1 url2 local_dirA dirnameA svn_dirA local_dirB dirnameB
   local -a fileB_there
@@ -157,7 +157,7 @@
 # $6 - name of output string parameter, to hold is-snippet 0/1-bool ("is_snippet")
 .zi-compute-ice() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
-  builtin setopt extendedglob typesetsilent warncreateglobal noshortloops
+  builtin setopt extended_glob typeset_silent warn_create_global no_short_loops
 
   local ___URL="${1%/}" ___pack="$2" ___is_snippet=0
   local ___var_name1="${3:-ZI_ICE}" ___var_name2="${4:-local_dir}" ___var_name3="${5:-filename}" ___var_name4="${6:-is_snippet}"
@@ -345,7 +345,7 @@
 # successfully reaches 0, or 1 if Ctrl-C will be pressed.
 .zi-countdown() {
   (( !${+ICE[countdown]} )) && return 0
-  builtin emulate -L zsh -o extendedglob ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin emulate -L zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
   trap "+zi-message \"{ehi}ABORTING, the ice {ice}$ice{ehi} not ran{rst}\"; return 1" INT
   local count=5 tpe="$1" ice
   ice="${ICE[$tpe]}"

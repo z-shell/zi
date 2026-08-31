@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 builtin emulate -LR zsh
-setopt errexit nounset pipefail
+setopt err_exit no_unset pipe_fail
 
 typeset project_root="${0:A:h:h}"
 typeset temp_root
@@ -35,7 +35,7 @@ run_case() {
     ZI_TEST_EXPECTED="$expected" \
     zsh -f <<'ZSH' || fail "$label"
 builtin emulate -LR zsh
-setopt pipefail
+setopt pipe_fail
 
 typeset -gAH ZI
 ZI[BIN_DIR]="$ZI_TEST_CHECKOUT"

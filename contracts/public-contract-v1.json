@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": 1,
-  "evidence_reviewed": "2026-08-24",
+  "evidence_reviewed": "2026-08-30",
   "renames": [],
   "surfaces": [
     {
@@ -33,6 +33,22 @@
       "symbol": "@zi-register-hook",
       "declaration_marker": "# FUNCTION: @zi-register-hook. [[[",
       "description": "Hook registration API positional signature"
+    },
+    {
+      "id": "message-output",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "+zi-message",
+      "declaration_marker": "# FUNCTION: +zi-message. [[[",
+      "description": "Byte-preserving semantic message renderer and emitter"
+    },
+    {
+      "id": "message-progress",
+      "kind": "function",
+      "file": "zi.zsh",
+      "symbol": "+zi-progress",
+      "declaration_marker": "# FUNCTION: +zi-progress. [[[",
+      "description": "Carriage-return progress emitter sharing the message renderer"
     },
     {
       "id": "compatibility-functions",
@@ -77,6 +93,36 @@
   "consumers": [
     {
       "repository": "z-shell/wiki",
+      "path": "docs/guides/04_messages.mdx",
+      "surfaces": ["message-output", "message-progress"],
+      "evidence": "https://github.com/z-shell/wiki/blob/32a2d7c33f4575df0876de600d8718d7446b4b4c/docs/guides/04_messages.mdx"
+    },
+    {
+      "repository": "z-shell/wiki",
+      "path": "docs/getting_started/02_overview.mdx",
+      "surfaces": ["message-output"],
+      "evidence": "https://github.com/z-shell/wiki/blob/958209c2998023b387688a9e738a692dfe032ef1/docs/getting_started/02_overview.mdx"
+    },
+    {
+      "repository": "z-shell/wiki",
+      "path": "docs/guides/syntax/01_standard.mdx",
+      "surfaces": ["message-output"],
+      "evidence": "https://github.com/z-shell/wiki/blob/3c56c281fa0932183c1347f2f8b6acae77fc6c2e/docs/guides/syntax/01_standard.mdx"
+    },
+    {
+      "repository": "z-shell/wiki",
+      "path": "community/05_gallery/collection/03_programs.mdx",
+      "surfaces": ["message-output"],
+      "evidence": "https://github.com/z-shell/wiki/blob/5f3450cb297410c2f03fe94cc2394c133ea8aa2e/community/05_gallery/collection/03_programs.mdx"
+    },
+    {
+      "repository": "z-shell/src",
+      "path": "public/zsh/snippets/welcome.zsh",
+      "surfaces": ["message-output"],
+      "evidence": "https://github.com/z-shell/src/blob/a715c1d01ff279cfdde9561a2a7f96e489f881e8/public/zsh/snippets/welcome.zsh"
+    },
+    {
+      "repository": "z-shell/wiki",
       "path": "ecosystem/annexes/0_overview.mdx",
       "surfaces": ["annex-registration"],
       "evidence": "https://github.com/z-shell/wiki/blob/7fca4272b6fbb40afeaa2c25288c1089d887c7d4/ecosystem/annexes/0_overview.mdx"
@@ -99,13 +145,13 @@
       "repository": "z-shell/src",
       "path": "public/sh/install.sh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/5e301f2bb9d6e70c5aebb30b83217ac07b794025/public/sh/install.sh"
+      "evidence": "https://github.com/z-shell/src/blob/5ac79863d55baf056796e5e3afce5970506b8871/public/sh/install.sh"
     },
     {
       "repository": "z-shell/src",
       "path": "public/zsh/init.zsh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/5e301f2bb9d6e70c5aebb30b83217ac07b794025/public/zsh/init.zsh"
+      "evidence": "https://github.com/z-shell/src/blob/5ac79863d55baf056796e5e3afce5970506b8871/public/zsh/init.zsh"
     },
     {
       "repository": "z-shell/zd",

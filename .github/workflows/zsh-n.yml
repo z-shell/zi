@@ -11,7 +11,13 @@ on:
       - "lib/**"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/hook-ownership.zsh"
+      - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
+      - "tests/parallel-update.zsh"
+      - "tests/plugin-standard-callbacks.zsh"
+      - "tests/scheduler-idle.zsh"
+      - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
       - "tests/version-reporting.zsh"
@@ -21,7 +27,13 @@ on:
       - "lib/**"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/hook-ownership.zsh"
+      - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
+      - "tests/parallel-update.zsh"
+      - "tests/plugin-standard-callbacks.zsh"
+      - "tests/scheduler-idle.zsh"
+      - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
       - "tests/version-reporting.zsh"
@@ -94,6 +106,28 @@ jobs:
       - name: Test path resolution
         run: zsh -f tests/path-resolution.zsh
 
+  parallel-update:
+    name: Parallel Update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test parallel update
+        run: zsh -f tests/parallel-update.zsh
+
+  plugin-standard-callbacks:
+    name: Plugin Standard Callbacks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test plugin standard callbacks
+        run: zsh -f tests/plugin-standard-callbacks.zsh
+
   self-update-reload:
     name: Self-update reload
     runs-on: ubuntu-latest
@@ -104,6 +138,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test self-update reload
         run: zsh -f tests/self-update-reload.zsh
+
+  scheduler-idle:
+    name: Scheduler idle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test scheduler idle behavior
+        run: zsh -f tests/scheduler-idle.zsh
 
   archive-extraction:
     name: Archive extraction
@@ -126,6 +171,28 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test completion refresh
         run: zsh tests/completion-refresh.zsh
+
+  hook-ownership:
+    name: Hook ownership
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test hook ownership
+        run: zsh -f tests/hook-ownership.zsh
+
+  message-formatting:
+    name: Message formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test message formatting
+        run: zsh -f tests/message-formatting.zsh
 
   snippet-directory-mirror:
     name: Snippet directory mirror

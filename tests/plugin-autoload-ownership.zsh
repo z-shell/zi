@@ -26,7 +26,10 @@ command mkdir -p \
   "${temp_root}/plugins/provider/lib" \
   "${temp_root}/plugins/selfowned" \
   "${temp_root}/plugins/multidir/lib" \
-  "${temp_root}/plugins/multidir/funcs" || fail "create isolated environment"
+  "${temp_root}/plugins/multidir/funcs" \
+  "${temp_root}/plugins/symlinked/lib" || fail "create isolated environment"
+command ln -s -- "${temp_root}/plugins" "${temp_root}/plugins-link" ||
+  fail "create plug-in directory symlink"
 
 # The registrar stands in for a plug-in that runs compinit, which replays a
 # bulk `autoload -Uz' for every completion function recorded in .zcompdump.
@@ -61,6 +64,17 @@ builtin print -rl -- \
   > "${temp_root}/plugins/multidir/multidir.plugin.zsh" || fail "write multidir plug-in"
 builtin print -r -- 'builtin print -r -- second-dir-body' \
   > "${temp_root}/plugins/multidir/funcs/_issue_471_second_dir" || fail "write second-dir function"
+
+# The same plug-in shape reached through a symlinked plug-in directory. The
+# Plug Standard idiom resolves symlinks, so the registered $fpath entry does not
+# share a prefix with the path zi was given. The plug-in still owns it.
+builtin print -rl -- \
+  '0=${(%):-%N}' \
+  'fpath+=( ${0:A:h}/lib )' \
+  'autoload -Uz _issue_471_symlinked' \
+  > "${temp_root}/plugins/symlinked/symlinked.plugin.zsh" || fail "write symlinked plug-in"
+builtin print -r -- 'builtin print -r -- symlinked-body' \
+  > "${temp_root}/plugins/symlinked/lib/_issue_471_symlinked" || fail "write symlinked function"
 
 env \
   HOME="${temp_root}/home" \
@@ -125,6 +139,24 @@ result="$(_issue_471_second_dir 2>&1)" || {
 }
 [[ $result == second-dir-body ]] || {
   builtin print -u2 -r -- "unexpected second-dir body resolved: $result"
+  return 1
+}
+
+# A plug-in loaded through a symlinked directory owns the $fpath entries it
+# registers, even though `fpath+=( ${0:A:h}/lib )' resolves the symlink and the
+# resulting path shares no prefix with the path zi was given.
+zi ice blockf
+zi light "${ZI_TEST_ROOT}/plugins-link/symlinked" >/dev/null || return 1
+[[ -z ${fpath[(r)${ZI_TEST_ROOT:A}/plugins/symlinked/lib]} ]] || {
+  builtin print -u2 -r -- "blockf did not revert the symlinked plug-in's \$fpath additions"
+  return 1
+}
+result="$(_issue_471_symlinked 2>&1)" || {
+  builtin print -u2 -r -- "function of a plug-in loaded through a symlink failed to autoload: $result"
+  return 1
+}
+[[ $result == symlinked-body ]] || {
+  builtin print -u2 -r -- "unexpected symlinked body resolved: $result"
   return 1
 }
 ZSH

@@ -436,7 +436,13 @@ builtin setopt no_aliases
   local -a fpath_elements
   # (R), not (r): (r) yields only the first match, which would hide every
   # $fpath entry of a plug-in that registers more than one subdirectory.
-  fpath_elements=( ${fpath[(R)$PLUGIN_DIR/*]} )
+  # ${PLUGIN_DIR:A} is matched as well: the Plug Standard idiom
+  # `fpath+=( ${0:A:h}/lib )' resolves symlinks, while $PLUGIN_DIR keeps the
+  # path zi was given, so a plug-in reached through a symlinked directory would
+  # otherwise have all of its own $fpath entries judged foreign. Entries
+  # duplicated between the two matches are harmless; the array is only searched
+  # and prepended to the stub's own $fpath.
+  fpath_elements=( ${fpath[(R)$PLUGIN_DIR/*]} ${fpath[(R)${PLUGIN_DIR:A}/*]} )
   # Add a function subdirectory to items, if any (this action is according to the Plug Standard version 1.07 and later).
   [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
   if (( ${+opts[(r)-X]} )); then

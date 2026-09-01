@@ -434,7 +434,9 @@ builtin setopt no_aliases
   # "Fpath elements" - ie those elements that are inside the plug-in directory.
   # The name comes from the fact that they are the selected fpath elements → so just "items".
   local -a fpath_elements
-  fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
+  # (R), not (r): (r) yields only the first match, which would hide every
+  # $fpath entry of a plug-in that registers more than one subdirectory.
+  fpath_elements=( ${fpath[(R)$PLUGIN_DIR/*]} )
   # Add a function subdirectory to items, if any (this action is according to the Plug Standard version 1.07 and later).
   [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
   if (( ${+opts[(r)-X]} )); then

@@ -24,7 +24,9 @@ command mkdir -p \
   "${temp_root}/zdotdir" \
   "${temp_root}/plugins/registrar" \
   "${temp_root}/plugins/provider/lib" \
-  "${temp_root}/plugins/selfowned" || fail "create isolated environment"
+  "${temp_root}/plugins/selfowned" \
+  "${temp_root}/plugins/multidir/lib" \
+  "${temp_root}/plugins/multidir/funcs" || fail "create isolated environment"
 
 # The registrar stands in for a plug-in that runs compinit, which replays a
 # bulk `autoload -Uz' for every completion function recorded in .zcompdump.
@@ -48,6 +50,17 @@ builtin print -r -- 'autoload -Uz _issue_471_own' \
   > "${temp_root}/plugins/selfowned/selfowned.plugin.zsh" || fail "write self-owned plug-in"
 builtin print -r -- 'builtin print -r -- self-owned-body' \
   > "${temp_root}/plugins/selfowned/_issue_471_own" || fail "write self-owned function"
+
+# A plug-in registering two $fpath subdirectories, autoloading a function from
+# the second one, under blockf'' so that its $fpath additions are reverted once
+# it has loaded. The function has to stay resolvable afterwards.
+builtin print -rl -- \
+  '0=${(%):-%N}' \
+  'fpath+=( ${0:A:h}/lib ${0:A:h}/funcs )' \
+  'autoload -Uz _issue_471_second_dir' \
+  > "${temp_root}/plugins/multidir/multidir.plugin.zsh" || fail "write multidir plug-in"
+builtin print -r -- 'builtin print -r -- second-dir-body' \
+  > "${temp_root}/plugins/multidir/funcs/_issue_471_second_dir" || fail "write second-dir function"
 
 env \
   HOME="${temp_root}/home" \
@@ -95,6 +108,23 @@ result="$(_issue_471_own 2>&1)" || {
 }
 [[ $result == self-owned-body ]] || {
   builtin print -u2 -r -- "unexpected self-owned body resolved: $result"
+  return 1
+}
+
+# Every $fpath subdirectory of the plug-in counts as the plug-in's own, not
+# just the first one.
+zi ice blockf
+zi light "${ZI_TEST_ROOT}/plugins/multidir" >/dev/null || return 1
+[[ -z ${fpath[(r)${ZI_TEST_ROOT}/plugins/multidir/funcs]} ]] || {
+  builtin print -u2 -r -- "blockf did not revert the multidir plug-in's \$fpath additions"
+  return 1
+}
+result="$(_issue_471_second_dir 2>&1)" || {
+  builtin print -u2 -r -- "function in the plug-in's second \$fpath subdirectory failed to autoload: $result"
+  return 1
+}
+[[ $result == second-dir-body ]] || {
+  builtin print -u2 -r -- "unexpected second-dir body resolved: $result"
   return 1
 }
 ZSH

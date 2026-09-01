@@ -482,7 +482,21 @@ builtin setopt no_aliases
         # Apply workaround
         func=$func:t
       fi
-      if [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
+      # Only functions that live in the plug-in's own directory may get the
+      # FPATH-clean stub, which bakes $PLUGIN_DIR into the function body. Any
+      # other `autoload' issued while this plug-in is loading (most commonly
+      # the bulk `autoload -Uz' that a compinit run replays from .zcompdump)
+      # belongs to some other provider and must keep the normal, lazy $fpath
+      # resolution. The -C (custom name) form is requested explicitly through
+      # the autoload'' ice, so it keeps its own search and is left alone.
+      local apth aowner=
+      for apth ( $PLUGIN_DIR $fpath_elements ) {
+        [[ -f $apth/$func ]] && { aowner=$apth; break; }
+      }
+      if [[ -z $aowner ]] && (( ! ${+opts[(r)-C]} )); then
+        builtin autoload ${opts[@]} -- $func
+        retval=$?
+      elif [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
         builtin autoload ${opts[@]} "$PLUGIN_DIR/$func"
         retval=$?
       elif [[ ${ZI[NEW_AUTOLOAD]} = 1 ]]; then

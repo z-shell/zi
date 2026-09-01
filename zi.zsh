@@ -497,15 +497,22 @@ builtin setopt no_aliases
       # belongs to some other provider and must keep the normal, lazy $fpath
       # resolution. The -C (custom name) form is requested explicitly through
       # the autoload'' ice, so it keeps its own search and is left alone.
+      # A directory in $fpath may be backed by a `<directory>.zwc' digest
+      # instead of by plain files, in which case the directory itself need not
+      # exist; such an entry is still the plug-in's own.
       local apth aowner=
       for apth ( $PLUGIN_DIR $fpath_elements ) {
-        [[ -f $apth/$func ]] && { aowner=$apth; break; }
+        [[ -f $apth/$func || -f $apth.zwc ]] && { aowner=$apth; break; }
       }
       if [[ -z $aowner ]] && (( ! ${+opts[(r)-C]} )); then
         builtin autoload ${opts[@]} -- $func
         retval=$?
       elif [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
-        builtin autoload ${opts[@]} "$PLUGIN_DIR/$func"
+        # Unreachable while line 239 stays commented out. $aowner, not
+        # $PLUGIN_DIR: the owning directory can be an $fpath subdirectory of
+        # the plug-in. The ${aowner:-$PLUGIN_DIR} fallback keeps the -C form,
+        # which reaches this branch without an ownership match, unchanged.
+        builtin autoload ${opts[@]} "${aowner:-$PLUGIN_DIR}/$func"
         retval=$?
       elif [[ ${ZI[NEW_AUTOLOAD]} = 1 ]]; then
         if (( ${+opts[(r)-C]} )) {

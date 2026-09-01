@@ -27,7 +27,8 @@ command mkdir -p \
   "${temp_root}/plugins/selfowned" \
   "${temp_root}/plugins/multidir/lib" \
   "${temp_root}/plugins/multidir/funcs" \
-  "${temp_root}/plugins/symlinked/lib" || fail "create isolated environment"
+  "${temp_root}/plugins/symlinked/lib" \
+  "${temp_root}/plugins/digest/functions" || fail "create isolated environment"
 command ln -s -- "${temp_root}/plugins" "${temp_root}/plugins-link" ||
   fail "create plug-in directory symlink"
 
@@ -75,6 +76,20 @@ builtin print -rl -- \
   > "${temp_root}/plugins/symlinked/symlinked.plugin.zsh" || fail "write symlinked plug-in"
 builtin print -r -- 'builtin print -r -- symlinked-body' \
   > "${temp_root}/plugins/symlinked/lib/_issue_471_symlinked" || fail "write symlinked function"
+
+# A plug-in whose $fpath subdirectory is backed by a `<directory>.zwc' digest
+# rather than by plain files. The directory itself is removed after compiling,
+# which is what such a digest allows.
+builtin print -r -- 'builtin print -r -- digest-body' \
+  > "${temp_root}/plugins/digest/functions/_issue_471_digest" || fail "write digest function"
+zsh -fc "zcompile -U -z ${(q)temp_root}/plugins/digest/functions.zwc \
+  ${(q)temp_root}/plugins/digest/functions/_issue_471_digest" || fail "compile function digest"
+command rm -rf -- "${temp_root}/plugins/digest/functions" || fail "remove compiled directory"
+builtin print -rl -- \
+  '0=${(%):-%N}' \
+  'fpath+=( ${0:A:h}/functions )' \
+  'autoload -Uz _issue_471_digest' \
+  > "${temp_root}/plugins/digest/digest.plugin.zsh" || fail "write digest plug-in"
 
 env \
   HOME="${temp_root}/home" \
@@ -157,6 +172,23 @@ result="$(_issue_471_symlinked 2>&1)" || {
 }
 [[ $result == symlinked-body ]] || {
   builtin print -u2 -r -- "unexpected symlinked body resolved: $result"
+  return 1
+}
+
+# An $fpath entry of the plug-in backed by a `<directory>.zwc' digest is the
+# plug-in's own, even though no plain function file exists under it.
+zi ice blockf
+zi light "${ZI_TEST_ROOT}/plugins/digest" >/dev/null || return 1
+[[ -z ${fpath[(r)${ZI_TEST_ROOT:A}/plugins/digest/functions]} ]] || {
+  builtin print -u2 -r -- "blockf did not revert the digest plug-in's \$fpath additions"
+  return 1
+}
+result="$(_issue_471_digest 2>&1)" || {
+  builtin print -u2 -r -- "function backed by a directory digest failed to autoload: $result"
+  return 1
+}
+[[ $result == digest-body ]] || {
+  builtin print -u2 -r -- "unexpected digest body resolved: $result"
   return 1
 }
 ZSH

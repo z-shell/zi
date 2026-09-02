@@ -458,8 +458,15 @@ builtin setopt no_aliases
   fi
   if [[ -n ${(M)@:#+X} ]]; then
     .zi-add-report "${ZI[CUR_USPL2]}" "Autoload +X ${opts:+${(j: :)opts[@]} }${(j: :)${@:#+X}}"
+    # Capture the caller's search path before localising, exactly as
+    # :zi-reload-and-run does. `local +h -a fpath' creates a fresh empty array,
+    # so a $fpath on the right-hand side of the assignment below would expand to
+    # nothing and drop every foreign search path -- and `autoload +X' of a
+    # function the plug-in does not own would then resolve nowhere.
+    local -a ___fpath
+    ___fpath=( $fpath )
     local +h -a fpath
-    fpath=( $PLUGIN_DIR $fpath_elements $fpath )
+    fpath=( $PLUGIN_DIR $fpath_elements $___fpath )
     builtin autoload +X ${opts[@]} "${@:#+X}"
     return $?
   fi

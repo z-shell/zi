@@ -127,3 +127,63 @@ result="$(_issue_488_foreign 2>&1)" || {
 ZSH
 
 builtin print -r -- "ok - immediate autoload resolves the plug-in's own and the caller's functions, and restores \$fpath"
+
+# The `-w' branch is the deliberate counter-case to everything above. It appends
+# $PLUGIN_DIR to the caller's $fpath and, unlike the `+X' branch, must NOT
+# localise it: `autoload -w <digest>' only declares the functions the digest
+# holds, and each one resolves lazily when it is first called, long after
+# :zi-tmp-subst-autoload has returned. Localising that append reads like a leak
+# fix and silently breaks every -w plug-in. Pin it.
+#
+# This block is independent of the one above: separate plug-in directory, and
+# each check runs in its own `zsh -f', so neither the $fpath this one leaves
+# behind nor its load order can reach the other. Insertions between them are
+# safe.
+command mkdir -p "${temp_root}/plugins/wdigest" || fail "create -w plug-in directory"
+builtin print -r -- 'builtin print -r -- digest-body' \
+  > "${temp_root}/plugins/wdigest/_issue_492_digest" || fail "write digest function"
+# Compile from inside the directory: zcompile records the name it is given, so an
+# absolute path would name the function by its full path.
+( builtin cd -q "${temp_root}/plugins/wdigest" &&
+  zsh -fc 'zcompile -U _issue_492_digest.zwc _issue_492_digest' ) ||
+  fail "compile the digest"
+command rm -f "${temp_root}/plugins/wdigest/_issue_492_digest" || fail "remove plain function"
+
+builtin print -rl -- \
+  '0=${(%):-%N}' \
+  'autoload -w ${0:A:h}/_issue_492_digest.zwc' \
+  > "${temp_root}/plugins/wdigest/wdigest.plugin.zsh" || fail "write -w plug-in"
+
+# No blockf here: blockf restores $fpath wholesale after the load and would mask
+# both the append under test and any regression to it.
+env \
+  HOME="${temp_root}/home" \
+  XDG_CACHE_HOME="${temp_root}/cache" \
+  XDG_CONFIG_HOME="${temp_root}/config" \
+  XDG_DATA_HOME="${temp_root}/data" \
+  ZDOTDIR="${temp_root}/zdotdir" \
+  ZI_TEST_CHECKOUT="$project_root" \
+  ZI_TEST_ROOT="$temp_root" \
+  zsh -f <<'ZSH' || fail "-w autoload does not resolve after the load"
+builtin emulate -R zsh
+setopt pipe_fail
+
+builtin source "${ZI_TEST_CHECKOUT}/zi.zsh" || return 1
+.zi-prepare-home || return 1
+
+zi load "${ZI_TEST_ROOT}/plugins/wdigest" >/dev/null 2>&1
+
+# Called after the load, which is the whole point: the search path the -w branch
+# appended has to still be there.
+typeset result
+result="$(_issue_492_digest 2>&1)" || {
+  builtin print -u2 -r -- "-w autoload did not resolve after the load: $result"
+  return 1
+}
+[[ $result == digest-body ]] || {
+  builtin print -u2 -r -- "unexpected digest body resolved: $result"
+  return 1
+}
+ZSH
+
+builtin print -r -- "ok - -w autoload keeps the plug-in directory on \$fpath for later resolution"

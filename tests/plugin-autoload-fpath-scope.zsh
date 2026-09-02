@@ -23,6 +23,7 @@ command mkdir -p \
   "${temp_root}/data" \
   "${temp_root}/zdotdir" \
   "${temp_root}/cwd" \
+  "${temp_root}/foreign" \
   "${temp_root}/plugins/plusx/lib" || fail "create isolated environment"
 
 # The plug-in's own functions, one directly in the plug-in directory and one in
@@ -38,13 +39,22 @@ builtin print -r -- 'builtin print -r -- lib-body' \
 builtin print -r -- 'builtin print -r -- cwd-body' \
   > "${temp_root}/cwd/_issue_475_cwd" || fail "write working-directory function"
 
+# A function the plug-in does not own, in a directory the caller had in $fpath
+# before the load began. This is what zsh itself ships to a plug-in, and what
+# `Aloxaf/fzf-tab' needs when it copies $functions[_main_complete] at load time.
+# Immediate `autoload +X' has to resolve it from the caller's search path, which
+# means the +X branch must carry that path across its own localisation of $fpath.
+builtin print -r -- 'builtin print -r -- foreign-body' \
+  > "${temp_root}/foreign/_issue_488_foreign" || fail "write foreign function"
+
 builtin print -rl -- \
   '0=${(%):-%N}' \
   'fpath+=( ${0:A:h}/lib )' \
   'autoload +X -Uz _issue_475_own' \
   'autoload +X -Uz _issue_475_lib' \
   'autoload +X -Uz _issue_475_cwd 2>/dev/null' \
-  ': the third autoload is expected to find nothing' \
+  'autoload +X -Uz _issue_488_foreign 2>/dev/null' \
+  ': a failed +X must not change the plug-in exit status' \
   > "${temp_root}/plugins/plusx/plusx.plugin.zsh" || fail "write plug-in"
 
 env \
@@ -62,6 +72,7 @@ setopt pipe_fail
 builtin source "${ZI_TEST_CHECKOUT}/zi.zsh" || return 1
 .zi-prepare-home || return 1
 
+fpath+=( "${ZI_TEST_ROOT}/foreign" )
 typeset before_fpath="${(j.:.)fpath}" before_FPATH="$FPATH"
 builtin cd -q "${ZI_TEST_ROOT}/cwd" || return 1
 # blockf so that the plug-in's own `fpath+=' is reverted and anything left
@@ -104,6 +115,15 @@ result="$(_issue_475_lib 2>&1)" || {
   builtin print -u2 -r -- "the working directory was searched: _issue_475_cwd was loaded from \$PWD"
   return 1
 }
+
+result="$(_issue_488_foreign 2>&1)" || {
+  builtin print -u2 -r -- "immediate autoload of a function the plug-in does not own failed: $result"
+  return 1
+}
+[[ $result == foreign-body ]] || {
+  builtin print -u2 -r -- "unexpected foreign body resolved: $result"
+  return 1
+}
 ZSH
 
-builtin print -r -- "ok - immediate autoload keeps to the plug-in's own directories and restores \$fpath"
+builtin print -r -- "ok - immediate autoload resolves the plug-in's own and the caller's functions, and restores \$fpath"

@@ -458,7 +458,6 @@ builtin setopt no_aliases
   fi
   if [[ -n ${(M)@:#+X} ]]; then
     .zi-add-report "${ZI[CUR_USPL2]}" "Autoload +X ${opts:+${(j: :)opts[@]} }${(j: :)${@:#+X}}"
-    local +h FPATH=$PLUGINS_DIR${fpath_elements:+:${(j.:.)fpath_elements[@]}}:$FPATH
     local +h -a fpath
     fpath=( $PLUGIN_DIR $fpath_elements $fpath )
     builtin autoload +X ${opts[@]} "${@:#+X}"

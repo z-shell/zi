@@ -530,7 +530,7 @@ builtin setopt no_aliases
                 body2=\"\${body##[[:space:]]#${func}[[:blank:]]#\(\)[[:space:]]#\{}\"
                 [[ \$body2 != \$body ]] && body2=\"\${body2%\}[[:space:]]#([$nl]#([[:blank:]]#\#[^$nl]#((#e)|[$nl]))#)#}\"
               }
-              functions[${${(q)custom[count*2]}:-$func}]=\"\$body2\"
+              functions[${(q)${custom[count*2]}:-$func}]=\"\$body2\"
               ${(q)${custom[count*2]}:-$func} \"\$@\"
             }"
             retval=$?
@@ -1731,9 +1731,22 @@ builtin setopt no_aliases
   [[ -z ${ICE[subst]} ]] && local ___builtin=builtin
   [[ ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ]] && ICE[pick]="${ICE[pick]:-/dev/null}"
   if [[ -n ${ICE[autoload]} ]] {
-    :zi-tmp-subst-autoload -Uz \
-      ${(s: :)${${${(s.;.)ICE[autoload]#[\!\#]}#[\!\#]}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
-      ${${(M)ICE[autoload]:#*(->|=>|→)*}:+-C} ${${(M)ICE[autoload]#(?\!|\!)}:+-C} ${${(M)ICE[autoload]#(?\#|\#)}:+-I}
+    # The (#b) backreferences that turn `a -> b' into `a -S b' need
+    # extended_glob, which this function does not set. Without it the
+    # substitution matches nothing and the rename form reaches
+    # :zi-tmp-subst-autoload untranslated. Build the argument list in an
+    # anonymous function so both the option and the match parameters stay local.
+    local -a ___autoload_args
+    () {
+      builtin emulate -LR zsh
+      builtin setopt extended_glob
+      local -a match mbegin mend
+      ___autoload_args=(
+        ${(s: :)${${${(s.;.)ICE[autoload]#[\!\#]}#[\!\#]}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}}
+        ${${(M)ICE[autoload]:#*(->|=>|→)*}:+-C} ${${(M)ICE[autoload]#(?\!|\!)}:+-C} ${${(M)ICE[autoload]#(?\#|\#)}:+-I}
+      )
+    }
+    :zi-tmp-subst-autoload -Uz $___autoload_args
   }
   if [[ ${ICE[as]} = command ]]; then
     [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${___id_as:t}"
@@ -3282,7 +3295,18 @@ zpextract() {
 # ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {
-  :zi-tmp-subst-autoload -Uz ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
+  # Same extended_glob requirement as the autoload'' ice in .zi-load-plugin.
+  local -a ___autoload_args
+  () {
+    builtin emulate -LR zsh
+    builtin setopt extended_glob
+    local -a match mbegin mend
+    ___autoload_args=(
+      ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}}
+      ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
+    )
+  } "$@"
+  :zi-tmp-subst-autoload -Uz $___autoload_args
 } # ]]]
 # FUNCTION: zi-turbo. [[[
 # With zi-turbo first argument is a wait time and suffix, i.e. "0a".

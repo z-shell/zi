@@ -95,14 +95,14 @@ jobs:
         env:
           BRANCH: ${{ github.head_ref }}
         run: |
-          PATTERN='^(feature|bug|hotfix)-[1-9][0-9]*$'
-          if echo "$BRANCH" | grep -qE '^(dependabot|renovate)/' || \
+          PATTERN='^(feature|bug|hotfix)-[1-9][0-9]*(-[a-z0-9]+)*$'
+          if echo "$BRANCH" | grep -qE '^(dependabot|renovate|copilot|codex)/' || \
              [ "$BRANCH" = "next" ]; then
             echo "✅ OK"
             exit 0
           fi
           if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
-            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id>"
+            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id>, optionally followed by a lowercase slug"
             exit 1
           fi
           echo "✅ Branch name valid"

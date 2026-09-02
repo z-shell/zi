@@ -1483,7 +1483,11 @@ builtin setopt no_aliases
   }
   (( ${+ICE[cloneonly]} || retval )) && return 0
   ZI_SNIPPETS[$id_as]="$id_as <${${ICE[svn]+svn}:-single file}>"
+  # Same re-entrancy as .zi-load: a plug-in body may load a snippet, and a
+  # snippet may load further objects.
+  local ___prev_uspl2="${ZI[CUR_USPL2]}"
   ZI[CUR_USPL2]="$id_as" ZI_REPORTS[$id_as]=
+  {
   reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atinit-<-> <->]} )
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
@@ -1610,7 +1614,9 @@ builtin setopt no_aliases
   done
   (( ${+ICE[notify]} == 1 )) && { [[ $retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zi-deploy-message @msg "$msg" } || +zi-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $retval"; }
   (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @rst
-  ZI[CUR_USPL2]=
+  } always {
+    ZI[CUR_USPL2]="$___prev_uspl2"
+  }
   ZI[TIME_INDEX]=$(( ${ZI[TIME_INDEX]:-0} + 1 ))
   ZI[TIME_${ZI[TIME_INDEX]}_${id_as}]=$SECONDS
   ZI[AT_TIME_${ZI[TIME_INDEX]}_${id_as}]=$EPOCHREALTIME
@@ -1629,7 +1635,15 @@ builtin setopt no_aliases
   local ___user="${reply[-2]}" ___plugin="${reply[-1]}" ___id_as="${ICE[id-as]:-${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}}"
   local ___pdir_path="${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"
   local ___pdir_orig="$___pdir_path"
+  # .zi-load is re-entrant: a plug-in body may load another plug-in or a
+  # snippet. Save what was current and restore it afterwards rather than
+  # clearing, so the outer plug-in keeps its identity for the rest of its body.
+  # At the top level the saved values are empty, which is the previous "no load
+  # is in progress" behaviour. The always block also covers the early returns
+  # below, cloneonly'' among them.
+  local ___prev_usr="${ZI[CUR_USR]}" ___prev_plugin="${ZI[CUR_PLUGIN]}" ___prev_uspl2="${ZI[CUR_USPL2]}"
   ZI[CUR_USR]="$___user" ZI[CUR_PLUGIN]="$___plugin" ZI[CUR_USPL2]="$___id_as"
+  {
   if [[ -n ${ICE[teleid]} ]] {
     .zi-any-to-user-plugin "${ICE[teleid]}"
     ___user="${reply[-2]}" ___plugin="${reply[-1]}"
@@ -1698,8 +1712,11 @@ builtin setopt no_aliases
   (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @___rst
   # Unset the `m` function.
   .zi-set-m-func unset
-  # Mark no load is in progress.
-  ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
+  } always {
+    # Restore the enclosing load. Empty at the top level, which is what
+    # "no load is in progress" meant here before.
+    ZI[CUR_USR]="$___prev_usr" ZI[CUR_PLUGIN]="$___prev_plugin" ZI[CUR_USPL2]="$___prev_uspl2"
+  }
   ZI[TIME_INDEX]=$(( ${ZI[TIME_INDEX]:-0} + 1 ))
   ZI[TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$SECONDS
   ZI[AT_TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$EPOCHREALTIME

@@ -239,7 +239,7 @@ is-at-least 5.1 && ZI[NEW_AUTOLOAD]=1 || ZI[NEW_AUTOLOAD]=0
 #is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
 
 # Parameters - temporary substituting of functions. [[[
-ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
+ZI[TMP_SUBST]=inactive   ZI[TMP_SUBST_DEPTH]=0   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
 # ]]]
 # Parameters - ICE. [[[
 typeset -gA ZI_1MAP ZI_2MAP
@@ -839,6 +839,12 @@ builtin setopt no_aliases
   #
   # It is always "dtrace" then "load" (i.e. dtrace then load) "dtrace" then "light" (i.e.:
   # dtrace then light load) "dtrace" then "compdef" (i.e.: dtrace then snippet).
+  # Loading is re-entrant: a plug-in body may load another plug-in or a
+  # snippet, and this is then entered again. Count the depth so the
+  # substitutions are installed once and removed only when the outermost load
+  # finishes. Every site that installs increments, every site that tears down
+  # decrements, and none of them can return in between.
+  (( ++ ZI[TMP_SUBST_DEPTH] ))
   [[ ${ZI[TMP_SUBST]} != inactive ]] && builtin return 0
   ZI[TMP_SUBST]="$mode"
   # The point about backups is: does the key exist in functions array.
@@ -888,7 +894,11 @@ builtin setopt no_aliases
   local mode="$1"
   # Disable temporary substituting of functions only once.
   # Disable temporary substituting of functions only the way it was enabled first.
+  (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
   [[ ${ZI[TMP_SUBST]} = inactive || ${ZI[TMP_SUBST]} != $mode ]] && return 0
+  # An inner load of the same mode must not tear down what the outer one still
+  # needs.
+  (( ZI[TMP_SUBST_DEPTH] > 0 )) && return 0
   ZI[TMP_SUBST]=inactive
   if [[ $mode != compdef ]]; then
     # 0. Unfunction autoload.
@@ -1508,10 +1518,9 @@ builtin setopt no_aliases
       # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
       (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
       functions[compdef]=':zi-tmp-subst-compdef "$@";'
-      ZI[TMP_SUBST]=1
-    else
-      (( ++ ZI[TMP_SUBST] ))
+      ZI[TMP_SUBST]=compdef
     fi
+    (( ++ ZI[TMP_SUBST_DEPTH] ))
 
     # Add to fpath.
     if [[ -d $local_dir/$dirname/functions ]] {
@@ -1552,7 +1561,8 @@ builtin setopt no_aliases
       .zi-wrap-functions "$save_url" "" "$id_as"
     }
     [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
-    (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
+    (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
+    (( ZI[TMP_SUBST_DEPTH] == 0 )) && [[ ${ZI[TMP_SUBST]} = compdef ]] && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
   elif [[ -n ${opts[(r)--command]} || ${ICE[as]} = command ]]; then
     [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${id_as:t}"
     # Directory snippet - a directory and multiple files are possible.
@@ -1578,10 +1588,9 @@ builtin setopt no_aliases
         # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
         (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
         functions[compdef]=':zi-tmp-subst-compdef "$@";'
-        ZI[TMP_SUBST]=1
-      else
-        (( ++ ZI[TMP_SUBST] ))
+        ZI[TMP_SUBST]=compdef
       fi
+      (( ++ ZI[TMP_SUBST_DEPTH] ))
     }
     if [[ -n ${ICE[src]} ]]; then
       ZERO="${${(M)ICE[src]##/*}:-$local_dir/$dirname/${ICE[src]}}"
@@ -1601,7 +1610,8 @@ builtin setopt no_aliases
     }
     [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
     [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
-      (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
+      (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
+      (( ZI[TMP_SUBST_DEPTH] == 0 )) && [[ ${ZI[TMP_SUBST]} = compdef ]] && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
     }
   elif [[ ${ICE[as]} = completion ]]; then
     ((1))
@@ -1784,10 +1794,9 @@ builtin setopt no_aliases
         # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
         (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
         functions[compdef]=':zi-tmp-subst-compdef "$@";'
-        ZI[TMP_SUBST]=1
-      else
-        (( ++ ZI[TMP_SUBST] ))
+        ZI[TMP_SUBST]=compdef
       fi
+      (( ++ ZI[TMP_SUBST_DEPTH] ))
     }
     local ZERO
     [[ $ICE[atinit] = '!'* ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit#!]}"; ((1)); } || eval "${ICE[atinit]#!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
@@ -1806,7 +1815,8 @@ builtin setopt no_aliases
     }
     [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$___id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]#\!}"; } || eval "${ICE[atload]#\!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
     [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
-      (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
+      (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
+      (( ZI[TMP_SUBST_DEPTH] == 0 )) && [[ ${ZI[TMP_SUBST]} = compdef ]] && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
     }
   elif [[ ${ICE[as]} = completion ]]; then
     ((1))

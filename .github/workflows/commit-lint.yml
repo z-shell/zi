@@ -100,14 +100,62 @@ jobs:
         env:
           BRANCH: ${{ github.head_ref }}
         run: |
-          PATTERN='^(feature|bug|hotfix)-[1-9][0-9]*(-[a-z0-9]+)*$'
+          # decisions/0022: a shape check, not an identifier check.
+          # Traceability moved to Validate Issue Link.
+          PATTERN='^((feature|bug|hotfix)-[1-9][0-9]*(-[a-z0-9]+)*|(feat|fix|perf|refactor|docs|test|build|ci|style|chore|revert|feature|bug|hotfix)/[a-z0-9]+(-[a-z0-9]+)*)$'
           if echo "$BRANCH" | grep -qE '^(dependabot|renovate|copilot|codex)/' || \
              [ "$BRANCH" = "next" ]; then
             echo "✅ OK"
             exit 0
           fi
           if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
-            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id>, optionally followed by a lowercase slug"
+            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id> with an optional lowercase slug, or <type>/<slug> over the Conventional Commits types (z-shell/.github decisions/0022)"
             exit 1
           fi
           echo "✅ Branch name valid"
+
+  issue-link:
+    name: Validate Issue Link
+    runs-on: ubuntu-latest
+    steps:
+      - name: "🔗 Check the pull request is traceable to an issue"
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          BRANCH: ${{ github.head_ref }}
+          EXEMPT_LABEL: meta:no-issue
+        run: |
+          set -euo pipefail
+
+          # z-shell/.github decisions/0022 moves traceability off the branch
+          # name and onto the pull request. Three outcomes pass, and the job
+          # says which applied, so an exemption is visible in review rather
+          # than silent. Everything comes from the pull_request event payload,
+          # so the job needs no token.
+
+          if printf '%s\n' "$BRANCH" | grep -qE '^(dependabot|renovate|copilot|codex)/'; then
+            echo "✅ Exempt: $BRANCH is an automation branch"
+            exit 0
+          fi
+
+          if [ "$BRANCH" = "next" ]; then
+            echo "✅ Exempt: next is the persistent integration branch"
+            exit 0
+          fi
+
+          if printf '%s\n' "$PR_LABELS" | tr ',' '\n' | grep -qxF "$EXEMPT_LABEL"; then
+            echo "✅ Exempt: labelled $EXEMPT_LABEL"
+            exit 0
+          fi
+
+          # A bare #123, the cross-repository owner/repo#123 shorthand, or a
+          # full issue or pull-request URL.
+          ISSUE_REFERENCE_PATTERN='(^|[^A-Za-z0-9_])#[1-9][0-9]*([^0-9]|$)|[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[1-9][0-9]*|https://github\.com/[^/ ]+/[^/ ]+/(issues|pull)/[1-9][0-9]*'
+
+          if printf '%s\n' "${PR_BODY:-}" | grep -qE "$ISSUE_REFERENCE_PATTERN"; then
+            echo "✅ The pull request references an issue"
+            exit 0
+          fi
+
+          echo "::error::No issue reference found. Link the owning issue in the pull-request body (Closes #123, or a plain #123 for work an issue tracks but this does not close). If this pull request genuinely has no owning issue, a maintainer applies the ${EXEMPT_LABEL} label (z-shell/.github decisions/0022)."
+          exit 1

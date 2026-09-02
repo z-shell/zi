@@ -434,7 +434,15 @@ builtin setopt no_aliases
   # "Fpath elements" - ie those elements that are inside the plug-in directory.
   # The name comes from the fact that they are the selected fpath elements → so just "items".
   local -a fpath_elements
-  fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
+  # (R), not (r): (r) yields only the first match, which would hide every
+  # $fpath entry of a plug-in that registers more than one subdirectory.
+  # ${PLUGIN_DIR:A} is matched as well: the Plug Standard idiom
+  # `fpath+=( ${0:A:h}/lib )' resolves symlinks, while $PLUGIN_DIR keeps the
+  # path zi was given, so a plug-in reached through a symlinked directory would
+  # otherwise have all of its own $fpath entries judged foreign. Entries
+  # duplicated between the two matches are harmless; the array is only searched
+  # and prepended to the stub's own $fpath.
+  fpath_elements=( ${fpath[(R)$PLUGIN_DIR/*]} ${fpath[(R)${PLUGIN_DIR:A}/*]} )
   # Add a function subdirectory to items, if any (this action is according to the Plug Standard version 1.07 and later).
   [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
   if (( ${+opts[(r)-X]} )); then
@@ -482,8 +490,29 @@ builtin setopt no_aliases
         # Apply workaround
         func=$func:t
       fi
-      if [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
-        builtin autoload ${opts[@]} "$PLUGIN_DIR/$func"
+      # Only functions that live in the plug-in's own directory may get the
+      # FPATH-clean stub, which bakes $PLUGIN_DIR into the function body. Any
+      # other `autoload' issued while this plug-in is loading (most commonly
+      # the bulk `autoload -Uz' that a compinit run replays from .zcompdump)
+      # belongs to some other provider and must keep the normal, lazy $fpath
+      # resolution. The -C (custom name) form is requested explicitly through
+      # the autoload'' ice, so it keeps its own search and is left alone.
+      # A directory in $fpath may be backed by a `<directory>.zwc' digest
+      # instead of by plain files, in which case the directory itself need not
+      # exist; such an entry is still the plug-in's own.
+      local apth aowner=
+      for apth ( $PLUGIN_DIR $fpath_elements ) {
+        [[ -f $apth/$func || -f $apth.zwc ]] && { aowner=$apth; break; }
+      }
+      if [[ -z $aowner ]] && (( ! ${+opts[(r)-C]} )); then
+        builtin autoload ${opts[@]} -- $func
+        retval=$?
+      elif [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
+        # Unreachable while line 239 stays commented out. $aowner, not
+        # $PLUGIN_DIR: the owning directory can be an $fpath subdirectory of
+        # the plug-in. The ${aowner:-$PLUGIN_DIR} fallback keeps the -C form,
+        # which reaches this branch without an ownership match, unchanged.
+        builtin autoload ${opts[@]} "${aowner:-$PLUGIN_DIR}/$func"
         retval=$?
       elif [[ ${ZI[NEW_AUTOLOAD]} = 1 ]]; then
         if (( ${+opts[(r)-C]} )) {

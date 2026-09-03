@@ -2379,7 +2379,7 @@ builtin setopt no_aliases
     "the list of the {cmd}subcommands$bcol.{rst}"
   }
 } # ]]]
-# FUNCTION: +zi-parse-opts. [[[
+# FUNCTION: .zi-parse-opts. [[[
 .zi-parse-opts() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob typeset_silent no_short_loops rc_quotes no_auto_pushd

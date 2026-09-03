@@ -299,14 +299,6 @@ ZI[EXTENDED_GLOB]=""
   fi
   return 0
 } # ]]]
-# FUNCTION: .zi-at-eval [[[
-.zi-at-eval() {
-  local atclone="$2" atpull="$1"
-  integer retval
-  @zi-substitute atclone atpull
-  [[ $atpull = "%atclone" ]] && { eval "$atclone"; retval=$?; } || { eval "$atpull"; retval=$?; }
-  return $retval
-} # ]]]
 
 #
 # Format functions
@@ -1917,7 +1909,7 @@ ZI[EXTENDED_GLOB]=""
   +zi-message "{mmdsh}{happy} Zi{rst} » {info3}update took {num}$SECONDS{info3} seconds{rst}{…}"
   return "$retval"
 } # ]]]
-# FUNCTION: .zi-update-in-parallel [[[
+# FUNCTION: .zi-update-all-parallel [[[
 .zi-update-all-parallel() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent no_short_loops no_monitor no_notify

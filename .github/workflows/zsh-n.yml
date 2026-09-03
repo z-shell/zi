@@ -15,11 +15,16 @@ on:
       - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
+      - "tests/plugin-autoload-fpath-scope.zsh"
+      - "tests/plugin-autoload-ice.zsh"
+      - "tests/nested-load-state.zsh"
+      - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/subst-nesting.zsh"
       - "tests/version-reporting.zsh"
   pull_request:
     paths:
@@ -31,11 +36,16 @@ on:
       - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
+      - "tests/plugin-autoload-fpath-scope.zsh"
+      - "tests/plugin-autoload-ice.zsh"
+      - "tests/nested-load-state.zsh"
+      - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/subst-nesting.zsh"
       - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
@@ -117,6 +127,48 @@ jobs:
       - name: Test parallel update
         run: zsh -f tests/parallel-update.zsh
 
+  plugin-autoload-fpath-scope:
+    name: Plugin Autoload Fpath Scope
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test plugin autoload fpath scope
+        run: zsh -f tests/plugin-autoload-fpath-scope.zsh
+  plugin-autoload-ice:
+    name: Plugin Autoload Ice
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test autoload ice forms
+        run: zsh -f tests/plugin-autoload-ice.zsh
+  nested-load-state:
+    name: Nested Load State
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test nested load state
+        run: zsh -f tests/nested-load-state.zsh
+
+  plugin-autoload-ownership:
+    name: Plugin Autoload Ownership
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test plugin autoload ownership
+        run: zsh -f tests/plugin-autoload-ownership.zsh
+
   plugin-standard-callbacks:
     name: Plugin Standard Callbacks
     runs-on: ubuntu-latest
@@ -193,6 +245,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test message formatting
         run: zsh -f tests/message-formatting.zsh
+
+  subst-nesting:
+    name: Subst Nesting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test substitution nesting
+        run: zsh -f tests/subst-nesting.zsh
 
   snippet-directory-mirror:
     name: Snippet directory mirror

@@ -239,7 +239,7 @@ is-at-least 5.1 && ZI[NEW_AUTOLOAD]=1 || ZI[NEW_AUTOLOAD]=0
 #is-at-least 5.4 && ZI[NEW_AUTOLOAD]=2
 
 # Parameters - temporary substituting of functions. [[[
-ZI[TMP_SUBST]=inactive   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
+ZI[TMP_SUBST]=inactive   ZI[TMP_SUBST_DEPTH]=0   ZI[DTRACE]=0    ZI[CUR_PLUGIN]=
 # ]]]
 # Parameters - ICE. [[[
 typeset -gA ZI_1MAP ZI_2MAP
@@ -434,7 +434,15 @@ builtin setopt no_aliases
   # "Fpath elements" - ie those elements that are inside the plug-in directory.
   # The name comes from the fact that they are the selected fpath elements → so just "items".
   local -a fpath_elements
-  fpath_elements=( ${fpath[(r)$PLUGIN_DIR/*]} )
+  # (R), not (r): (r) yields only the first match, which would hide every
+  # $fpath entry of a plug-in that registers more than one subdirectory.
+  # ${PLUGIN_DIR:A} is matched as well: the Plug Standard idiom
+  # `fpath+=( ${0:A:h}/lib )' resolves symlinks, while $PLUGIN_DIR keeps the
+  # path zi was given, so a plug-in reached through a symlinked directory would
+  # otherwise have all of its own $fpath entries judged foreign. Entries
+  # duplicated between the two matches are harmless; the array is only searched
+  # and prepended to the stub's own $fpath.
+  fpath_elements=( ${fpath[(R)$PLUGIN_DIR/*]} ${fpath[(R)${PLUGIN_DIR:A}/*]} )
   # Add a function subdirectory to items, if any (this action is according to the Plug Standard version 1.07 and later).
   [[ -d $PLUGIN_DIR/functions ]] && fpath_elements+=( "$PLUGIN_DIR"/functions )
   if (( ${+opts[(r)-X]} )); then
@@ -450,9 +458,15 @@ builtin setopt no_aliases
   fi
   if [[ -n ${(M)@:#+X} ]]; then
     .zi-add-report "${ZI[CUR_USPL2]}" "Autoload +X ${opts:+${(j: :)opts[@]} }${(j: :)${@:#+X}}"
-    local +h FPATH=$PLUGINS_DIR${fpath_elements:+:${(j.:.)fpath_elements[@]}}:$FPATH
+    # Capture the caller's search path before localising, exactly as
+    # :zi-reload-and-run does. `local +h -a fpath' creates a fresh empty array,
+    # so a $fpath on the right-hand side of the assignment below would expand to
+    # nothing and drop every foreign search path -- and `autoload +X' of a
+    # function the plug-in does not own would then resolve nowhere.
+    local -a ___fpath
+    ___fpath=( $fpath )
     local +h -a fpath
-    fpath=( $PLUGIN_DIR $fpath_elements $fpath )
+    fpath=( $PLUGIN_DIR $fpath_elements $___fpath )
     builtin autoload +X ${opts[@]} "${@:#+X}"
     return $?
   fi
@@ -482,8 +496,29 @@ builtin setopt no_aliases
         # Apply workaround
         func=$func:t
       fi
-      if [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
-        builtin autoload ${opts[@]} "$PLUGIN_DIR/$func"
+      # Only functions that live in the plug-in's own directory may get the
+      # FPATH-clean stub, which bakes $PLUGIN_DIR into the function body. Any
+      # other `autoload' issued while this plug-in is loading (most commonly
+      # the bulk `autoload -Uz' that a compinit run replays from .zcompdump)
+      # belongs to some other provider and must keep the normal, lazy $fpath
+      # resolution. The -C (custom name) form is requested explicitly through
+      # the autoload'' ice, so it keeps its own search and is left alone.
+      # A directory in $fpath may be backed by a `<directory>.zwc' digest
+      # instead of by plain files, in which case the directory itself need not
+      # exist; such an entry is still the plug-in's own.
+      local apth aowner=
+      for apth ( $PLUGIN_DIR $fpath_elements ) {
+        [[ -f $apth/$func || -f $apth.zwc ]] && { aowner=$apth; break; }
+      }
+      if [[ -z $aowner ]] && (( ! ${+opts[(r)-C]} )); then
+        builtin autoload ${opts[@]} -- $func
+        retval=$?
+      elif [[ ${ZI[NEW_AUTOLOAD]} = 2 ]]; then
+        # Unreachable while line 239 stays commented out. $aowner, not
+        # $PLUGIN_DIR: the owning directory can be an $fpath subdirectory of
+        # the plug-in. The ${aowner:-$PLUGIN_DIR} fallback keeps the -C form,
+        # which reaches this branch without an ownership match, unchanged.
+        builtin autoload ${opts[@]} "${aowner:-$PLUGIN_DIR}/$func"
         retval=$?
       elif [[ ${ZI[NEW_AUTOLOAD]} = 1 ]]; then
         if (( ${+opts[(r)-C]} )) {
@@ -502,7 +537,7 @@ builtin setopt no_aliases
                 body2=\"\${body##[[:space:]]#${func}[[:blank:]]#\(\)[[:space:]]#\{}\"
                 [[ \$body2 != \$body ]] && body2=\"\${body2%\}[[:space:]]#([$nl]#([[:blank:]]#\#[^$nl]#((#e)|[$nl]))#)#}\"
               }
-              functions[${${(q)custom[count*2]}:-$func}]=\"\$body2\"
+              functions[${(q)${custom[count*2]}:-$func}]=\"\$body2\"
               ${(q)${custom[count*2]}:-$func} \"\$@\"
             }"
             retval=$?
@@ -811,6 +846,12 @@ builtin setopt no_aliases
   #
   # It is always "dtrace" then "load" (i.e. dtrace then load) "dtrace" then "light" (i.e.:
   # dtrace then light load) "dtrace" then "compdef" (i.e.: dtrace then snippet).
+  # Loading is re-entrant: a plug-in body may load another plug-in or a
+  # snippet, and this is then entered again. Count the depth so the
+  # substitutions are installed once and removed only when the outermost load
+  # finishes. Every site that installs increments, every site that tears down
+  # decrements, and none of them can return in between.
+  (( ++ ZI[TMP_SUBST_DEPTH] ))
   [[ ${ZI[TMP_SUBST]} != inactive ]] && builtin return 0
   ZI[TMP_SUBST]="$mode"
   # The point about backups is: does the key exist in functions array.
@@ -860,7 +901,11 @@ builtin setopt no_aliases
   local mode="$1"
   # Disable temporary substituting of functions only once.
   # Disable temporary substituting of functions only the way it was enabled first.
+  (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
   [[ ${ZI[TMP_SUBST]} = inactive || ${ZI[TMP_SUBST]} != $mode ]] && return 0
+  # An inner load of the same mode must not tear down what the outer one still
+  # needs.
+  (( ZI[TMP_SUBST_DEPTH] > 0 )) && return 0
   ZI[TMP_SUBST]=inactive
   if [[ $mode != compdef ]]; then
     # 0. Unfunction autoload.
@@ -1455,7 +1500,11 @@ builtin setopt no_aliases
   }
   (( ${+ICE[cloneonly]} || retval )) && return 0
   ZI_SNIPPETS[$id_as]="$id_as <${${ICE[svn]+svn}:-single file}>"
+  # Same re-entrancy as .zi-load: a plug-in body may load a snippet, and a
+  # snippet may load further objects.
+  local ___prev_uspl2="${ZI[CUR_USPL2]}"
   ZI[CUR_USPL2]="$id_as" ZI_REPORTS[$id_as]=
+  {
   reply=( ${(on)ZI_EXTS[(I)z-annex hook:\!atinit-<-> <->]} )
   for key in "${reply[@]}"; do
     arr=( "${(Q)${(z@)ZI_EXTS[$key]}[@]}" )
@@ -1476,10 +1525,9 @@ builtin setopt no_aliases
       # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
       (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
       functions[compdef]=':zi-tmp-subst-compdef "$@";'
-      ZI[TMP_SUBST]=1
-    else
-      (( ++ ZI[TMP_SUBST] ))
+      ZI[TMP_SUBST]=compdef
     fi
+    (( ++ ZI[TMP_SUBST_DEPTH] ))
 
     # Add to fpath.
     if [[ -d $local_dir/$dirname/functions ]] {
@@ -1520,7 +1568,8 @@ builtin setopt no_aliases
       .zi-wrap-functions "$save_url" "" "$id_as"
     }
     [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
-    (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
+    (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
+    (( ZI[TMP_SUBST_DEPTH] == 0 )) && [[ ${ZI[TMP_SUBST]} = compdef ]] && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
   elif [[ -n ${opts[(r)--command]} || ${ICE[as]} = command ]]; then
     [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${id_as:t}"
     # Directory snippet - a directory and multiple files are possible.
@@ -1546,10 +1595,9 @@ builtin setopt no_aliases
         # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
         (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
         functions[compdef]=':zi-tmp-subst-compdef "$@";'
-        ZI[TMP_SUBST]=1
-      else
-        (( ++ ZI[TMP_SUBST] ))
+        ZI[TMP_SUBST]=compdef
       fi
+      (( ++ ZI[TMP_SUBST_DEPTH] ))
     }
     if [[ -n ${ICE[src]} ]]; then
       ZERO="${${(M)ICE[src]##/*}:-$local_dir/$dirname/${ICE[src]}}"
@@ -1569,7 +1617,8 @@ builtin setopt no_aliases
     }
     [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$local_dir/$dirname/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir/$dirname"; } && builtin eval "${ICE[atload]#\!}"; ((1)); } || eval "${ICE[atload]#\!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
     [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
-      (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
+      (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
+      (( ZI[TMP_SUBST_DEPTH] == 0 )) && [[ ${ZI[TMP_SUBST]} = compdef ]] && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
     }
   elif [[ ${ICE[as]} = completion ]]; then
     ((1))
@@ -1582,7 +1631,9 @@ builtin setopt no_aliases
   done
   (( ${+ICE[notify]} == 1 )) && { [[ $retval -eq 0 || -n ${(M)ICE[notify]#\!} ]] && { local msg; eval "msg=\"${ICE[notify]#\!}\""; +zi-deploy-message @msg "$msg" } || +zi-deploy-message @msg "notify: Plugin not loaded / loaded with problem, the return code: $retval"; }
   (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @rst
-  ZI[CUR_USPL2]=
+  } always {
+    ZI[CUR_USPL2]="$___prev_uspl2"
+  }
   ZI[TIME_INDEX]=$(( ${ZI[TIME_INDEX]:-0} + 1 ))
   ZI[TIME_${ZI[TIME_INDEX]}_${id_as}]=$SECONDS
   ZI[AT_TIME_${ZI[TIME_INDEX]}_${id_as}]=$EPOCHREALTIME
@@ -1601,7 +1652,15 @@ builtin setopt no_aliases
   local ___user="${reply[-2]}" ___plugin="${reply[-1]}" ___id_as="${ICE[id-as]:-${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}}"
   local ___pdir_path="${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"
   local ___pdir_orig="$___pdir_path"
+  # .zi-load is re-entrant: a plug-in body may load another plug-in or a
+  # snippet. Save what was current and restore it afterwards rather than
+  # clearing, so the outer plug-in keeps its identity for the rest of its body.
+  # At the top level the saved values are empty, which is the previous "no load
+  # is in progress" behaviour. The always block also covers the early returns
+  # below, cloneonly'' among them.
+  local ___prev_usr="${ZI[CUR_USR]}" ___prev_plugin="${ZI[CUR_PLUGIN]}" ___prev_uspl2="${ZI[CUR_USPL2]}"
   ZI[CUR_USR]="$___user" ZI[CUR_PLUGIN]="$___plugin" ZI[CUR_USPL2]="$___id_as"
+  {
   if [[ -n ${ICE[teleid]} ]] {
     .zi-any-to-user-plugin "${ICE[teleid]}"
     ___user="${reply[-2]}" ___plugin="${reply[-1]}"
@@ -1670,8 +1729,11 @@ builtin setopt no_aliases
   (( ${+ICE[reset-prompt]} == 1 )) && +zi-deploy-message @___rst
   # Unset the `m` function.
   .zi-set-m-func unset
-  # Mark no load is in progress.
-  ZI[CUR_USR]= ZI[CUR_PLUGIN]= ZI[CUR_USPL2]=
+  } always {
+    # Restore the enclosing load. Empty at the top level, which is what
+    # "no load is in progress" meant here before.
+    ZI[CUR_USR]="$___prev_usr" ZI[CUR_PLUGIN]="$___prev_plugin" ZI[CUR_USPL2]="$___prev_uspl2"
+  }
   ZI[TIME_INDEX]=$(( ${ZI[TIME_INDEX]:-0} + 1 ))
   ZI[TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$SECONDS
   ZI[AT_TIME_${ZI[TIME_INDEX]}_${___id_as//\//---}]=$EPOCHREALTIME
@@ -1703,9 +1765,22 @@ builtin setopt no_aliases
   [[ -z ${ICE[subst]} ]] && local ___builtin=builtin
   [[ ${ICE[as]} = null || ${+ICE[null]} -eq 1 || ${+ICE[binary]} -eq 1 ]] && ICE[pick]="${ICE[pick]:-/dev/null}"
   if [[ -n ${ICE[autoload]} ]] {
-    :zi-tmp-subst-autoload -Uz \
-      ${(s: :)${${${(s.;.)ICE[autoload]#[\!\#]}#[\!\#]}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} \
-      ${${(M)ICE[autoload]:#*(->|=>|→)*}:+-C} ${${(M)ICE[autoload]#(?\!|\!)}:+-C} ${${(M)ICE[autoload]#(?\#|\#)}:+-I}
+    # The (#b) backreferences that turn `a -> b' into `a -S b' need
+    # extended_glob, which this function does not set. Without it the
+    # substitution matches nothing and the rename form reaches
+    # :zi-tmp-subst-autoload untranslated. Build the argument list in an
+    # anonymous function so both the option and the match parameters stay local.
+    local -a ___autoload_args
+    () {
+      builtin emulate -LR zsh
+      builtin setopt extended_glob
+      local -a match mbegin mend
+      ___autoload_args=(
+        ${(s: :)${${${(s.;.)ICE[autoload]#[\!\#]}#[\!\#]}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}}
+        ${${(M)ICE[autoload]:#*(->|=>|→)*}:+-C} ${${(M)ICE[autoload]#(?\!|\!)}:+-C} ${${(M)ICE[autoload]#(?\#|\#)}:+-I}
+      )
+    }
+    :zi-tmp-subst-autoload -Uz $___autoload_args
   }
   if [[ ${ICE[as]} = command ]]; then
     [[ ${+ICE[pick]} = 1 && -z ${ICE[pick]} ]] && ICE[pick]="${___id_as:t}"
@@ -1726,10 +1801,9 @@ builtin setopt no_aliases
         # Temporary substituting of functions code is inlined from .zi-tmp-subst-on.
         (( ${+functions[compdef]} )) && ZI[bkp-compdef]="${functions[compdef]}" || builtin unset "ZI[bkp-compdef]"
         functions[compdef]=':zi-tmp-subst-compdef "$@";'
-        ZI[TMP_SUBST]=1
-      else
-        (( ++ ZI[TMP_SUBST] ))
+        ZI[TMP_SUBST]=compdef
       fi
+      (( ++ ZI[TMP_SUBST_DEPTH] ))
     }
     local ZERO
     [[ $ICE[atinit] = '!'* ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit#!]}"; ((1)); } || eval "${ICE[atinit]#!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
@@ -1748,7 +1822,8 @@ builtin setopt no_aliases
     }
     [[ ${ICE[atload][1]} = "!" ]] && { .zi-add-report "$___id_as" "Note: Starting to track the atload'!…' ice…"; ZERO="$___pdir_orig/-atload-"; local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___pdir_orig"; } && builtin eval "${ICE[atload]#\!}"; } || eval "${ICE[atload]#\!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
     [[ -n ${ICE[src]} || -n ${ICE[multisrc]} || ${ICE[atload][1]} = "!" ]] && {
-      (( -- ZI[TMP_SUBST] == 0 )) && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
+      (( ZI[TMP_SUBST_DEPTH] > 0 )) && (( -- ZI[TMP_SUBST_DEPTH] ))
+      (( ZI[TMP_SUBST_DEPTH] == 0 )) && [[ ${ZI[TMP_SUBST]} = compdef ]] && { ZI[TMP_SUBST]=inactive; builtin setopt no_aliases; (( ${+ZI[bkp-compdef]} )) && functions[compdef]="${ZI[bkp-compdef]}" || unfunction compdef; (( ZI[ALIASES_OPT] )) && builtin setopt aliases; }
     }
   elif [[ ${ICE[as]} = completion ]]; then
     ((1))
@@ -3254,7 +3329,18 @@ zpextract() {
 # ]]]
 # FUNCTION: @autoload. [[[
 @autoload() {
-  :zi-tmp-subst-autoload -Uz ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}} ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
+  # Same extended_glob requirement as the autoload'' ice in .zi-load-plugin.
+  local -a ___autoload_args
+  () {
+    builtin emulate -LR zsh
+    builtin setopt extended_glob
+    local -a match mbegin mend
+    ___autoload_args=(
+      ${(s: :)${${(j: :)${@#\!}}//(#b)((*)(->|=>|→)(*)|(*))/${match[2]:+$match[2] -S $match[4]}${match[5]:+${match[5]} -S ${match[5]}}}}
+      ${${${(@M)${@#\!}:#*(->|=>|→)*}}:+-C} ${${@#\!}:+-C}
+    )
+  } "$@"
+  :zi-tmp-subst-autoload -Uz $___autoload_args
 } # ]]]
 # FUNCTION: zi-turbo. [[[
 # With zi-turbo first argument is a wait time and suffix, i.e. "0a".

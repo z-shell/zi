@@ -1,0 +1,21 @@
+---
+name: Release Prepare
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    uses: z-shell/.github/.github/workflows/release-prepare.yml@6f3d88335ca0ae77b795ec2883b4402b51f15c6a # main
+    with:
+      signed_tag: true

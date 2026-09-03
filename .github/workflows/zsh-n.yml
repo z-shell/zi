@@ -9,9 +9,11 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/annex-unregister.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
       - "tests/hook-ownership.zsh"
+      - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
@@ -24,15 +26,20 @@ on:
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
+      - "tests/unload-hook-dispatch.zsh"
+      - "tests/unload-ownership-contracts.zsh"
       - "tests/version-reporting.zsh"
   pull_request:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "tests/annex-unregister.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
       - "tests/hook-ownership.zsh"
+      - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
@@ -45,7 +52,10 @@ on:
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
+      - "tests/unload-hook-dispatch.zsh"
+      - "tests/unload-ownership-contracts.zsh"
       - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
@@ -93,6 +103,28 @@ jobs:
         run: |
           zsh -fc "zcompile ${ZSH_FILE}"; rc=$?
           ls -al "${ZSH_FILE}.zwc"; exit "$rc"
+
+  unload-ownership-contracts:
+    name: Unload Ownership Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test unload ownership contracts
+        run: zsh -f tests/unload-ownership-contracts.zsh
+
+  unload-hook-dispatch:
+    name: Unload Hook Dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test unload hook dispatch
+        run: zsh -f tests/unload-hook-dispatch.zsh
 
   version-reporting:
     name: Version reporting
@@ -147,6 +179,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test autoload ice forms
         run: zsh -f tests/plugin-autoload-ice.zsh
+  load-object-status:
+    name: Load Object Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test load object status
+        run: zsh -f tests/load-object-status.zsh
+
   nested-load-state:
     name: Nested Load State
     runs-on: ubuntu-latest
@@ -202,6 +245,17 @@ jobs:
       - name: Test scheduler idle behavior
         run: zsh -f tests/scheduler-idle.zsh
 
+  annex-unregister:
+    name: Annex Unregister
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test annex unregister
+        run: zsh -f tests/annex-unregister.zsh
+
   archive-extraction:
     name: Archive extraction
     runs-on: ubuntu-latest
@@ -245,6 +299,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test message formatting
         run: zsh -f tests/message-formatting.zsh
+
+  source-hygiene:
+    name: Source Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test source hygiene
+        run: zsh -f tests/source-hygiene.zsh
 
   subst-nesting:
     name: Subst Nesting

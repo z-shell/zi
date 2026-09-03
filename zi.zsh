@@ -1283,6 +1283,49 @@ builtin setopt no_aliases
     ZI_EXTS[ice-mods]="${ZI_EXTS[ice-mods]}${icemods:+|}${(j:|:)${(@)${(@s:|:)icemods}/(#b)(#s)(?)/$index-$match[1]}}"
   }
 } # ]]]
+# FUNCTION: @zi-unregister-annex. [[[
+# Removes the registrations made by @zi-register-annex and @zi-register-hook for
+# one annex and one hook type, so an annex can remove its handler as the Zsh
+# Plugin Standard unload contract expects without leaving Zi dispatching to a
+# function that no longer exists.
+#
+# A stale registration is not inert. The before-load dispatch calls the stored
+# handler unconditionally, a missing function returns 127, and `127 & 1' is true,
+# so Zi folds the error into its return value and shifts its argument list on
+# every later plug-in load in the session.
+#
+# Unregistering something that was never registered is a no-op.
+#
+# Note: the ice-modifier list each registration contributed to
+# ZI_EXTS[ice-mods] and ZI_EXTS2[ice-mods] is not unwound. Registration appends
+# to a joined string without recording which annex contributed which entry, so
+# removing one annex's share would need that association to be recorded first.
+# A leftover ice name is recognised but dispatches to nothing, which is
+# harmless; the dispatch entry removed here is the part that corrupts loads.
+@zi-unregister-annex() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob no_bang_hist typeset_silent
+
+  local name="$1" type="$2" ___key
+  local -a ___arr ___doomed
+
+  for ___key in "${(@k)ZI_EXTS}"; do
+    [[ $___key == (seqno|ice-mods) ]] && continue
+    ___arr=( "${(Q)${(z@)ZI_EXTS[$___key]}[@]}" )
+    [[ ${___arr[3]} == $name && ${___arr[4]} == $type ]] && ___doomed+=( "$___key" )
+  done
+  (( ${#___doomed} )) && unset "ZI_EXTS[${^___doomed[@]}]"
+
+  ___doomed=( )
+  for ___key in "${(@k)ZI_EXTS2}"; do
+    [[ $___key == (seqno|ice-mods) ]] && continue
+    ___arr=( "${(Q)${(z@)ZI_EXTS2[$___key]}[@]}" )
+    [[ ${___arr[3]} == $name && ${___arr[4]} == $type ]] && ___doomed+=( "$___key" )
+  done
+  (( ${#___doomed} )) && unset "ZI_EXTS2[${^___doomed[@]}]"
+
+  return 0
+} # ]]]
 # FUNCTION: @zi-register-hook. [[[
 # Registers the z-annex inside Zi.
 @zi-register-hook() {
@@ -1406,13 +1449,18 @@ builtin setopt no_aliases
   local ___type="$1" ___id=$2
   local -a ___opt
   ___opt=( ${@[3,-1]} )
+  integer ___object_retval=0
   if [[ $___type == snippet ]] {
     .zi-load-snippet $___opt "$___id"
   } elif [[ $___type == plugin ]] {
     .zi-load "$___id" "" $___opt
   }
-  ___retval+=$?
-  return __retval
+  ___object_retval=$?
+  # Report only this load's status. The sole caller owns aggregation: it stores
+  # the value in ___last_retval, adds it to ___retval once, and gates turbo
+  # scheduling on it. Adding to the caller's ___retval here as well would
+  # double-count every failure.
+  return ___object_retval
 } # ]]]
 # FUNCTION:.zi-set-m-func() [[[
 # Sets and withdraws the temporary, atclone/atpull time function `m`.
@@ -2374,7 +2422,7 @@ builtin setopt no_aliases
     "the list of the {cmd}subcommands$bcol.{rst}"
   }
 } # ]]]
-# FUNCTION: +zi-parse-opts. [[[
+# FUNCTION: .zi-parse-opts. [[[
 .zi-parse-opts() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob typeset_silent no_short_loops rc_quotes no_auto_pushd

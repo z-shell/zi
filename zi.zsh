@@ -1406,13 +1406,18 @@ builtin setopt no_aliases
   local ___type="$1" ___id=$2
   local -a ___opt
   ___opt=( ${@[3,-1]} )
+  integer ___object_retval=0
   if [[ $___type == snippet ]] {
     .zi-load-snippet $___opt "$___id"
   } elif [[ $___type == plugin ]] {
     .zi-load "$___id" "" $___opt
   }
-  ___retval+=$?
-  return __retval
+  ___object_retval=$?
+  # Report only this load's status. The sole caller owns aggregation: it stores
+  # the value in ___last_retval, adds it to ___retval once, and gates turbo
+  # scheduling on it. Adding to the caller's ___retval here as well would
+  # double-count every failure.
+  return ___object_retval
 } # ]]]
 # FUNCTION:.zi-set-m-func() [[[
 # Sets and withdraws the temporary, atclone/atpull time function `m`.

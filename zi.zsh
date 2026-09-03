@@ -2483,20 +2483,51 @@ return retval
   return 0
 } # ]]]
 # FUNCTION: .zi-load-ices. [[[
+# Reads the disk-ices of an already-installed object into the ICE hash.
+#
+# $1 - the object's effective handle-ID
+# $2 - `snippet' when the caller has already established that the object is
+#      one. Anything else (including the default) means undetermined, in
+#      which case an ID present in both roots is reported instead of being
+#      resolved silently. There is no `plugin' counterpart: a caller never
+#      knows that much up-front, because a disk-stored `is-snippet' ice is
+#      itself one of the values this function loads.
 .zi-load-ices() {
-  local id_as="$1" ___key ___path
+  local id_as="$1" ___type="$2" ___key ___path
   local -a ice_order
   ice_order=(
     ${(As:|:)ZI[ice-list]}
     ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
-  ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
-  # TODO Snippet's dir computation…
-  if [[ ! -d $___path ]] {
-    if ! .zi-get-object-path snippet "${id_as//\//---}"; then
-      return 1
-    fi
-    ___path="$REPLY"/._zi
+  # The two roots use different ID conventions: the plugin directory flattens
+  # `/' to `---', the snippet path keeps the slashes and is derived by
+  # .zi-get-object-path. Compute both, then choose.
+  local ___plugin_path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi ___snippet_path
+  .zi-get-object-path snippet "$id_as"
+  ___snippet_path="$REPLY"/._zi
+  # A metadata directory counts only when it actually holds ices. An empty one
+  # is a leftover (e.g. from an interrupted install) and must not shadow the
+  # other root.
+  # Emulated, because this runs with the user's options and the probe uses a
+  # bare glob qualifier, which sh_glob (among others) disables.
+  integer ___has_plugin ___has_snippet
+  () {
+    builtin emulate -LR zsh
+    local -a ___probe
+    ___probe=( $___plugin_path/*(.DN) );  ___has_plugin=${#___probe}
+    ___probe=( $___snippet_path/*(.DN) ); ___has_snippet=${#___probe}
+  }
+  (( ___has_plugin || ___has_snippet )) || return 1
+  if [[ $___type == snippet ]] {
+    (( ___has_snippet )) && ___path="$___snippet_path" || ___path="$___plugin_path"
+  } else {
+    if (( ___has_plugin && ___has_snippet )) && \
+      [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] {
+      +zi-message "{u-warn}Warning{b-warn}:{rst} the ID {apo}\`{pid}$id_as{apo}\`{rst} exists as both a" \
+        "plugin and a snippet{ehi}:{rst}{nl}– {dir}${___plugin_path:h}{rst}{nl}– {dir}${___snippet_path:h}{rst}{nl}" \
+        "Reading the plugin's ices. Disambiguate with the {ice}id-as{apo}''{rst} ice."
+    }
+    (( ___has_plugin )) && ___path="$___plugin_path" || ___path="$___snippet_path"
   }
   for ___key ( "${ice_order[@]}" ) {
     (( ${+ICE[$___key]} )) && [[ ${ICE[$___key]} != +* ]] && continue
@@ -2898,13 +2929,10 @@ zi() {
           # Effective remote-ID (i.e.: URL, GitHub username/repo, package name, etc.). teleid'' allows "overriding" of $1.
           # In the case of a package using teleid'', the value here is being taken from the given ices, before disk-ices.
           ___etid="${ICE[teleid]:-$___id}"
-          if (( ${+ICE[pack]} )); then
-            ___had_wait=${+ICE[wait]}
-            .zi-load-ices "$___ehid"
-            # wait'' isn't possible via the disk-ices (for packages), only via the command's ice-spec.
-            [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
-          fi
-          [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]] && ICE[id-as]="${___etid:t}"
+          # Classify as far as the command's own ice-spec and the effective
+          # remote-ID allow. $___etid is final by now and isn't revisited, so
+          # the only classifying input still missing is a disk-stored
+          # `is-snippet' ice, which the disk-ice read below may supply.
           integer  ___is_snippet=${${(M)___is_snippet:#-1}:-0}
           () {
             builtin setopt local_options extended_glob
@@ -2912,6 +2940,16 @@ zi() {
               ___is_snippet=1
             }
           } "$@"
+          if (( ${+ICE[pack]} )); then
+            ___had_wait=${+ICE[wait]}
+            .zi-load-ices "$___ehid" "${${(M)___is_snippet:#1}:+snippet}"
+            # wait'' isn't possible via the disk-ices (for packages), only via the command's ice-spec.
+            [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
+          fi
+          [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]] && ICE[id-as]="${___etid:t}"
+          # Second pass: a disk-stored `is-snippet' ice promotes the object.
+          # The remaining inputs of the test above cannot have changed.
+          (( ___is_snippet >= 0 )) && [[ -n ${ICE[is-snippet]+1} ]] && ___is_snippet=1
           local ___type=${${${(M)___is_snippet:#1}:+snippet}:-plugin}
           reply=(
             ${(on)ZI_EXTS2[(I)zi hook:before-load-pre <->]}

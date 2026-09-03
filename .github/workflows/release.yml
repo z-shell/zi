@@ -26,6 +26,9 @@ jobs:
           fetch-tags: true
           persist-credentials: false
 
+      - name: Install Zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+
       - name: Verify release authorization
         env:
           GH_TOKEN: ${{ github.token }}

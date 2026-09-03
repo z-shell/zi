@@ -1380,8 +1380,7 @@ builtin setopt no_aliases
 # FUNCTION: .zi-prepare-home. [[[
 # Establish all required directories.
 .zi-prepare-home() {
-  [[ -n ${ZI[HOME_READY]} ]] && return
-  ZI[HOME_READY]=1
+  [[ -n ${ZI[HOME_READY]} ]] && return 0
   if [[ ! -d ${ZI[HOME_DIR]} ]]; then
     command mkdir -p "${ZI[HOME_DIR]}"
     command chmod 700 "${ZI[HOME_DIR]}"
@@ -1440,9 +1439,33 @@ builtin setopt no_aliases
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
     command chmod go-w "${ZI[SNIPPETS_DIR]}"
     ( builtin cd -q ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
+  fi
+  # Independently of the snippets directory. These were nested, so a layout with
+  # snippets/ already present and services/ missing, which a migration or a
+  # manual repair can leave behind, never created the services directory and was
+  # still accepted as ready. Service startup then tried to place locks and FIFOs
+  # below a directory that did not exist.
+  if [[ ! -d ${ZI[SERVICES_DIR]} ]]; then
     command mkdir -p "${ZI[SERVICES_DIR]}"
     command chmod go-w "${ZI[SERVICES_DIR]}"
   fi
+  # Validate before declaring the home ready, and leave ZI[HOME_READY] unset on
+  # failure so a later call can retry. $ZPFX and the manual directory stay
+  # best-effort: they are user-facing install prefixes rather than Zi's own
+  # state, and the manual tree has always tolerated a creation failure.
+  local ___required
+  for ___required (
+    ${ZI[HOME_DIR]} ${ZI[CACHE_DIR]} ${ZI[CONFIG_DIR]} ${ZI[LOG_DIR]}
+    ${ZI[ZMODULES_DIR]} ${ZI[PLUGINS_DIR]} ${ZI[PLUGINS_DIR]}/_local---zi
+    ${ZI[COMPLETIONS_DIR]} ${ZI[SNIPPETS_DIR]} ${ZI[SERVICES_DIR]}
+  ) {
+    [[ -d $___required ]] || {
+      builtin print -u2 -r -- "zi: home preparation incomplete, missing: ${___required}"
+      return 1
+    }
+  }
+  ZI[HOME_READY]=1
+  return 0
 } # ]]]
 # FUNCTION: .zi-load-object. [[[
 .zi-load-object() {

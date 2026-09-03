@@ -13,6 +13,7 @@ on:
       - "tests/atinit-deferred-marker.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
@@ -40,6 +41,7 @@ on:
       - "tests/atinit-deferred-marker.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
@@ -290,6 +292,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test completion refresh
         run: zsh tests/completion-refresh.zsh
+
+  home-preparation:
+    name: Home Preparation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test home preparation
+        run: zsh -f tests/home-preparation.zsh
 
   hook-ownership:
     name: Hook ownership

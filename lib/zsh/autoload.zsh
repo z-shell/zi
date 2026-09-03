@@ -897,7 +897,26 @@ ZI[EXTENDED_GLOB]=""
   # Call the Zsh Plugin's Standard *_plugin_unload function
   #
 
-  (( ${+functions[${plugin}_plugin_unload]} )) && ${plugin}_plugin_unload
+  # The Plugin Standard derives this name from the plug-in's name, and $plugin
+  # was used verbatim. Two kinds of plug-in could therefore never be reached:
+  #
+  #   - a hyphenated repository, because ADR-0020's namespace rules require the
+  #     shell prefix to use underscores, so `zsh-eza' can define
+  #     `zsh_eza_plugin_unload' or be unloadable by Zi, but not both;
+  #   - a plug-in loaded by path, whose $plugin is the absolute directory, so
+  #     `/path/to/thing_plugin_unload' names nothing.
+  #
+  # Try the literal name first so plug-ins already defining it keep working,
+  # then the underscore form, then the same pair derived from the directory
+  # basename, which is the closest analogue of a repository name for a
+  # path-loaded plug-in. Call the first that exists; the Standard defines a
+  # single unload function per plug-in.
+  local ___base="${plugin:t}" ___cand
+  local -a ___cand_names
+  ___cand_names=( "$plugin" "${plugin//-/_}" "$___base" "${___base//-/_}" )
+  for ___cand ( ${(u)___cand_names[@]} ) {
+    (( ${+functions[${___cand}_plugin_unload]} )) && { "${___cand}_plugin_unload"; break; }
+  }
 
   #
   # Call the code provided by the Zsh Plugin Standard @zsh-plugin-run-on-unload

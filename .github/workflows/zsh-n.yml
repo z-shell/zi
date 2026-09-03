@@ -27,6 +27,7 @@ on:
       - "tests/snippet-directory-mirror.zsh"
       - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
+      - "tests/unload-hook-dispatch.zsh"
       - "tests/version-reporting.zsh"
   pull_request:
     paths:
@@ -50,6 +51,7 @@ on:
       - "tests/snippet-directory-mirror.zsh"
       - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
+      - "tests/unload-hook-dispatch.zsh"
       - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
@@ -97,6 +99,17 @@ jobs:
         run: |
           zsh -fc "zcompile ${ZSH_FILE}"; rc=$?
           ls -al "${ZSH_FILE}.zwc"; exit "$rc"
+
+  unload-hook-dispatch:
+    name: Unload Hook Dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test unload hook dispatch
+        run: zsh -f tests/unload-hook-dispatch.zsh
 
   version-reporting:
     name: Version reporting

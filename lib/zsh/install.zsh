@@ -6,6 +6,33 @@
 
 builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col-error]}ERROR:%f%b Couldn't find ${ZI[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
+# FUNCTION: .zi-unescape-json-string [[[
+# Translates the escapes of a JSON string body into the characters they denote
+# and returns the result in $REPLY. Handles the eight two-character escapes and
+# \uXXXX in the basic multilingual plane; a surrogate pair or an unrecognized
+# escape is left exactly as written, as is a malformed \u.
+.zi-unescape-json-string() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent
+
+  local ___rest=$1 ___out= ___esc ___tail
+  local -a match mbegin mend
+  local -A ___map=( \" \" \\ \\ / / b $'\b' f $'\f' n $'\n' r $'\r' t $'\t' )
+  integer ___code
+
+  while [[ $___rest = (#b)([^\\]#)\\(?)(*) ]]; do
+    ___out+=$match[1] ___esc=$match[2] ___tail=$match[3]
+    if [[ $___esc == u && $___tail == (#b)([0-9a-fA-F](#c4))(*) ]] {
+      ___code=16#$match[1]
+      ___out+=${(#)___code} ___rest=$match[2]
+    } elif (( ${+___map[$___esc]} )) {
+      ___out+=$___map[$___esc] ___rest=$___tail
+    } else {
+      ___out+="\\$___esc" ___rest=$___tail
+    }
+  done
+  typeset -g REPLY=$___out$___rest
+} # ]]]
 # FUNCTION: .zi-parse-json [[[
 # Retrievies the ice-list from given profile from the JSON of the package.json.
 .zi-parse-json() {
@@ -56,7 +83,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
       [[ ${match[1]} = \" && $___quoting != \' ]] && \
         if [[ $___quoting = '"' ]]; then
-          ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)___input[___sidx,___idx-1]}"
+          # A JSON string body carries escapes; store what they denote, not the
+          # backslashes, so ices are not later executed with a stray `\'.
+          .zi-unescape-json-string "${___input[___sidx,___idx-1]}"
+          ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)REPLY}"
           ___quoting=""
         else
           ___had_quoted_value=1
@@ -98,8 +128,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     for ___pair_a ( "${___pair_order[@]}" ) {
       ___pair_b="${___final_pairs[$___pair_a]}"
       ___text="${___input[___pair_b,___pair_a]}"
-      if [[ $___text = [[:space:]]#\{[[:space:]]#[\"\']${___key}[\"\']* ]]; then
-        ___found="$___text"
+      # JSON objects are unordered, so the wanted object is the smallest one
+      # that declares the key, not merely one that opens with it.
+      if [[ $___text = [[:space:]]#\{*[\"\']${___key}[\"\'][[:space:]]#:* ]]; then
+        [[ -z $___found || $#___text -lt $#___found ]] && ___found="$___text"
       fi
     }
   }
@@ -145,21 +177,26 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   local -A Strings
   .zi-parse-json "$pkgjson" "plugin-info" Strings
+  # The members of the parsed object keep the order the manifest wrote them in,
+  # so look both slots up by name instead of assuming the canonical order.
+  local -a level1
+  level1=( ${(@Q)${(@z)Strings[1/1]}} )
+  integer info_pos=${level1[(I)plugin-info]} ices_pos=${level1[(I)zi-ices]}
   local -A jsondata1
-  jsondata1=( ${(@Q)${(@z)Strings[2/1]}} )
+  (( info_pos )) && jsondata1=( ${(@Q)${(@z)Strings[2/$(( (info_pos + 1) / 2 ))]}} )
   local user=${jsondata1[user]} plugin=${jsondata1[plugin]} url=${jsondata1[url]} message=${jsondata1[message]} required=${jsondata1[required]:-${jsondata1[requires]}}
   local -a profiles
   local key value
   integer pos
-  profiles=( ${(@Q)${(@z)Strings[2/2]}} )
+  local ices_slot=${Strings[2/$(( (ices_pos + 1) / 2 ))]}
+  profiles=( ${(@Q)${(@z)ices_slot}} )
   profiles=( ${profiles[@]:#$'\0'--object--$'\0'} )
-  pos=${${(@Q)${(@z)Strings[2/2]}}[(I)$profile]}
+  pos=${${(@Q)${(@z)ices_slot}}[(I)$profile]}
   if (( pos )) {
     for key value ( "${(@Q)${(@z)Strings[3/$(( (pos + 1) / 2 ))]}}" ) {
       (( ${+ICE[$key]} )) && [[ ${ICE[$key]} != +* ]] && continue
       ICE[$key]=$value${ICE[$key]#+}
     }
-    ICE=( "${(kv)ICE[@]//\\\"/\"}" )
     [[ ${ICE[as]} = program ]] && ICE[as]="command"
     [[ -n ${ICE[on-update-of]} ]] && ICE[subscribe]="${ICE[subscribe]:-${ICE[on-update-of]}}"
     [[ -n ${ICE[pick]} ]] && ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"

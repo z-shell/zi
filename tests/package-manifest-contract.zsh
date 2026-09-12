@@ -88,6 +88,49 @@ rejects 'no default profile' "no 'default' profile" \
 rejects 'unknown zsh-data member' 'not part of the contract' \
   '{"name":"p","zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}},"extra":{}}}'
 
+# The contract is only enforced if the validator actually applies it. These are
+# rejections that live in the schema alone, with no cross-member rule behind
+# them, so they pass only when the schema is being read and used.
+rejects 'non-string name' 'expected string' \
+  '{"name":123,"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'malformed requires' 'contract pattern' \
+  '{"name":"p","zsh-data":{"plugin-info":{"user":"u","plugin":"r","requires":"cc;"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'wrong schema version' 'expected 1' \
+  '{"name":"p","zsh-data":{"schema":2,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'keywords not a string array' 'expected string' \
+  '{"name":"p","keywords":[1],"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+
+# A manifest that is not valid UTF-8 must be reported, not crash the run and
+# abandon every file after it.
+typeset badenc="${temp_root}/badenc.json"
+builtin printf '\xff\xfe{"name":"x"}' > $badenc
+if command python3 "$validator" "$badenc" >/dev/null 2>&1; then
+  fail 'non-UTF-8 manifest: expected rejection, but it validated'
+fi
+# Captured rather than piped: `pipe_fail` would otherwise surface the
+# validator's own non-zero exit and mask what grep found.
+typeset badenc_out
+badenc_out="$(command python3 "$validator" "$badenc" 2>&1 || true)"
+[[ $badenc_out == *'unreadable or invalid JSON'* ]] ||
+  fail "non-UTF-8 manifest: not reported as unreadable: ${badenc_out}"
+
+# A contract keyword the checker does not implement must stop the run rather
+# than pass quietly, since silent under-enforcement is the failure this whole
+# arrangement exists to prevent.
+typeset faked="${temp_root}/faked-contract"
+command mkdir -p "${faked}/contracts" "${faked}/scripts"
+command cp "$validator" "${faked}/scripts/"
+command python3 -c '
+import json, sys
+schema = json.load(open(sys.argv[1]))
+schema["properties"]["name"]["maxLength"] = 4
+json.dump(schema, open(sys.argv[2], "w"))' "$schema" "${faked}/contracts/package-manifest-v1.json"
+builtin print -r -- '{"name":"p","zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}' > "${temp_root}/ok2.json"
+typeset faked_out
+faked_out="$(command python3 "${faked}/scripts/${validator:t}" "${temp_root}/ok2.json" 2>&1 || true)"
+[[ $faked_out == *'does not implement'* ]] ||
+  fail "an unimplemented contract keyword did not stop the run: ${faked_out}"
+
 # Drift check. The contract is only worth having if it still describes the
 # parser, so derive both sides from source and compare rather than restating
 # either by hand. This fails when .zi-get-package starts or stops reading a

@@ -14,8 +14,108 @@ Usage: validate-package-manifest.py <package.json> [...]
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
+
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "contracts" / "package-manifest-v1.json"
+
+# Keywords this checker implements. A contract using anything else would be
+# silently under-enforced, so an unknown keyword is a hard error rather than a
+# quiet pass. That is what stops the contract and this command from drifting.
+SUPPORTED = frozenset(
+    {
+        "$schema", "$id", "$ref", "$defs", "title", "description",
+        "type", "required", "properties", "additionalProperties",
+        "minLength", "minProperties", "pattern", "const", "items",
+        "oneOf", "anyOf", "not",
+    }
+)
+JSON_TYPES: dict[str, type | tuple[type, ...]] = {
+    "object": dict, "array": list, "string": str,
+    "integer": int, "number": (int, float), "boolean": bool,
+}
+CONTAINERS = ("properties", "$defs")
+
+
+def unsupported_keywords(node: object, where: str = "#") -> list[str]:
+    """Every contract keyword this checker would otherwise ignore."""
+    found: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            named = where.rsplit("/", 1)[-1] in CONTAINERS
+            if not named and key not in SUPPORTED:
+                found.append(f"{where}/{key}")
+            found += unsupported_keywords(value, f"{where}/{key}")
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found += unsupported_keywords(value, f"{where}[{index}]")
+    return found
+
+
+def resolve(node: dict, root: dict) -> dict:
+    seen = 0
+    while "$ref" in node and seen < 10:
+        target: object = root
+        for part in node["$ref"].lstrip("#").strip("/").split("/"):
+            target = target[part]  # type: ignore[index]
+        node = target  # type: ignore[assignment]
+        seen += 1
+    return node
+
+
+def validate_against(node: dict, value: object, root: dict, where: str) -> list[str]:
+    """Check one value against one contract node."""
+    node = resolve(node, root)
+    errs: list[str] = []
+
+    expected = node.get("type")
+    if expected:
+        wanted = JSON_TYPES[expected]
+        # JSON separates booleans from numbers; Python does not.
+        bad_bool = expected in {"integer", "number"} and isinstance(value, bool)
+        if bad_bool or not isinstance(value, wanted):
+            shown = "boolean" if isinstance(value, bool) else type(value).__name__
+            return [f"{where} is {shown}, expected {expected}"]
+
+    if "const" in node and value != node["const"]:
+        errs.append(f"{where} is {value!r}, expected {node['const']!r}")
+    if isinstance(value, str):
+        if "minLength" in node and len(value) < node["minLength"]:
+            errs.append(f"{where} is shorter than {node['minLength']} character(s)")
+        if "pattern" in node and not re.search(node["pattern"], value):
+            errs.append(f"{where} does not match the contract pattern {node['pattern']}")
+    if isinstance(value, dict):
+        for name in node.get("required", []):
+            if name not in value:
+                errs.append(f"{where} is missing {name!r}")
+        if "minProperties" in node and len(value) < node["minProperties"]:
+            errs.append(f"{where} has fewer than {node['minProperties']} member(s)")
+        properties = node.get("properties", {})
+        extra = node.get("additionalProperties")
+        for key, item in value.items():
+            if key in properties:
+                errs += validate_against(properties[key], item, root, f"{where}.{key}")
+            elif extra is False:
+                errs.append(f"{where}.{key} is not part of the contract")
+            elif isinstance(extra, dict):
+                errs += validate_against(extra, item, root, f"{where}.{key}")
+    if isinstance(value, list) and isinstance(node.get("items"), dict):
+        for index, item in enumerate(value):
+            errs += validate_against(node["items"], item, root, f"{where}[{index}]")
+    if "oneOf" in node:
+        matched = sum(
+            1 for option in node["oneOf"] if not validate_against(option, value, root, where)
+        )
+        if matched != 1:
+            errs.append(f"{where} matched {matched} of the allowed shapes, expected exactly 1")
+    if "anyOf" in node and not any(
+        not validate_against(option, value, root, where) for option in node["anyOf"]
+    ):
+        errs.append(f"{where} matched none of the allowed shapes")
+    if "not" in node and not validate_against(node["not"], value, root, where):
+        errs.append(f"{where} matched a forbidden shape")
+    return errs
 
 # Ice that declares where the package content comes from, and the plugin-info
 # fields Zi reads for that mode. See .zi-get-package in lib/zsh/install.zsh.
@@ -29,11 +129,28 @@ ANNEX_CAPABILITIES = ("bgn", "dl", "rdl")
 
 
 def check(path: Path) -> list[str]:
-    errs: list[str] = []
     try:
-        doc = json.loads(path.read_text())
-    except (OSError, json.JSONDecodeError) as exc:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         return [f"{path}: unreadable or invalid JSON: {exc}"]
+
+    try:
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return [f"{SCHEMA_PATH}: contract unreadable: {exc}"]
+
+    ignored = unsupported_keywords(schema)
+    if ignored:
+        return [
+            f"{SCHEMA_PATH}: contract uses keyword(s) this checker does not "
+            f"implement, so they cannot be enforced: {', '.join(sorted(ignored))}"
+        ]
+
+    # Apply the published contract first, then the rules below, which span
+    # `zsh-data` members and so cannot be expressed in JSON Schema.
+    errs: list[str] = [
+        f"{path}: {message}" for message in validate_against(schema, doc, schema, "manifest")
+    ]
 
     def err(msg: str) -> None:
         errs.append(f"{path}: {msg}")

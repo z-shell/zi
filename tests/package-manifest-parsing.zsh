@@ -40,18 +40,15 @@ setopt pipe_fail
 builtin source "${ZI_TEST_CHECKOUT}/zi.zsh" || return 1
 builtin source "${ZI_TEST_CHECKOUT}/lib/zsh/install.zsh" || return 1
 
-# Resolves the `default' profile of a manifest into the `ices' hash, the way
-# .zi-get-package does.
-resolve() {  # resolve <manifest text> <output hash name>
-  local -A Strings
-  .zi-parse-json "$1" "plugin-info" Strings
-  local -a level1=( "${(@Q)${(@z)Strings[1/1]}}" )
-  integer ipos=${level1[(I)zi-ices]}
-  (( ipos )) || { builtin print -u2 -r -- "no zi-ices key at level 1"; return 1; }
-  local -a profiles=( "${(@Q)${(@z)Strings[2/$(( (ipos + 1) / 2 ))]}}" )
-  integer ppos=${profiles[(I)default]}
-  (( ppos )) || { builtin print -u2 -r -- "no default profile"; return 1; }
-  : ${(PAA)2::="${(@Q)${(@z)Strings[3/$(( (ppos + 1) / 2 ))]}}"}
+# Exercise the shipped lookup, not a copy of it: .zi-read-package-manifest is
+# exactly what .zi-get-package uses to turn a manifest into a profile's ices.
+resolve() {  # resolve <manifest text> <output hash name> [profile]
+  local -A info
+  local -a names
+  .zi-read-package-manifest "$1" "${3:-default}" info names "$2" || {
+    builtin print -u2 -r -- "profile '${3:-default}' not resolved; available: ${names[*]}"
+    return 1
+  }
 }
 
 local canonical='{"zsh-data":{"plugin-info":{"user":"u","plugin":"p"},
@@ -102,6 +99,34 @@ check src    'xAy'        || return 1
 check as     "a${bs}\"b"  || return 1
 # An unknown escape is not JSON; leave it exactly as written.
 check ver    "a${bs}qb"   || return 1
+
+local -A n c l
+
+# Profile bodies are numbered across the whole subtree, so an object nested in an
+# earlier member must not shift which profile is resolved. Ice values are
+# executed, so picking the wrong one runs the wrong commands.
+resolve '{"zsh-data":{"plugin-info":{"user":"u","plugin":"p","bugs":{"url":"decoy"}},
+  "zi-ices":{"default":{"as":"program","pick":"x"},"bgn":{"as":"null"}}}}' n || return 1
+[[ ${n[as]} == program && ${n[pick]} == x ]] || {
+  builtin print -u2 -r -- "nested member shifted the profile: as='${n[as]}' pick='${n[pick]}' url='${n[url]}'"
+  return 1
+}
+
+# A profile name reused as a key elsewhere must not divert the lookup.
+resolve '{"zsh-data":{"plugin-info":{"user":"u","default":"decoy"},
+  "zi-ices":{"default":{"as":"program","pick":"x"},"bgn":{"as":"null"}}}}' c || return 1
+[[ ${c[as]} == program && ${c[pick]} == x ]] || {
+  builtin print -u2 -r -- "name collision diverted the lookup: as='${c[as]}' pick='${c[pick]}'"
+  return 1
+}
+
+# A later profile, so the offset is exercised with a non-first slot.
+resolve '{"zsh-data":{"plugin-info":{"user":"u","bugs":{"url":"decoy"}},
+  "zi-ices":{"first":{"as":"null"},"default":{"as":"program","pick":"late"}}}}' l || return 1
+[[ ${l[pick]} == late ]] || {
+  builtin print -u2 -r -- "later profile resolved wrong: pick='${l[pick]}'"
+  return 1
+}
 ZSH
 
 builtin print -r -- "ok - .zi-parse-json reads manifests independently of key order and decodes JSON escapes"

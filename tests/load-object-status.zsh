@@ -81,6 +81,54 @@ check "snippet failure" snippet 5 5 || return 1
     return 1
   }
 } || return 1
+
+# Before-load hooks can consume a request without loading an object. Exercise
+# real dispatch so a blank replacement cannot become a blank object ID.
+typeset -a attempted
+integer hook_status=2
+typeset replacement='' new_ices=''
+.zi-load-object() { attempted+=( "$2" ); return 0; }
+probe_replace() {
+  [[ $2 == fixture ]] || return 0
+  ZI[annex-before-load:new-@]="${replacement}${4:+ $4}"
+  ZI[annex-before-load:new-global-ices]=$new_ices
+  return $hook_status
+}
+@zi-register-annex probe-replace hook:before-load-2 probe_replace '' ''
+zi light @fixture || { print -u2 'empty replacement failed'; return 1; }
+(( $#attempted == 0 )) || return 1
+
+hook_status=3
+zi light @fixture
+(( $? == 3 && $#attempted == 0 )) || {
+  print -u2 'empty replacement lost the hook error'
+  return 1
+}
+hook_status=2
+zi for @fixture @example/following || return 1
+[[ $#attempted == 1 && $attempted[1] == example/following ]] || return 1
+
+replacement="@'example/with spaces'"
+zi light @fixture || return 1
+[[ $#attempted == 2 && $attempted[2] == 'example/with spaces' ]] || return 1
+
+# A later empty replacement must not reuse the previous non-empty array.
+replacement=''
+zi light @fixture || return 1
+(( $#attempted == 2 )) || return 1
+
+# `(z)' yields one blank word for whitespace too, so it is the same consumed
+# state and must not reach the loader as a blank object ID either.
+replacement='   '
+zi light @fixture || { print -u2 'whitespace replacement failed'; return 1; }
+(( $#attempted == 2 )) || { print -u2 'whitespace replacement loaded an object'; return 1; }
+replacement=''
+
+# A blank global-ice override means "no global ices", not a malformed odd list.
+hook_status=6
+zi light @fixture || { print -u2 'blank global ices reported a bad ice-list'; return 1; }
+(( $#attempted == 2 )) || return 1
+hook_status=2
 ZSH
 
 builtin print -r -- "ok - .zi-load-object reports its own load status and leaves aggregation to the caller"

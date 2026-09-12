@@ -47,6 +47,8 @@ fails if any constituent fails, is cancelled, or is skipped.
 - [ ] The candidate SHA has not changed since every required check completed.
 - [ ] The `Guard main branch source` and `Promotion gate` required contexts pass.
 - [ ] The complete file and commit compare contains only reviewed work.
+- [ ] PR conversations, review summaries, and all review threads have been read;
+      actionable findings are addressed and required code-owner approvals exist.
 
 ## Readiness review
 
@@ -73,10 +75,13 @@ impact check. Write `None` only with a rationale.
 Promotion must use **Create a merge commit**. Never squash or rebase the
 persistent `next` branch into `main`.
 
-Example maintainer command after all checks pass:
+Example maintainer command after all checks and review requirements pass.
+Replace `<reviewed-head-sha>` with the exact candidate SHA assessed above.
+Do not bypass protection if GitHub rejects the merge.
 
 ```sh
-gh pr merge <number> --repo z-shell/zi --merge --admin \
+gh pr merge <number> --repo z-shell/zi --merge \
+  --match-head-commit <reviewed-head-sha> \
   --subject "chore: promote next to main (#<number>)" \
   --body "Promotes the reviewed next candidate with preserved ancestry."
 ```

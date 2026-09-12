@@ -100,6 +100,41 @@ check as     "a${bs}\"b"  || return 1
 # An unknown escape is not JSON; leave it exactly as written.
 check ver    "a${bs}qb"   || return 1
 
+# Preserve surrogate escapes and malformed Unicode escapes through the shipped
+# manifest lookup, while continuing to decode ordinary BMP characters.
+local unicode='{"zsh-data":{"plugin-info":{"user":"u"},"zi-ices":{"default":{
+  "src":"'$bs'uD834'$bs'uDD1E",
+  "pick":"'$bs'u12",
+  "ver":"'$bs'uZZZZ",
+  "atclone":"'$bs'uD800'$bs'u0041'$bs'uDFFF"}}}}'
+resolve "$unicode" e || return 1
+check src "${bs}uD834${bs}uDD1E" || return 1
+check pick "${bs}u12" || return 1
+check ver "${bs}uZZZZ" || return 1
+check atclone "${bs}uD800A${bs}uDFFF" || return 1
+
+# A quoted value containing key-like text must not become the selected object.
+local decoy='{"decoy":{"text":"literal '$bs'"plugin-info'$bs'": text"},
+  "zsh-data":{"plugin-info":{"user":"u","plugin":"p"},
+  "zi-ices":{"default":{"as":"program","pick":"real"}}}}'
+resolve "$decoy" e || return 1
+check pick real || return 1
+
+# Keys themselves may carry JSON escapes; a quoted value is still not a key.
+local encoded='{"decoy":{"text":"plugin-info"},"zsh-data":{
+  "plugin-'$bs'u0069nfo":{"user":"u"},"zi-ices":{"default":{"pick":"encoded"}}}}'
+resolve "$encoded" e || return 1
+check pick encoded || return 1
+
+# The other production caller searches for _from with the same parser.
+local -A from_data
+.zi-parse-json '{"decoy":{"text":"'$bs'"_from'$bs'": fake"},"_from":"real"}' _from from_data
+local -a from_fields=( "${(@Q)${(@z)from_data[1/1]}}" )
+[[ ${from_fields[-2]} == _from && ${from_fields[-1]} == real ]] || {
+  builtin print -u2 -r -- "key-like text diverted the _from lookup"
+  return 1
+}
+
 local -A n c l
 
 # Profile bodies are numbered across the whole subtree, so an object nested in an

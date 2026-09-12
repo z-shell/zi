@@ -9,7 +9,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-unescape-json-string [[[
 # Translates the escapes of a JSON string body into the characters they denote
 # and returns the result in $REPLY. Handles the eight two-character escapes and
-# \uXXXX in the basic multilingual plane; a surrogate pair or an unrecognized
+# \uXXXX in the basic multilingual plane; a surrogate escape or an unrecognized
 # escape is left exactly as written, as is a malformed \u.
 .zi-unescape-json-string() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
@@ -24,7 +24,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     ___out+=$match[1] ___esc=$match[2] ___tail=$match[3]
     if [[ $___esc == u && $___tail == (#b)([0-9a-fA-F](#c4))(*) ]] {
       ___code=16#$match[1]
-      ___out+=${(#)___code} ___rest=$match[2]
+      if (( ___code >= 16#D800 && ___code <= 16#DFFF )) {
+        ___out+="\\u$match[1]"
+      } else {
+        ___out+=${(#)___code}
+      }
+      ___rest=$match[2]
     } elif (( ${+___map[$___esc]} )) {
       ___out+=$___map[$___esc] ___rest=$___tail
     } else {
@@ -47,8 +52,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent
 
-  local -A ___pos_to_level ___level_to_pos ___pair_map ___final_pairs ___Strings ___Counts
-  local ___input=$1 ___workbuf=$1 ___key=$2 ___varname=$3 ___style ___quoting
+  local -A ___pos_to_level ___level_to_pos ___pair_map ___final_pairs ___Strings ___Counts ___key_objects
+  local ___input=$1 ___workbuf=$1 ___key=$2 ___varname=$3 ___style ___quoting ___last_string
   integer ___nest=${4:-1} ___idx=0 ___pair_idx ___level=0 ___start ___end ___sidx=1 ___had_quoted_value=0
   local -a match mbegin mend ___pair_order
   (( ${(P)+___varname} )) || typeset -gA "$___varname"
@@ -94,6 +99,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           # A JSON string body carries escapes; store what they denote, not the
           # backslashes, so ices are not later executed with a stray `\'.
           .zi-unescape-json-string "${___input[___sidx,___idx-1]}"
+          ___last_string=$REPLY
           ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)REPLY}"
           ___quoting=""
         else
@@ -112,12 +118,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
       [[ ${match[1]} = : && -z $___quoting ]] && \
         {
+          # A member name is a parsed string followed by an unquoted colon.
+          if [[ $___last_string == "$___key" && ${___input[${___level_to_pos[$___level]}]} == \{ ]]; then
+            ___key_objects[${___level_to_pos[$___level]}]=1
+          fi
           ___had_quoted_value=0
           ___sidx=___idx+1
         }
 
       [[ ${match[1]} = \' && $___quoting != \" ]] && \
         if [[ $___quoting = "'" ]]; then
+          ___last_string=${___input[___sidx,___idx-1]}
           ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)___input[___sidx,___idx-1]}"
           ___quoting=""
         else
@@ -138,7 +149,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       ___text="${___input[___pair_b,___pair_a]}"
       # JSON objects are unordered, so the wanted object is the smallest one
       # that declares the key, not merely one that opens with it.
-      if [[ $___text = [[:space:]]#\{*[\"\']${___key}[\"\'][[:space:]]#:* ]]; then
+      if (( ${+___key_objects[$___pair_b]} )); then
         [[ -z $___found || $#___text -lt $#___found ]] && ___found="$___text"
       fi
     }

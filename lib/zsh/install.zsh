@@ -35,6 +35,14 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 } # ]]]
 # FUNCTION: .zi-parse-json [[[
 # Retrievies the ice-list from given profile from the JSON of the package.json.
+#
+# Provenance: this began as `@str-parse-json' in z-shell/zsh-string-lib and is
+# now a maintained fork, not a mirror of it. Known divergences, all deliberate:
+# `___pair_map' omits the `('/`)' pair, which JSON never uses; the key lookup
+# selects the smallest object declaring the key instead of one that opens with
+# it; and string bodies are unescaped as they are captured. Do not swap in the
+# library copy without re-running tests/package-manifest-parsing.zsh, which
+# fails against it.
 .zi-parse-json() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent

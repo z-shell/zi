@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/z-shell/zi/main/contracts/package-manifest-v1.json",
+  "title": "Zi package manifest, version 1",
+  "description": "Shape of package.json for a Zi package. Zi reads only the zsh-data object; every other member is metadata for humans and registries. Rules that span zsh-data members, such as an is-snippet profile requiring plugin-info.url, are not expressible here and are enforced by scripts/validate-package-manifest.py.",
+  "type": "object",
+  "required": ["name", "zsh-data"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "homepage": { "type": "string" },
+    "license": { "type": "string" },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+    "bugs": { "type": "object" },
+    "author": {},
+    "version": {
+      "description": "Registry metadata only. Zi never reads it. Prefer omitting it: where it exists today it duplicates an upstream version that nothing updates.",
+      "type": "string"
+    },
+    "zsh-data": { "$ref": "#/$defs/zshData" }
+  },
+  "$defs": {
+    "zshData": {
+      "type": "object",
+      "required": ["plugin-info", "zi-ices"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "description": "Version of this contract the manifest targets.",
+          "type": "integer",
+          "const": 1
+        },
+        "plugin-info": { "$ref": "#/$defs/pluginInfo" },
+        "zi-ices": { "$ref": "#/$defs/ziIces" }
+      }
+    },
+    "pluginInfo": {
+      "description": "The five fields Zi reads are user, plugin, url, message and requires. Which identity fields apply depends on the source mode each profile declares.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user": {
+          "description": "GitHub owner. Used when a profile declares git or from.",
+          "type": "string",
+          "minLength": 1
+        },
+        "plugin": {
+          "description": "GitHub repository name. Used when a profile declares git or from.",
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "description": "Direct download URL, used when a profile declares is-snippet. Evaluated by the shell, so it may contain Zsh parameter expansion such as ${(M)OSTYPE#(linux|darwin)}. It is not an inert string.",
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "description": "Shown to the user before the package installs.",
+          "type": "string"
+        },
+        "requires": {
+          "description": "Semicolon-separated tokens. bgn, dl and rdl name annex capabilities; any other token names a command that must be present.",
+          "type": "string",
+          "pattern": "^[^;]+(;[^;]+)*$"
+        }
+      }
+    },
+    "ziIces": {
+      "description": "One entry per installation profile. `default` is what `zi pack` selects when no profile is named, so it is mandatory. Other names are free-form.",
+      "type": "object",
+      "required": ["default"],
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/profile" }
+    },
+    "profile": {
+      "description": "An ice-list. Values are shell strings, so JSON numbers and booleans are not permitted even where they would parse. Exactly one source mode must be declared: is-snippet selects plugin-info.url, git or from selects plugin-info.user and plugin. Declaring none falls through to an npm _from tarball path that no manifest populates, which downloads an empty URL.",
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "oneOf": [
+        {
+          "required": ["is-snippet"],
+          "not": {
+            "anyOf": [{ "required": ["git"] }, { "required": ["from"] }]
+          }
+        },
+        {
+          "required": ["git"],
+          "not": {
+            "anyOf": [{ "required": ["is-snippet"] }, { "required": ["from"] }]
+          }
+        },
+        {
+          "required": ["from"],
+          "not": {
+            "anyOf": [{ "required": ["is-snippet"] }, { "required": ["git"] }]
+          }
+        }
+      ]
+    }
+  }
+}

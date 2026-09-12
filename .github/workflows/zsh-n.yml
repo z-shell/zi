@@ -9,6 +9,8 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "contracts/package-manifest-v1.json"
+      - "scripts/validate-package-manifest.py"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
       - "tests/archive-extraction.zsh"
@@ -18,6 +20,7 @@ on:
       - "tests/hook-ownership.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
+      - "tests/package-manifest-contract.zsh"
       - "tests/package-manifest-parsing.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
@@ -39,6 +42,8 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "contracts/package-manifest-v1.json"
+      - "scripts/validate-package-manifest.py"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
       - "tests/archive-extraction.zsh"
@@ -48,6 +53,7 @@ on:
       - "tests/hook-ownership.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
+      - "tests/package-manifest-contract.zsh"
       - "tests/package-manifest-parsing.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
@@ -144,6 +150,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
+
+  package-manifest-contract:
+    name: Package manifest contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test the package manifest contract
+        run: zsh -f tests/package-manifest-contract.zsh
 
   package-manifest-parsing:
     name: Package manifest parsing

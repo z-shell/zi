@@ -6,8 +6,43 @@
 
 builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col-error]}ERROR:%f%b Couldn't find ${ZI[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
+# FUNCTION: .zi-unescape-json-string [[[
+# Translates the escapes of a JSON string body into the characters they denote
+# and returns the result in $REPLY. Handles the eight two-character escapes and
+# \uXXXX in the basic multilingual plane; a surrogate pair or an unrecognized
+# escape is left exactly as written, as is a malformed \u.
+.zi-unescape-json-string() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent
+
+  local ___rest=$1 ___out= ___esc ___tail
+  local -a match mbegin mend
+  local -A ___map=( \" \" \\ \\ / / b $'\b' f $'\f' n $'\n' r $'\r' t $'\t' )
+  integer ___code
+
+  while [[ $___rest = (#b)([^\\]#)\\(?)(*) ]]; do
+    ___out+=$match[1] ___esc=$match[2] ___tail=$match[3]
+    if [[ $___esc == u && $___tail == (#b)([0-9a-fA-F](#c4))(*) ]] {
+      ___code=16#$match[1]
+      ___out+=${(#)___code} ___rest=$match[2]
+    } elif (( ${+___map[$___esc]} )) {
+      ___out+=$___map[$___esc] ___rest=$___tail
+    } else {
+      ___out+="\\$___esc" ___rest=$___tail
+    }
+  done
+  typeset -g REPLY=$___out$___rest
+} # ]]]
 # FUNCTION: .zi-parse-json [[[
 # Retrievies the ice-list from given profile from the JSON of the package.json.
+#
+# Provenance: this began as `@str-parse-json' in z-shell/zsh-string-lib and is
+# now a maintained fork, not a mirror of it. Known divergences, all deliberate:
+# `___pair_map' omits the `('/`)' pair, which JSON never uses; the key lookup
+# selects the smallest object declaring the key instead of one that opens with
+# it; and string bodies are unescaped as they are captured. Do not swap in the
+# library copy without re-running tests/package-manifest-parsing.zsh, which
+# fails against it.
 .zi-parse-json() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent
@@ -56,7 +91,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
       [[ ${match[1]} = \" && $___quoting != \' ]] && \
         if [[ $___quoting = '"' ]]; then
-          ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)___input[___sidx,___idx-1]}"
+          # A JSON string body carries escapes; store what they denote, not the
+          # backslashes, so ices are not later executed with a stray `\'.
+          .zi-unescape-json-string "${___input[___sidx,___idx-1]}"
+          ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)REPLY}"
           ___quoting=""
         else
           ___had_quoted_value=1
@@ -98,8 +136,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     for ___pair_a ( "${___pair_order[@]}" ) {
       ___pair_b="${___final_pairs[$___pair_a]}"
       ___text="${___input[___pair_b,___pair_a]}"
-      if [[ $___text = [[:space:]]#\{[[:space:]]#[\"\']${___key}[\"\']* ]]; then
-        ___found="$___text"
+      # JSON objects are unordered, so the wanted object is the smallest one
+      # that declares the key, not merely one that opens with it.
+      if [[ $___text = [[:space:]]#\{*[\"\']${___key}[\"\'][[:space:]]#:* ]]; then
+        [[ -z $___found || $#___text -lt $#___found ]] && ___found="$___text"
       fi
     }
   }
@@ -113,6 +153,62 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   }
 }
 # ]]]
+# FUNCTION: .zi-read-package-manifest [[[
+# Resolves one profile out of a package manifest. Kept separate from
+# .zi-get-package so the lookup can be exercised without the network, the
+# filesystem and the install path around it.
+#
+# $1 - the manifest text
+# $2 - the wanted profile name
+# $3 - name of a hash to fill with the `plugin-info' fields
+# $4 - name of an array to fill with the available profile names
+# $5 - name of a hash to fill with the selected profile's ices
+#
+# Returns 0 when the profile was found, 1 otherwise. $3 and $4 are filled either
+# way, so a caller can report what the manifest does offer.
+.zi-read-package-manifest() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent
+
+  local ___json=$1 ___profile=$2
+  # Not named ___Strings: .zi-parse-json declares a local by that name, which
+  # would shadow the hash passed to it by name and swallow the result.
+  local -A ___parsed
+  .zi-parse-json "$___json" "plugin-info" ___parsed
+
+  # The members keep the order the manifest wrote them in, so look both slots up
+  # by name instead of assuming the canonical order.
+  local -a ___level1
+  ___level1=( "${(@Q)${(@z)___parsed[1/1]}}" )
+  integer ___info_pos=${___level1[(I)plugin-info]} ___ices_pos=${___level1[(I)zi-ices]}
+  integer ___info_slot=$(( (___info_pos + 1) / 2 )) ___ices_slot=$(( (___ices_pos + 1) / 2 ))
+
+  local -a ___info ___profiles
+  (( ___info_pos )) && ___info=( "${(@Q)${(@z)___parsed[2/$___info_slot]}}" )
+  # set -A, not a ${(PAA)} round trip: ice values contain spaces, and joining
+  # the array into one string to re-split it would tear them apart.
+  builtin set -A "$3" "${___info[@]}"
+
+  local ___ices_members=${___parsed[2/$___ices_slot]}
+  ___profiles=( "${(@Q)${(@z)___ices_members}}" )
+  builtin set -A "$4" "${___profiles[@]:#$'\0'--object--$'\0'}"
+
+  integer ___pos=${___profiles[(I)$___profile]}
+  (( ___pos && ___ices_pos )) || return 1
+
+  # Objects are numbered per level across the whole subtree, so anything nested
+  # in a member written before `zi-ices' shifts the profile bodies. Each such
+  # object leaves an --object-- marker in its own member's string, so counting
+  # those markers gives the exact offset.
+  integer ___preceding=0 ___k
+  for (( ___k = 1; ___k < ___ices_slot; ___k ++ )) {
+    local -a ___members=( "${(@Q)${(@z)___parsed[2/$___k]}}" )
+    ___preceding+=${#${(M)___members[@]:#$'\0'--object--$'\0'}}
+  }
+
+  builtin set -A "$5" "${(@Q)${(@z)___parsed[3/$(( ___preceding + (___pos + 1) / 2 ))]}}"
+  return 0
+} # ]]]
 # FUNCTION: .zi-get-package [[[
 .zi-get-package() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
@@ -143,23 +239,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     return 1
   }
 
-  local -A Strings
-  .zi-parse-json "$pkgjson" "plugin-info" Strings
-  local -A jsondata1
-  jsondata1=( ${(@Q)${(@z)Strings[2/1]}} )
-  local user=${jsondata1[user]} plugin=${jsondata1[plugin]} url=${jsondata1[url]} message=${jsondata1[message]} required=${jsondata1[required]:-${jsondata1[requires]}}
+  local -A jsondata1 profile_ices
   local -a profiles
   local key value
-  integer pos
-  profiles=( ${(@Q)${(@z)Strings[2/2]}} )
-  profiles=( ${profiles[@]:#$'\0'--object--$'\0'} )
-  pos=${${(@Q)${(@z)Strings[2/2]}}[(I)$profile]}
-  if (( pos )) {
-    for key value ( "${(@Q)${(@z)Strings[3/$(( (pos + 1) / 2 ))]}}" ) {
+  integer found=0
+  .zi-read-package-manifest "$pkgjson" "$profile" jsondata1 profiles profile_ices && found=1
+  local user=${jsondata1[user]} plugin=${jsondata1[plugin]} url=${jsondata1[url]} message=${jsondata1[message]} required=${jsondata1[required]:-${jsondata1[requires]}}
+  if (( found )) {
+    for key value ( "${(@kv)profile_ices[@]}" ) {
       (( ${+ICE[$key]} )) && [[ ${ICE[$key]} != +* ]] && continue
       ICE[$key]=$value${ICE[$key]#+}
     }
-    ICE=( "${(kv)ICE[@]//\\\"/\"}" )
     [[ ${ICE[as]} = program ]] && ICE[as]="command"
     [[ -n ${ICE[on-update-of]} ]] && ICE[subscribe]="${ICE[subscribe]:-${ICE[on-update-of]}}"
     [[ -n ${ICE[pick]} ]] && ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"
@@ -170,7 +260,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       eval "ICE[id-as]=\"${ICE[id-as]//(#m)[\"\\]/${map[$MATCH]}}\""
     }
   } else {
-    # Assumption: the default profile is the first in the table (see another color).
     +zi-message "{u-warn}Error{b-warn}:{error} the profile {apo}\`{hi}$profile{apo}\` {error}couldn't be found, aborting. Available profiles are: {lhi}${(pj:$epro_sep:)profiles[@]}{error}.{rst}"
     return 1
   }
@@ -236,8 +325,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   if (( !${+ICE[git]} && !${+ICE[from]} )) {
     (
+      local -A Strings jsondata
       .zi-parse-json "$pkgjson" "_from" Strings
-      local -A jsondata
       jsondata=( "${(@Q)${(@z)Strings[1/1]}}" )
 
       local URL=${jsondata[_resolved]}

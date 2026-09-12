@@ -2970,12 +2970,19 @@ zi() {
               if (( ___retval2 & 2 )) {
                 local -a ___args
                 ___args=( "${(@Q)${(@z)ZI[annex-before-load:new-@]}}" )
+                # (z) yields one empty word for a blank string, which would be
+                # read as a blank object ID. A blank replacement means the hook
+                # consumed the request, so drop the word.
+                [[ -n ${ZI[annex-before-load:new-@]//[[:space:]]/} ]] || ___args=()
                 builtin set -- "${___args[@]}"
               }
               # Override $___ices?
               if (( ___retval2 & 4 )) {
                 local -a ___new_ices
                 ___new_ices=( "${(Q@)${(@z)ZI[annex-before-load:new-global-ices]}}" )
+                # Same blank-word split as above; here it would make an empty
+                # ice-list look like an odd, malformed one.
+                [[ -n ${ZI[annex-before-load:new-global-ices]//[[:space:]]/} ]] || ___new_ices=()
                 (( 0 == ${#___new_ices} % 2 )) && \
                   ___ices=( "${___new_ices[@]}" ) || \
                     { [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] && \

@@ -18,6 +18,7 @@ on:
       - "tests/hook-ownership.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
+      - "tests/package-manifest-parsing.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
       - "tests/plugin-autoload-fpath-scope.zsh"
@@ -47,6 +48,7 @@ on:
       - "tests/hook-ownership.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
+      - "tests/package-manifest-parsing.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
       - "tests/plugin-autoload-fpath-scope.zsh"
@@ -142,6 +144,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
+
+  package-manifest-parsing:
+    name: Package manifest parsing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test package manifest parsing
+        run: zsh -f tests/package-manifest-parsing.zsh
 
   path-resolution:
     name: Path resolution

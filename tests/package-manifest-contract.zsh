@@ -88,4 +88,37 @@ rejects 'no default profile' "no 'default' profile" \
 rejects 'unknown zsh-data member' 'not part of the contract' \
   '{"name":"p","zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}},"extra":{}}}'
 
+# Drift check. The contract is only worth having if it still describes the
+# parser, so derive both sides from source and compare rather than restating
+# either by hand. This fails when .zi-get-package starts or stops reading a
+# plugin-info field, or when a source mode is added or removed, until the
+# contract is updated to match.
+typeset resolver="${project_root}/lib/zsh/install.zsh"
+[[ -r $resolver ]] || fail "resolver missing at ${resolver}"
+
+typeset -a code_reads schema_reads
+code_reads=( ${(f)"$(command grep -o 'jsondata1\[[a-z-]*\]' $resolver | command sed 's/jsondata1\[//; s/\]//' | command sort -u)"} )
+schema_reads=( ${(f)"$(command python3 -c '
+import json, sys
+schema = json.load(open(sys.argv[1]))
+print("\n".join(sorted(schema["$defs"]["pluginInfo"]["properties"])))' "$schema")"} )
+
+# Zi also honours the legacy `required` spelling as a fallback for `requires`.
+# The contract permits only `requires`, so `required` is expected in the code
+# and deliberately absent from the schema.
+typeset -a expected=( ${(o)schema_reads} required )
+expected=( ${(o)expected} )
+[[ "${code_reads[*]}" == "${expected[*]}" ]] || fail \
+  "plugin-info drift: .zi-get-package reads (${code_reads[*]}), contract plus the legacy spelling is (${expected[*]})"
+
+typeset -a code_modes schema_modes
+code_modes=( ${(f)"$(command grep -o 'ICE\[\(is-snippet\|git\|from\)\]' $resolver | command sed 's/ICE\[//; s/\]//' | command sort -u)"} )
+schema_modes=( ${(f)"$(command python3 -c '
+import json, sys
+schema = json.load(open(sys.argv[1]))
+modes = [b["required"][0] for b in schema["$defs"]["profile"]["oneOf"]]
+print("\n".join(sorted(modes)))' "$schema")"} )
+[[ "${(o)code_modes[*]}" == "${(o)schema_modes[*]}" ]] || fail \
+  "source-mode drift: resolver branches on (${code_modes[*]}), contract declares (${schema_modes[*]})"
+
 builtin print -r -- "ok - package manifests validate against contracts/package-manifest-v1.json"

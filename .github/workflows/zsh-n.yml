@@ -401,3 +401,5 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test snippet directory mirror
         run: zsh -f tests/snippet-directory-mirror.zsh
+      - name: Test snippet update status
+        run: zsh -f tests/snippet-update-status.zsh

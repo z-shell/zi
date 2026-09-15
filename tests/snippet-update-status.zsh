@@ -1,4 +1,6 @@
 #!/usr/bin/env zsh
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 # Verify public snippet updates without network access or caller state.
 builtin emulate -R zsh
 setopt pipe_fail
@@ -27,6 +29,18 @@ zi update "$HOME/snippet.zsh" >/dev/null 2>&1
 integer update_rc=$?
 (( update_rc == 17 )) || {
   print -u2 -r -- "not ok - failed update returned $update_rc instead of 17"
+  exit 1
+}
+
+@zi-unregister-annex test-update hook:atpull-90
+_test_pre_failure() { return 23; }
+zi ice atpull'!:'
+zi snippet "$HOME/snippet.zsh" >/dev/null 2>&1 || exit 1
+@zi-register-annex test-pre 'hook:!atpull-90' _test_pre_failure ''
+zi update "$HOME/snippet.zsh" >/dev/null 2>&1
+update_rc=$?
+(( update_rc == 23 )) || {
+  print -u2 -r -- "not ok - failed local-file pre-update hook returned $update_rc instead of 23"
   exit 1
 }
 print -r -- 'ok - snippet updates return success and preserve failure after later successful hooks'

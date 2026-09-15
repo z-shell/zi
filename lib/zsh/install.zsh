@@ -1181,149 +1181,152 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       # pre-update hook reports its status through this file instead.
       local hook_rc_file
       hook_rc_file=$(command mktemp "${TMPDIR:-/tmp}/zi-snippet-hook.XXXXXXXX") || return 4
-      (
-        () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir"; } || return 4
-        local mirror_name=Subversion
-        [[ $url = http(|s)://github.com/* ]] && mirror_name="Git sparse checkout"
-        (( !OPTS[opt_-q,--quiet] )) && \
-        +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with $mirror_name{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
+      {
+        (
+          () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir"; } || return 4
+          local mirror_name=Subversion
+          [[ $url = http(|s)://github.com/* ]] && mirror_name="Git sparse checkout"
+          (( !OPTS[opt_-q,--quiet] )) && \
+          +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with $mirror_name{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
 
-        if (( ${+ICE[svn]} )) {
-          if [[ $update = -u ]] {
-            # Test if update available
-            .zi-mirror-directory "$url" "-t" "$dirname"
-            integer mirror_rc=$?
-            if (( mirror_rc == 1 )); then
-              if (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) {
-                ZI[annex-multi-flag:pull-active]=1
-              } else { return 0; }
-              # Will return when no updates so atpull'' code below doesn't need any checks.
-              # This return 0 statement also sets the pull-active flag outside this subshell.
-            elif (( mirror_rc == 0 )); then
-              ZI[annex-multi-flag:pull-active]=2
-            else
-              return 4
-            fi
-            # Run annexes' atpull hooks (the before atpull-ice ones). The SVN block.
-            reply=(
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
-              ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
-            )
-            for key in "${reply[@]}"; do
-              arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-              "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:svn
-              hook_rc=$?
-              [[ "$hook_rc" -ne 0 ]] && {
-                builtin print -r -- "$hook_rc" >! "$hook_rc_file"
-                builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-              }
-            done
-
-            if (( ZI[annex-multi-flag:pull-active] == 2 )) {
-              # Do the update
-              # The condition is reversed on purpose – to show only the messages on an actual update
-              if (( OPTS[opt_-q,--quiet] )); then
-                local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
-                +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
-                +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with $mirror_name{rst}){…}"
-              fi
-              .zi-mirror-directory "$url" "-u" "$dirname" || return 4
-            }
-          } else {
-            .zi-mirror-directory "$url" "" "$dirname" || return 4
-          }
-
-          # Redundant code, just to compile a directory snippet.
-          if [[ ${ICE[as]} != command ]]; then
-            if [[ -n ${ICE[pick]} ]]; then
-              list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )
-            elif [[ -z ${ICE[pick]} ]]; then
-              list=(
-                $local_dir/$dirname/*.plugin.zsh(DN) $local_dir/$dirname/*.zsh-theme(DN) $local_dir/$dirname/init.zsh(DN)
-                $local_dir/$dirname/*.zsh(DN) $local_dir/$dirname/*.sh(DN) $local_dir/$dirname/.zshrc(DN)
-              )
-            fi
-            if [[ -e ${list[1]} && ${list[1]} != */dev/null && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && ${+ICE[nocompile]} -eq 0 ]] {
-              () {
-                builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
-                zcompile -U "${list[1]}" &>/dev/null || \
-                  +zi-message "{error}Warning{ehi}:{rst} Couldn't compile {apo}\`{file}${list[1]}{rst}'"
-              }
-            }
-          fi
-
-          return $ZI[annex-multi-flag:pull-active]
-        } else {
-          command mkdir -p "$local_dir/$dirname"
-
-          if (( !OPTS[opt_-f,--force] )) {
-            .zi-get-url-mtime "$url"
-          } else {
-            REPLY=$EPOCHSECONDS
-          }
-
-          # Returned is: modification time of the remote file.
-          # Thus, EPOCHSECONDS - REPLY is: allowed window for the
-          # local file to be modified in. ms-$secs is: files accessed
-          # within last $secs seconds. Thus, if there's no match, the
-          # local file is out of date.
-
-          local secs=$(( EPOCHSECONDS - REPLY ))
-          # Guard so that it's positive
-          (( $secs >= 0 )) || secs=0
-          integer skip_dl
-          local -a matched
-          matched=( $local_dir/$dirname/$filename(DNms-$secs) )
-          if (( ${#matched} )) {
-            +zi-message "{info}Already up to date.{rst}"
-            # Empty-update return-short path – it also decides the
-            # pull-active flag after the return from this sub-shell
-            (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) && skip_dl=1 || return 0
-          }
-          if [[ ! -f $local_dir/$dirname/$filename ]] {
-            ZI[annex-multi-flag:pull-active]=2
-          } else {
-            # secs > 1 → the file is outdated, then:
-            #   - if true, then the mode is 2 minus run-atpull-activation,
-            #   - if false, then mode is 3 → a forced download (no remote mtime found).
-            ZI[annex-multi-flag:pull-active]=$(( secs > 1 ? (2 - skip_dl) : 3 ))
-          }
-
-          # Run annexes' atpull hooks (the before atpull-ice ones).
-          # The URL-snippet block.
-          if [[ $update = -u && $ZI[annex-multi-flag:pull-active] -ge 1 ]] {
-            reply=(
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
-              ${${ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
-            )
-            for key in "${reply[@]}"; do
-              arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-              "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:url
-              hook_rc="$?"
-              [[ "$hook_rc" -ne 0 ]] && {
-                builtin print -r -- "$hook_rc" >! "$hook_rc_file"
-                builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-              }
-            done
-          }
-
-          if (( !skip_dl )) {
-            if { ! .zi-download-file-stdout "$url" 0 1 >! "$dirname/$filename" } {
-              if { ! .zi-download-file-stdout "$url" 1 1 >! "$dirname/$filename" } {
-                command rm -f "$dirname/$filename"
-                +zi-message "{error}Error{ehi}:{rst} Download failed{…}"
+          if (( ${+ICE[svn]} )) {
+            if [[ $update = -u ]] {
+              # Test if update available
+              .zi-mirror-directory "$url" "-t" "$dirname"
+              integer mirror_rc=$?
+              if (( mirror_rc == 1 )); then
+                if (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) {
+                  ZI[annex-multi-flag:pull-active]=1
+                } else { return 0; }
+                # Will return when no updates so atpull'' code below doesn't need any checks.
+                # This return 0 statement also sets the pull-active flag outside this subshell.
+              elif (( mirror_rc == 0 )); then
+                ZI[annex-multi-flag:pull-active]=2
+              else
                 return 4
+              fi
+              # Run annexes' atpull hooks (the before atpull-ice ones). The SVN block.
+              reply=(
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+                ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
+              )
+              for key in "${reply[@]}"; do
+                arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+                "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:svn
+                hook_rc=$?
+                [[ "$hook_rc" -ne 0 ]] && {
+                  builtin print -r -- "$hook_rc" >! "$hook_rc_file"
+                  builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+                }
+              done
+
+              if (( ZI[annex-multi-flag:pull-active] == 2 )) {
+                # Do the update
+                # The condition is reversed on purpose – to show only the messages on an actual update
+                if (( OPTS[opt_-q,--quiet] )); then
+                  local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
+                  +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
+                  +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with $mirror_name{rst}){…}"
+                fi
+                .zi-mirror-directory "$url" "-u" "$dirname" || return 4
+              }
+            } else {
+              .zi-mirror-directory "$url" "" "$dirname" || return 4
+            }
+
+            # Redundant code, just to compile a directory snippet.
+            if [[ ${ICE[as]} != command ]]; then
+              if [[ -n ${ICE[pick]} ]]; then
+                list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )
+              elif [[ -z ${ICE[pick]} ]]; then
+                list=(
+                  $local_dir/$dirname/*.plugin.zsh(DN) $local_dir/$dirname/*.zsh-theme(DN) $local_dir/$dirname/init.zsh(DN)
+                  $local_dir/$dirname/*.zsh(DN) $local_dir/$dirname/*.sh(DN) $local_dir/$dirname/.zshrc(DN)
+                )
+              fi
+              if [[ -e ${list[1]} && ${list[1]} != */dev/null && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && ${+ICE[nocompile]} -eq 0 ]] {
+                () {
+                  builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
+                  zcompile -U "${list[1]}" &>/dev/null || \
+                    +zi-message "{error}Warning{ehi}:{rst} Couldn't compile {apo}\`{file}${list[1]}{rst}'"
+                }
+              }
+            fi
+
+            return $ZI[annex-multi-flag:pull-active]
+          } else {
+            command mkdir -p "$local_dir/$dirname"
+
+            if (( !OPTS[opt_-f,--force] )) {
+              .zi-get-url-mtime "$url"
+            } else {
+              REPLY=$EPOCHSECONDS
+            }
+
+            # Returned is: modification time of the remote file.
+            # Thus, EPOCHSECONDS - REPLY is: allowed window for the
+            # local file to be modified in. ms-$secs is: files accessed
+            # within last $secs seconds. Thus, if there's no match, the
+            # local file is out of date.
+
+            local secs=$(( EPOCHSECONDS - REPLY ))
+            # Guard so that it's positive
+            (( $secs >= 0 )) || secs=0
+            integer skip_dl
+            local -a matched
+            matched=( $local_dir/$dirname/$filename(DNms-$secs) )
+            if (( ${#matched} )) {
+              +zi-message "{info}Already up to date.{rst}"
+              # Empty-update return-short path – it also decides the
+              # pull-active flag after the return from this sub-shell
+              (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) && skip_dl=1 || return 0
+            }
+            if [[ ! -f $local_dir/$dirname/$filename ]] {
+              ZI[annex-multi-flag:pull-active]=2
+            } else {
+              # secs > 1 → the file is outdated, then:
+              #   - if true, then the mode is 2 minus run-atpull-activation,
+              #   - if false, then mode is 3 → a forced download (no remote mtime found).
+              ZI[annex-multi-flag:pull-active]=$(( secs > 1 ? (2 - skip_dl) : 3 ))
+            }
+
+            # Run annexes' atpull hooks (the before atpull-ice ones).
+            # The URL-snippet block.
+            if [[ $update = -u && $ZI[annex-multi-flag:pull-active] -ge 1 ]] {
+              reply=(
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+                ${${ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
+              )
+              for key in "${reply[@]}"; do
+                arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+                "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:url
+                hook_rc="$?"
+                [[ "$hook_rc" -ne 0 ]] && {
+                  builtin print -r -- "$hook_rc" >! "$hook_rc_file"
+                  builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+                }
+              done
+            }
+
+            if (( !skip_dl )) {
+              if { ! .zi-download-file-stdout "$url" 0 1 >! "$dirname/$filename" } {
+                if { ! .zi-download-file-stdout "$url" 1 1 >! "$dirname/$filename" } {
+                  command rm -f "$dirname/$filename"
+                  +zi-message "{error}Error{ehi}:{rst} Download failed{…}"
+                  return 4
+                }
               }
             }
+            return $ZI[annex-multi-flag:pull-active]
           }
-          return $ZI[annex-multi-flag:pull-active]
-        }
-      )
-      retval=$?
-      [[ -s $hook_rc_file ]] && update_hook_rc=$(<"$hook_rc_file")
-      command rm -f -- "$hook_rc_file"
+        )
+        retval=$?
+        [[ -s $hook_rc_file ]] && update_hook_rc=$(<"$hook_rc_file")
+      } always {
+        command rm -f -- "$hook_rc_file"
+      }
 
       # Overestimate the pull-level to 2 also in error situations
       # – no hooks will be run anyway because of the error

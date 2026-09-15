@@ -43,4 +43,52 @@ update_rc=$?
   print -u2 -r -- "not ok - failed local-file pre-update hook returned $update_rc instead of 23"
   exit 1
 }
+
+# URL and SVN snippets run their pre-update hooks in a nested download
+# subshell; stub the network helpers so those branches run offline.
+.zi-download-file-stdout() { print -r -- 'typeset -g SNIPPET_TEST_VALUE=2'; }
+.zi-get-url-mtime() { REPLY=$EPOCHSECONDS; }
+.zi-mirror-directory() {
+  command mkdir -p -- "$3" && print -r -- 'typeset -g SNIPPET_DIR_VALUE=1' > "$3/dir.plugin.zsh"
+}
+typeset url_snippet=https://example.invalid/snippet.zsh svn_snippet=https://example.invalid/dir
+zi ice atpull'!:'
+zi snippet "$url_snippet" >/dev/null 2>&1 || exit 1
+zi ice svn atpull'!:'
+zi snippet "$svn_snippet" >/dev/null 2>&1 || exit 1
+@zi-unregister-annex test-pre 'hook:!atpull-90'
+zi update "$url_snippet" >/dev/null 2>&1 || {
+  print -u2 -r -- 'not ok - successful URL snippet update returned failure'
+  exit 1
+}
+zi update "$svn_snippet" >/dev/null 2>&1 || {
+  print -u2 -r -- 'not ok - successful SVN snippet update returned failure'
+  exit 1
+}
+@zi-register-annex test-pre 'hook:!atpull-90' _test_pre_failure ''
+zi update "$url_snippet" >/dev/null 2>&1
+update_rc=$?
+(( update_rc == 23 )) || {
+  print -u2 -r -- "not ok - failed URL pre-update hook returned $update_rc instead of 23"
+  exit 1
+}
+zi update "$svn_snippet" >/dev/null 2>&1
+update_rc=$?
+(( update_rc == 23 )) || {
+  print -u2 -r -- "not ok - failed SVN pre-update hook returned $update_rc instead of 23"
+  exit 1
+}
+@zi-unregister-annex test-pre 'hook:!atpull-90'
+.zi-download-file-stdout() { return 1; }
+zi update "$url_snippet" >/dev/null 2>&1
+update_rc=$?
+(( update_rc == 4 )) || {
+  print -u2 -r -- "not ok - failed URL download returned $update_rc instead of 4"
+  exit 1
+}
+typeset -a leftover=( "$TMPDIR"/zi-snippet-hook.*(N) )
+(( ${#leftover} == 0 )) || {
+  print -u2 -r -- "not ok - hook status files were left behind: $leftover"
+  exit 1
+}
 print -r -- 'ok - snippet updates return success and preserve failure after later successful hooks'

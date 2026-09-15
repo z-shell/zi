@@ -1177,6 +1177,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   (
     if [[ $url = (http|https|ftp|ftps|scp)://* ]] {
       # URL
+      # The nested subshell returns the pull-active flag, so a failing
+      # pre-update hook reports its status through this file instead.
+      local hook_rc_file
+      hook_rc_file=$(command mktemp "${TMPDIR:-/tmp}/zi-snippet-hook.XXXXXXXX") || return 4
       (
         () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir"; } || return 4
         local mirror_name=Subversion
@@ -1211,7 +1215,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
               "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:svn
               hook_rc=$?
               [[ "$hook_rc" -ne 0 ]] && {
-                retval="$hook_rc"
+                builtin print -r -- "$hook_rc" >! "$hook_rc_file"
                 builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
               }
             done
@@ -1299,7 +1303,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
               "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:url
               hook_rc="$?"
               [[ "$hook_rc" -ne 0 ]] && {
-                retval="$hook_rc"
+                builtin print -r -- "$hook_rc" >! "$hook_rc_file"
                 builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
               }
             done
@@ -1318,6 +1322,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         }
       )
       retval=$?
+      [[ -s $hook_rc_file ]] && update_hook_rc=$(<"$hook_rc_file")
+      command rm -f -- "$hook_rc_file"
 
       # Overestimate the pull-level to 2 also in error situations
       # – no hooks will be run anyway because of the error

@@ -33,6 +33,7 @@ on:
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/snippet-update-status.zsh"
       - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
       - "tests/unload-hook-dispatch.zsh"
@@ -66,6 +67,7 @@ on:
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/snippet-update-status.zsh"
       - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
       - "tests/unload-hook-dispatch.zsh"
@@ -401,3 +403,5 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test snippet directory mirror
         run: zsh -f tests/snippet-directory-mirror.zsh
+      - name: Test snippet update status
+        run: zsh -f tests/snippet-update-status.zsh

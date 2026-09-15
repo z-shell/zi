@@ -1121,7 +1121,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   trap "command rmdir ${(qqq)local_dir}/${(qqq)dirname} 2>/dev/null; return 1;" INT TERM QUIT HUP
 
   local -a list arr
-  integer retval=0 hook_rc=0
+  integer retval=0 hook_rc=0 update_hook_rc=0
   local teleid_clean=${ICE[teleid]%%\?*}
   [[ $teleid_clean == *://* ]] && \
     local sname=${(M)teleid_clean##*://[^/]##(/[^/]##)(#c0,4)} || \
@@ -1357,7 +1357,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:file
           hook_rc="$?"
           [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
+            update_hook_rc="$hook_rc"
             builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
           }
         done
@@ -1431,7 +1431,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
         hook_rc=$?
         [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
+          update_hook_rc="$hook_rc"
           builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
         }
       done
@@ -1473,7 +1473,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
           hook_rc=$?
           [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
+            update_hook_rc="$hook_rc"
             builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
           }
         done
@@ -1490,11 +1490,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:$ZI[annex-multi-flag:pull-active]
         hook_rc=$?
         [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
+          update_hook_rc="$hook_rc"
           builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
         }
       done
     }
+    return $update_hook_rc
   ) || return $?
   typeset -ga INSTALLED_EXECS
   { INSTALLED_EXECS=( "${(@f)$(<${TMPDIR:-/tmp}/zi-execs.$$.lst)}" ) } 2>/dev/null

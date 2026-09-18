@@ -24,7 +24,8 @@
 #
 # Exit codes:
 #   0  every step behaved as asserted
-#   1  a step failed; the failing step's log path is printed
+#   1  a step failed; the last 20 lines of that step's log are printed before
+#      the temporary home and logs are removed
 #   2  usage error
 
 emulate -LR zsh
@@ -96,7 +97,8 @@ step scheduler-burst 0 @zi-scheduler burst
 
 tasks_before=$#ZI_TASKS
 step pack-service-first-install 0 zi pack for @github-issues-srv
-(( ${ZI_TASKS[(I)* p1 *]} )) || fail "pack-service-first-install: no service task queued (#529)" pack-service-first-install
+(( $#ZI_TASKS == tasks_before + 1 )) || fail "pack-service-first-install: expected exactly one new task, got $(( $#ZI_TASKS - tasks_before )) (#529)" pack-service-first-install
+[[ ${ZI_TASKS[-1]} == *" p1 "*" github-issues-srv"* ]] || fail "pack-service-first-install: the new task is not a p1 service task for this package: ${ZI_TASKS[-1]}" pack-service-first-install
 [[ -e ${ZI[PLUGINS_DIR]}/github-issues-srv/._zi/service ]] || fail "pack-service-first-install: service disk ice not stored" pack-service-first-install
 
 step pack-install 0 zi pack for @github-issues

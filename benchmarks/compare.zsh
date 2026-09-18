@@ -50,6 +50,13 @@ typeset -a control_args
 jq -n --slurpfile b "$baseline" --slurpfile c "$candidate" "${control_args[@]}" \
    --argjson mt "$median_threshold" --argjson pt "$p95_threshold" '
   def pct(a; b): if a == null or b == null or b == 0 then null else ((a - b) * 100 / b) end;
+  ($b[0]) as $B | ($c[0]) as $C | ($control[0]) as $K |
+  ($B.environment.zsh_version == $C.environment.zsh_version
+   and $B.environment.architecture == $C.environment.architecture
+   and $B.workload.samples == $C.workload.samples
+   and $B.workload.warmups == $C.workload.warmups) as $comparable |
+  # Flags are meaningful only between comparable reports; otherwise every
+  # flag is null and the summary says why.
   def row(base; cand):
     if (base.failure? // null) != null or (cand.failure? // null) != null then
       {failure: {baseline: (base.failure? // null), candidate: (cand.failure? // null)}}
@@ -57,15 +64,14 @@ jq -n --slurpfile b "$baseline" --slurpfile c "$candidate" "${control_args[@]}" 
       {results: {baseline: base, candidate: cand},
        change: {median_delta_ms: (cand.median - base.median), median_delta_percent: pct(cand.median; base.median),
                 p95_delta_ms: (cand.p95 - base.p95), p95_delta_percent: pct(cand.p95; base.p95)}}
-      | .flag = ((.change.median_delta_percent > $mt) or (.change.p95_delta_percent > $pt))
+      | .flag = (if $comparable then ((.change.median_delta_percent > $mt) or (.change.p95_delta_percent > $pt)) else null end)
     end;
-  ($b[0]) as $B | ($c[0]) as $C | ($control[0]) as $K |
   {schema_version: 1,
    captured_at: (now | todate),
-   thresholds: {median_percent: $mt, p95_percent: $pt, policy: "flag for review, never fail on timing"},
+   thresholds: {median_percent: $mt, p95_percent: $pt, policy: "flag for review, never fail on timing; flags are null when the reports are not comparable"},
    baseline: {label: $B.label, source_revision: $B.source_revision, environment: $B.environment, workload: $B.workload},
    candidate: {label: $C.label, source_revision: $C.source_revision, environment: $C.environment, workload: $C.workload},
-   comparable: ($B.environment.zsh_version == $C.environment.zsh_version and $B.environment.architecture == $C.environment.architecture and $B.workload.samples == $C.workload.samples),
+   comparable: $comparable,
    health: {baseline: $B.health, candidate: $C.health},
    cases: ($B.cases | keys | map(. as $k | {($k): row($B.cases[$k]; $C.cases[$k])}) | add),
    control: (if $K == null then null else ($B.cases | keys | map(. as $k | {($k): row($B.cases[$k]; $K.cases[$k])}) | add) end)}
@@ -78,7 +84,7 @@ if [[ -n $markdown ]]; then
   {
     print -r -- "## Zi benchmark: candidate versus baseline"
     print
-    print -r -- "Baseline \`$(jq -r .baseline.source_revision "$output" | cut -c1-7)\` ($(jq -r .baseline.label "$output")) versus candidate \`$(jq -r .candidate.source_revision "$output" | cut -c1-7)\` ($(jq -r .candidate.label "$output")); $(jq -r .baseline.workload.samples "$output") samples after $(jq -r .baseline.workload.warmups "$output") warmups; $(jq -r .candidate.environment.zsh_version "$output") on $(jq -r .candidate.environment.cpu "$output"). Comparable: $(jq -r .comparable "$output"). Flags mark a median regression over $(jq -r .thresholds.median_percent "$output")% or a p95 regression over $(jq -r .thresholds.p95_percent "$output")%; they never fail the job."
+    print -r -- "Baseline \`$(jq -r .baseline.source_revision "$output" | cut -c1-7)\` ($(jq -r .baseline.label "$output")) versus candidate \`$(jq -r .candidate.source_revision "$output" | cut -c1-7)\` ($(jq -r .candidate.label "$output")); $(jq -r .baseline.workload.samples "$output") samples after $(jq -r .baseline.workload.warmups "$output") warmups; $(jq -r .candidate.environment.zsh_version "$output") on $(jq -r .candidate.environment.cpu "$output"). Comparable: $(jq -r .comparable "$output"). Flags mark a median regression over $(jq -r .thresholds.median_percent "$output")% or a p95 regression over $(jq -r .thresholds.p95_percent "$output")%; they never fail the job.$( [[ $(jq -r .comparable "$output") == true ]] || print -n " The reports are not comparable (Zsh version, architecture, sample or warmup counts differ), so no case is flagged." )"
     print
     print -r -- "| Case | Baseline median / p95 ms | Candidate median / p95 ms | Median delta | p95 delta | A/A control median delta |"
     print -r -- "| --- | --- | --- | --- | --- | --- |"

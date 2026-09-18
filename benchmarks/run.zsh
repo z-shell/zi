@@ -2,16 +2,19 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
-# run.zsh -- measure one Zi checkout on deterministic, network-free workloads.
+# run.zsh -- measure Zi checkouts on deterministic, network-free workloads.
 #
 # Every sample starts a fresh `zsh -f` with an isolated home, so nothing leaks
-# between samples or variants. Cases run in a balanced order (each round walks
-# the case list forwards, the next round backwards) to reduce time-dependent
-# bias. Output is one JSON document per run; compare.zsh joins two of them.
+# between samples or variants. Several variants (for example baseline,
+# candidate, and a second baseline as the A/A control) are measured in the
+# same invocation: within a round the variants alternate, and their order
+# reverses on every round, so runner load, cache, and thermal drift are not
+# correlated with a variant. Cases rotate in a balanced order across rounds.
+# Output is one JSON document per variant; compare.zsh joins two of them.
 #
 # Usage:
-#   zsh benchmarks/run.zsh --checkout DIR --output FILE [--warmups N] [--samples N]
-#                          [--case NAME]... [--label TEXT]
+#   zsh benchmarks/run.zsh --variant LABEL=DIR [--variant LABEL=DIR]... --output-dir DIR
+#                          [--warmups N] [--samples N] [--case NAME]...
 #
 # Requires: zsh with zsh/datetime, jq.
 #
@@ -24,29 +27,36 @@
 emulate -LR zsh
 setopt extended_glob pipe_fail no_unset
 
-typeset checkout='' output='' label=''
+typeset output_dir=''
 integer warmups=5 samples=30
-typeset -a wanted
+typeset -a wanted labels
+typeset -A dirs
 typeset -a all_cases
-all_cases=( source-cold source-warm light-load-10 load-10 turbo-10 ice-200 manifest-21 unload-10 )
+all_cases=( source-fresh-home source-reused-home light-load-10 load-10 turbo-10 ice-200 manifest-21 unload-10 )
 
-usage() { print -r -- "usage: ${0:t} --checkout DIR --output FILE [--warmups N] [--samples N] [--case NAME]... [--label TEXT]"; }
+usage() { print -r -- "usage: ${0:t} --variant LABEL=DIR [--variant LABEL=DIR]... --output-dir DIR [--warmups N] [--samples N] [--case NAME]..."; }
 die() { print -u2 -r -- "run.zsh: $1"; exit ${2:-2}; }
 
 while (( $# )); do
   case "$1" in
-    --checkout) [[ -n ${2-} ]] || die "--checkout needs a value"; checkout=${2:A}; shift 2 ;;
-    --output)   [[ -n ${2-} ]] || die "--output needs a value"; output=$2; shift 2 ;;
+    --variant)
+      [[ ${2-} == ?*=?* ]] || die "--variant needs LABEL=DIR"
+      [[ ${2%%=*} == [[:alnum:]_-]## ]] || die "variant label must be alphanumeric: ${2%%=*}"
+      (( ${+dirs[${2%%=*}]} )) && die "duplicate variant label: ${2%%=*}"
+      labels+=( "${2%%=*}" ); dirs[${2%%=*}]=${${2#*=}:A}; shift 2 ;;
+    --output-dir) [[ -n ${2-} ]] || die "--output-dir needs a value"; output_dir=$2; shift 2 ;;
     --warmups)  [[ ${2-} == <-> ]] || die "--warmups needs an integer"; warmups=$2; shift 2 ;;
     --samples)  [[ ${2-} == <-> && ${2-} -ge 2 ]] || die "--samples needs an integer of at least 2"; samples=$2; shift 2 ;;
     --case)     [[ -n ${2-} ]] || die "--case needs a value"; wanted+=( "$2" ); shift 2 ;;
-    --label)    label=${2-}; shift 2 ;;
     --help|-h)  usage; exit 0 ;;
     *) usage >&2; die "unknown argument: $1" ;;
   esac
 done
-[[ -n $checkout && -r $checkout/zi.zsh ]] || die "--checkout must name a Zi checkout"
-[[ -n $output ]] || die "--output is required"
+(( $#labels )) || die "at least one --variant LABEL=DIR is required"
+typeset label
+for label in "${labels[@]}"; do [[ -r ${dirs[$label]}/zi.zsh ]] || die "variant ${label}: no zi.zsh under ${dirs[$label]}"; done
+[[ -n $output_dir ]] || die "--output-dir is required"
+command mkdir -p -- "$output_dir" || die "could not create $output_dir"
 (( $+commands[jq] )) || die "required command not found: jq"
 zmodload zsh/datetime || die "zsh/datetime is required"
 
@@ -60,60 +70,79 @@ fi
 
 typeset here=${0:A:h} fixtures=${0:A:h}/fixtures manifests=${0:A:h:h}/tests/fixtures/package-manifests
 [[ -d $manifests ]] || die "vendored manifests not found at $manifests"
+# The manifest workload is only comparable to earlier results when it reads
+# exactly the declared inventory, so the case asserts this count.
+integer manifest_count
+manifest_count=$(grep -c . "$manifests/repositories.txt") || die "could not read $manifests/repositories.txt"
 
-# Warm cache root: the source-warm case reuses compiled files across samples.
 typeset work
 work=$(command mktemp -d "${TMPDIR:-/tmp}/zi-benchmark.XXXXXXXX") || die "could not create a work directory"
 trap 'command rm -rf -- "$work"' EXIT INT TERM
-command mkdir -p -- "$work/warm"
+# The reused-home case keeps one home per variant across samples; every
+# other case gets a fresh one.
+for label in "${labels[@]}"; do command mkdir -p -- "$work/reused-$label"; done
 
-# one_sample <case>: prints elapsed milliseconds, or "fail <reason>".
+# one_sample <variant> <case>: prints elapsed milliseconds, or "fail <reason>".
 one_sample() {
-  local case=$1 home
-  if [[ $case == source-warm ]]; then home=$work/warm; else home=$(command mktemp -d "$work/s.XXXXXXXX"); fi
+  local label=$1 case=$2 home
+  if [[ $case == source-reused-home ]]; then home=$work/reused-$label; else home=$(command mktemp -d "$work/s.XXXXXXXX"); fi
   command mkdir -p -- "$home"
   env -i PATH="$PATH" HOME="$home" ZDOTDIR="$home" TMPDIR="$work" \
     XDG_DATA_HOME="$home/data" XDG_CACHE_HOME="$home/cache" XDG_CONFIG_HOME="$home/config" \
-    BENCH_CHECKOUT="$checkout" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" BENCH_CASE="$case" \
+    BENCH_CHECKOUT="${dirs[$label]}" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" \
+    BENCH_MANIFEST_COUNT="$manifest_count" BENCH_CASE="$case" \
     zsh -f "$here/case.zsh" 2>"$home/stderr" | command tail -n 1
   local rc=${pipestatus[1]}
   (( rc == 0 )) || print -r -- "fail exit ${rc}: $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
-  [[ $case == source-warm ]] || command rm -rf -- "$home"
+  [[ $case == source-reused-home ]] || command rm -rf -- "$home"
 }
 
+# collected[label/case] and failed[label/case]
 typeset -A collected failed
 integer round total=$(( warmups + samples ))
-typeset -a order
+typeset -a order variant_order
 typeset case value
 for (( round = 1; round <= total; round++ )); do
   (( round % 2 )) && order=( "${cases[@]}" ) || order=( "${(Oa)cases[@]}" )
+  (( round % 2 )) && variant_order=( "${labels[@]}" ) || variant_order=( "${(Oa)labels[@]}" )
   for case in "${order[@]}"; do
-    (( ${+failed[$case]} )) && continue
-    value=$(one_sample "$case") || value="fail exit $?"
-    if [[ $value != <->(.<->|)  ]]; then failed[$case]=${value#fail }; continue; fi
-    (( round > warmups )) && collected[$case]+="${value} "
+    for label in "${variant_order[@]}"; do
+      (( ${+failed[$label/$case]} )) && continue
+      value=$(one_sample "$label" "$case") || value="fail exit $?"
+      if [[ $value != <->(.<->|)  ]]; then failed[$label/$case]=${value#fail }; continue; fi
+      (( round > warmups )) && collected[$label/$case]+="${value} "
+    done
   done
 done
 
-# Health data that costs nothing extra: sizes, compile durations, symbol deltas.
-typeset -F3 t0 t1
-typeset -A health
-integer lines
-for f in zi.zsh lib/zsh/install.zsh lib/zsh/autoload.zsh lib/zsh/side.zsh lib/zsh/additional.zsh; do
-  lines=$(wc -l < "$checkout/$f"); health[lines:$f]=$lines
-done
-t0=$EPOCHREALTIME; zsh -f -n "$checkout/zi.zsh"; t1=$EPOCHREALTIME; health[zsh_n_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
-t0=$EPOCHREALTIME; ( cd "$work" && cp "$checkout/zi.zsh" zi.zsh && zsh -fc 'zcompile zi.zsh' ); t1=$EPOCHREALTIME; health[zcompile_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
-typeset -a shipped_zwc
-shipped_zwc=( "$checkout"/**/*.zwc(N) )
-health[zwc_shipped]=$(( $#shipped_zwc > 0 ))
-typeset symbols
-symbols=$(env -i PATH="$PATH" HOME="$work/warm" ZDOTDIR="$work/warm" XDG_DATA_HOME="$work/warm/data" XDG_CACHE_HOME="$work/warm/cache" XDG_CONFIG_HOME="$work/warm/config" \
-  BENCH_CHECKOUT="$checkout" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" BENCH_CASE=symbols zsh -f "$here/case.zsh" 2>/dev/null)
-health[functions_after_source]=${${(s: :)symbols}[1]:-0}
-health[parameters_after_source]=${${(s: :)symbols}[2]:-0}
-health[functions_after_load_10]=${${(s: :)symbols}[3]:-0}
-health[parameters_after_load_10]=${${(s: :)symbols}[4]:-0}
+# Health data that costs nothing extra: sizes, compile durations, symbol
+# deltas, measured once per variant outside the sampled rounds.
+health_json() {  # health_json <label>
+  local checkout=${dirs[$1]} f
+  local -A health
+  local -F3 t0 t1
+  integer lines
+  for f in zi.zsh lib/zsh/install.zsh lib/zsh/autoload.zsh lib/zsh/side.zsh lib/zsh/additional.zsh; do
+    lines=$(wc -l < "$checkout/$f"); health[lines:$f]=$lines
+  done
+  t0=$EPOCHREALTIME; zsh -f -n "$checkout/zi.zsh"; t1=$EPOCHREALTIME; health[zsh_n_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
+  local scratch; scratch=$(command mktemp -d "$work/c.XXXXXXXX")
+  t0=$EPOCHREALTIME; ( cd "$scratch" && cp "$checkout/zi.zsh" zi.zsh && zsh -fc 'zcompile zi.zsh' ); t1=$EPOCHREALTIME; health[zcompile_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
+  command rm -rf -- "$scratch"
+  local -a shipped_zwc; shipped_zwc=( "$checkout"/**/*.zwc(N) )
+  health[zwc_shipped]=$(( $#shipped_zwc > 0 ))
+  local symbols home=$work/reused-$1
+  symbols=$(env -i PATH="$PATH" HOME="$home" ZDOTDIR="$home" TMPDIR="$work" XDG_DATA_HOME="$home/data" XDG_CACHE_HOME="$home/cache" XDG_CONFIG_HOME="$home/config" \
+    BENCH_CHECKOUT="$checkout" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" BENCH_MANIFEST_COUNT="$manifest_count" BENCH_CASE=symbols zsh -f "$here/case.zsh" 2>/dev/null)
+  health[functions_after_source]=${${(s: :)symbols}[1]:-0}
+  health[parameters_after_source]=${${(s: :)symbols}[2]:-0}
+  health[functions_after_load_10]=${${(s: :)symbols}[3]:-0}
+  health[parameters_after_load_10]=${${(s: :)symbols}[4]:-0}
+  local -a hk; hk=( ${(ok)health} ); integer i
+  print -r -- '{'
+  for (( i = 1; i <= $#hk; i++ )); do print -r -- "    $(jq -Rn --arg k "${hk[i]}" '$k'): ${health[${hk[i]}]}$( (( i < $#hk )) && print , )"; done
+  print -r -- '  }'
+}
 
 # Statistics per case: median, p95, min, count, plus the raw samples.
 stats_json() {  # stats_json <space separated samples>
@@ -126,34 +155,37 @@ stats_json() {  # stats_json <space separated samples>
   print -r -- "{\"median\":${med},\"p95\":${p95},\"min\":${a[1]},\"count\":${k},\"samples\":[${(j:,:)a}]}"
 }
 
-typeset revision zsh_version cpu
-revision=$(git -C "$checkout" rev-parse HEAD 2>/dev/null || print unknown)
+typeset zsh_version cpu captured
 zsh_version=$(zsh --version)
 cpu=$(sed -n 's/^model name[[:space:]]*:[[:space:]]*//p' /proc/cpuinfo 2>/dev/null | head -n 1)
-{
-  print -r -- '{'
-  print -r -- "  \"schema_version\": 1,"
-  print -r -- "  \"captured_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\","
-  print -r -- "  \"label\": $(jq -Rn --arg v "$label" '$v'),"
-  print -r -- "  \"source_revision\": \"$revision\","
-  print -r -- "  \"environment\": {\"os\": \"$(uname -s)\", \"architecture\": \"$(uname -m)\", \"zsh_version\": $(jq -Rn --arg v "$zsh_version" '$v'), \"cpu\": $(jq -Rn --arg v "${cpu:-unknown}" '$v'), \"runner_image\": $(jq -Rn --arg v "${ImageOS:-}${ImageVersion:+ $ImageVersion}" '$v')},"
-  print -r -- "  \"workload\": {\"warmups\": $warmups, \"samples\": $samples, \"timer\": \"zsh EPOCHREALTIME elapsed milliseconds inside the sampled process\", \"order\": \"balanced rotating\"},"
-  print -r -- "  \"health\": {"
-  local -a hk; hk=( ${(ok)health} ); local i
-  for (( i = 1; i <= $#hk; i++ )); do print -r -- "    $(jq -Rn --arg k "${hk[i]}" '$k'): ${health[${hk[i]}]}$( (( i < $#hk )) && print , )"; done
-  print -r -- "  },"
-  print -r -- "  \"cases\": {"
-  for (( i = 1; i <= $#cases; i++ )); do
-    case=${cases[i]}
-    if (( ${+failed[$case]} )); then
-      print -r -- "    \"$case\": {\"failure\": $(jq -Rn --arg v "${failed[$case]}" '$v')}$( (( i < $#cases )) && print , )"
-    else
-      print -r -- "    \"$case\": $(stats_json "${collected[$case]}")$( (( i < $#cases )) && print , )"
-    fi
-  done
-  print -r -- "  }"
-  print -r -- '}'
-} > "$output"
-jq -e . "$output" >/dev/null || die "generated output is not valid JSON" 1
-print -r -- "wrote $output: ${#cases} cases, ${#failed} failed"
-(( $#failed == 0 ))
+captured=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+integer failures=0 i
+for label in "${labels[@]}"; do
+  local revision output=$output_dir/$label.json
+  revision=$(git -C "${dirs[$label]}" rev-parse HEAD 2>/dev/null || print unknown)
+  {
+    print -r -- '{'
+    print -r -- "  \"schema_version\": 1,"
+    print -r -- "  \"captured_at\": \"$captured\","
+    print -r -- "  \"label\": $(jq -Rn --arg v "$label" '$v'),"
+    print -r -- "  \"source_revision\": \"$revision\","
+    print -r -- "  \"environment\": {\"os\": \"$(uname -s)\", \"architecture\": \"$(uname -m)\", \"zsh_version\": $(jq -Rn --arg v "$zsh_version" '$v'), \"cpu\": $(jq -Rn --arg v "${cpu:-unknown}" '$v'), \"runner_image\": $(jq -Rn --arg v "${ImageOS:-}${ImageVersion:+ $ImageVersion}" '$v')},"
+    print -r -- "  \"workload\": {\"warmups\": $warmups, \"samples\": $samples, \"variants\": $(print -r -- "${(j:,:)labels}" | jq -Rc 'split(",")'), \"timer\": \"zsh EPOCHREALTIME elapsed milliseconds inside the sampled process\", \"order\": \"variants alternate within a round and reverse every round; cases rotate\"},"
+    print -r -- "  \"health\": $(health_json "$label"),"
+    print -r -- "  \"cases\": {"
+    for (( i = 1; i <= $#cases; i++ )); do
+      case=${cases[i]}
+      if (( ${+failed[$label/$case]} )); then
+        failures+=1
+        print -r -- "    \"$case\": {\"failure\": $(jq -Rn --arg v "${failed[$label/$case]}" '$v')}$( (( i < $#cases )) && print , )"
+      else
+        print -r -- "    \"$case\": $(stats_json "${collected[$label/$case]}")$( (( i < $#cases )) && print , )"
+      fi
+    done
+    print -r -- "  }"
+    print -r -- '}'
+  } > "$output"
+  jq -e . "$output" >/dev/null || die "generated $output is not valid JSON" 1
+  print -r -- "wrote $output: ${#cases} cases"
+done
+(( failures == 0 )) || { print -u2 -r -- "run.zsh: $failures failed case(s); see the failure fields"; exit 1 }

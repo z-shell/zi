@@ -22,8 +22,10 @@ load_zi() { builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home 
 plugins() { local i; for i in {1..10}; do print -r -- "$BENCH_FIXTURES/plugins/p$i"; done; }
 
 case $BENCH_CASE in
-  source-cold|source-warm)
-    # cold: fresh cache each sample (compiles); warm: the cache persists.
+  source-fresh-home|source-reused-home)
+    # Zi does not compile itself on source; the difference between these two
+    # is the persisted home state (prepared directories, completion dump)
+    # that the reused home carries over from the previous sample.
     start; builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; stop ;;
   light-load-10)
     load_zi; start; for p in $(plugins); do zi light %"$p" || exit 3; done; stop ;;
@@ -37,7 +39,9 @@ case $BENCH_CASE in
   manifest-21)
     load_zi; builtin source "$BENCH_CHECKOUT/lib/zsh/install.zsh" || exit 3
     (( $+functions[.zi-read-package-manifest] )) || exit 5
-    local -a files; files=( $BENCH_MANIFESTS/*.json(N) ); (( $#files )) || exit 5
+    local -a files; files=( $BENCH_MANIFESTS/*.json(N) )
+    # Exactly the declared inventory, or the timing is not comparable (#555).
+    (( $#files == ${BENCH_MANIFEST_COUNT:-0} )) || exit 5
     start; for f in $files; do local -A info ices; local -a names; .zi-read-package-manifest "$(<$f)" default info names ices || exit 4; unset info ices names; done; stop ;;
   unload-10)
     load_zi; for p in $(plugins); do zi load %"$p" || exit 3; done

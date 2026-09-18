@@ -52,21 +52,27 @@ jobs:
       - name: Measure baseline, candidate, and an A/A control
         shell: bash
         run: |
-          set -euo pipefail
-          # The candidate's runner measures both checkouts so the method is
-          # identical on both sides; the baseline is measured twice for the
-          # A/A control row.
-          zsh candidate/benchmarks/run.zsh --checkout baseline  --output baseline.json  --label baseline
-          zsh candidate/benchmarks/run.zsh --checkout candidate --output candidate.json --label candidate
-          zsh candidate/benchmarks/run.zsh --checkout baseline  --output control.json   --label control
+          set -uo pipefail
+          # One invocation measures all three variants: within each round
+          # they alternate, and their order reverses every round, so drift on
+          # the runner is not correlated with a variant. The control is the
+          # baseline measured a second time. run.zsh exits 1 when a workload
+          # fails functionally, after writing every report, so that status is
+          # accepted here and the comparison step renders and returns it;
+          # usage and dependency errors (2) still fail this step.
+          zsh candidate/benchmarks/run.zsh \
+            --variant baseline=baseline --variant candidate=candidate --variant control=baseline \
+            --output-dir results
+          status=$?
+          if [[ "$status" -gt 1 ]]; then exit "$status"; fi
 
       - name: Compare and publish the summary
         shell: bash
         run: |
           set -euo pipefail
           status=0
-          zsh candidate/benchmarks/compare.zsh --baseline baseline.json --candidate candidate.json \
-            --control control.json --output benchmark-comparison.json --markdown benchmark-comparison.md || status=$?
+          zsh candidate/benchmarks/compare.zsh --baseline results/baseline.json --candidate results/candidate.json \
+            --control results/control.json --output benchmark-comparison.json --markdown benchmark-comparison.md || status=$?
           cat benchmark-comparison.md >> "$GITHUB_STEP_SUMMARY"
           flagged="$(jq -r '.flagged | join(", ")' benchmark-comparison.json)"
           if [[ -n "$flagged" ]]; then
@@ -82,9 +88,7 @@ jobs:
         with:
           name: benchmark-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
-            baseline.json
-            candidate.json
-            control.json
+            results/
             benchmark-comparison.json
             benchmark-comparison.md
           retention-days: 90

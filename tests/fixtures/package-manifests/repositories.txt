@@ -15,7 +15,6 @@ ls_colors
 nb
 pyenv
 remark
-repositories.txt
 subversion
 system-completions
 zsh

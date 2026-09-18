@@ -23,7 +23,9 @@ setopt errexit nounset pipefail
 typeset owner=${ZI_PKG_OWNER:-z-shell}
 while (( $# )); do
   case "$1" in
-    --owner) owner=${2-}; shift 2 ;;
+    --owner)
+      [[ -n ${2-} ]] || { print -u2 "refresh-package-manifests: --owner needs a value"; exit 2 }
+      owner=$2; shift 2 ;;
     --help|-h) print "usage: ${0:t} [--owner OWNER]"; exit 0 ;;
     *) print -u2 "refresh-package-manifests: unknown argument: $1"; exit 2 ;;
   esac
@@ -40,12 +42,16 @@ while IFS= read -r line; do
   [[ -n $line ]] && repositories+=( "$line" )
 done < "${fixture_dir}/repositories.txt"
 integer failed=0
-typeset repository
+typeset repository staging
 for repository in "${repositories[@]}"; do
+  # Download beside the fixture and rename only after a complete transfer, so
+  # an interrupted fetch never leaves an empty or partial snapshot behind.
+  staging="${fixture_dir}/.${repository}.json.part"
   if curl -fsSL "https://raw.githubusercontent.com/${owner}/${repository}/HEAD/package.json" \
-      -o "${fixture_dir}/${repository}.json"; then
+      -o "$staging" && command mv -f -- "$staging" "${fixture_dir}/${repository}.json"; then
     print -r -- "fetched ${repository}"
   else
+    command rm -f -- "$staging"
     print -u2 -r -- "FAILED ${repository}"
     failed=1
   fi

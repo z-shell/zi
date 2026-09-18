@@ -24,8 +24,13 @@ typeset -a fixtures
 fixtures=( "${fixture_dir}"/*.json(N) )
 (( $#fixtures )) || fail "no fixtures under ${fixture_dir}"
 
+typeset temp_root
+temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-manifest-fixtures.XXXXXXXX")" ||
+  fail "create temporary directory"
+trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+
 env \
-  HOME="$(command mktemp -d "${TMPDIR:-/tmp}/zi-manifest-fixtures.XXXXXXXX")" \
+  HOME="$temp_root" \
   ZI_TEST_CHECKOUT="$project_root" \
   FIXTURE_DIR="$fixture_dir" \
   zsh -f <<'ZSH' || fail "a vendored manifest does not resolve through .zi-read-package-manifest"
@@ -38,7 +43,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/install.zsh" || return 1
 
 integer manifests=0 profiles_checked=0
 typeset fixture text ices_key profile key expected actual
-typeset -a profile_names ice_keys
+typeset -a profile_names ice_keys info_keys
 for fixture in "${FIXTURE_DIR}"/*.json; do
   text="$(<$fixture)"
   # The reader accepts the legacy spelling; the oracle must read the same member.
@@ -53,10 +58,18 @@ for fixture in "${FIXTURE_DIR}"/*.json; do
       builtin print -u2 -r -- "${fixture:t}: profile '${profile}' did not resolve; reader offers: ${(j:,:)names}"
       return 1
     }
-    for key in user plugin; do
-      expected=$(jq -r --arg k "$key" '.["zsh-data"]["plugin-info"][$k] // ""' <<< "$text")
-      [[ ${info[$key]-} == "$expected" ]] || {
-        builtin print -u2 -r -- "${fixture:t}: plugin-info.${key} resolved to '${info[$key]-}', expected '${expected}'"
+    # The reader promises the whole plugin-info hash, not just the identity
+    # fields, so compare every member the manifest declares and nothing more.
+    info_keys=( ${(f)"$(jq -r '.["zsh-data"]["plugin-info"] | keys_unsorted[]' <<< "$text")"} )
+    (( $#info_keys == $#info )) || {
+      builtin print -u2 -r -- "${fixture:t}: plugin-info resolved ${#info} members, manifest declares ${#info_keys}: ${(k)info}"
+      return 1
+    }
+    for key in "${info_keys[@]}"; do
+      expected=$(jq -r --arg k "$key" '.["zsh-data"]["plugin-info"][$k] | tostring' <<< "$text")
+      (( ${+info[$key]} )) || { builtin print -u2 -r -- "${fixture:t}: plugin-info lacks '${key}'"; return 1; }
+      [[ ${info[$key]} == "$expected" ]] || {
+        builtin print -u2 -r -- "${fixture:t}: plugin-info.${key} resolved to '${info[$key]}', expected '${expected}'"
         return 1
       }
     done

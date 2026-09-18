@@ -1,0 +1,51 @@
+{
+  "name": "zsh-bin",
+  "description": "Statically-linked, hermetic, relocatable ZSH",
+  "homepage": "https://github.com/romkatv/zsh-bin",
+  "bugs": {
+    "url": "https://github.com/romkatv/zsh-bin/issues"
+  },
+  "keywords": ["Zshell", "zsh"],
+  "zsh-data": {
+    "plugin-info": {
+      "user": "romkatv",
+      "plugin": "zsh-bin"
+    },
+    "zi-ices": {
+      "bgn": {
+        "requires": "cp;tar;bgn",
+        "from": "gh-r",
+        "bpick": "*.tar.gz",
+        "lucid": "",
+        "as": "null",
+        "sbin": "bin/zsh*",
+        "atclone": "",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": ""
+      },
+      "default": {
+        "requires": "cp",
+        "lucid": "",
+        "git": "",
+        "depth": "1",
+        "as": "null",
+        "atclone": "./install -e yes -d /usr/local",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": ""
+      },
+      "rootless": {
+        "requires": "cp",
+        "lucid": "",
+        "git": "",
+        "depth": "1",
+        "as": "null",
+        "atclone": "./install -e no -d ~/.local",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": ""
+      }
+    }
+  }
+}

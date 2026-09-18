@@ -1,0 +1,40 @@
+{
+  "name": "zsh-firefox-dev",
+  "description": "Firefox Developer Edition is the blazing fast browser that offers cutting edge developer tools and latest features.",
+  "homepage": "https://www.mozilla.org/en-GB/firefox/developer",
+  "license": "Mozilla Public License",
+  "deprecated": false,
+  "author": "Z-Shell Community",
+  "keywords": ["internet browser", "web browser", "zpackage", "browser", "zsh"],
+  "zsh-data": {
+    "plugin-info": {
+      "url": "https://download.mozilla.org/?product=firefox-devedition-latest-ssl&os=${${${(M)OSTYPE##linux}:+linux64}:-${${(M)OSTYPE##darwin}:+osx}}&lang=en-US",
+      "message": "A snippet providing Firefox Developer Edition."
+    },
+    "zi-ices": {
+      "default": {
+        "is-snippet": "",
+        "lucid": "",
+        "as": "command",
+        "pick": "**/firefox(|-bin)(|.exe)",
+        "mv": "%ID% → ff.pkg",
+        "atclone": "local -A map; map=( '(#i)linux*' tar.bz2 '(#i)(cygwin|win|wsl)*' exe '(#i)darwin*' dmg ); local ext=\"${map[(k)$OSTYPE]}\"; ziextract ff.pkg $ext --norm ${${OSTYPE:#(#i)(darwin|cygwin|win|wsl)*}:+--move}; command mv ff.pkg %ID%;",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "countdown": ""
+      },
+      "bgn": {
+        "requires": "bgn",
+        "is-snippet": "",
+        "lucid": "",
+        "as": "null",
+        "mv": "%ID% → ff.pkg",
+        "atclone": "local -A map; map=( '(#i)linux*' tar.bz2 '(#i)(cygwin|win|wsl)*' exe '(#i)darwin*' dmg ); local ext=\"${map[(k)$OSTYPE]}\"; ziextract ff.pkg $ext --norm ${${OSTYPE:#(#i)(darwin|cygwin|win|wsl)*}:+--move}; command mv ff.pkg %ID%;",
+        "atpull": "%atclone",
+        "sbin": "**/firefox(.exe|-bin) -> firefox",
+        "nocompile": "",
+        "countdown": ""
+      }
+    }
+  }
+}

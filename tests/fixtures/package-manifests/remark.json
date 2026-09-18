@@ -1,0 +1,46 @@
+{
+  "name": "zsh-remark",
+  "description": "Markdown processor powered by plugins part of the @unifiedjs collective",
+  "license": "MIT",
+  "homepage": "https://github.com/remarkjs/remark",
+  "keywords": ["markdown", "markdown processor", "markdown converter", "zsh"],
+  "author": "@unifiedjs collective",
+  "bugs": {
+    "url": "https://github.com/remarkjs/remark/issues"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "user": "z-shell",
+      "plugin": "0",
+      "requires": "npm;bgn"
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "node": "remark <- !remark-cli; remark-man; remark-html",
+        "sbin": "n:node_modules/.bin/remark",
+        "atpull": "%atclone",
+        "nocompile": ""
+      },
+      "man-only": {
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "node": "remark <- !remark-cli; remark-man",
+        "sbin": "n:node_modules/.bin/remark",
+        "nocompile": ""
+      },
+      "html-only": {
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "node": "remark <- !remark-cli; remark-html",
+        "sbin": "n:node_modules/.bin/remark",
+        "atpull": "%atclone",
+        "nocompile": ""
+      }
+    }
+  }
+}

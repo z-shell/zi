@@ -1,0 +1,29 @@
+{
+  "name": "zsh-system-completions",
+  "description": "A package that brings stock Zsh completions under the control of ZI",
+  "homepage": "https://github.com/z-shell/system-completions/",
+  "license": "MIT",
+  "keywords": ["completions", "zsh"],
+  "bugs": {
+    "url": "https://github.com/z-shell/system-completions/issues"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "user": "z-shell",
+      "plugin": "0"
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "as": "completion",
+        "id-as": "system-completions",
+        "atclone": "+zi-message 'Installing System Completions...'; command mkdir -p ${ZPFX}/share/zsh/$ZSH_VERSION/completions; command cp -f /usr/share/zsh/functions/Completion/*/_*(.) ${ZPFX}/share/zsh/$ZSH_VERSION/completions; zi creinstall -q /usr/share/zsh/functions/Completion; zi cclear -q",
+        "atpull": "%atclone",
+        "atload": "fpath=( ${(u)fpath[@]:#/usr/share/zsh/functions/Completion/*} ); fpath+=( ${ZPFX}/share/zsh/$ZSH_VERSION/completions );",
+        "run-atpull": "",
+        "nocompile": ""
+      }
+    }
+  }
+}

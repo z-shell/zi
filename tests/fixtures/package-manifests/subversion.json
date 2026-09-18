@@ -1,0 +1,30 @@
+{
+  "name": "zsh-svn",
+  "description": "Subversion, a version control system",
+  "license": "MIT",
+  "homepage": "https://github.com/apache/subversion",
+  "keywords": ["apache subversion", "zsh"],
+  "author": "Yuu Yamashita, Sam Stephenson, Mislav Marohnić, Josh Friend",
+  "bugs": {
+    "url": "https://github.com/apache/subversion"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "requires": "rdl",
+      "url": "https://subversion.apache.org/download.cgi"
+    },
+    "zi-ices": {
+      "default": {
+        "is-snippet": "",
+        "lucid": "",
+        "id-as": "subversion",
+        "as": "null",
+        "dlink": "https://.*/subversion-%VERSION%.tar.bz2",
+        "atclone": "ziextract --move --auto; +zi-message 'Building Subversion...'; ./configure --prefix='$ZPFX' --with-apr='$ZPFX' &>/dev/null && make >/dev/null && +zi-message 'Installing Subversion to $ZPFX...' && make install &>/dev/null && +zi-message '{ok}Installation of Subversion succeeded{rst}' || +zi-message '{error}Installation of Subversion failed{rst}'",
+        "atpull": "%atclone",
+        "countdown": "",
+        "nocompile": "!"
+      }
+    }
+  }
+}

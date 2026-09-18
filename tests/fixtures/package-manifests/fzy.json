@@ -1,0 +1,52 @@
+{
+  "name": "zsh-fzy",
+  "author": "John Hawthorn",
+  "bugs": {
+    "url": "https://github.com/jhawthorn/fzy/issues"
+  },
+  "contributors": [],
+  "dependencies": {},
+  "deprecated": false,
+  "description": "A better fuzzy finder",
+  "devDependencies": {},
+  "homepage": "https://github.com/jhawthorn/fzy",
+  "license": "MIT",
+  "keywords": [
+    "fuzzy finder",
+    "fuzzy search",
+    "fuzzy searching",
+    "fuzzy",
+    "zsh"
+  ],
+  "zsh-data": {
+    "plugin-info": {
+      "user": "jhawthorn",
+      "plugin": "fzy"
+    },
+    "zi-ices": {
+      "default": {
+        "requires": "cc;make;cp",
+        "git": "",
+        "depth": "1",
+        "lucid": "",
+        "as": "null",
+        "atclone": "cp -vf contrib/fzy-* $ZPFX/bin/",
+        "atpull": "%atclone",
+        "make": "PREFIX=$ZPFX install",
+        "nocompile": ""
+      },
+      "bgn": {
+        "requires": "cc;make;bgn",
+        "git": "",
+        "depth": "1",
+        "lucid": "",
+        "as": "null",
+        "atclone": "cp -vf fzy.1 $ZPFX/man/man1",
+        "atpull": "%atclone",
+        "make": "",
+        "sbin": "fzy;contrib/fzy-*",
+        "nocompile": ""
+      }
+    }
+  }
+}

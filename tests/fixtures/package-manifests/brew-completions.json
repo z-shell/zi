@@ -1,0 +1,32 @@
+{
+  "name": "zsh-brew-completions",
+  "description": "A package that brings homebrew completions under the control of ZI",
+  "homepage": "https://github.com/z-shell/brew-completions/",
+  "license": "GPL-3.0",
+  "keywords": ["completions", "homebrew", "brew", "zsh"],
+  "author": "Salvydas Lukosius",
+  "bugs": {
+    "url": "https://github.com/z-shell/brew-completions/issues"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "user": "z-shell",
+      "plugin": "0"
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "has": "brew",
+        "as": "completion",
+        "id-as": "brew-completions",
+        "atclone": "+zi-message 'Installing brew completions...'; command mkdir -p ${ZPFX}/completions; command cp -f $(brew --prefix)/share/zsh/site-functions/_* ${ZPFX}/completions; zi creinstall -q $(brew --prefix)/share/zsh/site-functions;",
+        "atpull": "%atclone",
+        "atload": "fpath=( ${(u)fpath[@]:#$(brew --prefix)/share/zsh/*} ); fpath+=( ${ZPFX}/completions );",
+        "run-atpull": "",
+        "nocompile": "",
+        "countdown": ""
+      }
+    }
+  }
+}

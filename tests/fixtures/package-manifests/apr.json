@@ -1,0 +1,30 @@
+{
+  "name": "zsh-apr",
+  "description": "Apache Portable Runtime",
+  "license": "MIT",
+  "homepage": "https://github.com/z-package",
+  "keywords": ["apache portable runtime", "zsh"],
+  "author": "Yuu Yamashita, Sam Stephenson, Mislav Marohnić, Josh Friend",
+  "bugs": {
+    "url": "https://github.com/apache/apr/issues"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "requires": "rdl",
+      "url": "https://apr.apache.org/download.cgi"
+    },
+    "zi-ices": {
+      "default": {
+        "is-snippet": "",
+        "lucid": "",
+        "id-as": "apr",
+        "as": "null",
+        "dlink": "https://.*/apr-%VERSION%.tar.bz2",
+        "atclone": "ziextract --move --auto; +zi-message 'Building Apache Portable Runtime...'; ./configure --prefix=$ZPFX && make; +zi-message 'Testing Apache Portable Runtime...' && make test && +zi-message 'Installing Apache Portable Runtime to $ZPFX...' && make install && +zi-message '{ok}Installation of Apache Portable Runtime succeeded{rst}' || +zi-message '{error}Installation of Apache Portable Runtime failed{rst}'",
+        "atpull": "%atclone",
+        "countdown": "",
+        "nocompile": "!"
+      }
+    }
+  }
+}

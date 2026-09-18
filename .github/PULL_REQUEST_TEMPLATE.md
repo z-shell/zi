@@ -47,8 +47,7 @@
 - [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
 - [ ] A `next` to `main` promotion uses a merge commit and records both parent SHAs
 - [ ] Commit messages follow Conventional Commits format
-- [ ] Any `Co-authored-by` trailer credits a real human, never a bot, AI agent,
-      or automation
+- [ ] Any `Co-authored-by` trailer credits a real human, never a bot, AI agent, or automation
 - [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
 - [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
 - [ ] Documentation updated if needed

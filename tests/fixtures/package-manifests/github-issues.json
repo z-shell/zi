@@ -1,0 +1,64 @@
+{
+  "_from": "github-issues@^1.0.0",
+  "_id": "zsh-github-issues@1.0.0",
+  "_inBundle": false,
+  "_location": "/zsh-github-issues",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "github-issues@^1.0.0",
+    "name": "github-issues",
+    "escapedName": "github-issues",
+    "rawSpec": "^1.0.0",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.0"
+  },
+  "_requiredBy": [],
+  "_spec": "github-issues@^1.0.0",
+  "_where": "/root/github2/pkg-github-issues",
+  "author": "Sebastian Gniazdowski",
+  "bugs": {
+    "url": "https://github.com/z-shell/zsh-github-issues/issues"
+  },
+  "version": "1.0.1",
+  "contributors": [],
+  "dependencies": {},
+  "deprecated": false,
+  "description": "Subscribe to projects on Github and receive within shell (under prompt) notifications about new issues.",
+  "devDependencies": {},
+  "directories": {
+    "test": "test"
+  },
+  "homepage": "https://github.com/z-shell/zsh-github-issues",
+  "keywords": [
+    "github issues",
+    "github issues notifications",
+    "zsh"
+  ],
+  "license": "MIT",
+  "name": "zsh-github-issues",
+  "zsh-data": {
+    "plugin-info": {
+      "user": "z-shell",
+      "plugin": "zsh-github-issues",
+      "message": "The profile %PROFILE% has been installed.\nTo pull the messages the `github-issues-srv' package is also needed."
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "on-update-of": "~/.cache/zsh-github-issues/new_titles.log",
+        "notify": "New issue: $NOTIFY_MESSAGE",
+        "atpull": "%atclone"
+      },
+      "compact-message": {
+        "git": "",
+        "lucid": "",
+        "on-update-of": "~/.cache/zsh-github-issues/new_titles.log",
+        "notify": "$NOTIFY_MESSAGE",
+        "atpull": "%atclone"
+      }
+    }
+  }
+}

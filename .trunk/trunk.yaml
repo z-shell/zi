@@ -14,6 +14,12 @@ lint:
     - linters: [prettier]
       paths:
         - .github/skills/**
+    # Vendored package manifests are verbatim upstream snapshots that
+    # scripts/refresh-package-manifests.zsh re-fetches; reformatting them
+    # would make every refresh a diff.
+    - linters: [prettier]
+      paths:
+        - tests/fixtures/package-manifests/**
   definitions:
     # This repository is consumed as a submodule, so `.git` is a file whose
     # gitdir is relative to the superproject. Trunk's sandbox copy breaks that

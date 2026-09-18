@@ -1,0 +1,61 @@
+{
+  "name": "zsh-dircolors-material",
+  "description": "Dircolors material theme",
+  "homepage": "https://github.com/zpm-zsh/material-colors",
+  "author": "Grigorii Horos",
+  "bugs": {
+    "url": "https://github.com/zpm-zsh/dircolors-material/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "terminal colors",
+    "GNU ls colors",
+    "exa colors",
+    "zi-package",
+    "zsh"
+  ],
+  "zsh-data": {
+    "plugin-info": {
+      "user": "zpm-zsh",
+      "plugin": "material-colors"
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "reset": "",
+        "atclone": "(( ! ${+commands[dircolors]} )) && local P=g; ${P}sed -i '/DIR/c\\DIR 38;5;63;1' dircolors/01-base.dircolors && cat dircolors/*.dircolors | TERM=ansi ${P}dircolors -b - >! colors.zsh",
+        "atpull": "%atclone",
+        "pick": "colors.zsh",
+        "nocompile": "!",
+        "atload": "zstyle ':completion:*:default' list-colors \"${(s.:.)LS_COLORS}\";"
+      },
+      "no-color-swaps": {
+        "git": "",
+        "lucid": "",
+        "atclone": "(( ! ${+commands[dircolors]} )) && local P=g; cat dircolors/*.dircolors | TERM=ansi ${P}dircolors -b - >! colors.zsh",
+        "atpull": "%atclone",
+        "pick": "colors.zsh",
+        "nocompile": "!",
+        "atload": "zstyle ':completion:*:default' list-colors \"${(s.:.)LS_COLORS}\";"
+      },
+      "no-zsh-completion": {
+        "git": "",
+        "lucid": "",
+        "reset": "",
+        "atclone": "(( ! ${+commands[dircolors]} )) && local P=g; ${P}sed -i '/DIR/c\\DIR 38;5;63;1' dircolors/01-base.dircolors && cat dircolors/*.dircolors | TERM=ansi ${P}dircolors -b - >! colors.zsh",
+        "atpull": "%atclone",
+        "pick": "colors.zsh",
+        "nocompile": "!"
+      },
+      "minimal": {
+        "git": "",
+        "lucid": "",
+        "atclone": "(( ! ${+commands[dircolors]} )) && local P=g; cat dircolors/*.dircolors | TERM=ansi ${P}dircolors -b - >! colors.zsh",
+        "atpull": "%atclone",
+        "pick": "colors.zsh",
+        "nocompile": "!"
+      }
+    }
+  }
+}

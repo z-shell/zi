@@ -62,6 +62,11 @@ jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == nul
   fail "incomparable reports must not flag"
 grep -q "not comparable" "$temp_root/other.md" || fail "Markdown must say why nothing is flagged"
 
+# Reports with different case sets are rejected up front, not deep inside jq.
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/b.json" \
+  --output "$temp_root/mismatch.json" >/dev/null 2>"$temp_root/mismatch.err" && fail "different case sets must be rejected"
+grep -q "do not cover the same cases" "$temp_root/mismatch.err" || fail "the case-set mismatch must be named"
+
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/broken.json" \

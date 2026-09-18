@@ -35,6 +35,9 @@ jobs:
       - name: Check out candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # A fork's head commit does not exist in this repository, so name the
+          # head repository explicitly; the checkout is read-only either way.
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: candidate
           persist-credentials: false

@@ -44,6 +44,13 @@ done
 [[ -r $baseline && -r $candidate && -n $output ]] || die "--baseline, --candidate and --output are required"
 (( $+commands[jq] )) || die "required command not found: jq"
 
+# The three reports must describe the same case set, or a missing case would
+# be silently dropped (candidate-only) or fail deep inside jq (baseline-only).
+typeset -a case_sets
+case_sets=( "$(jq -c '.cases | keys' "$baseline")" "$(jq -c '.cases | keys' "$candidate")" )
+[[ -n $control ]] && case_sets+=( "$(jq -c '.cases | keys' "$control")" )
+[[ ${#${(u)case_sets}} -eq 1 ]] || die "the reports do not cover the same cases: ${(j: versus :)case_sets}"
+
 # jq does the arithmetic so the report is one deterministic document.
 typeset -a control_args
 [[ -n $control ]] && control_args=( --slurpfile control "$control" ) || control_args=( --argjson control '[null]' )

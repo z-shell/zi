@@ -20,6 +20,10 @@ start() { t0=$EPOCHREALTIME; }
 stop()  { t1=$EPOCHREALTIME; print -r -- $(( (t1 - t0) * 1000 )); }
 load_zi() { builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home || exit 3; }
 plugins() { local i; for i in {1..10}; do print -r -- "$BENCH_FIXTURES/plugins/p$i"; done; }
+# The ten fixture functions prove that every plugin ran (or was unloaded);
+# checking only the last one would accept a partial workload.
+all_loaded()   { local i; for i in {1..10}; do (( $+functions[p${i}_fn] )) || return 1; done; return 0; }
+none_loaded()  { local i; for i in {1..10}; do (( $+functions[p${i}_fn] )) && return 1; done; return 0; }
 
 case $BENCH_CASE in
   source-fresh-home|source-reused-home)
@@ -28,12 +32,14 @@ case $BENCH_CASE in
     # that the reused home carries over from the previous sample.
     start; builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; stop ;;
   light-load-10)
-    load_zi; start; for p in $(plugins); do zi light %"$p" || exit 3; done; stop ;;
+    load_zi; start; for p in $(plugins); do zi light %"$p" || exit 3; done; stop
+    all_loaded || exit 4 ;;
   load-10)
-    load_zi; start; for p in $(plugins); do zi load %"$p" || exit 3; done; stop ;;
+    load_zi; start; for p in $(plugins); do zi load %"$p" || exit 3; done; stop
+    all_loaded || exit 4 ;;
   turbo-10)
     load_zi; start; for p in $(plugins); do zi wait'0' lucid for %"$p" || exit 3; done; @zi-scheduler burst || exit 3; stop
-    (( $+functions[p10_fn] )) || exit 4 ;;
+    all_loaded || exit 4 ;;
   ice-200)
     load_zi; start; for i in {1..200}; do zi ice wait'1' lucid depth'1' atinit'true' atload'true' pick'x' as'program' from'gh-r' mv'a -> b' id-as'x' compile'y' nocompile blockf || exit 3; done; stop ;;
   manifest-21)
@@ -45,8 +51,9 @@ case $BENCH_CASE in
     start; for f in $files; do local -A info ices; local -a names; .zi-read-package-manifest "$(<$f)" default info names ices || exit 4; unset info ices names; done; stop ;;
   unload-10)
     load_zi; for p in $(plugins); do zi load %"$p" || exit 3; done
+    all_loaded || exit 4
     start; for p in $(plugins); do zi unload %"$p" -q || exit 3; done; stop
-    (( $+functions[p10_fn] == 0 )) || exit 4 ;;
+    none_loaded || exit 4 ;;
   symbols)
     builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home
     integer f1=$#functions p1=$#parameters

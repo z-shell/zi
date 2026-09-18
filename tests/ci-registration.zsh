@@ -54,7 +54,8 @@ invokes() {  # invokes <workflow file> <test basename>
       if [[ -n ${line//[[:space:]]/} ]] && (( indent <= block_indent )); then
         block_indent=-1
       else
-        [[ $line =~ $pattern ]] && return 0
+        # A shell comment inside the block executes nothing.
+        [[ ${line##[[:space:]]#} != \#* && $line =~ $pattern ]] && return 0
         continue
       fi
     fi

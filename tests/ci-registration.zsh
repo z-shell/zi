@@ -39,10 +39,16 @@ promotion_set=(
   snippet-directory-mirror.zsh
 )
 
+# A test is invoked only by an executable `run:` line that passes its path to
+# zsh; a mention in a `paths:` filter or a `hashFiles()` condition is not an
+# invocation, so deleting the `run:` line must fail this guard.
 invokes() {  # invokes <workflow file> <test basename>
-  local text
-  text="$(<"${workflow_dir}/$1")" || return 1
-  [[ $text == *"tests/$2"* ]]
+  local line
+  while IFS= read -r line; do
+    [[ $line == *run:* ]] || continue
+    [[ $line =~ "(^|[[:space:]])zsh([[:space:]]+-[[:alnum:]]+)*[[:space:]]+tests/${2//./\\.}([[:space:]]|$)" ]] && return 0
+  done < "${workflow_dir}/$1"
+  return 1
 }
 
 typeset -a tests missing

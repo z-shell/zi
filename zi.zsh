@@ -1780,8 +1780,9 @@ builtin setopt no_aliases
     # the dispatcher decided on a synchronous load before service'' was known.
     # Stop after the install, exactly as cloneonly'' does; the dispatcher
     # re-reads ICE and schedules the service task (#524). The service runner's
-    # own load has ZSRV_ID set and must still source the plugin.
-    (( ${+ICE[pack]} && ${+ICE[service]} )) && [[ -z $ZSRV_ID ]] && ___pack_service=1
+    # own load has ZSRV_ID set and must still source the plugin, and a
+    # caller-requested cloneonly'' keeps its download-only contract.
+    (( ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]] && ___pack_service=1
   }
   ZI_SICE[$___id_as]=
   .zi-pack-ice "$___id_as"
@@ -2605,7 +2606,15 @@ return retval
 
   if [[ $___action = *load ]]; then
     if [[ $___tpe = p ]]; then
-      .zi-load "${(@)=___id}" "" "$___mode"; (( ___retval += $? ))
+      .zi-load "${(@)=___id}" "" "$___mode"; integer ___load_rc=$?; (( ___retval += ___load_rc ))
+      # A command-supplied turbo ice queued this as an ordinary task before
+      # the pack'' profile was read. If the install just revealed service'',
+      # .zi-load stopped after installing (#524) and no dispatcher is on the
+      # stack to promote the task, so start the service here.
+      if (( ___load_rc == 0 && ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]]; then
+        (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+        zpty -b "${___id//\//:} / ${ICE[service]}" '.zi-service p "$___mode" "$___id"'
+      fi
     elif [[ $___tpe = s ]]; then
       .zi-load-snippet $___opt "$___id"; (( ___retval += $? ))
     elif [[ $___tpe = p1 || $___tpe = s1 ]]; then
@@ -3081,7 +3090,7 @@ zi() {
             # A fresh pack'' install reads the profile's ices only inside
             # .zi-load, so service'' can appear after the decision above. The
             # load stopped after installing; schedule the service now (#524).
-            (( !___turbo && ${+ICE[pack]} && ${+ICE[service]} )) && [[ -z $ZSRV_ID ]] && ___turbo=1
+            (( !___turbo && ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]] && ___turbo=1
           }
           if (( ___turbo && ZI[HAVE_SCHEDULER] && 0 == ___last_retval )) {
             ICE[wait]="${ICE[wait]:-${ICE[service]:+0}}"

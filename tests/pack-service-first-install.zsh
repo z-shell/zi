@@ -122,6 +122,47 @@ zi pack'./package.json:default' for @svc-fixture || {
 (( $(sourced_lines) == 0 )) || { builtin print -u2 -r -- "second load: sourced synchronously"; return 1; }
 (( $#ZI_TASKS == tasks_before + 1 )) || { builtin print -u2 -r -- "second load: no service task was scheduled"; return 1; }
 
+# A caller-requested cloneonly'' keeps its download-only contract: the package
+# is installed, nothing is sourced, and no service task is scheduled.
+builtin print -r -- '{"zsh-data":{"plugin-info":{"user":"fixture","plugin":"svc"},"zi-ices":{"default":{"git":"","id-as":"svc-cloneonly","service":"svc-cloneonly","pick":"svc.service.zsh"}}}}' \
+  > ./cloneonly.json || return 1
+tasks_before=$#ZI_TASKS
+zi pack'./cloneonly.json:default' cloneonly'' for @svc-cloneonly || {
+  builtin print -u2 -r -- "cloneonly: expected status 0, got $?"
+  return 1
+}
+(( $#installs == 2 )) || { builtin print -u2 -r -- "cloneonly: the package was not installed"; return 1; }
+(( $(sourced_lines) == 0 )) || { builtin print -u2 -r -- "cloneonly: sourced the plugin"; return 1; }
+(( $#ZI_TASKS == tasks_before )) || { builtin print -u2 -r -- "cloneonly: scheduled a service task: ${(j:|:)ZI_TASKS}"; return 1; }
+
+# A command-supplied turbo ice queues an ordinary task before the profile is
+# known. When the scheduler runs that task and the install reveals service'',
+# the task runner itself must start the service: the dispatcher that promotes
+# tasks is no longer on the stack. zpty is stubbed to observe the request.
+builtin print -r -- '{"zsh-data":{"plugin-info":{"user":"fixture","plugin":"svc"},"zi-ices":{"default":{"git":"","id-as":"svc-waited","service":"svc-waited","pick":"svc.service.zsh"}}}}' \
+  > ./waited.json || return 1
+typeset -a zpty_calls
+zpty() { zpty_calls+=( "$*" ); }
+tasks_before=$#ZI_TASKS
+zi wait'0' pack'./waited.json:default' for @svc-waited || {
+  builtin print -u2 -r -- "waited: expected status 0, got $?"
+  return 1
+}
+(( $#installs == 2 )) || { builtin print -u2 -r -- "waited: the first dispatch must only queue the task"; return 1; }
+(( $#ZI_TASKS == tasks_before + 1 )) || { builtin print -u2 -r -- "waited: no task was queued"; return 1; }
+task_words=( ${(z)ZI_TASKS[-1]} )
+[[ ${task_words[2]} == p ]] || { builtin print -u2 -r -- "waited: expected an ordinary p task, got ${task_words[2]}"; return 1; }
+# .zi-run-task returns 1 for a finished one-shot task (0 means re-queue), so
+# only its effects are asserted.
+.zi-run-task 1 "${(@z)ZI_TASKS[-1]}"
+(( $#installs == 3 )) || { builtin print -u2 -r -- "waited: the task runner did not install the package"; return 1; }
+(( $(sourced_lines) == 0 )) || { builtin print -u2 -r -- "waited: sourced the plugin synchronously"; return 1; }
+(( $#zpty_calls == 1 )) && [[ ${zpty_calls[1]} == *"svc-waited"*".zi-service p"* ]] || {
+  builtin print -u2 -r -- "waited: the task runner did not start the service: ${(j:|:)zpty_calls}"
+  return 1
+}
+unfunction zpty
+
 # The service runner performs the deferred load itself with ZSRV_ID set. It
 # must not be deferred again: emulate .zi-run-task's ICE restore and the
 # runner's environment, then load.

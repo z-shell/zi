@@ -15,6 +15,8 @@ on:
       - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
+      - "tests/benchmark-harness.zsh"
+      - "benchmarks/**"
       - "tests/ci-registration.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
@@ -58,6 +60,8 @@ on:
       - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
+      - "tests/benchmark-harness.zsh"
+      - "benchmarks/**"
       - "tests/ci-registration.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
@@ -203,6 +207,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test release tag verification
         run: zsh -f tests/release-tag-verification.zsh
+
+  benchmark-harness:
+    name: Benchmark Harness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh and jq
+        run: sudo apt update && sudo apt-get install -yq zsh jq
+      - name: Test the benchmark runner and comparer
+        run: zsh -f tests/benchmark-harness.zsh
 
   version-reporting:
     name: Version reporting

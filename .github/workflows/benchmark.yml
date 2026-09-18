@@ -1,0 +1,90 @@
+---
+name: Benchmark
+
+# Non-blocking performance evidence (#553): every pull request into next is
+# measured against its base, and the promotion pull request into main is
+# measured against main. A regression above the thresholds is flagged in the
+# job summary and the artifact; it never fails the job (ADR-0009: observed,
+# not gated). Hosted runners vary, so compare only within one run, where the
+# A/A control row shows the noise floor.
+
+on:
+  pull_request:
+    branches: [next, main]
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+      - "benchmarks/**"
+      - "tests/fixtures/package-manifests/**"
+      - ".github/workflows/benchmark.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Candidate versus baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: candidate
+          persist-credentials: false
+
+      - name: Check out baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: baseline
+          persist-credentials: false
+
+      - name: Install Zsh and jq
+        run: sudo apt-get update && sudo apt-get install -yq zsh jq
+
+      - name: Measure baseline, candidate, and an A/A control
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The candidate's runner measures both checkouts so the method is
+          # identical on both sides; the baseline is measured twice for the
+          # A/A control row.
+          zsh candidate/benchmarks/run.zsh --checkout baseline  --output baseline.json  --label baseline
+          zsh candidate/benchmarks/run.zsh --checkout candidate --output candidate.json --label candidate
+          zsh candidate/benchmarks/run.zsh --checkout baseline  --output control.json   --label control
+
+      - name: Compare and publish the summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          zsh candidate/benchmarks/compare.zsh --baseline baseline.json --candidate candidate.json \
+            --control control.json --output benchmark-comparison.json --markdown benchmark-comparison.md || status=$?
+          cat benchmark-comparison.md >> "$GITHUB_STEP_SUMMARY"
+          flagged="$(jq -r '.flagged | join(", ")' benchmark-comparison.json)"
+          if [[ -n "$flagged" ]]; then
+            echo "::notice title=Benchmark flag::Cases above the regression thresholds, for review: ${flagged}"
+          fi
+          # A functional failure means a workload no longer runs; that is a
+          # defect, not a timing question, and it fails the job.
+          exit "$status"
+
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: benchmark-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            baseline.json
+            candidate.json
+            control.json
+            benchmark-comparison.json
+            benchmark-comparison.md
+          retention-days: 90

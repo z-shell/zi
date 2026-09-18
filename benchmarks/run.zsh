@@ -71,9 +71,21 @@ fi
 typeset here=${0:A:h} fixtures=${0:A:h}/fixtures manifests=${0:A:h:h}/tests/fixtures/package-manifests
 [[ -d $manifests ]] || die "vendored manifests not found at $manifests"
 # The manifest workload is only comparable to earlier results when it reads
-# exactly the declared inventory, so the case asserts this count.
-integer manifest_count
-manifest_count=$(grep -c . "$manifests/repositories.txt") || die "could not read $manifests/repositories.txt"
+# exactly the declared inventory: every listed repository has its snapshot,
+# no unlisted snapshot exists, and the case re-asserts the count.
+typeset -a manifest_listed manifest_files
+typeset manifest_name
+while IFS= read -r manifest_name; do
+  [[ -n $manifest_name ]] && manifest_listed+=( "$manifest_name" )
+done < "$manifests/repositories.txt" || die "could not read $manifests/repositories.txt"
+manifest_files=( "$manifests"/*.json(N) )
+for manifest_name in "${manifest_listed[@]}"; do
+  [[ -r $manifests/$manifest_name.json ]] || die "repositories.txt lists $manifest_name but $manifest_name.json is missing"
+done
+for manifest_name in "${manifest_files[@]}"; do
+  (( ${manifest_listed[(I)${manifest_name:t:r}]} )) || die "${manifest_name:t} is not listed in repositories.txt"
+done
+integer manifest_count=$#manifest_listed
 
 typeset work
 work=$(command mktemp -d "${TMPDIR:-/tmp}/zi-benchmark.XXXXXXXX") || die "could not create a work directory"
@@ -102,8 +114,14 @@ typeset -A collected failed
 integer round total=$(( warmups + samples ))
 typeset -a order variant_order
 typeset case value
+# Balanced rotation: round r starts the case list one position later than
+# round r-1, so over one cycle of $#cases rounds every case occupies every
+# position; every second cycle runs in reverse direction as well.
+integer shift_by
 for (( round = 1; round <= total; round++ )); do
-  (( round % 2 )) && order=( "${cases[@]}" ) || order=( "${(Oa)cases[@]}" )
+  shift_by=$(( (round - 1) % $#cases ))
+  order=( "${cases[@][shift_by+1,-1]}" "${cases[@][1,shift_by]}" )
+  (( ((round - 1) / $#cases) % 2 )) && order=( "${(Oa)order[@]}" )
   (( round % 2 )) && variant_order=( "${labels[@]}" ) || variant_order=( "${(Oa)labels[@]}" )
   for case in "${order[@]}"; do
     for label in "${variant_order[@]}"; do
@@ -170,7 +188,7 @@ for label in "${labels[@]}"; do
     print -r -- "  \"label\": $(jq -Rn --arg v "$label" '$v'),"
     print -r -- "  \"source_revision\": \"$revision\","
     print -r -- "  \"environment\": {\"os\": \"$(uname -s)\", \"architecture\": \"$(uname -m)\", \"zsh_version\": $(jq -Rn --arg v "$zsh_version" '$v'), \"cpu\": $(jq -Rn --arg v "${cpu:-unknown}" '$v'), \"runner_image\": $(jq -Rn --arg v "${ImageOS:-}${ImageVersion:+ $ImageVersion}" '$v')},"
-    print -r -- "  \"workload\": {\"warmups\": $warmups, \"samples\": $samples, \"variants\": $(print -r -- "${(j:,:)labels}" | jq -Rc 'split(",")'), \"timer\": \"zsh EPOCHREALTIME elapsed milliseconds inside the sampled process\", \"order\": \"variants alternate within a round and reverse every round; cases rotate\"},"
+    print -r -- "  \"workload\": {\"warmups\": $warmups, \"samples\": $samples, \"variants\": $(print -r -- "${(j:,:)labels}" | jq -Rc 'split(",")'), \"timer\": \"zsh EPOCHREALTIME elapsed milliseconds inside the sampled process\", \"order\": \"variants alternate within a round and reverse every round; the case list starts one position later each round, every case taking every position per cycle, and alternate cycles run reversed\"},"
     print -r -- "  \"health\": $(health_json "$label"),"
     print -r -- "  \"cases\": {"
     for (( i = 1; i <= $#cases; i++ )); do

@@ -83,7 +83,8 @@ jq -n --slurpfile b "$baseline" --slurpfile c "$candidate" "${control_args[@]}" 
    cases: ($B.cases | keys | map(. as $k | {($k): row($B.cases[$k]; $C.cases[$k])}) | add),
    control: (if $K == null then null else ($B.cases | keys | map(. as $k | {($k): row($B.cases[$k]; $K.cases[$k])}) | add) end)}
   | .flagged = [.cases | to_entries[] | select(.value.flag == true) | .key]
-  | .failed = [.cases | to_entries[] | select(.value.failure != null) | .key]
+  | .failed = ([.cases | to_entries[] | select(.value.failure != null) | .key]
+               + (if .control == null then [] else [.control | to_entries[] | select(.value.failure != null) | .key] end) | unique)
 ' > "$output" || die "could not build the comparison" 1
 jq -e . "$output" >/dev/null || die "comparison is not valid JSON" 1
 

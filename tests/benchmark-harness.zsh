@@ -30,6 +30,11 @@ zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-di
 command cp -- "$temp_root/subset/c.json" "$temp_root/b.json"
 zsh "${project_root}/benchmarks/run.zsh" --variant a="$project_root" --variant a="$project_root" --output-dir "$temp_root/dup" >/dev/null 2>&1 &&
   fail "duplicate variant labels must be rejected"
+zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-dir "$temp_root/dup-case" \
+  --case ice-200 --case ice-200 >/dev/null 2>&1 && fail "a repeated --case must be rejected"
+
+# Every row of the Markdown case table has six cells, whatever the row's outcome.
+table_rows_ok() { grep '^|' "$1" | awk -F'|' 'NF != 8 { bad = 1 } END { exit bad }'; }
 
 integer cases
 cases=$(jq -r '.cases | length' "$temp_root/a.json") || fail "a.json is not valid JSON"
@@ -46,6 +51,7 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --ca
   --control "$temp_root/a.json" --output "$temp_root/aa.json" --markdown "$temp_root/aa.md" >/dev/null || fail "A/A comparison failed"
 jq -e '.flagged == [] and .failed == [] and .comparable == true' "$temp_root/aa.json" >/dev/null || fail "A/A comparison must flag and fail nothing"
 [[ -s $temp_root/aa.md ]] && grep -q '^| source-fresh-home ' "$temp_root/aa.md" || fail "Markdown rendering missing the case table"
+table_rows_ok "$temp_root/aa.md" || fail "the A/A Markdown table rows must have six cells"
 
 # Sensitivity: a candidate 30% slower on one case is flagged, never failed.
 jq '.cases["ice-200"].median *= 1.3 | .cases["ice-200"].p95 *= 1.3' "$temp_root/a.json" > "$temp_root/slow.json"
@@ -70,14 +76,18 @@ grep -q "do not cover the same cases" "$temp_root/mismatch.err" || fail "the cas
 # A failure that appears only in the A/A control is still a failure.
 jq '.cases["unload-10"] = {"failure": "exit 4: control-only"}' "$temp_root/a.json" > "$temp_root/ctl-broken.json"
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
-  --control "$temp_root/ctl-broken.json" --output "$temp_root/ctl-cmp.json" >/dev/null 2>&1 && fail "a control-only failure must exit 1"
+  --control "$temp_root/ctl-broken.json" --output "$temp_root/ctl-cmp.json" --markdown "$temp_root/ctl.md" >/dev/null 2>&1 && fail "a control-only failure must exit 1"
 jq -e '.failed == ["unload-10"]' "$temp_root/ctl-cmp.json" >/dev/null || fail "the control-only failure must be listed in failed"
+grep -q '^| unload-10 .*| failure: exit 4: control-only |$' "$temp_root/ctl.md" || fail "the control failure must be rendered in its Markdown cell, not n/a"
+table_rows_ok "$temp_root/ctl.md" || fail "a control failure must not misalign the Markdown table"
 
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/broken.json" \
-  --output "$temp_root/broken-cmp.json" >/dev/null 2>&1 && fail "a functional failure must exit 1"
+  --output "$temp_root/broken-cmp.json" --markdown "$temp_root/broken.md" >/dev/null 2>&1 && fail "a functional failure must exit 1"
 jq -e '.failed == ["unload-10"] and (.cases["unload-10"].failure.candidate | test("synthetic"))' "$temp_root/broken-cmp.json" >/dev/null ||
   fail "the failed case must be recorded with its reason"
+grep -q '^| unload-10 | failure | failure | .*synthetic' "$temp_root/broken.md" || fail "the failed case must be rendered as a failure row"
+table_rows_ok "$temp_root/broken.md" || fail "a failure row must not misalign the Markdown table"
 
 builtin print -r -- "ok - benchmark runner and comparer produce, flag, and invalidate as designed"

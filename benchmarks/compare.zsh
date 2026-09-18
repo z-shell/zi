@@ -96,10 +96,10 @@ if [[ -n $markdown ]]; then
     print
     print -r -- "| Case | Baseline median / p95 ms | Candidate median / p95 ms | Median delta | p95 delta | A/A control median delta |"
     print -r -- "| --- | --- | --- | --- | --- | --- |"
-    jq -r '.cases | to_entries[] | . as $e | if .value.failure then "| \(.key) | failure | failure | \(.value.failure | tojson) | | |" else "| \(.key)\(if .value.flag then " (flag)" else "" end) | \(.value.results.baseline.median) / \(.value.results.baseline.p95) | \(.value.results.candidate.median) / \(.value.results.candidate.p95) | \(.value.change.median_delta_percent | . * 10 | round / 10)% | \(.value.change.p95_delta_percent | . * 10 | round / 10)% | " end' "$output" | while IFS= read -r line; do
+    jq -r '.cases | to_entries[] | . as $e | if .value.failure then "| \(.key) | failure | failure | \(.value.failure | tojson) | | " else "| \(.key)\(if .value.flag then " (flag)" else "" end) | \(.value.results.baseline.median) / \(.value.results.baseline.p95) | \(.value.results.candidate.median) / \(.value.results.candidate.p95) | \(.value.change.median_delta_percent | . * 10 | round / 10)% | \(.value.change.p95_delta_percent | . * 10 | round / 10)% | " end' "$output" | while IFS= read -r line; do
       case_name=${${line#| }%% *}
-      ctrl=$(jq -r --arg k "$case_name" '.control[$k].change.median_delta_percent // "n/a" | if type == "number" then (. * 10 | round / 10 | tostring) + "%" else . end' "$output")
-      print -r -- "${line} ${ctrl} |"
+      ctrl=$(jq -r --arg k "$case_name" '.control[$k] | if . == null then "n/a" elif .failure != null then "failure: \(.failure.candidate // .failure.baseline)" elif (.change.median_delta_percent | type) == "number" then (.change.median_delta_percent * 10 | round / 10 | tostring) + "%" else "n/a" end' "$output")
+      print -r -- "${line}${ctrl} |"
     done
     print
     print -r -- "Health (baseline to candidate): functions after source $(jq -r .health.baseline.functions_after_source "$output") to $(jq -r .health.candidate.functions_after_source "$output"), parameters $(jq -r .health.baseline.parameters_after_source "$output") to $(jq -r .health.candidate.parameters_after_source "$output"), zi.zsh $(jq -r '.health.baseline["lines:zi.zsh"]' "$output") to $(jq -r '.health.candidate["lines:zi.zsh"]' "$output") lines, zcompile $(jq -r '.health.baseline["zcompile_ms:zi.zsh"] | . * 10 | round / 10' "$output") to $(jq -r '.health.candidate["zcompile_ms:zi.zsh"] | . * 10 | round / 10' "$output") ms."

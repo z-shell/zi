@@ -63,6 +63,13 @@ zmodload zsh/datetime || die "zsh/datetime is required"
 typeset -a cases
 if (( $#wanted )); then
   for c in "${wanted[@]}"; do (( ${all_cases[(I)$c]} )) || die "unknown case: $c"; done
+  # A repeated selection would run the case twice per round and write the
+  # same report key twice, so the sample count would no longer be the truth.
+  typeset -a seen
+  for c in "${wanted[@]}"; do
+    (( ${seen[(I)$c]} )) && die "--case $c given more than once"
+    seen+=( "$c" )
+  done
   cases=( "${wanted[@]}" )
 else
   cases=( "${all_cases[@]}" )
@@ -86,6 +93,10 @@ for manifest_name in "${manifest_files[@]}"; do
   (( ${manifest_listed[(I)${manifest_name:t:r}]} )) || die "${manifest_name:t} is not listed in repositories.txt"
 done
 integer manifest_count=$#manifest_listed
+# The case is named for its inventory. A different count is a different
+# workload that is not comparable with recorded manifest-21 results: rename or
+# version the case and its baseline instead of letting the number drift.
+(( manifest_count == 21 )) || die "manifest-21 reads exactly 21 vendored manifests, found $manifest_count"
 
 typeset work
 work=$(command mktemp -d "${TMPDIR:-/tmp}/zi-benchmark.XXXXXXXX") || die "could not create a work directory"

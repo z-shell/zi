@@ -17,7 +17,9 @@ ZI[BIN_DIR]=$BENCH_CHECKOUT
 typeset -F6 t0 t1
 zle() { return 1; }
 start() { t0=$EPOCHREALTIME; }
-stop()  { t1=$EPOCHREALTIME; print -r -- $(( (t1 - t0) * 1000 )); }
+mark()  { t1=$EPOCHREALTIME; }
+elapsed() { print -r -- $(( (t1 - t0) * 1000 )); }
+stop()  { mark; elapsed; }
 load_zi() { builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home || exit 3; }
 plugins() { local i; for i in {1..10}; do print -r -- "$BENCH_FIXTURES/plugins/p$i"; done; }
 # Every fixture plugin defines a function, an alias, and a global parameter.
@@ -44,7 +46,11 @@ case $BENCH_CASE in
     # Zi does not compile itself on source; the difference between these two
     # is the persisted home state (prepared directories, completion dump)
     # that the reused home carries over from the previous sample.
-    start; builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; stop ;;
+    # zi.zsh does not propagate a failed .zi-prepare-home, so a successful
+    # source can leave the home unprepared; only a ready home is timed.
+    start; builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; mark
+    [[ -n ${ZI[HOME_READY]} ]] || exit 4
+    elapsed ;;
   light-load-10)
     load_zi; start; for p in $(plugins); do zi light %"$p" || exit 3; done; stop
     all_loaded || exit 4 ;;

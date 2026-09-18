@@ -26,14 +26,14 @@ zsh benchmarks/compare.zsh --baseline results/baseline.json --candidate results/
   --control results/control.json --output comparison.json --markdown comparison.md
 ```
 
-Defaults are 5 warmups and 30 samples; `--case NAME` selects a subset. `run.zsh` writes one JSON report per variant and exits 1, after writing every report, when a workload fails functionally. `compare.zsh` reports median, p95, min and the sample count per variant, the median and p95 deltas, and an A/A control column from the second baseline measurement so the noise floor is visible next to the real comparison. A case whose median regresses over 10% or whose p95 regresses over 15% is flagged for review; flags never fail, and they are null when the two reports are not comparable (different Zsh version, architecture, sample or warmup count). A functional failure on either side invalidates that case and exits 1, because timing a broken behaviour is meaningless. The manifest case asserts that it read exactly the inventory in `tests/fixtures/package-manifests/repositories.txt`.
+Defaults are 5 warmups and 30 samples; `--case NAME` selects a subset. `run.zsh` writes one JSON report per variant and exits 1, after writing every report, when a workload fails functionally. `compare.zsh` reports median, p95, min and the sample count per variant, the median and p95 deltas, and an A/A control column from the second baseline measurement so the noise floor is visible next to the real comparison. A case whose median regresses over 10% or whose p95 regresses over 15% is flagged for review; flags never fail, and they are null when the two reports are not comparable (different Zsh version, architecture, sample or warmup count). A functional failure on either side invalidates that case and exits 1, because timing a broken behaviour is meaningless. The manifest case is named for its inventory: the runner requires exactly 21 vendored manifests, listed in `tests/fixtures/package-manifests/repositories.txt`, and each sample re-asserts that count; a changed inventory is a different workload and needs a renamed or versioned case rather than a drifting number.
 
 ## Read results carefully
 
 - Hosted runners differ in hardware and load. Compare only within one run, and only when `comparable` is true (same Zsh version, architecture, and sample count).
 - The fixture plugins are tiny; the cases isolate Zi's own overhead, not a real configuration's plugin bodies.
 - `source-reused-home` is the everyday startup cost; `source-fresh-home` adds the first-run directory preparation.
-- `tests/benchmark-harness.zsh` proves the runner and comparer: shape, A/A, a synthetic 30% regression flagged, a functional failure invalidated.
+- `tests/benchmark-harness.zsh` proves the runner and comparer: shape, A/A, a synthetic 30% regression flagged, a functional failure invalidated, a control-only failure rendered, a repeated `--case` rejected, and six cells in every table row.
 
 ## Where it runs
 

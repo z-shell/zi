@@ -1782,7 +1782,13 @@ builtin setopt no_aliases
     # re-reads ICE and schedules the service task (#524). The service runner's
     # own load has ZSRV_ID set and must still source the plugin, and a
     # caller-requested cloneonly'' keeps its download-only contract.
-    (( ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]] && ___pack_service=1
+    (( ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]] && {
+      ___pack_service=1
+      # The callers read and clear this: only a load that actually stopped
+      # here may be re-queued as a service. A snippet package returned above
+      # already loaded synchronously and must not be queued a second time.
+      ZI[pack-service-deferred]=$___id_as
+    }
   }
   ZI_SICE[$___id_as]=
   .zi-pack-ice "$___id_as"
@@ -2610,8 +2616,10 @@ return retval
       # A command-supplied turbo ice queued this as an ordinary task before
       # the pack'' profile was read. If the install just revealed service'',
       # .zi-load stopped after installing (#524) and no dispatcher is on the
-      # stack to promote the task, so start the service here.
-      if (( ___load_rc == 0 && ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]]; then
+      # stack to promote the task, so start the service here. The flag is
+      # set only when the load really stopped.
+      if [[ -n ${ZI[pack-service-deferred]} ]]; then
+        unset 'ZI[pack-service-deferred]'
         (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
         zpty -b "${___id//\//:} / ${ICE[service]}" '.zi-service p "$___mode" "$___id"'
       fi
@@ -3088,9 +3096,13 @@ zi() {
               unset 'ICE[cloneonly]'
             }
             # A fresh pack'' install reads the profile's ices only inside
-            # .zi-load, so service'' can appear after the decision above. The
-            # load stopped after installing; schedule the service now (#524).
-            (( !___turbo && ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]] && ___turbo=1
+            # .zi-load, so service'' can appear after the decision above. When
+            # the load stopped after installing, schedule the service now
+            # (#524); the flag is set only on that path.
+            if [[ -n ${ZI[pack-service-deferred]} ]] {
+              unset 'ZI[pack-service-deferred]'
+              (( ___turbo )) || ___turbo=1
+            }
           }
           if (( ___turbo && ZI[HAVE_SCHEDULER] && 0 == ___last_retval )) {
             ICE[wait]="${ICE[wait]:-${ICE[service]:+0}}"

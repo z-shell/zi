@@ -163,6 +163,23 @@ task_words=( ${(z)ZI_TASKS[-1]} )
 }
 unfunction zpty
 
+# A package that is both is-snippet'' and service'' still loads synchronously
+# through .zi-load-snippet (that path returns before the deferral), so it must
+# not be queued a second time as a service task.
+builtin print -r -- '{"zsh-data":{"plugin-info":{"user":"fixture","plugin":"svc","url":"https://example.invalid/svc.zsh"},"zi-ices":{"default":{"is-snippet":"","id-as":"svc-snippet","service":"svc-snippet"}}}}' \
+  > ./snippet.json || return 1
+typeset -a snippet_loads
+.zi-load-snippet() { snippet_loads+=( "$*" ); return 0; }
+tasks_before=$#ZI_TASKS
+zi pack'./snippet.json:default' for @svc-snippet || {
+  builtin print -u2 -r -- "snippet package: expected status 0, got $?"
+  return 1
+}
+(( $#snippet_loads == 1 )) || { builtin print -u2 -r -- "snippet package: expected one snippet load, got ${#snippet_loads}"; return 1; }
+(( $#ZI_TASKS == tasks_before )) || { builtin print -u2 -r -- "snippet package: queued a service task for a load that was not deferred: ${ZI_TASKS[-1]}"; return 1; }
+[[ -z ${ZI[pack-service-deferred]} ]] || { builtin print -u2 -r -- "snippet package: stale deferral flag"; return 1; }
+unfunction .zi-load-snippet
+
 # The service runner performs the deferred load itself with ZSRV_ID set. It
 # must not be deferred again: emulate .zi-run-task's ICE restore and the
 # runner's environment, then load.

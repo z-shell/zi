@@ -1,0 +1,31 @@
+{
+  "name": "zsh-any-gem",
+  "description": "A package that can install any Ruby Gem and expose its binaries",
+  "homepage": "https://github.com/z-shell/any-gem",
+  "license": "MIT",
+  "keywords": [
+    "npm wrapper",
+    "zpackage",
+    "zsh",
+    "gem"
+  ],
+  "zsh-data": {
+    "plugin-info": {
+      "user": "z-shell",
+      "plugin": "0",
+      "requires": "npm;bgn"
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "id-as": "${${:-%IDAS%}:-%GEM%}",
+        "gem": "%GEM%;%GEM2%;%GEM3%;%GEM4%;%GEM5%;%GEM6%;%GEM7%;%OTHER%",
+        "sbin": "g:bin/*",
+        "atpull": "%atclone",
+        "nocompile": ""
+      }
+    }
+  }
+}

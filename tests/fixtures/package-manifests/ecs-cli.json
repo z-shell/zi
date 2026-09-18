@@ -1,0 +1,46 @@
+{
+  "name": "zsh-ecs-cli",
+  "version": "1.21.0",
+  "contributors": [],
+  "dependencies": {},
+  "deprecated": false,
+  "description": "The Amazon ECS CLI enables users to run their applications on ECS/Fargate using the Docker Compose file format, quickly provision resources, push/pull images in ECR, and monitor running applications on ECS/Fargate.",
+  "devDependencies": {},
+  "homepage": "https://github.com/aws/amazon-ecs-cli",
+  "license": "MIT",
+  "keywords": [
+    "ECS",
+    "CLI"
+  ],
+  "author": "Amazon.com, Inc.",
+  "bugs": {
+    "url": "https://github.com/aws/amazon-ecs-cli/issues"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "url": "https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-${(M)OSTYPE#(linux|darwin)}-amd64-latest",
+      "message": "A snippet providing The Amazon ECS CLI, i.e.: the `ecs-cli' command."
+    },
+    "zi-ices": {
+      "default": {
+        "is-snippet": "",
+        "lucid": "",
+        "as": "null",
+        "mv": "*latest -> ecs-cli",
+        "atclone": "chmod +x *; cp -vf ecs-cli $ZPFX/bin",
+        "atpull": "%atclone",
+        "nocompile": ""
+      },
+      "bgn": {
+        "is-snippet": "",
+        "lucid": "",
+        "as": "null",
+        "mv": "*latest -> ecs-cli",
+        "atclone": "chmod +x *",
+        "atpull": "%atclone",
+        "sbin": "ecs-cli",
+        "nocompile": ""
+      }
+    }
+  }
+}

@@ -3,8 +3,14 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Every focused test under tests/ is registered by hand as a workflow job. A
-# test nobody registered never runs and nothing notices (#549), so assert that
-# each tests/*.zsh is invoked by at least one workflow file.
+# test nobody registered never runs and nothing notices (#549). Each check
+# reads one specific workflow, so a test mentioned by an unrelated workflow
+# cannot satisfy a requirement that belongs to another:
+#
+#   1. every tests/*.zsh is invoked by zsh-n.yml, except the tests owned by
+#      another workflow, which must be invoked by that workflow;
+#   2. the promotion set below is invoked by promotion-readiness.yml;
+#   3. every tests/*.zsh a workflow invokes exists.
 
 builtin emulate -R zsh
 setopt pipe_fail extended_glob
@@ -15,17 +21,53 @@ fail() {
 }
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
-typeset -a workflows tests missing
-workflows=( "${project_root}"/.github/workflows/*.yml(N) )
-(( $#workflows )) || fail "no workflow files under ${project_root}/.github/workflows"
+typeset workflow_dir="${project_root}/.github/workflows"
+
+# Tests whose owning workflow is not zsh-n.yml.
+typeset -A owner
+owner=(
+  public-contract-impact.zsh public-contract-impact.yml
+)
+# Tests the promotion workflow must keep running on the exact candidate head.
+typeset -a promotion_set
+promotion_set=(
+  version-reporting.zsh
+  self-update-reload.zsh
+  path-resolution.zsh
+  archive-extraction.zsh
+  completion-refresh.zsh
+  snippet-directory-mirror.zsh
+)
+
+invokes() {  # invokes <workflow file> <test basename>
+  local text
+  text="$(<"${workflow_dir}/$1")" || return 1
+  [[ $text == *"tests/$2"* ]]
+}
+
+typeset -a tests missing
 tests=( "${project_root}"/tests/*.zsh(N) )
 (( $#tests )) || fail "no tests under ${project_root}/tests"
+[[ -r ${workflow_dir}/zsh-n.yml && -r ${workflow_dir}/promotion-readiness.yml ]] ||
+  fail "zsh-n.yml or promotion-readiness.yml is missing"
 
-typeset test_path workflow_text
-workflow_text="$(command cat -- "${workflows[@]}")" || fail "read workflow files"
+typeset test_path name
 for test_path in "${tests[@]}"; do
-  [[ $workflow_text == *"tests/${test_path:t}"* ]] || missing+=( "tests/${test_path:t}" )
+  name=${test_path:t}
+  invokes "${owner[$name]:-zsh-n.yml}" "$name" || missing+=( "${name} (${owner[$name]:-zsh-n.yml})" )
 done
 (( $#missing == 0 )) || fail "tests invoked by no workflow: ${(j:, :)missing}"
 
-builtin print -r -- "ok - every focused test is invoked by a workflow (${#tests} tests, ${#workflows} workflows)"
+for name in "${promotion_set[@]}"; do
+  invokes promotion-readiness.yml "$name" || missing+=( "$name" )
+done
+(( $#missing == 0 )) || fail "promotion set missing from promotion-readiness.yml: ${(j:, :)missing}"
+
+typeset -a referenced
+referenced=( ${(u)${(M)${=$(command cat -- "${workflow_dir}"/*.yml)}:#tests/[a-z0-9-]##.zsh}} )
+for name in "${referenced[@]}"; do
+  [[ -r ${project_root}/$name ]] || missing+=( "$name" )
+done
+(( $#missing == 0 )) || fail "workflows invoke tests that do not exist: ${(j:, :)missing}"
+
+builtin print -r -- "ok - every focused test is registered where it belongs (${#tests} tests, promotion set ${#promotion_set})"

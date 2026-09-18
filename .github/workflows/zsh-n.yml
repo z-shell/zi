@@ -11,6 +11,8 @@ on:
       - "lib/**"
       - "contracts/package-manifest-v1.json"
       - "scripts/validate-package-manifest.py"
+      - "tests/**"
+      - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
       - "tests/ci-registration.zsh"
@@ -52,6 +54,8 @@ on:
       - "lib/**"
       - "contracts/package-manifest-v1.json"
       - "scripts/validate-package-manifest.py"
+      - "tests/**"
+      - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
       - "tests/ci-registration.zsh"
@@ -195,8 +199,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
       - name: Install Zsh
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test release tag verification

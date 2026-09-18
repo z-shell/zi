@@ -20,17 +20,43 @@ fail() {
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
 typeset fixture_dir="${project_root}/tests/fixtures/package-manifests"
-typeset -a fixtures
+typeset -a fixtures listed
 fixtures=( "${fixture_dir}"/*.json(N) )
 (( $#fixtures )) || fail "no fixtures under ${fixture_dir}"
+
+# repositories.txt is the declared inventory the refresh script uses; the
+# snapshots on disk must match it exactly, or a removed or unlisted manifest
+# would silently change what the reader is proven against.
+[[ -r ${fixture_dir}/repositories.txt ]] || fail "repositories.txt is missing"
+# A read loop, not $(<file) in an array assignment: the syntax sweep's zsh -n
+# evaluates that substitution and fails on the runner (see the refresh script).
+typeset name
+while IFS= read -r name; do
+  [[ -n $name ]] && listed+=( "$name" )
+done < "${fixture_dir}/repositories.txt"
+for name in "${listed[@]}"; do
+  [[ -r ${fixture_dir}/${name}.json ]] || fail "repositories.txt lists ${name} but ${name}.json is missing"
+done
+for name in "${fixtures[@]}"; do
+  (( ${listed[(I)${name:t:r}]} )) || fail "${name:t} is not listed in repositories.txt"
+done
+(( $#listed == $#fixtures )) || fail "inventory mismatch: ${#listed} listed, ${#fixtures} snapshots"
 
 typeset temp_root
 temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-manifest-fixtures.XXXXXXXX")" ||
   fail "create temporary directory"
 trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
 
-env \
+# A clean environment: an exported absolute XDG_* value would make zi.zsh
+# read or write state outside the temporary directory.
+env -i \
+  PATH="$PATH" \
   HOME="$temp_root" \
+  ZDOTDIR="$temp_root" \
+  XDG_DATA_HOME="$temp_root/data" \
+  XDG_CACHE_HOME="$temp_root/cache" \
+  XDG_CONFIG_HOME="$temp_root/config" \
+  TMPDIR="$temp_root" \
   ZI_TEST_CHECKOUT="$project_root" \
   FIXTURE_DIR="$fixture_dir" \
   zsh -f <<'ZSH' || fail "a vendored manifest does not resolve through .zi-read-package-manifest"

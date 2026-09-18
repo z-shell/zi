@@ -29,6 +29,7 @@ The `Promotion gate` check directly depends on every constituent below and fails
 | Trunk | `Trunk` | Pending |
 | CodeQL | `CodeQL` | Pending |
 | Exact-candidate clean install and startup | `Clean install and startup` | Pending |
+| Real objects install, update, unload, delete | `Real objects install, update, unload, delete` | Pending |
 | Aggregate | `Promotion gate` | Pending |
 
 - [ ] The candidate SHA has not changed since every required check completed.

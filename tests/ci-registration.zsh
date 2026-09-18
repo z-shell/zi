@@ -39,14 +39,33 @@ promotion_set=(
   snippet-directory-mirror.zsh
 )
 
-# A test is invoked only by an executable `run:` line that passes its path to
-# zsh; a mention in a `paths:` filter or a `hashFiles()` condition is not an
-# invocation, so deleting the `run:` line must fail this guard.
+# A test is invoked only by an executable `run:` step. The scanner reads the
+# workflow as YAML text: a `run:` key (optionally as a list item) starts a
+# step command, a `|` or `>` value continues on the more-indented lines that
+# follow, and a line whose first non-blank character is `#` is a comment and
+# never a key. A mention in a `paths:` filter, a `hashFiles()` condition, or a
+# commented-out step is therefore not an invocation.
 invokes() {  # invokes <workflow file> <test basename>
-  local line
+  local line command indent block_indent=-1
+  local pattern="(^|[[:space:]])zsh([[:space:]]+-[[:alnum:]]+)*[[:space:]]+tests/${2//./\\.}([[:space:]]|$)"
   while IFS= read -r line; do
-    [[ $line == *run:* ]] || continue
-    [[ $line =~ "(^|[[:space:]])zsh([[:space:]]+-[[:alnum:]]+)*[[:space:]]+tests/${2//./\\.}([[:space:]]|$)" ]] && return 0
+    if (( block_indent >= 0 )); then
+      indent=${#${line%%[^ ]*}}
+      if [[ -n ${line//[[:space:]]/} ]] && (( indent <= block_indent )); then
+        block_indent=-1
+      else
+        [[ $line =~ $pattern ]] && return 0
+        continue
+      fi
+    fi
+    [[ $line =~ '^([[:space:]]*)(-[[:space:]]+)?run:[[:space:]]*(.*)$' ]] || continue
+    command=${match[3]}
+    if [[ $command == [\|\>]* ]]; then
+      block_indent=${#match[1]}
+      (( ${+match[2]} )) && [[ -n ${match[2]} ]] && block_indent=$(( block_indent + ${#match[2]} ))
+      continue
+    fi
+    [[ $command =~ $pattern ]] && return 0
   done < "${workflow_dir}/$1"
   return 1
 }

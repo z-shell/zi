@@ -18,6 +18,7 @@ on:
       - "tests/disk-ice-resolution.zsh"
       - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
+      - "tests/ice-tokenizer.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
       - "tests/package-manifest-contract.zsh"
@@ -52,6 +53,7 @@ on:
       - "tests/disk-ice-resolution.zsh"
       - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
+      - "tests/ice-tokenizer.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
       - "tests/package-manifest-contract.zsh"
@@ -359,6 +361,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test hook ownership
         run: zsh -f tests/hook-ownership.zsh
+
+  ice-tokenizer:
+    name: Ice tokenizer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test ice tokenizer
+        run: zsh -f tests/ice-tokenizer.zsh
 
   message-formatting:
     name: Message formatting

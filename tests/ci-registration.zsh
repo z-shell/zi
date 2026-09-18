@@ -47,7 +47,10 @@ promotion_set=(
 # commented-out step is therefore not an invocation.
 invokes() {  # invokes <workflow file> <test basename>
   local line command indent block_indent=-1
-  local pattern="(^|[[:space:]])zsh([[:space:]]+-[[:alnum:]]+)*[[:space:]]+tests/${2//./\\.}([[:space:]]|$)"
+  # The invocation must be the command itself: `zsh [-flags] tests/<name>` at
+  # the start of the command text, so `echo zsh -f tests/x.zsh` or
+  # `true # zsh -f tests/x.zsh` do not count.
+  local pattern="^[[:space:]]*zsh([[:space:]]+-[[:alnum:]]+)*[[:space:]]+tests/${2//./\\.}([[:space:]]|$)"
   while IFS= read -r line; do
     if (( block_indent >= 0 )); then
       indent=${#${line%%[^ ]*}}

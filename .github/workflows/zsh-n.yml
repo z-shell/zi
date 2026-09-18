@@ -11,8 +11,11 @@ on:
       - "lib/**"
       - "contracts/package-manifest-v1.json"
       - "scripts/validate-package-manifest.py"
+      - "tests/**"
+      - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
+      - "tests/ci-registration.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
       - "tests/disk-ice-resolution.zsh"
@@ -34,6 +37,7 @@ on:
       - "tests/pack-service-first-install.zsh"
       - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
+      - "tests/release-tag-verification.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
@@ -50,8 +54,11 @@ on:
       - "lib/**"
       - "contracts/package-manifest-v1.json"
       - "scripts/validate-package-manifest.py"
+      - "tests/**"
+      - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
       - "tests/atinit-deferred-marker.zsh"
+      - "tests/ci-registration.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
       - "tests/disk-ice-resolution.zsh"
@@ -73,6 +80,7 @@ on:
       - "tests/pack-service-first-install.zsh"
       - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
+      - "tests/release-tag-verification.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
@@ -173,6 +181,28 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh jq
       - name: Test that every vendored package manifest resolves through the reader
         run: zsh -f tests/package-manifest-fixtures.zsh
+
+  ci-registration:
+    name: CI Registration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test that every focused test is a registered job
+        run: zsh -f tests/ci-registration.zsh
+
+  release-tag-verification:
+    name: Release Tag Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test release tag verification
+        run: zsh -f tests/release-tag-verification.zsh
 
   version-reporting:
     name: Version reporting

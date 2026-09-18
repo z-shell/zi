@@ -69,6 +69,24 @@ resolve "$reordered" b || { builtin print -u2 -r -- "reordered manifest failed t
   return 1
 }
 
+# The pre-rename member name `zplugin-ices' still ships in published packages
+# (z-shell/github-issues, z-shell/github-issues-srv). The reader that replaced
+# the positional parser must accept it when `zi-ices' is absent, and prefer
+# `zi-ices' when a manifest carries both (#544).
+local legacy='{"name":"zsh-github-issues-srv","zsh-data":{"plugin-info":{"user":"z-shell","plugin":"zsh-github-issues"},
+  "zplugin-ices":{"default":{"id-as":"github-issues-srv","service":"gh-issues","pick":"zsh-github-issues.service.zsh"}}}}'
+local -A l
+resolve "$legacy" l || { builtin print -u2 -r -- "legacy zplugin-ices manifest failed to resolve"; return 1; }
+[[ ${l[service]} == gh-issues && ${l[id-as]} == github-issues-srv ]] || {
+  builtin print -u2 -r -- "legacy zplugin-ices resolved service='${l[service]}' id-as='${l[id-as]}'"
+  return 1
+}
+local both='{"zsh-data":{"plugin-info":{"user":"u","plugin":"p"},
+  "zplugin-ices":{"default":{"as":"old"}},"zi-ices":{"default":{"as":"new"}}}}'
+local -A bb
+resolve "$both" bb || return 1
+[[ ${bb[as]} == new ]] || { builtin print -u2 -r -- "zi-ices must win over zplugin-ices, got as='${bb[as]}'"; return 1; }
+
 # Escapes. Build every backslash at run time so no quoting layer can eat one.
 local bs=$'\134' nl=$'\n' tab=$'\t'
 local escaped='{"zsh-data":{"plugin-info":{"user":"u","plugin":"p"},"zi-ices":{"default":{

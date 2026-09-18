@@ -192,6 +192,11 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   local -a ___level1
   ___level1=( "${(@Q)${(@z)___parsed[1/1]}}" )
   integer ___info_pos=${___level1[(I)plugin-info]} ___ices_pos=${___level1[(I)zi-ices]}
+  # `zplugin-ices' is the pre-rename spelling of the same member. Published
+  # packages still carry it, and the positional reader this replaced never
+  # looked at the name at all, so accept it when `zi-ices' is absent (#544).
+  # The contract and validator keep requiring `zi-ices'.
+  (( ___ices_pos )) || ___ices_pos=${___level1[(I)zplugin-ices]}
   integer ___info_slot=$(( (___info_pos + 1) / 2 )) ___ices_slot=$(( (___ices_pos + 1) / 2 ))
 
   local -a ___info ___profiles

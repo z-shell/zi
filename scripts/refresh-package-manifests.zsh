@@ -44,9 +44,12 @@ done < "${fixture_dir}/repositories.txt"
 integer failed=0
 typeset repository staging
 for repository in "${repositories[@]}"; do
-  # Download beside the fixture and rename only after a complete transfer, so
-  # an interrupted fetch never leaves an empty or partial snapshot behind.
-  staging="${fixture_dir}/.${repository}.json.part"
+  # Download beside the fixture into a staging file unique to this process,
+  # then rename only after a complete transfer: an interrupted fetch never
+  # leaves a partial snapshot, and two concurrent refreshes cannot share an
+  # inode and write through each other's rename.
+  staging=$(command mktemp -- "${fixture_dir}/.${repository}.json.XXXXXX") ||
+    { print -u2 -r -- "FAILED ${repository}: could not create a staging file"; failed=1; continue }
   if curl -fsSL "https://raw.githubusercontent.com/${owner}/${repository}/HEAD/package.json" \
       -o "$staging" && command mv -f -- "$staging" "${fixture_dir}/${repository}.json"; then
     print -r -- "fetched ${repository}"

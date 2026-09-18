@@ -181,7 +181,7 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh jq
       - name: Test that every vendored package manifest resolves through the reader
         run: zsh -f tests/package-manifest-fixtures.zsh
-||||||| parent of 7a6187e (test(ci): guard that every focused test is a registered job)
+
   ci-registration:
     name: CI Registration
     runs-on: ubuntu-latest

@@ -20,10 +20,24 @@ start() { t0=$EPOCHREALTIME; }
 stop()  { t1=$EPOCHREALTIME; print -r -- $(( (t1 - t0) * 1000 )); }
 load_zi() { builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home || exit 3; }
 plugins() { local i; for i in {1..10}; do print -r -- "$BENCH_FIXTURES/plugins/p$i"; done; }
-# The ten fixture functions prove that every plugin ran (or was unloaded);
-# checking only the last one would accept a partial workload.
-all_loaded()   { local i; for i in {1..10}; do (( $+functions[p${i}_fn] )) || return 1; done; return 0; }
-none_loaded()  { local i; for i in {1..10}; do (( $+functions[p${i}_fn] )) && return 1; done; return 0; }
+# Every fixture plugin defines a function, an alias, and a global parameter.
+# All thirty artifacts prove that every plugin ran, and that an unload
+# removed every kind of state it owns; checking one kind, or only the last
+# plugin, would accept a partial workload or a partial cleanup.
+all_loaded() {
+  local i
+  for i in {1..10}; do
+    (( $+functions[p${i}_fn] && $+aliases[p${i}_alias] && $+parameters[P${i}_PARAM] )) || return 1
+  done
+  return 0
+}
+none_loaded() {
+  local i
+  for i in {1..10}; do
+    (( $+functions[p${i}_fn] || $+aliases[p${i}_alias] || $+parameters[P${i}_PARAM] )) && return 1
+  done
+  return 0
+}
 
 case $BENCH_CASE in
   source-fresh-home|source-reused-home)

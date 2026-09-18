@@ -2468,8 +2468,9 @@ builtin setopt no_aliases
     # A no-value ice followed by more text is not that ice: `sharkdp/hexyl`
     # must not tokenize as `sh` with the value `arkdp/hexyl`. The word is the
     # plugin or snippet ID, so tokenizing stops here. Valued ices keep their
-    # remainder as before.
-    [[ ${match[2]} = (${~ZI[nval-ice-list]}) && -n ${match[3]#(:|=)} ]] && break
+    # remainder as before. `svn` is a flag too but lives outside
+    # ZI[nval-ice-list] because side.zsh orders it last; it is named here.
+    [[ ${match[2]} = (${~ZI[nval-ice-list]}|svn) && -n ${match[3]#(:|=)} ]] && break
     ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}"
     retval+=1
   done

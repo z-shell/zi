@@ -71,6 +71,13 @@ tokenize 'bash-prefixed ID' 1 light-mode bashtop/plugin
 assert_equal "${+ZI_ICES[bash]}" 0 'bash ice is not invented from the ID'
 pass 'other no-value ice prefixes are treated the same'
 
+# `svn` is a flag kept outside ZI[nval-ice-list]; it gets the same treatment.
+tokenize 'svn-prefixed ID' 1 lucid svnfoo/plugin
+assert_equal "${+ZI_ICES[svn]}" 0 'svn ice is not invented from the ID'
+tokenize 'bare svn flag' 2 svn lucid
+assert_equal "${+ZI_ICES[svn]}" 1 'bare svn is still an ice'
+pass 'the svn flag follows the no-value rule'
+
 # No-value ices on their own still work, including the empty-quote spelling
 # the shell reduces to the bare name and the `--` prefix form.
 tokenize 'bare no-value ices' 3 sh light-mode null

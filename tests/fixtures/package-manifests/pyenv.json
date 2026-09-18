@@ -7,7 +7,11 @@
     "url": "https://github.com/pyenv/pyenv/issues"
   },
   "license": "MIT",
-  "keywords": ["version management", "python version management", "zsh"],
+  "keywords": [
+    "version management",
+    "python version management",
+    "zsh"
+  ],
   "zsh-data": {
     "plugin-info": {
       "user": "pyenv",

@@ -5,7 +5,11 @@
   "bugs": {
     "url": "https://github.com/zsh-users/zsh/issues"
   },
-  "keywords": ["zpackage", "zshell", "zsh"],
+  "keywords": [
+    "zpackage",
+    "zshell",
+    "zsh"
+  ],
   "zsh-data": {
     "plugin-info": {
       "user": "zsh-users",

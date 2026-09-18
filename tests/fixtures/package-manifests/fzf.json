@@ -6,7 +6,12 @@
   },
   "description": "A command-line fuzzy finder",
   "homepage": "https://github.com/junegunn/fzf",
-  "keywords": ["fuzzy finder", "fuzzy search", "fuzzy searching", "fuzzy"],
+  "keywords": [
+    "fuzzy finder",
+    "fuzzy search",
+    "fuzzy searching",
+    "fuzzy"
+  ],
   "license": "MIT",
   "zsh-data": {
     "plugin-info": {

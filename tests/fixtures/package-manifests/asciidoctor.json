@@ -12,7 +12,12 @@
   "dependencies": {},
   "deprecated": false,
   "devDependencies": {},
-  "keywords": ["asciidoc", "asciidoc processor", "asciidoc converter", "zsh"],
+  "keywords": [
+    "asciidoc",
+    "asciidoc processor",
+    "asciidoc converter",
+    "zsh"
+  ],
   "zsh-data": {
     "plugin-info": {
       "user": "z-shell",

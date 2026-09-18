@@ -8,7 +8,10 @@
   "devDependencies": {},
   "homepage": "https://github.com/aws/amazon-ecs-cli",
   "license": "MIT",
-  "keywords": ["ECS", "CLI"],
+  "keywords": [
+    "ECS",
+    "CLI"
+  ],
   "author": "Amazon.com, Inc.",
   "bugs": {
     "url": "https://github.com/aws/amazon-ecs-cli/issues"

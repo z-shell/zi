@@ -4,7 +4,11 @@
   "description": "This special ZI package – is designed for easy installing of any Node modules inside the plugin directory, exposing their binaries via shims (i.e.: forwarder scripts) created automatically by Bin-Gem-Node annex.",
   "homepage": "https://github.com/z-shell/any-node",
   "license": "MIT",
-  "keywords": ["zpackage", "npm wrapper", "zsh"],
+  "keywords": [
+    "zpackage",
+    "npm wrapper",
+    "zsh"
+  ],
   "author": "Z-Shell Community",
   "bugs": {
     "url": "https://github.com/z-shell/any-node/issues"

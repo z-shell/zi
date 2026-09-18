@@ -7,7 +7,12 @@
   "bugs": {
     "url": "https://github.com/trapd00r/LS_COLORS/issues"
   },
-  "keywords": ["terminal colors", "GNU ls colors", "exa colors", "zsh"],
+  "keywords": [
+    "terminal colors",
+    "GNU ls colors",
+    "exa colors",
+    "zsh"
+  ],
   "zsh-data": {
     "plugin-info": {
       "user": "trapd00r",

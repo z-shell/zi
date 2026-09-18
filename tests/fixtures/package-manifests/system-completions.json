@@ -3,7 +3,10 @@
   "description": "A package that brings stock Zsh completions under the control of ZI",
   "homepage": "https://github.com/z-shell/system-completions/",
   "license": "MIT",
-  "keywords": ["completions", "zsh"],
+  "keywords": [
+    "completions",
+    "zsh"
+  ],
   "bugs": {
     "url": "https://github.com/z-shell/system-completions/issues"
   },

@@ -5,7 +5,10 @@
   "bugs": {
     "url": "https://github.com/romkatv/zsh-bin/issues"
   },
-  "keywords": ["Zshell", "zsh"],
+  "keywords": [
+    "Zshell",
+    "zsh"
+  ],
   "zsh-data": {
     "plugin-info": {
       "user": "romkatv",

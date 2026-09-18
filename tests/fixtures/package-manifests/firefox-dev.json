@@ -5,7 +5,13 @@
   "license": "Mozilla Public License",
   "deprecated": false,
   "author": "Z-Shell Community",
-  "keywords": ["internet browser", "web browser", "zpackage", "browser", "zsh"],
+  "keywords": [
+    "internet browser",
+    "web browser",
+    "zpackage",
+    "browser",
+    "zsh"
+  ],
   "zsh-data": {
     "plugin-info": {
       "url": "https://download.mozilla.org/?product=firefox-devedition-latest-ssl&os=${${${(M)OSTYPE##linux}:+linux64}:-${${(M)OSTYPE##darwin}:+osx}}&lang=en-US",

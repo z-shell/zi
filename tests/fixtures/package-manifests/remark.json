@@ -3,7 +3,12 @@
   "description": "Markdown processor powered by plugins part of the @unifiedjs collective",
   "license": "MIT",
   "homepage": "https://github.com/remarkjs/remark",
-  "keywords": ["markdown", "markdown processor", "markdown converter", "zsh"],
+  "keywords": [
+    "markdown",
+    "markdown processor",
+    "markdown converter",
+    "zsh"
+  ],
   "author": "@unifiedjs collective",
   "bugs": {
     "url": "https://github.com/remarkjs/remark/issues"

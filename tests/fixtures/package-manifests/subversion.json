@@ -3,7 +3,10 @@
   "description": "Subversion, a version control system",
   "license": "MIT",
   "homepage": "https://github.com/apache/subversion",
-  "keywords": ["apache subversion", "zsh"],
+  "keywords": [
+    "apache subversion",
+    "zsh"
+  ],
   "author": "Yuu Yamashita, Sam Stephenson, Mislav Marohnić, Josh Friend",
   "bugs": {
     "url": "https://github.com/apache/subversion"

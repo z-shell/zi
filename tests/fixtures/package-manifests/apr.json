@@ -3,7 +3,10 @@
   "description": "Apache Portable Runtime",
   "license": "MIT",
   "homepage": "https://github.com/z-package",
-  "keywords": ["apache portable runtime", "zsh"],
+  "keywords": [
+    "apache portable runtime",
+    "zsh"
+  ],
   "author": "Yuu Yamashita, Sam Stephenson, Mislav Marohnić, Josh Friend",
   "bugs": {
     "url": "https://github.com/apache/apr/issues"

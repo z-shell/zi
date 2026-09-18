@@ -3,7 +3,12 @@
   "description": "A package that can install any Ruby Gem and expose its binaries",
   "homepage": "https://github.com/z-shell/any-gem",
   "license": "MIT",
-  "keywords": ["npm wrapper", "zpackage", "zsh", "gem"],
+  "keywords": [
+    "npm wrapper",
+    "zpackage",
+    "zsh",
+    "gem"
+  ],
   "zsh-data": {
     "plugin-info": {
       "user": "z-shell",

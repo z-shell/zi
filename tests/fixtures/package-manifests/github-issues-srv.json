@@ -31,7 +31,11 @@
     "test": "test"
   },
   "homepage": "https://github.com/z-shell/zsh-github-issues",
-  "keywords": ["github issues", "github issues notifications", "zsh"],
+  "keywords": [
+    "github issues",
+    "github issues notifications",
+    "zsh"
+  ],
   "license": "MIT",
   "name": "zsh-github-issues-srv",
   "zsh-data": {

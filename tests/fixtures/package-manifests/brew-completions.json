@@ -3,7 +3,12 @@
   "description": "A package that brings homebrew completions under the control of ZI",
   "homepage": "https://github.com/z-shell/brew-completions/",
   "license": "GPL-3.0",
-  "keywords": ["completions", "homebrew", "brew", "zsh"],
+  "keywords": [
+    "completions",
+    "homebrew",
+    "brew",
+    "zsh"
+  ],
   "author": "Salvydas Lukosius",
   "bugs": {
     "url": "https://github.com/z-shell/brew-completions/issues"

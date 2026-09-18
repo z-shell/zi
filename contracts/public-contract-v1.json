@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": 1,
-  "evidence_reviewed": "2026-09-11",
+  "evidence_reviewed": "2026-09-18",
   "renames": [],
   "surfaces": [
     {
@@ -151,7 +151,7 @@
       "repository": "z-shell/src",
       "path": "public/zsh/init.zsh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/d5ec91f46a306117b9ff3dcdaf0b7b6de96fae7b/public/zsh/init.zsh"
+      "evidence": "https://github.com/z-shell/src/blob/d19ae4895189a0478d76c8c01967ae955d07319c/public/zsh/init.zsh"
     },
     {
       "repository": "z-shell/zd",
@@ -202,7 +202,7 @@
       "repository": "z-shell/z-a-default-ice",
       "path": "z-a-default-ice.plugin.zsh",
       "surfaces": ["annex-registration"],
-      "evidence": "https://github.com/z-shell/z-a-default-ice/blob/9a5eda0d6eedc8a6c3af1fbbda1c444d47062fe1/z-a-default-ice.plugin.zsh"
+      "evidence": "https://github.com/z-shell/z-a-default-ice/blob/e8c4ba9e1bfdd4423bc02eb1f4806dda2999d09d/z-a-default-ice.plugin.zsh"
     },
     {
       "repository": "z-shell/z-a-linkman",
@@ -226,7 +226,7 @@
       "repository": "z-shell/z-a-meta-plugins",
       "path": "z-a-meta-plugins.plugin.zsh",
       "surfaces": ["annex-registration"],
-      "evidence": "https://github.com/z-shell/z-a-meta-plugins/blob/c889e3450c1d8295fd08febdcaa4041817c51d89/z-a-meta-plugins.plugin.zsh"
+      "evidence": "https://github.com/z-shell/z-a-meta-plugins/blob/ba3479005c6a2ce5ba8beedb9344052d16898b84/z-a-meta-plugins.plugin.zsh"
     },
     {
       "repository": "z-shell/z-a-test",
@@ -250,7 +250,7 @@
       "repository": "z-shell/subversion",
       "path": "docs/README.md",
       "surfaces": ["compatibility-functions"],
-      "evidence": "https://github.com/z-shell/subversion/blob/6d4f18be2b0c61790bf94325d8bc857625328253/docs/README.md"
+      "evidence": "https://github.com/z-shell/subversion/blob/201a0b2061bc73e5942660653245fa3f6fe5d66d/docs/README.md"
     }
   ]
 }

@@ -28,8 +28,12 @@ fixtures=( "${fixture_dir}"/*.json(N) )
 # snapshots on disk must match it exactly, or a removed or unlisted manifest
 # would silently change what the reader is proven against.
 [[ -r ${fixture_dir}/repositories.txt ]] || fail "repositories.txt is missing"
-listed=( ${(f)"$(<${fixture_dir}/repositories.txt)"} )
+# A read loop, not $(<file) in an array assignment: the syntax sweep's zsh -n
+# evaluates that substitution and fails on the runner (see the refresh script).
 typeset name
+while IFS= read -r name; do
+  [[ -n $name ]] && listed+=( "$name" )
+done < "${fixture_dir}/repositories.txt"
 for name in "${listed[@]}"; do
   [[ -r ${fixture_dir}/${name}.json ]] || fail "repositories.txt lists ${name} but ${name}.json is missing"
 done

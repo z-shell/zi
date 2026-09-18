@@ -24,7 +24,7 @@
       "default": {
         "requires": "bgn;bash",
         "git": "",
-        "depth": 3,
+        "depth": "3",
         "lucid": "",
         "as": "completion",
         "atclone": "ln -sfv etc/nb-completion.zsh _nb",

@@ -42,10 +42,9 @@
     "plugin-info": {
       "user": "z-shell",
       "plugin": "zsh-github-issues",
-      "message": "The profile %PROFILE% has been installed.\nTo pull the messages the `github-issues-srv' package is also needed.",
-      "version": "1.0.0"
+      "message": "The profile %PROFILE% has been installed.\nTo pull the messages the `github-issues-srv' package is also needed."
     },
-    "zplugin-ices": {
+    "zi-ices": {
       "default": {
         "git": "",
         "lucid": "",

@@ -32,7 +32,13 @@ done
 
 typeset fixture_dir=${0:A:h:h}/tests/fixtures/package-manifests
 typeset -a repositories
-repositories=( ${(f)"$(<${fixture_dir}/repositories.txt)"} )
+typeset line
+# A read loop, not $(<file): zsh -n expands a command substitution inside an
+# array assignment even in no-exec mode, so the syntax sweep would fail on a
+# missing file instead of checking syntax.
+while IFS= read -r line; do
+  [[ -n $line ]] && repositories+=( "$line" )
+done < "${fixture_dir}/repositories.txt"
 integer failed=0
 typeset repository
 for repository in "${repositories[@]}"; do

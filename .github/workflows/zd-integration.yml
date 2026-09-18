@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   zd-test:
-    uses: z-shell/zd/.github/workflows/test-native.yml@fd0995d6f7958fea6c4abbc4fff81a6da2277b66 # z-shell/zd#95, #96, #107
+    uses: z-shell/zd/.github/workflows/test-native.yml@01c3477e48c0c31bb7225986bb1bac4270e151ff # z-shell/zd#121
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       zi_ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}

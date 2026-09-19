@@ -110,9 +110,11 @@ if [[ -n $markdown ]]; then
     print
     print -r -- "| Case | Baseline median / p95 ms | Candidate median / p95 ms | Median delta | p95 delta | A/A control median delta |"
     print -r -- "| --- | --- | --- | --- | --- | --- |"
-    jq -r '.cases | to_entries[] | . as $e | if .value.failure then "| \(.key) | failure | failure | \(.value.failure | tojson) | | " elif .value.unsupported then "| \(.key) | unsupported | \(if .value.unsupported.candidate != null then "unsupported" else "not compared" end) | \(.value.unsupported.baseline | tojson) | | " else "| \(.key)\(if .value.flag then " (flag)" else "" end) | \(.value.results.baseline.median) / \(.value.results.baseline.p95) | \(.value.results.candidate.median) / \(.value.results.candidate.p95) | \(.value.change.median_delta_percent | . * 10 | round / 10)% | \(.value.change.p95_delta_percent | . * 10 | round / 10)% | " end' "$output" | while IFS= read -r line; do
+    # A reason is child output and may contain a pipe; escaped, it stays in
+    # its own cell instead of splitting the row.
+    jq -r 'def cell: tojson | gsub("\\|"; "\\|"); .cases | to_entries[] | . as $e | if .value.failure then "| \(.key) | failure | failure | \(.value.failure | cell) | | " elif .value.unsupported then "| \(.key) | unsupported | \(if .value.unsupported.candidate != null then "unsupported" else "not compared" end) | \(.value.unsupported.baseline | cell) | | " else "| \(.key)\(if .value.flag then " (flag)" else "" end) | \(.value.results.baseline.median) / \(.value.results.baseline.p95) | \(.value.results.candidate.median) / \(.value.results.candidate.p95) | \(.value.change.median_delta_percent | . * 10 | round / 10)% | \(.value.change.p95_delta_percent | . * 10 | round / 10)% | " end' "$output" | while IFS= read -r line; do
       case_name=${${line#| }%% *}
-      ctrl=$(jq -r --arg k "$case_name" '.control[$k] | if . == null then "n/a" elif .failure != null then "failure: \(.failure.candidate // .failure.baseline)" elif .unsupported != null then "unsupported" elif (.change.median_delta_percent | type) == "number" then (.change.median_delta_percent * 10 | round / 10 | tostring) + "%" else "n/a" end' "$output")
+      ctrl=$(jq -r --arg k "$case_name" '.control[$k] | if . == null then "n/a" elif .failure != null then "failure: \(.failure.candidate // .failure.baseline | gsub("\\|"; "\\|"))" elif .unsupported != null then "unsupported" elif (.change.median_delta_percent | type) == "number" then (.change.median_delta_percent * 10 | round / 10 | tostring) + "%" else "n/a" end' "$output")
       print -r -- "${line}${ctrl} |"
     done
     print

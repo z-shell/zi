@@ -65,12 +65,15 @@ zmodload zsh/datetime || die "zsh/datetime is required"
 
 typeset -a cases
 if (( $#wanted )); then
-  for c in "${wanted[@]}"; do (( ${all_cases[(I)$c]} )) || die "unknown case: $c"; done
+  # (Ie) matches the requested name literally: a pattern such as source-*
+  # is not a case name and must be a usage error here, not a workload failure
+  # in case.zsh.
+  for c in "${wanted[@]}"; do (( ${all_cases[(Ie)$c]} )) || die "unknown case: $c"; done
   # A repeated selection would run the case twice per round and write the
   # same report key twice, so the sample count would no longer be the truth.
   typeset -a seen
   for c in "${wanted[@]}"; do
-    (( ${seen[(I)$c]} )) && die "--case $c given more than once"
+    (( ${seen[(Ie)$c]} )) && die "--case $c given more than once"
     seen+=( "$c" )
   done
   cases=( "${wanted[@]}" )
@@ -194,13 +197,26 @@ health_json() {  # health_json <label>
   command rm -rf -- "$scratch"
   local -a shipped_zwc; shipped_zwc=( "$checkout"/**/*.zwc(N) )
   health[zwc_shipped]=$(( $#shipped_zwc > 0 ))
-  local symbols home=$work/reused-$1
+  local symbols counts home=$work/reused-$1
+  integer probe_status=0
   symbols=$(env -i PATH="$PATH" HOME="$home" ZDOTDIR="$home" TMPDIR="$work" XDG_DATA_HOME="$home/data" XDG_CACHE_HOME="$home/cache" XDG_CONFIG_HOME="$home/config" \
-    BENCH_CHECKOUT="$checkout" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" BENCH_MANIFEST_COUNT="$manifest_count" BENCH_CASE=symbols zsh -f "$here/case.zsh" 2>/dev/null)
-  health[functions_after_source]=${${(s: :)symbols}[1]:-0}
-  health[parameters_after_source]=${${(s: :)symbols}[2]:-0}
-  health[functions_after_load_10]=${${(s: :)symbols}[3]:-0}
-  health[parameters_after_load_10]=${${(s: :)symbols}[4]:-0}
+    BENCH_CHECKOUT="$checkout" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" BENCH_MANIFEST_COUNT="$manifest_count" BENCH_CASE=symbols zsh -f "$here/case.zsh" 2>/dev/null) || probe_status=$?
+  # Only a probe that exited 0 and ended with four counts is trusted. A load
+  # failure can print a diagnostic to stdout, and that text must not be
+  # interpolated into the report as JSON; the counts are null instead, so the
+  # case results and failures collected earlier are still published.
+  counts=${symbols##*$'\n'}
+  if (( probe_status == 0 )) && [[ $counts == <->' '<->' '<->' '<-> ]]; then
+    health[functions_after_source]=${${(s: :)counts}[1]}
+    health[parameters_after_source]=${${(s: :)counts}[2]}
+    health[functions_after_load_10]=${${(s: :)counts}[3]}
+    health[parameters_after_load_10]=${${(s: :)counts}[4]}
+  else
+    health[functions_after_source]=null
+    health[parameters_after_source]=null
+    health[functions_after_load_10]=null
+    health[parameters_after_load_10]=null
+  fi
   local -a hk; hk=( ${(ok)health} ); integer i
   print -r -- '{'
   for (( i = 1; i <= $#hk; i++ )); do print -r -- "    $(jq -Rn --arg k "${hk[i]}" '$k'): ${health[${hk[i]}]}$( (( i < $#hk )) && print , )"; done

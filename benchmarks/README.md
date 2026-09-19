@@ -33,7 +33,7 @@ Defaults are 5 warmups and 30 samples; `--case NAME` selects a subset. `run.zsh`
 - Hosted runners differ in hardware and load. Compare only within one run, and only when `comparable` is true (same Zsh version, architecture, and sample count).
 - The fixture plugins are tiny; the cases isolate Zi's own overhead, not a real configuration's plugin bodies.
 - `source-reused-home` is the everyday startup cost; `source-fresh-home` adds the first-run directory preparation.
-- `tests/benchmark-harness.zsh` proves the runner and comparer: shape, A/A, a synthetic 30% regression flagged, a functional failure invalidated, a control-only failure rendered, a repeated `--case` rejected, a checkout without the manifest reader reported unsupported (and a candidate that lost it reported as a failure), a failed postcondition recorded with a one-line reason, a swapped manifest inventory rejected, and six cells in every table row.
+- `tests/benchmark-harness.zsh` proves the runner and comparer: shape, A/A, a synthetic 30% regression flagged, a functional failure invalidated, a control-only failure rendered, a repeated `--case` rejected, a checkout without the manifest reader reported unsupported (and a candidate that lost it reported as a failure), a failed postcondition recorded with a one-line reason, a swapped manifest inventory rejected, a pattern given as `--case` rejected as a usage error, a pipe inside a reason kept in one cell, a failed health probe recorded as null counts beside the measured cases, and six cells in every table row.
 
 ## Where it runs
 

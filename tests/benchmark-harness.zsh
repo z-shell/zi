@@ -35,9 +35,23 @@ zsh "${project_root}/benchmarks/run.zsh" --variant a="$project_root" --variant a
   fail "duplicate variant labels must be rejected"
 zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-dir "$temp_root/dup-case" \
   --case ice-200 --case ice-200 >/dev/null 2>&1 && fail "a repeated --case must be rejected"
+zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-dir "$temp_root/glob-case" \
+  --case 'source-*' >/dev/null 2>"$temp_root/glob-case.err" && fail "a pattern is not a case name and must be rejected"
+grep -q 'unknown case: source-\*' "$temp_root/glob-case.err" || fail "a pattern --case must be a usage error, not a workload failure"
 
-# Every row of the Markdown case table has six cells, whatever the row's outcome.
-table_rows_ok() { grep '^|' "$1" | awk -F'|' 'NF != 8 { bad = 1 } END { exit bad }'; }
+# Every row of the Markdown case table has six cells, whatever the row's
+# outcome. An escaped pipe is content, not a cell boundary, so it is removed
+# before counting.
+table_rows_ok() { grep '^|' "$1" | sed 's/\\|//g' | awk -F'|' 'NF != 8 { bad = 1 } END { exit bad }'; }
+
+# copy_suite <dir>: a private copy of the runner, its fixtures, and the
+# vendored manifests, so a test can alter one of them without touching the
+# checkout; run.zsh resolves both from its own location.
+copy_suite() {
+  command mkdir -p -- "$1/tests/fixtures" || fail "create a suite copy under $1"
+  command cp -R -- "$project_root/benchmarks" "$1/benchmarks" || fail "copy the benchmark scripts"
+  command cp -R -- "$project_root/tests/fixtures/package-manifests" "$1/tests/fixtures/package-manifests" || fail "copy the vendored manifests"
+}
 
 integer cases
 cases=$(jq -r '.cases | length' "$temp_root/a.json") || fail "a.json is not valid JSON"
@@ -93,6 +107,25 @@ jq -e '.failed == ["unload-10"] and (.cases["unload-10"].failure.candidate | tes
 grep -q '^| unload-10 | failure | failure | .*synthetic' "$temp_root/broken.md" || fail "the failed case must be rendered as a failure row"
 table_rows_ok "$temp_root/broken.md" || fail "a failure row must not misalign the Markdown table"
 
+# A reason that contains a pipe stays in one cell, in the case row and in the
+# control column alike.
+jq '.cases["unload-10"] = {"failure": "exit 4: a | b"}' "$temp_root/a.json" > "$temp_root/piped.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/piped.json" \
+  --control "$temp_root/piped.json" --output "$temp_root/piped-cmp.json" --markdown "$temp_root/piped.md" >/dev/null 2>&1 && fail "a piped failure reason must still exit 1"
+grep -q '^| unload-10 | failure | failure | .*a \\| b.* | | failure: exit 4: a \\| b |$' "$temp_root/piped.md" || fail "a pipe inside a reason must be escaped in both columns"
+table_rows_ok "$temp_root/piped.md" || fail "a pipe inside a reason must not split the Markdown row"
+
+# A health probe that fails or prints something other than four counts yields
+# null counts and a report that is still valid JSON, so the case results are
+# published. The copy makes the symbols probe print a diagnostic and exit 3.
+copy_suite "$temp_root/probe"
+command sed 's/^    print -r -- "\$f1 \$p1 \$#functions \$#parameters" ;;$/    print -r -- "zi: cannot load"; exit 3 ;;/' "$project_root/benchmarks/case.zsh" > "$temp_root/probe/benchmarks/case.zsh" || fail "break the symbols probe in the copy"
+grep -q 'cannot load' "$temp_root/probe/benchmarks/case.zsh" || fail "the copy must break the symbols probe"
+zsh "$temp_root/probe/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/probe-run" \
+  --warmups 1 --samples 2 --case ice-200 >/dev/null 2>&1 || fail "a failed health probe must not fail the run"
+jq -e '.health.functions_after_source == null and .health.parameters_after_load_10 == null and .cases["ice-200"].count == 2' "$temp_root/probe-run/a.json" >/dev/null ||
+  fail "a failed health probe must record null counts beside the measured cases"
+
 # A checkout that lacks the API a case exercises reports that case as
 # unsupported, not failed, and the other cases still run. The copy below is
 # this checkout with the manifest reader's definition renamed away, which is
@@ -129,15 +162,6 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/new.js
 jq -e '.failed == ["manifest-21"] and .unsupported == [] and (.cases["manifest-21"].failure.candidate | test("^removed: "))' "$temp_root/removed-cmp.json" >/dev/null ||
   fail "a candidate that lost an API must be recorded as a removal failure"
 grep -q '^| manifest-21 | failure | failure | .*removed' "$temp_root/removed.md" || fail "the removal must be rendered as a failure row"
-
-# copy_suite <dir>: a private copy of the runner, its fixtures, and the
-# vendored manifests, so a test can alter one of them without touching the
-# checkout; run.zsh resolves both from its own location.
-copy_suite() {
-  command mkdir -p -- "$1/tests/fixtures" || fail "create a suite copy under $1"
-  command cp -R -- "$project_root/benchmarks" "$1/benchmarks" || fail "copy the benchmark scripts"
-  command cp -R -- "$project_root/tests/fixtures/package-manifests" "$1/tests/fixtures/package-manifests" || fail "copy the vendored manifests"
-}
 
 # A case that prints its timing and then fails its postcondition must report
 # a one-line reason, not a reason that starts with the discarded timing. The

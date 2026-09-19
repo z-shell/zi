@@ -25,7 +25,10 @@ typeset -F6 t0 t1
 zle() { return 1; }
 start() { t0=$SECONDS; }
 mark()  { t1=$SECONDS; }
-elapsed() { print -r -- $(( (t1 - t0) * 1000 )); }
+# Always three decimals: arithmetic substitution prints an integral float as
+# "250." with no digits after the point, which run.zsh rejects as a sample and
+# which is not a JSON number.
+elapsed() { printf '%.3f\n' $(( (t1 - t0) * 1000 )); }
 stop()  { mark; elapsed; }
 load_zi() { builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home || exit 3; }
 plugins() { local i; for i in {1..10}; do print -r -- "$BENCH_FIXTURES/plugins/p$i"; done; }

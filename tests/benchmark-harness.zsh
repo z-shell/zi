@@ -68,6 +68,18 @@ jq -e '.health | (.functions_after_source > 0) and (.parameters_after_source > 0
 jq -e '.cases | keys == ["light-load-10", "source-reused-home"]' "$temp_root/b.json" >/dev/null || fail "--case did not select the subset"
 jq -e '.workload.variants == ["a", "b"]' "$temp_root/a.json" >/dev/null || fail "the report must list the variants measured together"
 
+# A sample is printed with exactly three decimals whatever its value: an
+# integral float would otherwise print as "250.", which is neither a sample
+# the runner accepts nor a JSON number. The copy pins the timer to an exact
+# quarter second so the arithmetic result is integral.
+copy_suite "$temp_root/integral"
+command sed 's/^start() { t0=\$SECONDS; }$/start() { t0=1.000000; }/; s/^mark()  { t1=\$SECONDS; }$/mark()  { t1=1.250000; }/' "$project_root/benchmarks/case.zsh" > "$temp_root/integral/benchmarks/case.zsh" || fail "pin the timer in the copy"
+grep -q '^mark()  { t1=1.250000; }$' "$temp_root/integral/benchmarks/case.zsh" || fail "the copy must pin the timer"
+zsh "$temp_root/integral/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/integral-run" \
+  --warmups 1 --samples 2 --case ice-200 >/dev/null 2>&1 || fail "an integral sample must be accepted"
+jq -e '.cases["ice-200"].samples == [250, 250] and .cases["ice-200"].median == 250' "$temp_root/integral-run/a.json" >/dev/null ||
+  fail "an integral sample must be recorded as the number 250"
+
 # A/A: comparing a run with itself flags nothing and fails nothing.
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
   --control "$temp_root/a.json" --output "$temp_root/aa.json" --markdown "$temp_root/aa.md" >/dev/null || fail "A/A comparison failed"

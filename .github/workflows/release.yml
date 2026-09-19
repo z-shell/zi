@@ -63,10 +63,10 @@ jobs:
       contents: write
       pull-requests: read
     steps:
-      - name: Check out the promotion commit
+      - name: Check out the trusted main branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: refs/heads/main
           fetch-depth: 0
           fetch-tags: true
 
@@ -85,10 +85,11 @@ jobs:
         if: steps.verify.outputs.ready == 'true'
         env:
           RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
+          RELEASE_TARGET: ${{ github.event.workflow_run.head_sha }}
         run: |
           RELEASE_PLAN_OUTPUT="$GITHUB_OUTPUT" \
             zsh -f scripts/release-plan.zsh \
-              "${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_STEP_SUMMARY"
+              "$RELEASE_TARGET" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Record no-op promotion
         if: steps.verify.outputs.ready == 'true' && steps.plan.outputs.release != 'true'

@@ -13,6 +13,8 @@ content_writers=( ${(f)"$(grep -l '^[[:space:]]*contents:[[:space:]]*write' "$ro
 [[ ${content_writers[1]:t} == release.yml ]]
 grep -q 'workflow_run:' "$root/.github/workflows/release.yml"
 ! grep -q 'pull_request_target:' "$root/.github/workflows/release.yml"
+grep -q 'ref: refs/heads/main' "$root/.github/workflows/release.yml"
+! grep -q 'ref:.*github.event.workflow_run.head_sha' "$root/.github/workflows/release.yml"
 
 git init --bare "$tmp/origin.git" >/dev/null
 git clone "$tmp/origin.git" "$tmp/repository" >/dev/null 2>&1

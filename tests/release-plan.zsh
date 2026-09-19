@@ -63,6 +63,9 @@ commit post-release-fix 'fix: change after a promotion tag'
 run_plan
 [[ $(value previous_tag) == v2.0.0 && $(value tag) == v2.0.1 ]]
 grep -q 'fix: change after a promotion tag' "$tmp/notes"
-! grep -q 'docs: explain releases' "$tmp/notes"
+if grep -q 'docs: explain releases' "$tmp/notes"; then
+  print -u2 -- 'release notes crossed the previous promotion boundary'
+  exit 1
+fi
 
 print 'release plan tests passed'

@@ -128,6 +128,24 @@ trap 'command rm -rf -- "$work"' EXIT INT TERM
 # other case gets a fresh one.
 for label in "${labels[@]}"; do command mkdir -p -- "$work/reused-$label"; done
 
+# reason <status> <stderr-file>: the child's last stderr line, or what its exit
+# status means when it wrote nothing. case.zsh exits 3 when setup or load
+# fails, 4 when the workload ran but left the wrong state, and 5 when the
+# manifest inventory did not match the declared count; a bare "exit 4:" in
+# a report would say nothing about the failed workload.
+reason() {
+  local line
+  line=$(command tail -n 1 -- "$2" 2>/dev/null)
+  if [[ -n $line ]]; then print -r -- "$line"; return; fi
+  case $1 in
+    2) print -r -- "unknown case or missing dependency" ;;
+    3) print -r -- "setup or load failed" ;;
+    4) print -r -- "postcondition failed: the workload did not leave the expected state" ;;
+    5) print -r -- "manifest inventory did not match the declared count" ;;
+    *) print -r -- "no diagnostic" ;;
+  esac
+}
+
 # one_sample <variant> <case>: prints elapsed milliseconds, "fail <reason>", or
 # "unsupported <reason>" when the checkout lacks the API the case exercises
 # (case.zsh exit 6).
@@ -146,7 +164,7 @@ one_sample() {
   if (( rc == 6 )); then
     print -r -- "unsupported $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
   elif (( rc != 0 )); then
-    print -r -- "fail exit ${rc}: $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
+    print -r -- "fail exit ${rc}: $(reason "$rc" "$home/stderr")"
   else
     print -r -- "${out##*$'\n'}"
   fi

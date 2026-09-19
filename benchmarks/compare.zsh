@@ -57,6 +57,16 @@ case_sets=( "$(jq -c '.cases | keys' "$baseline")" "$(jq -c '.cases | keys' "$ca
 [[ -n $control ]] && case_sets+=( "$(jq -c '.cases | keys' "$control")" )
 [[ ${#${(u)case_sets}} -eq 1 ]] || die "the reports do not cover the same cases: ${(j: versus :)case_sets}"
 
+# The control is the baseline measured again, so it must come from the same
+# settings; the control rows reuse the baseline-versus-candidate comparability
+# and would otherwise show an incompatible run as the noise floor.
+if [[ -n $control ]]; then
+  typeset baseline_settings control_settings
+  baseline_settings=$(jq -c '[.environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$baseline")
+  control_settings=$(jq -c '[.environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$control")
+  [[ $baseline_settings == "$control_settings" ]] || die "the control was not measured under the baseline's settings (Zsh version, architecture, samples, warmups): ${baseline_settings} versus ${control_settings}"
+fi
+
 # jq does the arithmetic so the report is one deterministic document.
 typeset -a control_args
 [[ -n $control ]] && control_args=( --slurpfile control "$control" ) || control_args=( --argjson control '[null]' )

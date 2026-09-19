@@ -115,6 +115,14 @@ jq -e '.failed == ["unload-10"]' "$temp_root/ctl-cmp.json" >/dev/null || fail "t
 grep -q '^| unload-10 .*| failure: exit 4: control-only |$' "$temp_root/ctl.md" || fail "the control failure must be rendered in its Markdown cell, not n/a"
 table_rows_ok "$temp_root/ctl.md" || fail "a control failure must not misalign the Markdown table"
 
+# A control measured under other settings is rejected up front rather than
+# rendered as the noise floor.
+jq '.workload.warmups += 1' "$temp_root/a.json" > "$temp_root/ctl-other.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
+  --control "$temp_root/ctl-other.json" --output "$temp_root/ctl-other-cmp.json" >/dev/null 2>"$temp_root/ctl-other.err" && fail "an incompatible control must be rejected"
+grep -q "control was not measured under the baseline's settings" "$temp_root/ctl-other.err" || fail "the incompatible control must be named"
+[[ ! -e $temp_root/ctl-other-cmp.json ]] || fail "an incompatible control must not produce a comparison"
+
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/broken.json" \
@@ -199,8 +207,8 @@ command sed 's/^    none_loaded || exit 4 ;;$/    exit 4 ;;/' "$project_root/ben
 grep -q '^    exit 4 ;;$' "$temp_root/post/benchmarks/case.zsh" || fail "the copy must fail the unload-10 postcondition"
 zsh "$temp_root/post/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/post-run" \
   --warmups 1 --samples 2 --case unload-10 >/dev/null 2>&1 && fail "a failed postcondition must exit 1"
-jq -e '.cases["unload-10"].failure | type == "string" and startswith("exit 4:") and (contains("\n") | not)' "$temp_root/post-run/a.json" >/dev/null ||
-  fail "a failed postcondition must record a one-line reason that starts with its exit status"
+jq -e '.cases["unload-10"].failure | type == "string" and startswith("exit 4: postcondition failed") and (contains("\n") | not)' "$temp_root/post-run/a.json" >/dev/null ||
+  fail "a failed postcondition that wrote nothing must record a one-line reason that says what exit 4 means"
 
 # The manifest inventory is pinned by name: swapping one repository for
 # another keeps the count at 21 and is still rejected before any sample runs.

@@ -58,13 +58,14 @@ case_sets=( "$(jq -c '.cases | keys' "$baseline")" "$(jq -c '.cases | keys' "$ca
 [[ ${#${(u)case_sets}} -eq 1 ]] || die "the reports do not cover the same cases: ${(j: versus :)case_sets}"
 
 # The control is the baseline measured again, so it must come from the same
-# settings; the control rows reuse the baseline-versus-candidate comparability
-# and would otherwise show an incompatible run as the noise floor.
+# source revision and the same settings; the control rows reuse the
+# baseline-versus-candidate comparability and would otherwise show another
+# revision, or an incompatible run, as the noise floor.
 if [[ -n $control ]]; then
-  typeset baseline_settings control_settings
-  baseline_settings=$(jq -c '[.environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$baseline")
-  control_settings=$(jq -c '[.environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$control")
-  [[ $baseline_settings == "$control_settings" ]] || die "the control was not measured under the baseline's settings (Zsh version, architecture, samples, warmups): ${baseline_settings} versus ${control_settings}"
+  typeset baseline_identity control_identity
+  baseline_identity=$(jq -c '[.source_revision, .environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$baseline")
+  control_identity=$(jq -c '[.source_revision, .environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$control")
+  [[ $baseline_identity == "$control_identity" ]] || die "the control is not a second run of the baseline (source revision, Zsh version, architecture, samples, warmups): ${baseline_identity} versus ${control_identity}"
 fi
 
 # jq does the arithmetic so the report is one deterministic document.

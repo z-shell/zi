@@ -215,7 +215,9 @@ health_json() {  # health_json <label>
   done
   t0=$EPOCHREALTIME; zsh -f -n "$checkout/zi.zsh"; t1=$EPOCHREALTIME; health[zsh_n_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
   local scratch; scratch=$(command mktemp -d "$work/c.XXXXXXXX")
-  t0=$EPOCHREALTIME; ( cd "$scratch" && cp "$checkout/zi.zsh" zi.zsh && zsh -fc 'zcompile zi.zsh' ); t1=$EPOCHREALTIME; health[zcompile_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
+  # The copy is setup; only the compilation is timed.
+  command cp -- "$checkout/zi.zsh" "$scratch/zi.zsh"
+  t0=$EPOCHREALTIME; ( cd "$scratch" && zsh -fc 'zcompile zi.zsh' ); t1=$EPOCHREALTIME; health[zcompile_ms:zi.zsh]=$(( (t1 - t0) * 1000 ))
   command rm -rf -- "$scratch"
   local -a shipped_zwc; shipped_zwc=( "$checkout"/**/*.zwc(N) )
   health[zwc_shipped]=$(( $#shipped_zwc > 0 ))

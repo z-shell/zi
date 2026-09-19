@@ -115,13 +115,17 @@ jq -e '.failed == ["unload-10"]' "$temp_root/ctl-cmp.json" >/dev/null || fail "t
 grep -q '^| unload-10 .*| failure: exit 4: control-only |$' "$temp_root/ctl.md" || fail "the control failure must be rendered in its Markdown cell, not n/a"
 table_rows_ok "$temp_root/ctl.md" || fail "a control failure must not misalign the Markdown table"
 
-# A control measured under other settings is rejected up front rather than
-# rendered as the noise floor.
+# A control measured under other settings, or from another revision, is
+# rejected up front rather than rendered as the noise floor.
 jq '.workload.warmups += 1' "$temp_root/a.json" > "$temp_root/ctl-other.json"
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
   --control "$temp_root/ctl-other.json" --output "$temp_root/ctl-other-cmp.json" >/dev/null 2>"$temp_root/ctl-other.err" && fail "an incompatible control must be rejected"
-grep -q "control was not measured under the baseline's settings" "$temp_root/ctl-other.err" || fail "the incompatible control must be named"
+grep -q "control is not a second run of the baseline" "$temp_root/ctl-other.err" || fail "the incompatible control must be named"
 [[ ! -e $temp_root/ctl-other-cmp.json ]] || fail "an incompatible control must not produce a comparison"
+jq '.source_revision = "0000000000000000000000000000000000000000"' "$temp_root/a.json" > "$temp_root/ctl-rev.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
+  --control "$temp_root/ctl-rev.json" --output "$temp_root/ctl-rev-cmp.json" >/dev/null 2>"$temp_root/ctl-rev.err" && fail "a control from another revision must be rejected"
+grep -q "control is not a second run of the baseline" "$temp_root/ctl-rev.err" || fail "the other-revision control must be named"
 
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"

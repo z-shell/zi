@@ -9,6 +9,12 @@
 # the organization's stance for hosted-runner evidence (observed, not gated).
 # A functional failure on either side does invalidate that case.
 #
+# A case a checkout cannot run because it lacks the API the case exercises is
+# reported by run.zsh as unsupported for that variant. A baseline without the
+# API is expected when the candidate adds it, so that row is unsupported, not
+# failed, and does not exit 1. A candidate without an API the baseline has is
+# a removal, and that row is a failure.
+#
 # Usage:
 #   zsh benchmarks/compare.zsh --baseline FILE --candidate FILE --output FILE
 #                              [--markdown FILE] [--control FILE]
@@ -65,7 +71,14 @@ jq -n --slurpfile b "$baseline" --slurpfile c "$candidate" "${control_args[@]}" 
   # Flags are meaningful only between comparable reports; otherwise every
   # flag is null and the summary says why.
   def row(base; cand):
-    if (base.failure? // null) != null or (cand.failure? // null) != null then
+    # A baseline that lacks the API is unsupported (with or without the
+    # candidate); a candidate that lacks an API the baseline runs is a removal
+    # and therefore a failure. A candidate failure always stays a failure.
+    if (base.unsupported? // null) != null and (cand.failure? // null) == null then
+      {unsupported: {baseline: base.unsupported, candidate: (cand.unsupported? // null)}}
+    elif (cand.unsupported? // null) != null then
+      {failure: {baseline: (base.failure? // null), candidate: ("removed: " + cand.unsupported)}}
+    elif (base.failure? // null) != null or (cand.failure? // null) != null then
       {failure: {baseline: (base.failure? // null), candidate: (cand.failure? // null)}}
     else
       {results: {baseline: base, candidate: cand},
@@ -83,6 +96,7 @@ jq -n --slurpfile b "$baseline" --slurpfile c "$candidate" "${control_args[@]}" 
    cases: ($B.cases | keys | map(. as $k | {($k): row($B.cases[$k]; $C.cases[$k])}) | add),
    control: (if $K == null then null else ($B.cases | keys | map(. as $k | {($k): row($B.cases[$k]; $K.cases[$k])}) | add) end)}
   | .flagged = [.cases | to_entries[] | select(.value.flag == true) | .key]
+  | .unsupported = [.cases | to_entries[] | select(.value.unsupported != null) | .key]
   | .failed = ([.cases | to_entries[] | select(.value.failure != null) | .key]
                + (if .control == null then [] else [.control | to_entries[] | select(.value.failure != null) | .key] end) | unique)
 ' > "$output" || die "could not build the comparison" 1
@@ -96,14 +110,14 @@ if [[ -n $markdown ]]; then
     print
     print -r -- "| Case | Baseline median / p95 ms | Candidate median / p95 ms | Median delta | p95 delta | A/A control median delta |"
     print -r -- "| --- | --- | --- | --- | --- | --- |"
-    jq -r '.cases | to_entries[] | . as $e | if .value.failure then "| \(.key) | failure | failure | \(.value.failure | tojson) | | " else "| \(.key)\(if .value.flag then " (flag)" else "" end) | \(.value.results.baseline.median) / \(.value.results.baseline.p95) | \(.value.results.candidate.median) / \(.value.results.candidate.p95) | \(.value.change.median_delta_percent | . * 10 | round / 10)% | \(.value.change.p95_delta_percent | . * 10 | round / 10)% | " end' "$output" | while IFS= read -r line; do
+    jq -r '.cases | to_entries[] | . as $e | if .value.failure then "| \(.key) | failure | failure | \(.value.failure | tojson) | | " elif .value.unsupported then "| \(.key) | unsupported | \(if .value.unsupported.candidate != null then "unsupported" else "not compared" end) | \(.value.unsupported.baseline | tojson) | | " else "| \(.key)\(if .value.flag then " (flag)" else "" end) | \(.value.results.baseline.median) / \(.value.results.baseline.p95) | \(.value.results.candidate.median) / \(.value.results.candidate.p95) | \(.value.change.median_delta_percent | . * 10 | round / 10)% | \(.value.change.p95_delta_percent | . * 10 | round / 10)% | " end' "$output" | while IFS= read -r line; do
       case_name=${${line#| }%% *}
-      ctrl=$(jq -r --arg k "$case_name" '.control[$k] | if . == null then "n/a" elif .failure != null then "failure: \(.failure.candidate // .failure.baseline)" elif (.change.median_delta_percent | type) == "number" then (.change.median_delta_percent * 10 | round / 10 | tostring) + "%" else "n/a" end' "$output")
+      ctrl=$(jq -r --arg k "$case_name" '.control[$k] | if . == null then "n/a" elif .failure != null then "failure: \(.failure.candidate // .failure.baseline)" elif .unsupported != null then "unsupported" elif (.change.median_delta_percent | type) == "number" then (.change.median_delta_percent * 10 | round / 10 | tostring) + "%" else "n/a" end' "$output")
       print -r -- "${line}${ctrl} |"
     done
     print
     print -r -- "Health (baseline to candidate): functions after source $(jq -r .health.baseline.functions_after_source "$output") to $(jq -r .health.candidate.functions_after_source "$output"), parameters $(jq -r .health.baseline.parameters_after_source "$output") to $(jq -r .health.candidate.parameters_after_source "$output"), zi.zsh $(jq -r '.health.baseline["lines:zi.zsh"]' "$output") to $(jq -r '.health.candidate["lines:zi.zsh"]' "$output") lines, zcompile $(jq -r '.health.baseline["zcompile_ms:zi.zsh"] | . * 10 | round / 10' "$output") to $(jq -r '.health.candidate["zcompile_ms:zi.zsh"] | . * 10 | round / 10' "$output") ms."
   } > "$markdown"
 fi
-print -r -- "wrote $output: $(jq -r '.flagged | length' "$output") flagged, $(jq -r '.failed | length' "$output") failed"
+print -r -- "wrote $output: $(jq -r '.flagged | length' "$output") flagged, $(jq -r '.failed | length' "$output") failed, $(jq -r '.unsupported | length' "$output") unsupported"
 (( $(jq -r '.failed | length' "$output") == 0 ))

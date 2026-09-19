@@ -5,7 +5,10 @@
 # The benchmark runner and comparer are themselves tested: a tiny-count run
 # must produce every case with valid statistics, an A/A comparison must flag
 # nothing, a synthetically slowed candidate must be flagged without failing,
-# and a functional failure must invalidate its case (#553).
+# a functional failure must invalidate its case, a checkout that lacks the API
+# a case exercises must be reported unsupported rather than failed unless it
+# is the candidate that lost the API, and a swapped manifest inventory must be
+# rejected by name (#553).
 
 builtin emulate -R zsh
 setopt pipe_fail extended_glob
@@ -90,4 +93,54 @@ jq -e '.failed == ["unload-10"] and (.cases["unload-10"].failure.candidate | tes
 grep -q '^| unload-10 | failure | failure | .*synthetic' "$temp_root/broken.md" || fail "the failed case must be rendered as a failure row"
 table_rows_ok "$temp_root/broken.md" || fail "a failure row must not misalign the Markdown table"
 
-builtin print -r -- "ok - benchmark runner and comparer produce, flag, and invalidate as designed"
+# A checkout that lacks the API a case exercises reports that case as
+# unsupported, not failed, and the other cases still run. The copy below is
+# this checkout with the manifest reader's definition renamed away, which is
+# what a baseline older than the reader looks like to the runner.
+command mkdir -p -- "$temp_root/old/lib/zsh" || fail "create the old checkout copy"
+command cp -R -- "$project_root/zi.zsh" "$project_root/lib" "$temp_root/old/" || fail "copy the checkout"
+command sed 's/^\.zi-read-package-manifest() {/.zi-read-package-manifest-absent() {/' "$project_root/lib/zsh/install.zsh" > "$temp_root/old/lib/zsh/install.zsh" || fail "rename the reader in the copy"
+grep -q '^\.zi-read-package-manifest-absent() {' "$temp_root/old/lib/zsh/install.zsh" || fail "the copy must lack the reader definition"
+zsh "${project_root}/benchmarks/run.zsh" --variant old="$temp_root/old" --variant new="$project_root" \
+  --output-dir "$temp_root/unsup" --warmups 1 --samples 2 --case manifest-21 --case ice-200 >/dev/null || fail "an unsupported case must not fail the runner"
+jq -e '.cases["manifest-21"].unsupported | type == "string" and test("zi-read-package-manifest")' "$temp_root/unsup/old.json" >/dev/null ||
+  fail "the old checkout must report manifest-21 unsupported with the reason"
+jq -e '.cases["ice-200"].count == 2' "$temp_root/unsup/old.json" >/dev/null || fail "an unsupported case must not stop the other cases"
+jq -e '.cases["manifest-21"].count == 2 and .cases["ice-200"].count == 2' "$temp_root/unsup/new.json" >/dev/null || fail "the checkout with the reader must still measure manifest-21"
+
+# Baseline without the API, candidate with it: unsupported, never failed.
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/old.json" --candidate "$temp_root/unsup/new.json" \
+  --control "$temp_root/unsup/old.json" --output "$temp_root/unsup-cmp.json" --markdown "$temp_root/unsup.md" >/dev/null || fail "a baseline without the API must not fail the comparison"
+jq -e '.unsupported == ["manifest-21"] and .failed == [] and .flagged == [] and .cases["manifest-21"].unsupported.candidate == null and .cases["ice-200"].flag != null' "$temp_root/unsup-cmp.json" >/dev/null ||
+  fail "a baseline without the API must be listed as unsupported and nothing else"
+grep -q '^| manifest-21 | unsupported | not compared | .*zi-read-package-manifest.* | | unsupported |$' "$temp_root/unsup.md" || fail "the unsupported case must be rendered with its reason and control state"
+table_rows_ok "$temp_root/unsup.md" || fail "an unsupported row must not misalign the Markdown table"
+
+# Both sides without the API: still unsupported, still exit 0.
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/old.json" --candidate "$temp_root/unsup/old.json" \
+  --output "$temp_root/both-cmp.json" --markdown "$temp_root/both.md" >/dev/null || fail "two checkouts without the API must not fail the comparison"
+jq -e '.unsupported == ["manifest-21"] and .failed == [] and (.cases["manifest-21"].unsupported.candidate | type) == "string"' "$temp_root/both-cmp.json" >/dev/null ||
+  fail "both sides unsupported must be recorded on both sides"
+grep -q '^| manifest-21 | unsupported | unsupported | ' "$temp_root/both.md" || fail "both sides unsupported must be rendered on both sides"
+
+# Candidate without an API the baseline has: that is a removal, and it fails.
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/new.json" --candidate "$temp_root/unsup/old.json" \
+  --output "$temp_root/removed-cmp.json" --markdown "$temp_root/removed.md" >/dev/null 2>&1 && fail "a candidate that lost an API must exit 1"
+jq -e '.failed == ["manifest-21"] and .unsupported == [] and (.cases["manifest-21"].failure.candidate | test("^removed: "))' "$temp_root/removed-cmp.json" >/dev/null ||
+  fail "a candidate that lost an API must be recorded as a removal failure"
+grep -q '^| manifest-21 | failure | failure | .*removed' "$temp_root/removed.md" || fail "the removal must be rendered as a failure row"
+
+# The manifest inventory is pinned by name: swapping one repository for
+# another keeps the count at 21 and is still rejected before any sample runs.
+command mkdir -p -- "$temp_root/swap/tests/fixtures" || fail "create the swapped inventory copy"
+command cp -R -- "$project_root/benchmarks" "$temp_root/swap/benchmarks" || fail "copy the benchmark scripts"
+command cp -R -- "$project_root/tests/fixtures/package-manifests" "$temp_root/swap/tests/fixtures/package-manifests" || fail "copy the vendored manifests"
+command mv -- "$temp_root/swap/tests/fixtures/package-manifests/zsh-bin.json" "$temp_root/swap/tests/fixtures/package-manifests/zsh-bin-other.json" || fail "rename a snapshot"
+command sed 's/^zsh-bin$/zsh-bin-other/' "$project_root/tests/fixtures/package-manifests/repositories.txt" > "$temp_root/swap/tests/fixtures/package-manifests/repositories.txt" || fail "swap a listed repository"
+zsh "$temp_root/swap/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/swap-run" \
+  --warmups 1 --samples 2 --case ice-200 >/dev/null 2>"$temp_root/swap.err" && fail "a swapped manifest inventory must be rejected"
+grep -q 'pinned' "$temp_root/swap.err" && grep -q 'not pinned: zsh-bin-other' "$temp_root/swap.err" && grep -q 'not listed: zsh-bin' "$temp_root/swap.err" ||
+  fail "the rejection must name the unpinned and the missing repository"
+[[ ! -e $temp_root/swap-run/a.json ]] || fail "a rejected inventory must not produce a report"
+
+builtin print -r -- "ok - benchmark runner and comparer produce, flag, invalidate, and mark unsupported as designed"

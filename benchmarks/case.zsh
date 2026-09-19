@@ -7,6 +7,10 @@
 # environment and prints the elapsed milliseconds of the measured region.
 # The measured region excludes process start and setup, which is why every
 # case sets up in the same process it measures in.
+#
+# Exit 6 means the checkout lacks the API the case exercises; run.zsh records
+# that as unsupported for the variant, not as a failure. Every other non-zero
+# status is a failure of the workload.
 
 emulate -R zsh
 zmodload zsh/datetime || exit 2
@@ -64,7 +68,11 @@ case $BENCH_CASE in
     load_zi; start; for i in {1..200}; do zi ice wait'1' lucid depth'1' atinit'true' atload'true' pick'x' as'program' from'gh-r' mv'a -> b' id-as'x' compile'y' nocompile blockf || exit 3; done; stop ;;
   manifest-21)
     load_zi; builtin source "$BENCH_CHECKOUT/lib/zsh/install.zsh" || exit 3
-    (( $+functions[.zi-read-package-manifest] )) || exit 5
+    # A checkout that predates the manifest reader cannot run this workload.
+    # That is a capability of the checkout, not a defect in it: exit 6 tells
+    # run.zsh to record the case as unsupported for this variant instead of
+    # failed, and compare.zsh decides whether the asymmetry matters.
+    (( $+functions[.zi-read-package-manifest] )) || { print -u2 -r -- "checkout does not define .zi-read-package-manifest"; exit 6 }
     local -a files; files=( $BENCH_MANIFESTS/*.json(N) )
     # Exactly the declared inventory, or the timing is not comparable (#555).
     (( $#files == ${BENCH_MANIFEST_COUNT:-0} )) || exit 5

@@ -19,7 +19,9 @@
 # Requires: zsh with zsh/datetime, jq.
 #
 # Exit codes:
-#   0  every case produced the requested samples
+#   0  every case produced the requested samples, or a variant reported a case
+#      unsupported because its checkout lacks the API the case exercises (the
+#      report records that per case; compare.zsh decides whether it matters)
 #   1  a case failed functionally (its samples are discarded and the report
 #      records the failure; timing of a broken behaviour is meaningless)
 #   2  usage or dependency error
@@ -78,25 +80,38 @@ fi
 typeset here=${0:A:h} fixtures=${0:A:h}/fixtures manifests=${0:A:h:h}/tests/fixtures/package-manifests
 [[ -d $manifests ]] || die "vendored manifests not found at $manifests"
 # The manifest workload is only comparable to earlier results when it reads
-# exactly the declared inventory: every listed repository has its snapshot,
-# no unlisted snapshot exists, and the case re-asserts the count.
-typeset -a manifest_listed manifest_files
+# exactly the inventory the case was named for: the 21 repositories pinned
+# below, each with its snapshot, and no unlisted snapshot. The names are
+# pinned, not only the count, because replacing one repository with another
+# keeps the count and still changes the workload. A different inventory is a
+# different workload: rename or version the case and its baseline, and update
+# this list with it, instead of letting the contents drift under one name.
+# Snapshot contents are not pinned; refreshing a vendored manifest verbatim
+# keeps the inventory.
+typeset -a manifest_inventory
+manifest_inventory=( any-gem any-node apr asciidoctor brew-completions dircolors-material doctoc ecs-cli firefox-dev fzf fzy github-issues github-issues-srv ls_colors nb pyenv remark subversion system-completions zsh zsh-bin )
+typeset -a manifest_listed manifest_files unpinned unlisted
 typeset manifest_name
 while IFS= read -r manifest_name; do
   [[ -n $manifest_name ]] && manifest_listed+=( "$manifest_name" )
 done < "$manifests/repositories.txt" || die "could not read $manifests/repositories.txt"
-manifest_files=( "$manifests"/*.json(N) )
+# (Ie) matches the name literally; a repository name is data, not a pattern.
 for manifest_name in "${manifest_listed[@]}"; do
+  (( ${manifest_inventory[(Ie)$manifest_name]} )) || unpinned+=( "$manifest_name" )
+done
+for manifest_name in "${manifest_inventory[@]}"; do
+  (( ${manifest_listed[(Ie)$manifest_name]} )) || unlisted+=( "$manifest_name" )
+done
+[[ $#unpinned -eq 0 && $#unlisted -eq 0 && ${(j:,:)${(o)manifest_listed}} == ${(j:,:)${(o)manifest_inventory}} ]] ||
+  die "manifest-21 is pinned to a fixed inventory and repositories.txt differs (listed but not pinned: ${(j:, :)unpinned:-none}; pinned but not listed: ${(j:, :)unlisted:-none}). A changed inventory is a different workload: rename or version the case and update the pinned list in run.zsh with it."
+manifest_files=( "$manifests"/*.json(N) )
+for manifest_name in "${manifest_inventory[@]}"; do
   [[ -r $manifests/$manifest_name.json ]] || die "repositories.txt lists $manifest_name but $manifest_name.json is missing"
 done
 for manifest_name in "${manifest_files[@]}"; do
-  (( ${manifest_listed[(I)${manifest_name:t:r}]} )) || die "${manifest_name:t} is not listed in repositories.txt"
+  (( ${manifest_inventory[(Ie)${manifest_name:t:r}]} )) || die "${manifest_name:t} is not listed in repositories.txt"
 done
-integer manifest_count=$#manifest_listed
-# The case is named for its inventory. A different count is a different
-# workload that is not comparable with recorded manifest-21 results: rename or
-# version the case and its baseline instead of letting the number drift.
-(( manifest_count == 21 )) || die "manifest-21 reads exactly 21 vendored manifests, found $manifest_count"
+integer manifest_count=$#manifest_inventory
 
 typeset work
 work=$(command mktemp -d "${TMPDIR:-/tmp}/zi-benchmark.XXXXXXXX") || die "could not create a work directory"
@@ -105,7 +120,9 @@ trap 'command rm -rf -- "$work"' EXIT INT TERM
 # other case gets a fresh one.
 for label in "${labels[@]}"; do command mkdir -p -- "$work/reused-$label"; done
 
-# one_sample <variant> <case>: prints elapsed milliseconds, or "fail <reason>".
+# one_sample <variant> <case>: prints elapsed milliseconds, "fail <reason>", or
+# "unsupported <reason>" when the checkout lacks the API the case exercises
+# (case.zsh exit 6).
 one_sample() {
   local label=$1 case=$2 home
   if [[ $case == source-reused-home ]]; then home=$work/reused-$label; else home=$(command mktemp -d "$work/s.XXXXXXXX"); fi
@@ -116,12 +133,16 @@ one_sample() {
     BENCH_MANIFEST_COUNT="$manifest_count" BENCH_CASE="$case" \
     zsh -f "$here/case.zsh" 2>"$home/stderr" | command tail -n 1
   local rc=${pipestatus[1]}
-  (( rc == 0 )) || print -r -- "fail exit ${rc}: $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
+  if (( rc == 6 )); then
+    print -r -- "unsupported $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
+  elif (( rc != 0 )); then
+    print -r -- "fail exit ${rc}: $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
+  fi
   [[ $case == source-reused-home ]] || command rm -rf -- "$home"
 }
 
-# collected[label/case] and failed[label/case]
-typeset -A collected failed
+# collected[label/case], failed[label/case] and unsupported[label/case]
+typeset -A collected failed unsupported
 integer round total=$(( warmups + samples ))
 typeset -a order variant_order
 typeset case value
@@ -136,8 +157,11 @@ for (( round = 1; round <= total; round++ )); do
   (( round % 2 )) && variant_order=( "${labels[@]}" ) || variant_order=( "${(Oa)labels[@]}" )
   for case in "${order[@]}"; do
     for label in "${variant_order[@]}"; do
-      (( ${+failed[$label/$case]} )) && continue
+      (( ${+failed[$label/$case]} || ${+unsupported[$label/$case]} )) && continue
       value=$(one_sample "$label" "$case") || value="fail exit $?"
+      # An unsupported case is settled on its first sample for that variant and
+      # is not retried; it is not a failure and does not count toward exit 1.
+      if [[ $value == unsupported* ]]; then unsupported[$label/$case]=${value#unsupported }; continue; fi
       if [[ $value != <->(.<->|)  ]]; then failed[$label/$case]=${value#fail }; continue; fi
       (( round > warmups )) && collected[$label/$case]+="${value} "
     done
@@ -189,8 +213,9 @@ zsh_version=$(zsh --version)
 cpu=$(sed -n 's/^model name[[:space:]]*:[[:space:]]*//p' /proc/cpuinfo 2>/dev/null | head -n 1)
 captured=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 integer failures=0 i
+typeset revision output
 for label in "${labels[@]}"; do
-  local revision output=$output_dir/$label.json
+  output=$output_dir/$label.json
   revision=$(git -C "${dirs[$label]}" rev-parse HEAD 2>/dev/null || print unknown)
   {
     print -r -- '{'
@@ -204,7 +229,9 @@ for label in "${labels[@]}"; do
     print -r -- "  \"cases\": {"
     for (( i = 1; i <= $#cases; i++ )); do
       case=${cases[i]}
-      if (( ${+failed[$label/$case]} )); then
+      if (( ${+unsupported[$label/$case]} )); then
+        print -r -- "    \"$case\": {\"unsupported\": $(jq -Rn --arg v "${unsupported[$label/$case]}" '$v')}$( (( i < $#cases )) && print , )"
+      elif (( ${+failed[$label/$case]} )); then
         failures+=1
         print -r -- "    \"$case\": {\"failure\": $(jq -Rn --arg v "${failed[$label/$case]}" '$v')}$( (( i < $#cases )) && print , )"
       else

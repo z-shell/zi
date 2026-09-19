@@ -6,56 +6,15 @@ on:
     branches:
       - main
       - next
-    paths:
-      - "zi.zsh"
-      - "lib/**"
-      - "contracts/package-manifest-v1.json"
-      - "scripts/validate-package-manifest.py"
-      - "tests/**"
-      - ".github/workflows/*.yml"
-      - "tests/annex-unregister.zsh"
-      - "tests/atinit-deferred-marker.zsh"
-      - "tests/benchmark-harness.zsh"
-      - "benchmarks/**"
-      - "tests/ci-registration.zsh"
-      - "tests/archive-extraction.zsh"
-      - "tests/completion-refresh.zsh"
-      - "tests/disk-ice-resolution.zsh"
-      - "tests/home-preparation.zsh"
-      - "tests/hook-ownership.zsh"
-      - "tests/ice-tokenizer.zsh"
-      - "tests/load-object-status.zsh"
-      - "tests/message-formatting.zsh"
-      - "tests/package-manifest-contract.zsh"
-      - "tests/package-manifest-fixtures.zsh"
-      - "tests/fixtures/package-manifests/**"
-      - "scripts/refresh-package-manifests.zsh"
-      - "tests/package-manifest-parsing.zsh"
-      - "tests/path-resolution.zsh"
-      - "tests/parallel-update.zsh"
-      - "tests/plugin-autoload-fpath-scope.zsh"
-      - "tests/plugin-autoload-ice.zsh"
-      - "tests/nested-load-state.zsh"
-      - "tests/pack-service-first-install.zsh"
-      - "tests/plugin-autoload-ownership.zsh"
-      - "tests/plugin-standard-callbacks.zsh"
-      - "tests/release-tag-verification.zsh"
-      - "tests/scheduler-idle.zsh"
-      - "tests/fixtures/plugin-standard-callbacks/**"
-      - "tests/self-update-reload.zsh"
-      - "tests/snippet-directory-mirror.zsh"
-      - "tests/snippet-update-status.zsh"
-      - "tests/source-hygiene.zsh"
-      - "tests/subst-nesting.zsh"
-      - "tests/unload-hook-dispatch.zsh"
-      - "tests/unload-ownership-contracts.zsh"
-      - "tests/version-reporting.zsh"
   pull_request:
     paths:
       - "zi.zsh"
       - "lib/**"
       - "contracts/package-manifest-v1.json"
       - "scripts/validate-package-manifest.py"
+      - "scripts/release-plan.zsh"
+      - "scripts/verify-promotion-release.zsh"
+      - "scripts/publish-promotion-release.zsh"
       - "tests/**"
       - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
@@ -207,6 +166,39 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test release tag verification
         run: zsh -f tests/release-tag-verification.zsh
+
+  release-plan:
+    name: Release Plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test release planning
+        run: zsh -f tests/release-plan.zsh
+
+  promotion-release-verification:
+    name: Promotion Release Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh and jq
+        run: sudo apt update && sudo apt-get install -yq zsh jq
+      - name: Test promotion release verification
+        run: zsh -f tests/promotion-release-verification.zsh
+
+  promotion-release-publication:
+    name: Promotion Release Publication
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test idempotent promotion publication
+        run: zsh -f tests/promotion-release-publication.zsh
 
   benchmark-harness:
     name: Benchmark Harness

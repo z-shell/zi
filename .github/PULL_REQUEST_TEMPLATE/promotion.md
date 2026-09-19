@@ -31,9 +31,10 @@ The `Promotion gate` check directly depends on every constituent below and fails
 | Exact-candidate clean install and startup | `Clean install and startup` | Pending |
 | Real objects install, update, unload, delete | `Real objects install, update, unload, delete` | Pending |
 | Aggregate | `Promotion gate` | Pending |
+| Semantic version and notes | `Release plan` | Pending |
 
 - [ ] The candidate SHA has not changed since every required check completed.
-- [ ] The `Guard main branch source` and `Promotion gate` required contexts pass.
+- [ ] The `Guard main branch source`, `Promotion gate`, and `Release plan` required contexts pass.
 - [ ] The complete file and commit compare contains only reviewed work.
 - [ ] PR conversations, review summaries, and all review threads have been read; actionable findings are addressed and required code-owner approvals exist.
 
@@ -46,6 +47,10 @@ List each unresolved issue and its disposition. Write `None` only after checking
 ### User-facing and migration notes
 
 Summarize behavioral changes. If no migration is required, state why.
+
+### Release plan
+
+Review the `Release Plan` workflow comment. Confirm the proposed semantic tag and deterministic notes describe the complete candidate, or confirm that the workflow reports a no-op. If the version is wrong, change the Conventional Commit history on `next` through a reviewed pull request before merging this promotion.
 
 ### Public-contract follow-ups
 
@@ -102,4 +107,4 @@ Never force-push either persistent branch. Roll back with a reviewed revert comm
 
 ## Stable consumption boundary
 
-Merging this promotion updates the Git-consumed stable `main` ref. It does not create a semantic tag or GitHub release. Any later tag is a separately approved action with its own release notes and exact-ref validation.
+Merging this promotion updates the Git-consumed stable `main` ref and authorizes the reviewed release plan. When releasable commits exist, publication waits until every required workflow succeeds on the exact merge SHA, then creates the annotated tag and GitHub release automatically. A no-op plan creates neither. The signed manual tag path remains available for recovery.

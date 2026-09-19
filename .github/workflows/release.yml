@@ -4,20 +4,24 @@ name: Release
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_run:
+    workflows: [Zsh, ZD Integration, CodeQL, Trunk Code Quality]
+    types: [completed]
 
-permissions:
-  actions: read
-  contents: write
+permissions: {}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: release-${{ github.event.workflow_run.head_sha || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Verify and publish
-    if: github.repository == 'z-shell/zi'
+  manual:
+    name: Verify and publish recovery tag
+    if: github.event_name == 'push' && github.repository == 'z-shell/zi'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     steps:
       - name: Check out the tagged commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,3 +53,54 @@ jobs:
             --title "Zi $TAG" \
             --generate-notes \
             --latest
+
+  automatic:
+    name: Publish reviewed promotion
+    if: "${{ github.event_name == 'workflow_run' && github.repository == 'z-shell/zi' && github.event.workflow_run.head_branch == 'main' }}"
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Check out the promotion commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install Zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+
+      - name: Verify promotion and exact-SHA validation
+        id: verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROMOTION_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: zsh -f scripts/verify-promotion-release.zsh
+
+      - name: Compute the authorized release plan
+        id: plan
+        if: steps.verify.outputs.ready == 'true'
+        env:
+          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
+        run: |
+          RELEASE_PLAN_OUTPUT="$GITHUB_OUTPUT" \
+            zsh -f scripts/release-plan.zsh \
+              "${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record no-op promotion
+        if: steps.verify.outputs.ready == 'true' && steps.plan.outputs.release != 'true'
+        run: echo 'The reviewed promotion contains no releasable Conventional Commits; no tag or release was created.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create annotated tag and release
+        if: steps.verify.outputs.ready == 'true' && steps.plan.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
+          RELEASE_TAG: ${{ steps.plan.outputs.tag }}
+          RELEASE_TARGET: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          zsh -f scripts/publish-promotion-release.zsh >> "$GITHUB_STEP_SUMMARY"
+          echo "Authorized by reviewed promotion #${{ steps.verify.outputs.promotion_pr }}." >> "$GITHUB_STEP_SUMMARY"

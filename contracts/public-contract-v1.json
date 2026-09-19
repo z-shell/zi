@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": 1,
-  "evidence_reviewed": "2026-08-30",
+  "evidence_reviewed": "2026-09-18",
   "renames": [],
   "surfaces": [
     {
@@ -95,7 +95,7 @@
       "repository": "z-shell/wiki",
       "path": "docs/guides/04_messages.mdx",
       "surfaces": ["message-output", "message-progress"],
-      "evidence": "https://github.com/z-shell/wiki/blob/32a2d7c33f4575df0876de600d8718d7446b4b4c/docs/guides/04_messages.mdx"
+      "evidence": "https://github.com/z-shell/wiki/blob/11ddc620baebe18b05915fc15d1a880c1a6b434f/docs/guides/04_messages.mdx"
     },
     {
       "repository": "z-shell/wiki",
@@ -125,7 +125,7 @@
       "repository": "z-shell/wiki",
       "path": "ecosystem/annexes/0_overview.mdx",
       "surfaces": ["annex-registration"],
-      "evidence": "https://github.com/z-shell/wiki/blob/7fca4272b6fbb40afeaa2c25288c1089d887c7d4/ecosystem/annexes/0_overview.mdx"
+      "evidence": "https://github.com/z-shell/wiki/blob/11ddc620baebe18b05915fc15d1a880c1a6b434f/ecosystem/annexes/0_overview.mdx"
     },
     {
       "repository": "z-shell/docs",
@@ -139,19 +139,19 @@
         "prezto-compatibility",
         "compatibility-aliases"
       ],
-      "evidence": "https://github.com/z-shell/docs/blob/77f0d7d30eb090ce335fcb6fe21fd09c55dc6bd7/code/zsdoc/asciidoc/zi.zsh.adoc"
+      "evidence": "https://github.com/z-shell/docs/blob/e0d630ea0ea6117ab80bb7bedc0a6346ee1b50f5/code/zsdoc/asciidoc/zi.zsh.adoc"
     },
     {
       "repository": "z-shell/src",
       "path": "public/sh/install.sh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/5ac79863d55baf056796e5e3afce5970506b8871/public/sh/install.sh"
+      "evidence": "https://github.com/z-shell/src/blob/d5ec91f46a306117b9ff3dcdaf0b7b6de96fae7b/public/sh/install.sh"
     },
     {
       "repository": "z-shell/src",
       "path": "public/zsh/init.zsh",
       "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/5ac79863d55baf056796e5e3afce5970506b8871/public/zsh/init.zsh"
+      "evidence": "https://github.com/z-shell/src/blob/d19ae4895189a0478d76c8c01967ae955d07319c/public/zsh/init.zsh"
     },
     {
       "repository": "z-shell/zd",
@@ -166,7 +166,7 @@
         "compatibility-aliases",
         "installer-git-output"
       ],
-      "evidence": "https://github.com/z-shell/zd/blob/3380ddef839309c5886ee0addb4fcb114639d7c4/tests/helpers.zsh"
+      "evidence": "https://github.com/z-shell/zd/blob/35b837d562008c0677f21c39c99e932507aba8bf/tests/helpers.zsh"
     },
     {
       "repository": "z-shell/z-a-rust",
@@ -202,7 +202,7 @@
       "repository": "z-shell/z-a-default-ice",
       "path": "z-a-default-ice.plugin.zsh",
       "surfaces": ["annex-registration"],
-      "evidence": "https://github.com/z-shell/z-a-default-ice/blob/9a5eda0d6eedc8a6c3af1fbbda1c444d47062fe1/z-a-default-ice.plugin.zsh"
+      "evidence": "https://github.com/z-shell/z-a-default-ice/blob/e8c4ba9e1bfdd4423bc02eb1f4806dda2999d09d/z-a-default-ice.plugin.zsh"
     },
     {
       "repository": "z-shell/z-a-linkman",
@@ -226,7 +226,7 @@
       "repository": "z-shell/z-a-meta-plugins",
       "path": "z-a-meta-plugins.plugin.zsh",
       "surfaces": ["annex-registration"],
-      "evidence": "https://github.com/z-shell/z-a-meta-plugins/blob/caf156e15148031df6a144f0a8f8c88627eda78a/z-a-meta-plugins.plugin.zsh"
+      "evidence": "https://github.com/z-shell/z-a-meta-plugins/blob/ba3479005c6a2ce5ba8beedb9344052d16898b84/z-a-meta-plugins.plugin.zsh"
     },
     {
       "repository": "z-shell/z-a-test",
@@ -236,15 +236,9 @@
     },
     {
       "repository": "z-shell/F-Sy-H",
-      "path": "chroma/-zi.ch",
+      "path": "chroma/_fsh_chroma_zi",
       "surfaces": ["commands", "ices"],
-      "evidence": "https://github.com/z-shell/F-Sy-H/blob/2d2eedd8e0aa3eb1ba70aae54680c106777c2f8d/chroma/-zi.ch"
-    },
-    {
-      "repository": "z-shell/zsh-lint",
-      "path": "legacy/functions/zsh-lint",
-      "surfaces": ["ices"],
-      "evidence": "https://github.com/z-shell/zsh-lint/blob/5c6cf1337803921a062560eec477cc93f2e590b8/legacy/functions/zsh-lint"
+      "evidence": "https://github.com/z-shell/F-Sy-H/blob/d7cb278a331b88fb6cc6560af545c2edac95d6dc/chroma/_fsh_chroma_zi"
     },
     {
       "repository": "z-shell/pm-perf-test",
@@ -256,7 +250,7 @@
       "repository": "z-shell/subversion",
       "path": "docs/README.md",
       "surfaces": ["compatibility-functions"],
-      "evidence": "https://github.com/z-shell/subversion/blob/6d4f18be2b0c61790bf94325d8bc857625328253/docs/README.md"
+      "evidence": "https://github.com/z-shell/subversion/blob/201a0b2061bc73e5942660653245fa3f6fe5d66d/docs/README.md"
     }
   ]
 }

@@ -70,7 +70,7 @@ jobs:
 
   zd:
     name: ZD integration
-    uses: z-shell/zd/.github/workflows/test-native.yml@fd0995d6f7958fea6c4abbc4fff81a6da2277b66 # z-shell/zd#95, #96, #107
+    uses: z-shell/zd/.github/workflows/test-native.yml@01c3477e48c0c31bb7225986bb1bac4270e151ff # z-shell/zd#121
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name }}
       zi_ref: ${{ github.event.pull_request.head.sha }}
@@ -168,10 +168,37 @@ jobs:
           [[ -d ${ZI[HOME_DIR]} ]] || exit 1
           ZSH
 
+  real-objects:
+    name: Real objects install, update, unload, delete
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+
+      - name: Drive the exact candidate through real objects
+        shell: bash
+        env:
+          CANDIDATE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          checkout="${RUNNER_TEMP}/zi-candidate-smoke"
+          test ! -e "${checkout}"
+          git init "${checkout}"
+          git -C "${checkout}" remote add origin \
+            "https://github.com/${CANDIDATE_REPOSITORY}.git"
+          git -C "${checkout}" fetch --no-tags --depth 1 origin -- \
+            "${CANDIDATE_SHA}"
+          git -C "${checkout}" checkout --detach FETCH_HEAD
+          test "$(git -C "${checkout}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
+          # Network-dependent by design: the script installs, updates, unloads
+          # and deletes real GitHub-hosted objects in an isolated home (#548).
+          zsh -f "${checkout}/scripts/promotion-smoke.zsh" --checkout "${checkout}"
+
   gate:
     name: Promotion gate
     if: ${{ always() }}
-    needs: [zsh, zd, trunk, codeql, clean-install]
+    needs: [zsh, zd, trunk, codeql, clean-install, real-objects]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -182,6 +209,7 @@ jobs:
           TRUNK_RESULT: ${{ needs.trunk.result }}
           CODEQL_RESULT: ${{ needs.codeql.result }}
           CLEAN_INSTALL_RESULT: ${{ needs.clean-install.result }}
+          REAL_OBJECTS_RESULT: ${{ needs.real-objects.result }}
         run: |
           failed=0
           for result_name in \
@@ -189,7 +217,8 @@ jobs:
             ZD_RESULT \
             TRUNK_RESULT \
             CODEQL_RESULT \
-            CLEAN_INSTALL_RESULT
+            CLEAN_INSTALL_RESULT \
+            REAL_OBJECTS_RESULT
           do
             result="${!result_name}"
             if [[ "${result}" != success ]]; then

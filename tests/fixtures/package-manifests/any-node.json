@@ -1,0 +1,35 @@
+{
+  "name": "zsh-any-node",
+  "deprecated": false,
+  "description": "This special ZI package – is designed for easy installing of any Node modules inside the plugin directory, exposing their binaries via shims (i.e.: forwarder scripts) created automatically by Bin-Gem-Node annex.",
+  "homepage": "https://github.com/z-shell/any-node",
+  "license": "MIT",
+  "keywords": [
+    "zpackage",
+    "npm wrapper",
+    "zsh"
+  ],
+  "author": "Z-Shell Community",
+  "bugs": {
+    "url": "https://github.com/z-shell/any-node/issues"
+  },
+  "zsh-data": {
+    "plugin-info": {
+      "user": "z-shell",
+      "plugin": "0",
+      "requires": "npm;bgn"
+    },
+    "zi-ices": {
+      "default": {
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "id-as": "${${:-%IDAS%}:-%MOD%}",
+        "node": "%MOD%;%MOD2%;%MOD3%;%MOD4%;%MOD5%;%MOD6%;%MOD7%;%OTHER%",
+        "sbin": "n:node_modules/.bin/*",
+        "atpull": "%atclone",
+        "nocompile": ""
+      }
+    }
+  }
+}

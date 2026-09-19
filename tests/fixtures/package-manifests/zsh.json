@@ -1,0 +1,120 @@
+{
+  "name": "zsh",
+  "description": "Zsh – the programmer's shell",
+  "homepage": "https://github.com/zsh-users/zsh",
+  "bugs": {
+    "url": "https://github.com/zsh-users/zsh/issues"
+  },
+  "keywords": [
+    "zpackage",
+    "zshell",
+    "zsh"
+  ],
+  "zsh-data": {
+    "plugin-info": {
+      "user": "zsh-users",
+      "plugin": "zsh"
+    },
+    "zi-ices": {
+      "default": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.3.1": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.3.1; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.4.2": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.4.2; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.5.1": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.5.1; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.6.2": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.6.2; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.7.1": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.7.1; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.8": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.8; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.8.1": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.8.1; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      },
+      "5.9": {
+        "requires": "cc;make;cp;rm",
+        "git": "",
+        "lucid": "",
+        "as": "null",
+        "atclone": "git checkout --quiet zsh-5.9; ./.preconfig; m {nl}{hi}Building Zsh{…}; CPPFLAGS='-I/usr/include -I/usr/local/include' CFLAGS='-g -O2 -Wall' LDFLAGS='-L/usr/lib -L/usr/local/lib' ./configure --prefix=\"$ZPFX\" >> /dev/null 2>&1 && { type yodl >> /dev/null 2>&1 || { m -u2 {warn}WARNING{ehi}:{rst}{warn} No {cmd}yodl{warn}, manual pages will not be built.; ((0)); } && { make install; ((1)); } || make install.bin install.fns install.modules } >> /dev/null 2>&1 && { [[ ${ZSH_INSTALL_SYSTEM:-} != 1 ]] || { type sudo >> /dev/null 2>&1 && [[ -e /bin/zsh ]] && [[ ! -e /bin/zsh.bkp ]] && sudo mv /bin/zsh /bin/zsh.bkp && sudo cp -vf Src/zsh /bin/zsh; }; } && m {ok}The build succeeded. || m {failure}The build failed.",
+        "atpull": "%atclone",
+        "nocompile": "",
+        "nocompletions": "",
+        "countdown": ""
+      }
+    }
+  }
+}

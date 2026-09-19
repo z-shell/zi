@@ -1380,8 +1380,7 @@ builtin setopt no_aliases
 # FUNCTION: .zi-prepare-home. [[[
 # Establish all required directories.
 .zi-prepare-home() {
-  [[ -n ${ZI[HOME_READY]} ]] && return
-  ZI[HOME_READY]=1
+  [[ -n ${ZI[HOME_READY]} ]] && return 0
   if [[ ! -d ${ZI[HOME_DIR]} ]]; then
     command mkdir -p "${ZI[HOME_DIR]}"
     command chmod 700 "${ZI[HOME_DIR]}"
@@ -1440,9 +1439,33 @@ builtin setopt no_aliases
     command mkdir -p "${ZI[SNIPPETS_DIR]}/OMZ::plugins"
     command chmod go-w "${ZI[SNIPPETS_DIR]}"
     ( builtin cd -q ${ZI[SNIPPETS_DIR]}; command ln -s OMZ::plugins plugins; )
+  fi
+  # Independently of the snippets directory. These were nested, so a layout with
+  # snippets/ already present and services/ missing, which a migration or a
+  # manual repair can leave behind, never created the services directory and was
+  # still accepted as ready. Service startup then tried to place locks and FIFOs
+  # below a directory that did not exist.
+  if [[ ! -d ${ZI[SERVICES_DIR]} ]]; then
     command mkdir -p "${ZI[SERVICES_DIR]}"
     command chmod go-w "${ZI[SERVICES_DIR]}"
   fi
+  # Validate before declaring the home ready, and leave ZI[HOME_READY] unset on
+  # failure so a later call can retry. $ZPFX and the manual directory stay
+  # best-effort: they are user-facing install prefixes rather than Zi's own
+  # state, and the manual tree has always tolerated a creation failure.
+  local ___required
+  for ___required (
+    ${ZI[HOME_DIR]} ${ZI[CACHE_DIR]} ${ZI[CONFIG_DIR]} ${ZI[LOG_DIR]}
+    ${ZI[ZMODULES_DIR]} ${ZI[PLUGINS_DIR]} ${ZI[PLUGINS_DIR]}/_local---zi
+    ${ZI[COMPLETIONS_DIR]} ${ZI[SNIPPETS_DIR]} ${ZI[SERVICES_DIR]}
+  ) {
+    [[ -d $___required ]] || {
+      builtin print -u2 -r -- "zi: home preparation incomplete, missing: ${___required}"
+      return 1
+    }
+  }
+  ZI[HOME_READY]=1
+  return 0
 } # ]]]
 # FUNCTION: .zi-load-object. [[[
 .zi-load-object() {
@@ -1696,6 +1719,7 @@ builtin setopt no_aliases
 .zi-load () {
   typeset -F 3 SECONDS=0
   local ___mode="$3" ___rst=0 ___retval=0 ___key
+  integer ___pack_service=0
   .zi-any-to-user-plugin "$1" "$2"
   local ___user="${reply[-2]}" ___plugin="${reply[-1]}" ___id_as="${ICE[id-as]:-${reply[-2]}${${reply[-2]:#(%|/)*}:+/}${reply[-1]}}"
   local ___pdir_path="${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"
@@ -1752,10 +1776,23 @@ builtin setopt no_aliases
     return "$rc"
   fi
     zle && ___rst=1
+    # A pack'' profile is read only while the package is being installed, so
+    # the dispatcher decided on a synchronous load before service'' was known.
+    # Stop after the install, exactly as cloneonly'' does; the dispatcher
+    # re-reads ICE and schedules the service task (#524). The service runner's
+    # own load has ZSRV_ID set and must still source the plugin, and a
+    # caller-requested cloneonly'' keeps its download-only contract.
+    (( ${+ICE[pack]} && ${+ICE[service]} && !${+ICE[cloneonly]} )) && [[ -z $ZSRV_ID ]] && {
+      ___pack_service=1
+      # The callers read and clear this: only a load that actually stopped
+      # here may be re-queued as a service. A snippet package returned above
+      # already loaded synchronously and must not be queued a second time.
+      ZI[pack-service-deferred]=$___id_as
+    }
   }
   ZI_SICE[$___id_as]=
   .zi-pack-ice "$___id_as"
-  (( ${+ICE[cloneonly]} )) && return 0
+  (( ${+ICE[cloneonly]} || ___pack_service )) && return 0
   .zi-register-plugin "$___id_as" "$___mode" "${ICE[teleid]}"
   # Set up param'' objects (parameters).
   if [[ -n ${ICE[param]} ]] {
@@ -1854,7 +1891,7 @@ builtin setopt no_aliases
       (( ++ ZI[TMP_SUBST_DEPTH] ))
     }
     local ZERO
-    [[ $ICE[atinit] = '!'* ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit#!]}"; ((1)); } || eval "${ICE[atinit]#!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
+    [[ $ICE[atinit] = '!'* ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit]#!}"; ((1)); } || eval "${ICE[atinit]#!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
     [[ -n ${ICE[src]} ]] && { ZERO="${${(M)ICE[src]##/*}:-$___pdir_orig/${ICE[src]}}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }; }
     [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___pdir_orig"; }; eval "reply=(${ICE[multisrc]})"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; local ___fname; for ___fname in "${reply[@]}"; do ZERO="${${(M)___fname:#/*}:-$___pdir_orig/$___fname}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }; done; }
     # Run the atload hooks right before atload ice.
@@ -1895,7 +1932,7 @@ builtin setopt no_aliases
     (( ${+ICE[blockf]} )) && { local -a fpath_bkp; fpath_bkp=( "${fpath[@]}" ); }
     local ZERO="$___pdir_path/$___fname"
     (( ${+ICE[aliases]} )) || builtin setopt no_aliases
-    [[ $ICE[atinit] = '!'* ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit]#!}"; ((1)); } || eval "${ICE[atinit]#1}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
+    [[ $ICE[atinit] = '!'* ]] && { local ___oldcd="$PWD"; (( ${+ICE[nocd]} == 0 )) && { () { builtin setopt local_options no_auto_pushd; builtin cd -q "${${${(M)___user:#%}:+$___plugin}:-${ZI[PLUGINS_DIR]}/${___id_as//\//---}}"; } && eval "${ICE[atinit]#!}"; ((1)); } || eval "${ICE[atinit]#!}"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; }
     (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }
     [[ -n ${ICE[src]} ]] && { ZERO="${${(M)ICE[src]##/*}:-$___pdir_orig/${ICE[src]}}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { ((1)); { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); }; }
     [[ -n ${ICE[multisrc]} ]] && { local ___oldcd="$PWD"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___pdir_orig"; }; eval "reply=(${ICE[multisrc]})"; () { builtin setopt local_options no_auto_pushd; builtin cd -q "$___oldcd"; }; for ___fname in "${reply[@]}"; do ZERO="${${(M)___fname:#/*}:-$___pdir_orig/$___fname}"; (( ${+ICE[silent]} )) && { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; } 2>/dev/null 1>&2; (( ___retval += $? )); ((1)); } || { { [[ -n $___precm ]] && { builtin ${___precm[@]} 'source "$ZERO"'; ((1)); } || { ((1)); $___builtin source "$ZERO"; }; }; (( ___retval += $? )); } done; }
@@ -2441,7 +2478,14 @@ builtin setopt no_aliases
   integer retval
   local bit exts="${(j:|:)${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}}"
   for bit; do
-  [[ $bit = (#b)(--|)(${~ZI[ice-list]}${~exts})(*) ]] && ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}" || break
+    [[ $bit = (#b)(--|)(${~ZI[ice-list]}${~exts})(*) ]] || break
+    # A no-value ice followed by more text is not that ice: `sharkdp/hexyl`
+    # must not tokenize as `sh` with the value `arkdp/hexyl`. The word is the
+    # plugin or snippet ID, so tokenizing stops here. Valued ices keep their
+    # remainder as before. `svn` is a flag too but lives outside
+    # ZI[nval-ice-list] because side.zsh orders it last; it is named here.
+    [[ ${match[2]} = (${~ZI[nval-ice-list]}|svn) && -n ${match[3]#(:|=)} ]] && break
+    ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}"
     retval+=1
   done
   [[ ${ZI_ICES[as]} = program ]] && ZI_ICES[as]=command
@@ -2460,20 +2504,51 @@ return retval
   return 0
 } # ]]]
 # FUNCTION: .zi-load-ices. [[[
+# Reads the disk-ices of an already-installed object into the ICE hash.
+#
+# $1 - the object's effective handle-ID
+# $2 - `snippet' when the caller has already established that the object is
+#      one. Anything else (including the default) means undetermined, in
+#      which case an ID present in both roots is reported instead of being
+#      resolved silently. There is no `plugin' counterpart: a caller never
+#      knows that much up-front, because a disk-stored `is-snippet' ice is
+#      itself one of the values this function loads.
 .zi-load-ices() {
-  local id_as="$1" ___key ___path
+  local id_as="$1" ___type="$2" ___key ___path
   local -a ice_order
   ice_order=(
     ${(As:|:)ZI[ice-list]}
     ${(@)${(@Akons:|:u)${ZI_EXTS[ice-mods]//\'\'/}}/(#s)<->-/}
   )
-  ___path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi
-  # TODO Snippet's dir computation…
-  if [[ ! -d $___path ]] {
-    if ! .zi-get-object-path snippet "${id_as//\//---}"; then
-      return 1
-    fi
-    ___path="$REPLY"/._zi
+  # The two roots use different ID conventions: the plugin directory flattens
+  # `/' to `---', the snippet path keeps the slashes and is derived by
+  # .zi-get-object-path. Compute both, then choose.
+  local ___plugin_path="${ZI[PLUGINS_DIR]}/${id_as//\//---}"/._zi ___snippet_path
+  .zi-get-object-path snippet "$id_as"
+  ___snippet_path="$REPLY"/._zi
+  # A metadata directory counts only when it actually holds ices. An empty one
+  # is a leftover (e.g. from an interrupted install) and must not shadow the
+  # other root.
+  # Emulated, because this runs with the user's options and the probe uses a
+  # bare glob qualifier, which sh_glob (among others) disables.
+  integer ___has_plugin ___has_snippet
+  () {
+    builtin emulate -LR zsh
+    local -a ___probe
+    ___probe=( $___plugin_path/*(.DN) );  ___has_plugin=${#___probe}
+    ___probe=( $___snippet_path/*(.DN) ); ___has_snippet=${#___probe}
+  }
+  (( ___has_plugin || ___has_snippet )) || return 1
+  if [[ $___type == snippet ]] {
+    (( ___has_snippet )) && ___path="$___snippet_path" || ___path="$___plugin_path"
+  } else {
+    if (( ___has_plugin && ___has_snippet )) && \
+      [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] {
+      +zi-message "{u-warn}Warning{b-warn}:{rst} the ID {apo}\`{pid}$id_as{apo}\`{rst} exists as both a" \
+        "plugin and a snippet{ehi}:{rst}{nl}– {dir}${___plugin_path:h}{rst}{nl}– {dir}${___snippet_path:h}{rst}{nl}" \
+        "Reading the plugin's ices. Disambiguate with the {ice}id-as{apo}''{rst} ice."
+    }
+    (( ___has_plugin )) && ___path="$___plugin_path" || ___path="$___snippet_path"
   }
   for ___key ( "${ice_order[@]}" ) {
     (( ${+ICE[$___key]} )) && [[ ${ICE[$___key]} != +* ]] && continue
@@ -2537,7 +2612,17 @@ return retval
 
   if [[ $___action = *load ]]; then
     if [[ $___tpe = p ]]; then
-      .zi-load "${(@)=___id}" "" "$___mode"; (( ___retval += $? ))
+      .zi-load "${(@)=___id}" "" "$___mode"; integer ___load_rc=$?; (( ___retval += ___load_rc ))
+      # A command-supplied turbo ice queued this as an ordinary task before
+      # the pack'' profile was read. If the install just revealed service'',
+      # .zi-load stopped after installing (#524) and no dispatcher is on the
+      # stack to promote the task, so start the service here. The flag is
+      # set only when the load really stopped.
+      if [[ -n ${ZI[pack-service-deferred]} ]]; then
+        unset 'ZI[pack-service-deferred]'
+        (( ${+functions[.zi-service]} )) || builtin source "${ZI[BIN_DIR]}/lib/zsh/additional.zsh"
+        zpty -b "${___id//\//:} / ${ICE[service]}" '.zi-service p "$___mode" "$___id"'
+      fi
     elif [[ $___tpe = s ]]; then
       .zi-load-snippet $___opt "$___id"; (( ___retval += $? ))
     elif [[ $___tpe = p1 || $___tpe = s1 ]]; then
@@ -2875,13 +2960,10 @@ zi() {
           # Effective remote-ID (i.e.: URL, GitHub username/repo, package name, etc.). teleid'' allows "overriding" of $1.
           # In the case of a package using teleid'', the value here is being taken from the given ices, before disk-ices.
           ___etid="${ICE[teleid]:-$___id}"
-          if (( ${+ICE[pack]} )); then
-            ___had_wait=${+ICE[wait]}
-            .zi-load-ices "$___ehid"
-            # wait'' isn't possible via the disk-ices (for packages), only via the command's ice-spec.
-            [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
-          fi
-          [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]] && ICE[id-as]="${___etid:t}"
+          # Classify as far as the command's own ice-spec and the effective
+          # remote-ID allow. $___etid is final by now and isn't revisited, so
+          # the only classifying input still missing is a disk-stored
+          # `is-snippet' ice, which the disk-ice read below may supply.
           integer  ___is_snippet=${${(M)___is_snippet:#-1}:-0}
           () {
             builtin setopt local_options extended_glob
@@ -2889,6 +2971,16 @@ zi() {
               ___is_snippet=1
             }
           } "$@"
+          if (( ${+ICE[pack]} )); then
+            ___had_wait=${+ICE[wait]}
+            .zi-load-ices "$___ehid" "${${(M)___is_snippet:#1}:+snippet}"
+            # wait'' isn't possible via the disk-ices (for packages), only via the command's ice-spec.
+            [[ $___had_wait -eq 0 ]] && unset 'ICE[wait]'
+          fi
+          [[ ${ICE[id-as]} = (auto|) && ${+ICE[id-as]} == 1 ]] && ICE[id-as]="${___etid:t}"
+          # Second pass: a disk-stored `is-snippet' ice promotes the object.
+          # The remaining inputs of the test above cannot have changed.
+          (( ___is_snippet >= 0 )) && [[ -n ${ICE[is-snippet]+1} ]] && ___is_snippet=1
           local ___type=${${${(M)___is_snippet:#1}:+snippet}:-plugin}
           reply=(
             ${(on)ZI_EXTS2[(I)zi hook:before-load-pre <->]}
@@ -2909,12 +3001,19 @@ zi() {
               if (( ___retval2 & 2 )) {
                 local -a ___args
                 ___args=( "${(@Q)${(@z)ZI[annex-before-load:new-@]}}" )
+                # (z) yields one empty word for a blank string, which would be
+                # read as a blank object ID. A blank replacement means the hook
+                # consumed the request, so drop the word.
+                [[ -n ${ZI[annex-before-load:new-@]//[[:space:]]/} ]] || ___args=()
                 builtin set -- "${___args[@]}"
               }
               # Override $___ices?
               if (( ___retval2 & 4 )) {
                 local -a ___new_ices
                 ___new_ices=( "${(Q@)${(@z)ZI[annex-before-load:new-global-ices]}}" )
+                # Same blank-word split as above; here it would make an empty
+                # ice-list look like an odd, malformed one.
+                [[ -n ${ZI[annex-before-load:new-global-ices]//[[:space:]]/} ]] || ___new_ices=()
                 (( 0 == ${#___new_ices} % 2 )) && \
                   ___ices=( "${___new_ices[@]}" ) || \
                     { [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] && \
@@ -2995,6 +3094,14 @@ zi() {
             if (( ___turbo && !___had_cloneonly && ZI[HAVE_SCHEDULER] )) {
               command rm -f $___object_path/._zi/cloneonly
               unset 'ICE[cloneonly]'
+            }
+            # A fresh pack'' install reads the profile's ices only inside
+            # .zi-load, so service'' can appear after the decision above. When
+            # the load stopped after installing, schedule the service now
+            # (#524); the flag is set only on that path.
+            if [[ -n ${ZI[pack-service-deferred]} ]] {
+              unset 'ZI[pack-service-deferred]'
+              (( ___turbo )) || ___turbo=1
             }
           }
           if (( ___turbo && ZI[HAVE_SCHEDULER] && 0 == ___last_retval )) {

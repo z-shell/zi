@@ -9,23 +9,40 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "contracts/package-manifest-v1.json"
+      - "scripts/validate-package-manifest.py"
+      - "tests/**"
+      - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
+      - "tests/atinit-deferred-marker.zsh"
+      - "tests/ci-registration.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/disk-ice-resolution.zsh"
+      - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
+      - "tests/ice-tokenizer.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
+      - "tests/package-manifest-contract.zsh"
+      - "tests/package-manifest-fixtures.zsh"
+      - "tests/fixtures/package-manifests/**"
+      - "scripts/refresh-package-manifests.zsh"
+      - "tests/package-manifest-parsing.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
       - "tests/plugin-autoload-fpath-scope.zsh"
       - "tests/plugin-autoload-ice.zsh"
       - "tests/nested-load-state.zsh"
+      - "tests/pack-service-first-install.zsh"
       - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
+      - "tests/release-tag-verification.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/snippet-update-status.zsh"
       - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
       - "tests/unload-hook-dispatch.zsh"
@@ -35,23 +52,40 @@ on:
     paths:
       - "zi.zsh"
       - "lib/**"
+      - "contracts/package-manifest-v1.json"
+      - "scripts/validate-package-manifest.py"
+      - "tests/**"
+      - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
+      - "tests/atinit-deferred-marker.zsh"
+      - "tests/ci-registration.zsh"
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
+      - "tests/disk-ice-resolution.zsh"
+      - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
+      - "tests/ice-tokenizer.zsh"
       - "tests/load-object-status.zsh"
       - "tests/message-formatting.zsh"
+      - "tests/package-manifest-contract.zsh"
+      - "tests/package-manifest-fixtures.zsh"
+      - "tests/fixtures/package-manifests/**"
+      - "scripts/refresh-package-manifests.zsh"
+      - "tests/package-manifest-parsing.zsh"
       - "tests/path-resolution.zsh"
       - "tests/parallel-update.zsh"
       - "tests/plugin-autoload-fpath-scope.zsh"
       - "tests/plugin-autoload-ice.zsh"
       - "tests/nested-load-state.zsh"
+      - "tests/pack-service-first-install.zsh"
       - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
+      - "tests/release-tag-verification.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
       - "tests/snippet-directory-mirror.zsh"
+      - "tests/snippet-update-status.zsh"
       - "tests/source-hygiene.zsh"
       - "tests/subst-nesting.zsh"
       - "tests/unload-hook-dispatch.zsh"
@@ -126,6 +160,50 @@ jobs:
       - name: Test unload hook dispatch
         run: zsh -f tests/unload-hook-dispatch.zsh
 
+  pack-service-first-install:
+    name: Pack Service First Install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test the first pack install of a service profile
+        run: zsh -f tests/pack-service-first-install.zsh
+
+  package-manifest-fixtures:
+    name: Package Manifest Fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh and jq
+        run: sudo apt update && sudo apt-get install -yq zsh jq
+      - name: Test that every vendored package manifest resolves through the reader
+        run: zsh -f tests/package-manifest-fixtures.zsh
+
+  ci-registration:
+    name: CI Registration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test that every focused test is a registered job
+        run: zsh -f tests/ci-registration.zsh
+
+  release-tag-verification:
+    name: Release Tag Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test release tag verification
+        run: zsh -f tests/release-tag-verification.zsh
+
   version-reporting:
     name: Version reporting
     runs-on: ubuntu-latest
@@ -137,6 +215,28 @@ jobs:
       - name: Test version reporting
         run: zsh tests/version-reporting.zsh
 
+  package-manifest-contract:
+    name: Package manifest contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test the package manifest contract
+        run: zsh -f tests/package-manifest-contract.zsh
+
+  package-manifest-parsing:
+    name: Package manifest parsing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test package manifest parsing
+        run: zsh -f tests/package-manifest-parsing.zsh
+
   path-resolution:
     name: Path resolution
     runs-on: ubuntu-latest
@@ -147,6 +247,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test path resolution
         run: zsh -f tests/path-resolution.zsh
+
+  disk-ice-resolution:
+    name: Disk Ice Resolution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test disk ice resolution
+        run: zsh -f tests/disk-ice-resolution.zsh
 
   parallel-update:
     name: Parallel Update
@@ -256,6 +367,17 @@ jobs:
       - name: Test annex unregister
         run: zsh -f tests/annex-unregister.zsh
 
+  atinit-deferred-marker:
+    name: Atinit Deferred Marker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test atinit deferred marker
+        run: zsh -f tests/atinit-deferred-marker.zsh
+
   archive-extraction:
     name: Archive extraction
     runs-on: ubuntu-latest
@@ -278,6 +400,17 @@ jobs:
       - name: Test completion refresh
         run: zsh tests/completion-refresh.zsh
 
+  home-preparation:
+    name: Home Preparation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test home preparation
+        run: zsh -f tests/home-preparation.zsh
+
   hook-ownership:
     name: Hook ownership
     runs-on: ubuntu-latest
@@ -288,6 +421,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test hook ownership
         run: zsh -f tests/hook-ownership.zsh
+
+  ice-tokenizer:
+    name: Ice tokenizer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test ice tokenizer
+        run: zsh -f tests/ice-tokenizer.zsh
 
   message-formatting:
     name: Message formatting
@@ -332,3 +476,5 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test snippet directory mirror
         run: zsh -f tests/snippet-directory-mirror.zsh
+      - name: Test snippet update status
+        run: zsh -f tests/snippet-update-status.zsh

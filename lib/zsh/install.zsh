@@ -6,14 +6,54 @@
 
 builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col-error]}ERROR:%f%b Couldn't find ${ZI[col-obj]}/lib/zsh/side.zsh%f%b."; return 1; }
 
+# FUNCTION: .zi-unescape-json-string [[[
+# Translates the escapes of a JSON string body into the characters they denote
+# and returns the result in $REPLY. Handles the eight two-character escapes and
+# \uXXXX in the basic multilingual plane; a surrogate escape or an unrecognized
+# escape is left exactly as written, as is a malformed \u.
+.zi-unescape-json-string() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent
+
+  local ___rest=$1 ___out= ___esc ___tail
+  local -a match mbegin mend
+  local -A ___map=( \" \" \\ \\ / / b $'\b' f $'\f' n $'\n' r $'\r' t $'\t' )
+  integer ___code
+
+  while [[ $___rest = (#b)([^\\]#)\\(?)(*) ]]; do
+    ___out+=$match[1] ___esc=$match[2] ___tail=$match[3]
+    if [[ $___esc == u && $___tail == (#b)([0-9a-fA-F](#c4))(*) ]] {
+      ___code=16#$match[1]
+      if (( ___code >= 16#D800 && ___code <= 16#DFFF )) {
+        ___out+="\\u$match[1]"
+      } else {
+        ___out+=${(#)___code}
+      }
+      ___rest=$match[2]
+    } elif (( ${+___map[$___esc]} )) {
+      ___out+=$___map[$___esc] ___rest=$___tail
+    } else {
+      ___out+="\\$___esc" ___rest=$___tail
+    }
+  done
+  typeset -g REPLY=$___out$___rest
+} # ]]]
 # FUNCTION: .zi-parse-json [[[
 # Retrievies the ice-list from given profile from the JSON of the package.json.
+#
+# Provenance: this began as `@str-parse-json' in z-shell/zsh-string-lib and is
+# now a maintained fork, not a mirror of it. Known divergences, all deliberate:
+# `___pair_map' omits the `('/`)' pair, which JSON never uses; the key lookup
+# selects the smallest object declaring the key instead of one that opens with
+# it; and string bodies are unescaped as they are captured. Do not swap in the
+# library copy without re-running tests/package-manifest-parsing.zsh, which
+# fails against it.
 .zi-parse-json() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent
 
-  local -A ___pos_to_level ___level_to_pos ___pair_map ___final_pairs ___Strings ___Counts
-  local ___input=$1 ___workbuf=$1 ___key=$2 ___varname=$3 ___style ___quoting
+  local -A ___pos_to_level ___level_to_pos ___pair_map ___final_pairs ___Strings ___Counts ___key_objects
+  local ___input=$1 ___workbuf=$1 ___key=$2 ___varname=$3 ___style ___quoting ___last_string
   integer ___nest=${4:-1} ___idx=0 ___pair_idx ___level=0 ___start ___end ___sidx=1 ___had_quoted_value=0
   local -a match mbegin mend ___pair_order
   (( ${(P)+___varname} )) || typeset -gA "$___varname"
@@ -56,7 +96,11 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
       [[ ${match[1]} = \" && $___quoting != \' ]] && \
         if [[ $___quoting = '"' ]]; then
-          ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)___input[___sidx,___idx-1]}"
+          # A JSON string body carries escapes; store what they denote, not the
+          # backslashes, so ices are not later executed with a stray `\'.
+          .zi-unescape-json-string "${___input[___sidx,___idx-1]}"
+          ___last_string=$REPLY
+          ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)REPLY}"
           ___quoting=""
         else
           ___had_quoted_value=1
@@ -74,12 +118,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
       [[ ${match[1]} = : && -z $___quoting ]] && \
         {
+          # A member name is a parsed string followed by an unquoted colon.
+          if [[ $___last_string == "$___key" && ${___input[${___level_to_pos[$___level]}]} == \{ ]]; then
+            ___key_objects[${___level_to_pos[$___level]}]=1
+          fi
           ___had_quoted_value=0
           ___sidx=___idx+1
         }
 
       [[ ${match[1]} = \' && $___quoting != \" ]] && \
         if [[ $___quoting = "'" ]]; then
+          ___last_string=${___input[___sidx,___idx-1]}
           ___Strings[$___level/${___Counts[$___level]}]+=" ${(q)___input[___sidx,___idx-1]}"
           ___quoting=""
         else
@@ -98,8 +147,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     for ___pair_a ( "${___pair_order[@]}" ) {
       ___pair_b="${___final_pairs[$___pair_a]}"
       ___text="${___input[___pair_b,___pair_a]}"
-      if [[ $___text = [[:space:]]#\{[[:space:]]#[\"\']${___key}[\"\']* ]]; then
-        ___found="$___text"
+      # JSON objects are unordered, so the wanted object is the smallest one
+      # that declares the key, not merely one that opens with it.
+      if (( ${+___key_objects[$___pair_b]} )); then
+        [[ -z $___found || $#___text -lt $#___found ]] && ___found="$___text"
       fi
     }
   }
@@ -113,6 +164,67 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   }
 }
 # ]]]
+# FUNCTION: .zi-read-package-manifest [[[
+# Resolves one profile out of a package manifest. Kept separate from
+# .zi-get-package so the lookup can be exercised without the network, the
+# filesystem and the install path around it.
+#
+# $1 - the manifest text
+# $2 - the wanted profile name
+# $3 - name of a hash to fill with the `plugin-info' fields
+# $4 - name of an array to fill with the available profile names
+# $5 - name of a hash to fill with the selected profile's ices
+#
+# Returns 0 when the profile was found, 1 otherwise. $3 and $4 are filled either
+# way, so a caller can report what the manifest does offer.
+.zi-read-package-manifest() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob warn_create_global typeset_silent
+
+  local ___json=$1 ___profile=$2
+  # Not named ___Strings: .zi-parse-json declares a local by that name, which
+  # would shadow the hash passed to it by name and swallow the result.
+  local -A ___parsed
+  .zi-parse-json "$___json" "plugin-info" ___parsed
+
+  # The members keep the order the manifest wrote them in, so look both slots up
+  # by name instead of assuming the canonical order.
+  local -a ___level1
+  ___level1=( "${(@Q)${(@z)___parsed[1/1]}}" )
+  integer ___info_pos=${___level1[(I)plugin-info]} ___ices_pos=${___level1[(I)zi-ices]}
+  # `zplugin-ices' is the pre-rename spelling of the same member. Published
+  # packages still carry it, and the positional reader this replaced never
+  # looked at the name at all, so accept it when `zi-ices' is absent (#544).
+  # The contract and validator keep requiring `zi-ices'.
+  (( ___ices_pos )) || ___ices_pos=${___level1[(I)zplugin-ices]}
+  integer ___info_slot=$(( (___info_pos + 1) / 2 )) ___ices_slot=$(( (___ices_pos + 1) / 2 ))
+
+  local -a ___info ___profiles
+  (( ___info_pos )) && ___info=( "${(@Q)${(@z)___parsed[2/$___info_slot]}}" )
+  # set -A, not a ${(PAA)} round trip: ice values contain spaces, and joining
+  # the array into one string to re-split it would tear them apart.
+  builtin set -A "$3" "${___info[@]}"
+
+  local ___ices_members=${___parsed[2/$___ices_slot]}
+  ___profiles=( "${(@Q)${(@z)___ices_members}}" )
+  builtin set -A "$4" "${___profiles[@]:#$'\0'--object--$'\0'}"
+
+  integer ___pos=${___profiles[(I)$___profile]}
+  (( ___pos && ___ices_pos )) || return 1
+
+  # Objects are numbered per level across the whole subtree, so anything nested
+  # in a member written before `zi-ices' shifts the profile bodies. Each such
+  # object leaves an --object-- marker in its own member's string, so counting
+  # those markers gives the exact offset.
+  integer ___preceding=0 ___k
+  for (( ___k = 1; ___k < ___ices_slot; ___k ++ )) {
+    local -a ___members=( "${(@Q)${(@z)___parsed[2/$___k]}}" )
+    ___preceding+=${#${(M)___members[@]:#$'\0'--object--$'\0'}}
+  }
+
+  builtin set -A "$5" "${(@Q)${(@z)___parsed[3/$(( ___preceding + (___pos + 1) / 2 ))]}}"
+  return 0
+} # ]]]
 # FUNCTION: .zi-get-package [[[
 .zi-get-package() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
@@ -143,23 +255,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     return 1
   }
 
-  local -A Strings
-  .zi-parse-json "$pkgjson" "plugin-info" Strings
-  local -A jsondata1
-  jsondata1=( ${(@Q)${(@z)Strings[2/1]}} )
-  local user=${jsondata1[user]} plugin=${jsondata1[plugin]} url=${jsondata1[url]} message=${jsondata1[message]} required=${jsondata1[required]:-${jsondata1[requires]}}
+  local -A jsondata1 profile_ices
   local -a profiles
   local key value
-  integer pos
-  profiles=( ${(@Q)${(@z)Strings[2/2]}} )
-  profiles=( ${profiles[@]:#$'\0'--object--$'\0'} )
-  pos=${${(@Q)${(@z)Strings[2/2]}}[(I)$profile]}
-  if (( pos )) {
-    for key value ( "${(@Q)${(@z)Strings[3/$(( (pos + 1) / 2 ))]}}" ) {
+  integer found=0
+  .zi-read-package-manifest "$pkgjson" "$profile" jsondata1 profiles profile_ices && found=1
+  local user=${jsondata1[user]} plugin=${jsondata1[plugin]} url=${jsondata1[url]} message=${jsondata1[message]} required=${jsondata1[required]:-${jsondata1[requires]}}
+  if (( found )) {
+    for key value ( "${(@kv)profile_ices[@]}" ) {
       (( ${+ICE[$key]} )) && [[ ${ICE[$key]} != +* ]] && continue
       ICE[$key]=$value${ICE[$key]#+}
     }
-    ICE=( "${(kv)ICE[@]//\\\"/\"}" )
     [[ ${ICE[as]} = program ]] && ICE[as]="command"
     [[ -n ${ICE[on-update-of]} ]] && ICE[subscribe]="${ICE[subscribe]:-${ICE[on-update-of]}}"
     [[ -n ${ICE[pick]} ]] && ICE[pick]="${ICE[pick]//\$ZPFX/${ZPFX%/}}"
@@ -170,7 +276,6 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
       eval "ICE[id-as]=\"${ICE[id-as]//(#m)[\"\\]/${map[$MATCH]}}\""
     }
   } else {
-    # Assumption: the default profile is the first in the table (see another color).
     +zi-message "{u-warn}Error{b-warn}:{error} the profile {apo}\`{hi}$profile{apo}\` {error}couldn't be found, aborting. Available profiles are: {lhi}${(pj:$epro_sep:)profiles[@]}{error}.{rst}"
     return 1
   }
@@ -236,8 +341,8 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 
   if (( !${+ICE[git]} && !${+ICE[from]} )) {
     (
+      local -A Strings jsondata
       .zi-parse-json "$pkgjson" "_from" Strings
-      local -A jsondata
       jsondata=( "${(@Q)${(@z)Strings[1/1]}}" )
 
       local URL=${jsondata[_resolved]}
@@ -1021,7 +1126,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   trap "command rmdir ${(qqq)local_dir}/${(qqq)dirname} 2>/dev/null; return 1;" INT TERM QUIT HUP
 
   local -a list arr
-  integer retval=0 hook_rc=0
+  integer retval=0 hook_rc=0 update_hook_rc=0
   local teleid_clean=${ICE[teleid]%%\?*}
   [[ $teleid_clean == *://* ]] && \
     local sname=${(M)teleid_clean##*://[^/]##(/[^/]##)(#c0,4)} || \
@@ -1077,147 +1182,156 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   (
     if [[ $url = (http|https|ftp|ftps|scp)://* ]] {
       # URL
-      (
-        () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir"; } || return 4
-        local mirror_name=Subversion
-        [[ $url = http(|s)://github.com/* ]] && mirror_name="Git sparse checkout"
-        (( !OPTS[opt_-q,--quiet] )) && \
-        +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with $mirror_name{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
+      # The nested subshell returns the pull-active flag, so a failing
+      # pre-update hook reports its status through this file instead.
+      local hook_rc_file
+      hook_rc_file=$(command mktemp "${TMPDIR:-/tmp}/zi-snippet-hook.XXXXXXXX") || return 4
+      {
+        (
+          () { builtin setopt local_options no_auto_pushd; builtin cd -q "$local_dir"; } || return 4
+          local mirror_name=Subversion
+          [[ $url = http(|s)://github.com/* ]] && mirror_name="Git sparse checkout"
+          (( !OPTS[opt_-q,--quiet] )) && \
+          +zi-message "Downloading{ehi}:{rst} {apo}\`{url}$sname{apo}\`{rst}${${ICE[svn]+" ({p}with $mirror_name{rst})"}:-" ({p}with curl, wget, lftp{rst})"}{…}"
 
-        if (( ${+ICE[svn]} )) {
-          if [[ $update = -u ]] {
-            # Test if update available
-            .zi-mirror-directory "$url" "-t" "$dirname"
-            integer mirror_rc=$?
-            if (( mirror_rc == 1 )); then
-              if (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) {
-                ZI[annex-multi-flag:pull-active]=1
-              } else { return 0; }
-              # Will return when no updates so atpull'' code below doesn't need any checks.
-              # This return 0 statement also sets the pull-active flag outside this subshell.
-            elif (( mirror_rc == 0 )); then
-              ZI[annex-multi-flag:pull-active]=2
-            else
-              return 4
-            fi
-            # Run annexes' atpull hooks (the before atpull-ice ones). The SVN block.
-            reply=(
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
-              ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
-            )
-            for key in "${reply[@]}"; do
-              arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-              "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:svn
-              hook_rc=$?
-              [[ "$hook_rc" -ne 0 ]] && {
-                retval="$hook_rc"
-                builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-              }
-            done
-
-            if (( ZI[annex-multi-flag:pull-active] == 2 )) {
-              # Do the update
-              # The condition is reversed on purpose – to show only the messages on an actual update
-              if (( OPTS[opt_-q,--quiet] )); then
-                local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
-                +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
-                +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with $mirror_name{rst}){…}"
-              fi
-              .zi-mirror-directory "$url" "-u" "$dirname" || return 4
-            }
-          } else {
-            .zi-mirror-directory "$url" "" "$dirname" || return 4
-          }
-
-          # Redundant code, just to compile a directory snippet.
-          if [[ ${ICE[as]} != command ]]; then
-            if [[ -n ${ICE[pick]} ]]; then
-              list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )
-            elif [[ -z ${ICE[pick]} ]]; then
-              list=(
-                $local_dir/$dirname/*.plugin.zsh(DN) $local_dir/$dirname/*.zsh-theme(DN) $local_dir/$dirname/init.zsh(DN)
-                $local_dir/$dirname/*.zsh(DN) $local_dir/$dirname/*.sh(DN) $local_dir/$dirname/.zshrc(DN)
-              )
-            fi
-            if [[ -e ${list[1]} && ${list[1]} != */dev/null && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && ${+ICE[nocompile]} -eq 0 ]] {
-              () {
-                builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
-                zcompile -U "${list[1]}" &>/dev/null || \
-                  +zi-message "{error}Warning{ehi}:{rst} Couldn't compile {apo}\`{file}${list[1]}{rst}'"
-              }
-            }
-          fi
-
-          return $ZI[annex-multi-flag:pull-active]
-        } else {
-          command mkdir -p "$local_dir/$dirname"
-
-          if (( !OPTS[opt_-f,--force] )) {
-            .zi-get-url-mtime "$url"
-          } else {
-            REPLY=$EPOCHSECONDS
-          }
-
-          # Returned is: modification time of the remote file.
-          # Thus, EPOCHSECONDS - REPLY is: allowed window for the
-          # local file to be modified in. ms-$secs is: files accessed
-          # within last $secs seconds. Thus, if there's no match, the
-          # local file is out of date.
-
-          local secs=$(( EPOCHSECONDS - REPLY ))
-          # Guard so that it's positive
-          (( $secs >= 0 )) || secs=0
-          integer skip_dl
-          local -a matched
-          matched=( $local_dir/$dirname/$filename(DNms-$secs) )
-          if (( ${#matched} )) {
-            +zi-message "{info}Already up to date.{rst}"
-            # Empty-update return-short path – it also decides the
-            # pull-active flag after the return from this sub-shell
-            (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) && skip_dl=1 || return 0
-          }
-          if [[ ! -f $local_dir/$dirname/$filename ]] {
-            ZI[annex-multi-flag:pull-active]=2
-          } else {
-            # secs > 1 → the file is outdated, then:
-            #   - if true, then the mode is 2 minus run-atpull-activation,
-            #   - if false, then mode is 3 → a forced download (no remote mtime found).
-            ZI[annex-multi-flag:pull-active]=$(( secs > 1 ? (2 - skip_dl) : 3 ))
-          }
-
-          # Run annexes' atpull hooks (the before atpull-ice ones).
-          # The URL-snippet block.
-          if [[ $update = -u && $ZI[annex-multi-flag:pull-active] -ge 1 ]] {
-            reply=(
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
-              ${${ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
-              ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
-            )
-            for key in "${reply[@]}"; do
-              arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
-              "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:url
-              hook_rc="$?"
-              [[ "$hook_rc" -ne 0 ]] && {
-                retval="$hook_rc"
-                builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
-              }
-            done
-          }
-
-          if (( !skip_dl )) {
-            if { ! .zi-download-file-stdout "$url" 0 1 >! "$dirname/$filename" } {
-              if { ! .zi-download-file-stdout "$url" 1 1 >! "$dirname/$filename" } {
-                command rm -f "$dirname/$filename"
-                +zi-message "{error}Error{ehi}:{rst} Download failed{…}"
+          if (( ${+ICE[svn]} )) {
+            if [[ $update = -u ]] {
+              # Test if update available
+              .zi-mirror-directory "$url" "-t" "$dirname"
+              integer mirror_rc=$?
+              if (( mirror_rc == 1 )); then
+                if (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) {
+                  ZI[annex-multi-flag:pull-active]=1
+                } else { return 0; }
+                # Will return when no updates so atpull'' code below doesn't need any checks.
+                # This return 0 statement also sets the pull-active flag outside this subshell.
+              elif (( mirror_rc == 0 )); then
+                ZI[annex-multi-flag:pull-active]=2
+              else
                 return 4
+              fi
+              # Run annexes' atpull hooks (the before atpull-ice ones). The SVN block.
+              reply=(
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+                ${${(M)ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
+              )
+              for key in "${reply[@]}"; do
+                arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+                "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:svn
+                hook_rc=$?
+                [[ "$hook_rc" -ne 0 ]] && {
+                  builtin print -r -- "$hook_rc" >! "$hook_rc_file"
+                  builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+                }
+              done
+
+              if (( ZI[annex-multi-flag:pull-active] == 2 )) {
+                # Do the update
+                # The condition is reversed on purpose – to show only the messages on an actual update
+                if (( OPTS[opt_-q,--quiet] )); then
+                  local id_msg_part="{…} ({p}identified as{ehi}: {id-as}$id_as{rst})"
+                  +zi-message "{nl}{apo}Updating snippet{ehi}:{rst} {url}${sname}{rst}${ICE[id-as]:+$id_msg_part}"
+                  +zi-message "Downloading{ehi}:{rst} {apo}\`{rst}$sname{apo}\`{rst} ({p}with $mirror_name{rst}){…}"
+                fi
+                .zi-mirror-directory "$url" "-u" "$dirname" || return 4
+              }
+            } else {
+              .zi-mirror-directory "$url" "" "$dirname" || return 4
+            }
+
+            # Redundant code, just to compile a directory snippet.
+            if [[ ${ICE[as]} != command ]]; then
+              if [[ -n ${ICE[pick]} ]]; then
+                list=( ${(M)~ICE[pick]##/*}(DN) $local_dir/$dirname/${~ICE[pick]}(DN) )
+              elif [[ -z ${ICE[pick]} ]]; then
+                list=(
+                  $local_dir/$dirname/*.plugin.zsh(DN) $local_dir/$dirname/*.zsh-theme(DN) $local_dir/$dirname/init.zsh(DN)
+                  $local_dir/$dirname/*.zsh(DN) $local_dir/$dirname/*.sh(DN) $local_dir/$dirname/.zshrc(DN)
+                )
+              fi
+              if [[ -e ${list[1]} && ${list[1]} != */dev/null && -z ${ICE[(i)(\!|)(sh|bash|ksh|csh)]} && ${+ICE[nocompile]} -eq 0 ]] {
+                () {
+                  builtin emulate -LR zsh -o extended_glob ${=${options[xtrace]:#off}:+-o xtrace}
+                  zcompile -U "${list[1]}" &>/dev/null || \
+                    +zi-message "{error}Warning{ehi}:{rst} Couldn't compile {apo}\`{file}${list[1]}{rst}'"
+                }
+              }
+            fi
+
+            return $ZI[annex-multi-flag:pull-active]
+          } else {
+            command mkdir -p "$local_dir/$dirname"
+
+            if (( !OPTS[opt_-f,--force] )) {
+              .zi-get-url-mtime "$url"
+            } else {
+              REPLY=$EPOCHSECONDS
+            }
+
+            # Returned is: modification time of the remote file.
+            # Thus, EPOCHSECONDS - REPLY is: allowed window for the
+            # local file to be modified in. ms-$secs is: files accessed
+            # within last $secs seconds. Thus, if there's no match, the
+            # local file is out of date.
+
+            local secs=$(( EPOCHSECONDS - REPLY ))
+            # Guard so that it's positive
+            (( $secs >= 0 )) || secs=0
+            integer skip_dl
+            local -a matched
+            matched=( $local_dir/$dirname/$filename(DNms-$secs) )
+            if (( ${#matched} )) {
+              +zi-message "{info}Already up to date.{rst}"
+              # Empty-update return-short path – it also decides the
+              # pull-active flag after the return from this sub-shell
+              (( ${+ICE[run-atpull]} || OPTS[opt_-u,--urge] )) && skip_dl=1 || return 0
+            }
+            if [[ ! -f $local_dir/$dirname/$filename ]] {
+              ZI[annex-multi-flag:pull-active]=2
+            } else {
+              # secs > 1 → the file is outdated, then:
+              #   - if true, then the mode is 2 minus run-atpull-activation,
+              #   - if false, then mode is 3 → a forced download (no remote mtime found).
+              ZI[annex-multi-flag:pull-active]=$(( secs > 1 ? (2 - skip_dl) : 3 ))
+            }
+
+            # Run annexes' atpull hooks (the before atpull-ice ones).
+            # The URL-snippet block.
+            if [[ $update = -u && $ZI[annex-multi-flag:pull-active] -ge 1 ]] {
+              reply=(
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-pre <->]}
+                ${${ICE[atpull]#\!}:+${(on)ZI_EXTS[(I)z-annex hook:\!atpull-<-> <->]}}
+                ${(on)ZI_EXTS2[(I)zi hook:e-\!atpull-post <->]}
+              )
+              for key in "${reply[@]}"; do
+                arr=( "${(Q)${(z@)ZI_EXTS[$key]:-$ZI_EXTS2[$key]}[@]}" )
+                "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:url
+                hook_rc="$?"
+                [[ "$hook_rc" -ne 0 ]] && {
+                  builtin print -r -- "$hook_rc" >! "$hook_rc_file"
+                  builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
+                }
+              done
+            }
+
+            if (( !skip_dl )) {
+              if { ! .zi-download-file-stdout "$url" 0 1 >! "$dirname/$filename" } {
+                if { ! .zi-download-file-stdout "$url" 1 1 >! "$dirname/$filename" } {
+                  command rm -f "$dirname/$filename"
+                  +zi-message "{error}Error{ehi}:{rst} Download failed{…}"
+                  return 4
+                }
               }
             }
+            return $ZI[annex-multi-flag:pull-active]
           }
-          return $ZI[annex-multi-flag:pull-active]
-        }
-      )
-      retval=$?
+        )
+        retval=$?
+        [[ -s $hook_rc_file ]] && update_hook_rc=$(<"$hook_rc_file")
+      } always {
+        command rm -f -- "$hook_rc_file"
+      }
 
       # Overestimate the pull-level to 2 also in error situations
       # – no hooks will be run anyway because of the error
@@ -1257,7 +1371,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:file
           hook_rc="$?"
           [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
+            update_hook_rc="$hook_rc"
             builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
           }
         done
@@ -1331,7 +1445,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
         hook_rc=$?
         [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
+          update_hook_rc="$hook_rc"
           builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
         }
       done
@@ -1373,7 +1487,7 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
           "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update
           hook_rc=$?
           [[ "$hook_rc" -ne 0 ]] && {
-            retval="$hook_rc"
+            update_hook_rc="$hook_rc"
             builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
           }
         done
@@ -1390,11 +1504,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
         "${arr[5]}" snippet "$save_url" "$id_as" "$local_dir/$dirname" "${${key##(zi|z-annex) hook:}%% <->}" update:$ZI[annex-multi-flag:pull-active]
         hook_rc=$?
         [[ "$hook_rc" -ne 0 ]] && {
-          retval="$hook_rc"
+          update_hook_rc="$hook_rc"
           builtin print -Pr -- "${ZI[col-warn]}Warning:%f%b ${ZI[col-obj]}${arr[5]}${ZI[col-warn]} hook returned with ${ZI[col-obj]}${hook_rc}${ZI[col-rst]}"
         }
       done
     }
+    return $update_hook_rc
   ) || return $?
   typeset -ga INSTALLED_EXECS
   { INSTALLED_EXECS=( "${(@f)$(<${TMPDIR:-/tmp}/zi-execs.$$.lst)}" ) } 2>/dev/null

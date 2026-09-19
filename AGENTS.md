@@ -14,6 +14,7 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - A successful promotion needs no routine back-merge. Merge a `main` hotfix forward into `next` before ordinary development continues.
 - `hotfix-*` branches may target `main` directly.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
+- A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. Link the issue for the Development sidebar (a closing keyword, or `addCloseIssueReferences` when the link is missing) and close the accumulated issues by hand when `next` is promoted to `main`; do not close them early.
 
 ## Before merging
 

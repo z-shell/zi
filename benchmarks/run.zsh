@@ -7,10 +7,11 @@
 # Every sample starts a fresh `zsh -f` with an isolated home, so nothing leaks
 # between samples or variants. Several variants (for example baseline,
 # candidate, and a second baseline as the A/A control) are measured in the
-# same invocation: within a round the variants alternate, and their order
-# reverses on every round, so runner load, cache, and thermal drift are not
-# correlated with a variant. Cases rotate in a balanced order across rounds.
-# Output is one JSON document per variant; compare.zsh joins two of them.
+# same invocation: within a round the variants run in a rotating order, with
+# alternate rotation cycles reversed, so every variant takes every position
+# equally often and runner load, cache, and thermal drift are not correlated
+# with a variant. Cases rotate the same way across rounds. Output is one JSON
+# document per variant; compare.zsh joins two of them.
 #
 # Usage:
 #   zsh benchmarks/run.zsh --variant LABEL=DIR [--variant LABEL=DIR]... --output-dir DIR
@@ -124,19 +125,23 @@ for label in "${labels[@]}"; do command mkdir -p -- "$work/reused-$label"; done
 # "unsupported <reason>" when the checkout lacks the API the case exercises
 # (case.zsh exit 6).
 one_sample() {
-  local label=$1 case=$2 home
+  local label=$1 case=$2 home out rc
   if [[ $case == source-reused-home ]]; then home=$work/reused-$label; else home=$(command mktemp -d "$work/s.XXXXXXXX"); fi
   command mkdir -p -- "$home"
-  env -i PATH="$PATH" HOME="$home" ZDOTDIR="$home" TMPDIR="$work" \
+  out=$(env -i PATH="$PATH" HOME="$home" ZDOTDIR="$home" TMPDIR="$work" \
     XDG_DATA_HOME="$home/data" XDG_CACHE_HOME="$home/cache" XDG_CONFIG_HOME="$home/config" \
     BENCH_CHECKOUT="${dirs[$label]}" BENCH_FIXTURES="$fixtures" BENCH_MANIFESTS="$manifests" \
     BENCH_MANIFEST_COUNT="$manifest_count" BENCH_CASE="$case" \
-    zsh -f "$here/case.zsh" 2>"$home/stderr" | command tail -n 1
-  local rc=${pipestatus[1]}
+    zsh -f "$here/case.zsh" 2>"$home/stderr"); rc=$?
+  # Only a successful sample reports its timing. A case prints the elapsed
+  # time before checking its postcondition, so on failure stdout can hold a
+  # number that must not reach the report as the start of the reason.
   if (( rc == 6 )); then
     print -r -- "unsupported $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
   elif (( rc != 0 )); then
     print -r -- "fail exit ${rc}: $(command tail -n 1 -- "$home/stderr" 2>/dev/null)"
+  else
+    print -r -- "${out##*$'\n'}"
   fi
   [[ $case == source-reused-home ]] || command rm -rf -- "$home"
 }
@@ -148,13 +153,18 @@ typeset -a order variant_order
 typeset case value
 # Balanced rotation: round r starts the case list one position later than
 # round r-1, so over one cycle of $#cases rounds every case occupies every
-# position; every second cycle runs in reverse direction as well.
+# position; every second cycle runs in reverse direction as well. Variants
+# rotate the same way. A plain reversal every round is not enough for three
+# variants: the middle one would be measured second in every round and take
+# every first-position warm-up effect for granted.
 integer shift_by
 for (( round = 1; round <= total; round++ )); do
   shift_by=$(( (round - 1) % $#cases ))
   order=( "${cases[@][shift_by+1,-1]}" "${cases[@][1,shift_by]}" )
   (( ((round - 1) / $#cases) % 2 )) && order=( "${(Oa)order[@]}" )
-  (( round % 2 )) && variant_order=( "${labels[@]}" ) || variant_order=( "${(Oa)labels[@]}" )
+  shift_by=$(( (round - 1) % $#labels ))
+  variant_order=( "${labels[@][shift_by+1,-1]}" "${labels[@][1,shift_by]}" )
+  (( ((round - 1) / $#labels) % 2 )) && variant_order=( "${(Oa)variant_order[@]}" )
   for case in "${order[@]}"; do
     for label in "${variant_order[@]}"; do
       (( ${+failed[$label/$case]} || ${+unsupported[$label/$case]} )) && continue
@@ -224,7 +234,7 @@ for label in "${labels[@]}"; do
     print -r -- "  \"label\": $(jq -Rn --arg v "$label" '$v'),"
     print -r -- "  \"source_revision\": \"$revision\","
     print -r -- "  \"environment\": {\"os\": \"$(uname -s)\", \"architecture\": \"$(uname -m)\", \"zsh_version\": $(jq -Rn --arg v "$zsh_version" '$v'), \"cpu\": $(jq -Rn --arg v "${cpu:-unknown}" '$v'), \"runner_image\": $(jq -Rn --arg v "${ImageOS:-}${ImageVersion:+ $ImageVersion}" '$v')},"
-    print -r -- "  \"workload\": {\"warmups\": $warmups, \"samples\": $samples, \"variants\": $(print -r -- "${(j:,:)labels}" | jq -Rc 'split(",")'), \"timer\": \"zsh EPOCHREALTIME elapsed milliseconds inside the sampled process\", \"order\": \"variants alternate within a round and reverse every round; the case list starts one position later each round, every case taking every position per cycle, and alternate cycles run reversed\"},"
+    print -r -- "  \"workload\": {\"warmups\": $warmups, \"samples\": $samples, \"variants\": $(print -r -- "${(j:,:)labels}" | jq -Rc 'split(",")'), \"timer\": \"zsh floating-point SECONDS elapsed milliseconds inside the sampled process\", \"order\": \"within a round the variant list starts one position later than in the previous round, every variant taking every position per cycle, and alternate cycles run reversed; the case list rotates the same way across rounds\"},"
     print -r -- "  \"health\": $(health_json "$label"),"
     print -r -- "  \"cases\": {"
     for (( i = 1; i <= $#cases; i++ )); do

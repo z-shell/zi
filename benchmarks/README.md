@@ -15,7 +15,7 @@ Deterministic, network-free measurements of the paths a user pays for on every s
 | `manifest-21` | the 21 vendored package manifests through `.zi-read-package-manifest` |
 | `unload-10` | `zi unload` of ten tracked plugins |
 
-Each sample starts a fresh `zsh -f` with an isolated home and reports `EPOCHREALTIME` elapsed milliseconds of the measured region only. All variants of one invocation are measured together: within a round they alternate, and their order reverses every round, so runner drift is not correlated with a variant; cases rotate in a balanced order across rounds. Zi does not compile itself on source, so the two source cases differ by persisted home state, not by bytecode. Every run also records health data that costs nothing extra: function and parameter counts after source and after loading, `.zwc` presence, `zsh -n` and `zcompile` durations, and the line counts of the hot files.
+Each sample starts a fresh `zsh -f` with an isolated home and reports floating-point `SECONDS` elapsed milliseconds of the measured region only; the timer needs no module, so the source cases include the `zsh/datetime` load that `zi.zsh` performs. All variants of one invocation are measured together: within a round they run in a rotating order, and alternate rotation cycles run reversed, so every variant takes every position equally often and runner drift is not correlated with a variant; cases rotate the same way across rounds. Zi does not compile itself on source, so the two source cases differ by persisted home state, not by bytecode. Every run also records health data that costs nothing extra: function and parameter counts after source and after loading, `.zwc` presence, `zsh -n` and `zcompile` durations, and the line counts of the hot files.
 
 ## Run it
 
@@ -33,7 +33,7 @@ Defaults are 5 warmups and 30 samples; `--case NAME` selects a subset. `run.zsh`
 - Hosted runners differ in hardware and load. Compare only within one run, and only when `comparable` is true (same Zsh version, architecture, and sample count).
 - The fixture plugins are tiny; the cases isolate Zi's own overhead, not a real configuration's plugin bodies.
 - `source-reused-home` is the everyday startup cost; `source-fresh-home` adds the first-run directory preparation.
-- `tests/benchmark-harness.zsh` proves the runner and comparer: shape, A/A, a synthetic 30% regression flagged, a functional failure invalidated, a control-only failure rendered, a repeated `--case` rejected, a checkout without the manifest reader reported unsupported (and a candidate that lost it reported as a failure), a swapped manifest inventory rejected, and six cells in every table row.
+- `tests/benchmark-harness.zsh` proves the runner and comparer: shape, A/A, a synthetic 30% regression flagged, a functional failure invalidated, a control-only failure rendered, a repeated `--case` rejected, a checkout without the manifest reader reported unsupported (and a candidate that lost it reported as a failure), a failed postcondition recorded with a one-line reason, a swapped manifest inventory rejected, and six cells in every table row.
 
 ## Where it runs
 

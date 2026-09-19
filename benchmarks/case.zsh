@@ -6,22 +6,25 @@
 # Reads BENCH_CHECKOUT, BENCH_FIXTURES, BENCH_MANIFESTS and BENCH_CASE from the
 # environment and prints the elapsed milliseconds of the measured region.
 # The measured region excludes process start and setup, which is why every
-# case sets up in the same process it measures in.
+# case sets up in the same process it measures in. The timer is floating-point
+# SECONDS, which needs no module: zi.zsh loads zsh/datetime when sourced, so a
+# timer built on that module would pay for the load before the source cases
+# start measuring.
 #
 # Exit 6 means the checkout lacks the API the case exercises; run.zsh records
 # that as unsupported for the variant, not as a failure. Every other non-zero
 # status is a failure of the workload.
 
 emulate -R zsh
-zmodload zsh/datetime || exit 2
 setopt extended_glob
 
 typeset -gAH ZI
 ZI[BIN_DIR]=$BENCH_CHECKOUT
+typeset -F 6 SECONDS
 typeset -F6 t0 t1
 zle() { return 1; }
-start() { t0=$EPOCHREALTIME; }
-mark()  { t1=$EPOCHREALTIME; }
+start() { t0=$SECONDS; }
+mark()  { t1=$SECONDS; }
 elapsed() { print -r -- $(( (t1 - t0) * 1000 )); }
 stop()  { mark; elapsed; }
 load_zi() { builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home || exit 3; }

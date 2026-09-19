@@ -57,16 +57,19 @@ jobs:
         run: |
           set -uo pipefail
           # One invocation measures all three variants: within each round
-          # they alternate, and their order reverses every round, so drift on
-          # the runner is not correlated with a variant. The control is the
-          # baseline measured a second time. run.zsh exits 1 when a workload
-          # fails functionally, after writing every report, so that status is
-          # accepted here and the comparison step renders and returns it;
-          # usage and dependency errors (2) still fail this step.
+          # they run in a rotating order, with alternate cycles reversed, so
+          # every variant takes every position and drift on the runner is not
+          # correlated with a variant. The control is the baseline measured a
+          # second time. run.zsh exits 1 when a workload fails functionally,
+          # after writing every report, so that status is accepted here and
+          # the comparison step renders and returns it; usage and dependency
+          # errors (2) still fail this step. The step runs under the errexit
+          # that `shell: bash` inherits, so the status is captured on the
+          # command's own failure branch, which errexit does not act on.
+          status=0
           zsh candidate/benchmarks/run.zsh \
             --variant baseline=baseline --variant candidate=candidate --variant control=baseline \
-            --output-dir results
-          status=$?
+            --output-dir results || status=$?
           if [[ "$status" -gt 1 ]]; then exit "$status"; fi
 
       - name: Compare and publish the summary

@@ -130,11 +130,29 @@ jq -e '.failed == ["manifest-21"] and .unsupported == [] and (.cases["manifest-2
   fail "a candidate that lost an API must be recorded as a removal failure"
 grep -q '^| manifest-21 | failure | failure | .*removed' "$temp_root/removed.md" || fail "the removal must be rendered as a failure row"
 
+# copy_suite <dir>: a private copy of the runner, its fixtures, and the
+# vendored manifests, so a test can alter one of them without touching the
+# checkout; run.zsh resolves both from its own location.
+copy_suite() {
+  command mkdir -p -- "$1/tests/fixtures" || fail "create a suite copy under $1"
+  command cp -R -- "$project_root/benchmarks" "$1/benchmarks" || fail "copy the benchmark scripts"
+  command cp -R -- "$project_root/tests/fixtures/package-manifests" "$1/tests/fixtures/package-manifests" || fail "copy the vendored manifests"
+}
+
+# A case that prints its timing and then fails its postcondition must report
+# a one-line reason, not a reason that starts with the discarded timing. The
+# copy makes unload-10 exit 4 right after it prints.
+copy_suite "$temp_root/post"
+command sed 's/^    none_loaded || exit 4 ;;$/    exit 4 ;;/' "$project_root/benchmarks/case.zsh" > "$temp_root/post/benchmarks/case.zsh" || fail "break the unload-10 postcondition in the copy"
+grep -q '^    exit 4 ;;$' "$temp_root/post/benchmarks/case.zsh" || fail "the copy must fail the unload-10 postcondition"
+zsh "$temp_root/post/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/post-run" \
+  --warmups 1 --samples 2 --case unload-10 >/dev/null 2>&1 && fail "a failed postcondition must exit 1"
+jq -e '.cases["unload-10"].failure | type == "string" and startswith("exit 4:") and (contains("\n") | not)' "$temp_root/post-run/a.json" >/dev/null ||
+  fail "a failed postcondition must record a one-line reason that starts with its exit status"
+
 # The manifest inventory is pinned by name: swapping one repository for
 # another keeps the count at 21 and is still rejected before any sample runs.
-command mkdir -p -- "$temp_root/swap/tests/fixtures" || fail "create the swapped inventory copy"
-command cp -R -- "$project_root/benchmarks" "$temp_root/swap/benchmarks" || fail "copy the benchmark scripts"
-command cp -R -- "$project_root/tests/fixtures/package-manifests" "$temp_root/swap/tests/fixtures/package-manifests" || fail "copy the vendored manifests"
+copy_suite "$temp_root/swap"
 command mv -- "$temp_root/swap/tests/fixtures/package-manifests/zsh-bin.json" "$temp_root/swap/tests/fixtures/package-manifests/zsh-bin-other.json" || fail "rename a snapshot"
 command sed 's/^zsh-bin$/zsh-bin-other/' "$project_root/tests/fixtures/package-manifests/repositories.txt" > "$temp_root/swap/tests/fixtures/package-manifests/repositories.txt" || fail "swap a listed repository"
 zsh "$temp_root/swap/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/swap-run" \

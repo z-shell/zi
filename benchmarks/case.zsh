@@ -86,7 +86,9 @@ case $BENCH_CASE in
     start; for p in $(plugins); do zi unload %"$p" -q || exit 3; done; stop
     none_loaded || exit 4 ;;
   symbols)
-    builtin source "$BENCH_CHECKOUT/zi.zsh" || exit 3; .zi-prepare-home
+    # Same setup as a measured case: a failed home preparation exits 3, so
+    # run.zsh records null counts instead of counts from a half-prepared home.
+    load_zi
     integer f1=$#functions p1=$#parameters
     for p in $(plugins); do zi load %"$p" || exit 3; done
     print -r -- "$f1 $p1 $#functions $#parameters" ;;

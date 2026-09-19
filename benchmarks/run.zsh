@@ -80,6 +80,10 @@ if (( $#wanted )); then
 else
   cases=( "${all_cases[@]}" )
 fi
+# The reused-home case times a home the previous sample sourced. Without a
+# warmup its first measured sample would be a fresh-home timing mixed into the
+# reused-home statistics; other cases are indifferent to zero warmups.
+(( warmups >= 1 || ${cases[(Ie)source-reused-home]} == 0 )) || die "source-reused-home needs at least one warmup: its first sample would time a home no sample has sourced"
 
 typeset here=${0:A:h} fixtures=${0:A:h}/fixtures manifests=${0:A:h:h}/tests/fixtures/package-manifests
 [[ -d $manifests ]] || die "vendored manifests not found at $manifests"

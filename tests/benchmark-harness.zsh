@@ -38,6 +38,11 @@ zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-di
 zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-dir "$temp_root/glob-case" \
   --case 'source-*' >/dev/null 2>"$temp_root/glob-case.err" && fail "a pattern is not a case name and must be rejected"
 grep -q 'unknown case: source-\*' "$temp_root/glob-case.err" || fail "a pattern --case must be a usage error, not a workload failure"
+zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-dir "$temp_root/zero-warm" \
+  --warmups 0 --samples 2 --case source-reused-home >/dev/null 2>"$temp_root/zero-warm.err" && fail "zero warmups with source-reused-home must be rejected"
+grep -q 'at least one warmup' "$temp_root/zero-warm.err" || fail "the zero-warmup rejection must say why"
+zsh "${project_root}/benchmarks/run.zsh" --variant c="$project_root" --output-dir "$temp_root/zero-warm-ok" \
+  --warmups 0 --samples 2 --case ice-200 >/dev/null 2>&1 || fail "zero warmups must stay valid for cases that do not reuse a home"
 
 # Every row of the Markdown case table has six cells, whatever the row's
 # outcome. An escaped pipe is content, not a cell boundary, so it is removed
@@ -125,6 +130,17 @@ zsh "$temp_root/probe/benchmarks/run.zsh" --variant a="$project_root" --output-d
   --warmups 1 --samples 2 --case ice-200 >/dev/null 2>&1 || fail "a failed health probe must not fail the run"
 jq -e '.health.functions_after_source == null and .health.parameters_after_load_10 == null and .cases["ice-200"].count == 2' "$temp_root/probe-run/a.json" >/dev/null ||
   fail "a failed health probe must record null counts beside the measured cases"
+
+# A home that fails to prepare must not yield counts either: the copy makes
+# load_zi's preparation step fail, which the symbols probe shares with the
+# measured cases, and source-fresh-home does not use load_zi.
+copy_suite "$temp_root/prep"
+command sed 's/^load_zi() { builtin source "\$BENCH_CHECKOUT\/zi.zsh" || exit 3; \.zi-prepare-home || exit 3; }$/load_zi() { builtin source "$BENCH_CHECKOUT\/zi.zsh" || exit 3; false || exit 3; }/' "$project_root/benchmarks/case.zsh" > "$temp_root/prep/benchmarks/case.zsh" || fail "break home preparation in the copy"
+grep -q '^load_zi() .*false || exit 3; }$' "$temp_root/prep/benchmarks/case.zsh" || fail "the copy must fail home preparation"
+zsh "$temp_root/prep/benchmarks/run.zsh" --variant a="$project_root" --output-dir "$temp_root/prep-run" \
+  --warmups 1 --samples 2 --case source-fresh-home >/dev/null 2>&1 || fail "a failed preparation in the probe must not fail the run"
+jq -e '.health.functions_after_source == null and .cases["source-fresh-home"].count == 2' "$temp_root/prep-run/a.json" >/dev/null ||
+  fail "a probe whose home preparation fails must record null counts"
 
 # A checkout that lacks the API a case exercises reports that case as
 # unsupported, not failed, and the other cases still run. The copy below is

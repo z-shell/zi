@@ -45,7 +45,7 @@ Zi is the Z-Shell ecosystem's plugin manager. It can source a single remote scri
 
 ### 1. Install Zi
 
-Run the minimal installer. It downloads Zi and adds the minimal setup to your `.zshrc`:
+The official installer installs Zi with the default loader profile and adds one short managed source entry to `.zshrc` (see the canonical [installation page](https://wiki.zshell.dev/docs/getting_started/installation/)):
 
 ```sh
 sh -c "$(curl -fsSL get.zshell.dev)" --

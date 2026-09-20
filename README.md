@@ -59,7 +59,7 @@ Automated environments can drive the setup engine directly:
 setup.sh apply --plan DIR --phase checkout|files [--result DIR] [--events DIR]
 ```
 
-> [!NOTE] Integrator note: the `--events DIR` option is optional, creates a private new absolute directory, publishes atomic numbered `zi-setup-event-v1` event directories with started and terminal state, and human stdout/stderr must not drive automation.
+> [!NOTE] Integrator note: the `--events DIR` option is optional, creates a private new absolute directory, publishes atomic numbered `zi-setup-event-v1` event directories with started and terminal state, and human stdout/stderr must not drive automation. Consumers must treat process completion as authoritative and tolerate a missing terminal event if a cancellation signal interrupts event publication itself; staging cleanup and exit 6 still apply.
 
 ### 2. Add your first plugins
 

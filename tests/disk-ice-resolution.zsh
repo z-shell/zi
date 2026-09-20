@@ -129,7 +129,14 @@ load_ices collide-id snippet || die "typed collision: non-zero return"
 assert_equal "${ICE[atload]}" COLLIDE_SNIPPET "typed collision resolves to the snippet"
 assert_equal "$captured" "" "typed collision reports nothing"
 
-# 7. An empty plugin metadata directory is a leftover, not an object. It must
+# 7. A caller that knows the object is a snippet must not fall back to the plugin
+#    root when only the plugin has disk ices.
+write_ices "$(plugin_dir plugin-only-id)" 'atload=PLUGIN_ONLY'
+load_ices plugin-only-id snippet && die "snippet caller fell back to plugin root"
+assert_equal "${#ICE}" 0 "snippet caller leaves ICE empty on missing snippet ices"
+assert_equal "$captured" "" "snippet caller with missing snippet ices reports nothing"
+
+# 8. An empty plugin metadata directory is a leftover, not an object. It must
 #    not shadow the snippet, and it is not a collision.
 write_ices "$(snippet_dir leftover-id)" 'atload=LEFTOVER_SNIPPET' 'as=command'
 command mkdir -p -- "$(plugin_dir leftover-id)" || die "create leftover"
@@ -138,10 +145,10 @@ assert_equal "${ICE[atload]}" LEFTOVER_SNIPPET "leftover does not shadow the sni
 assert_equal "${ICE[as]}" command "leftover: snippet ices are complete"
 assert_equal "$captured" "" "leftover is not reported as a collision"
 
-# 8. An ID present in neither root fails.
+# 9. An ID present in neither root fails.
 load_ices absent-id && die "absent ID: reported success"
 
-# 9. Resolution runs with the user's shell options. The root probe must not
+# 10. Resolution runs with the user's shell options. The root probe must not
 #    depend on any of them.
 () {
   builtin setopt local_options sh_glob no_bare_glob_qual no_extended_glob no_null_glob

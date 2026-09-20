@@ -2540,7 +2540,8 @@ return retval
   }
   (( ___has_plugin || ___has_snippet )) || return 1
   if [[ $___type == snippet ]] {
-    (( ___has_snippet )) && ___path="$___snippet_path" || ___path="$___plugin_path"
+    (( ___has_snippet )) || return 1
+    ___path="$___snippet_path"
   } else {
     if (( ___has_plugin && ___has_snippet )) && \
       [[ ${ZI[MUTE_WARNINGS]} != (1|true|on|yes) ]] {

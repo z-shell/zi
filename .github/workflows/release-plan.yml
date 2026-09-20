@@ -1,0 +1,75 @@
+---
+name: Release Plan
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Release plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Install Zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+
+      - name: Compute release plan
+        id: release
+        if: "${{ github.event_name == 'workflow_dispatch' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'next') }}"
+        env:
+          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
+          RELEASE_PLAN_OUTPUT: ${{ runner.temp }}/release-plan.env
+          RELEASE_PLAN_BODY: ${{ runner.temp }}/release-plan.md
+        run: |
+          zsh -f scripts/release-plan.zsh HEAD > "$RELEASE_PLAN_BODY"
+          cat "$RELEASE_PLAN_BODY" >> "$GITHUB_STEP_SUMMARY"
+          cat "$RELEASE_PLAN_OUTPUT" >> "$GITHUB_OUTPUT"
+
+      - name: Record non-promotion result
+        if: "${{ github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.event.pull_request.head.ref != 'next') }}"
+        run: echo 'This pull request is not an internal next-to-main promotion; automatic publication does not apply.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Update promotion pull request
+        if: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'next' }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          RELEASE_PLAN_BODY: ${{ runner.temp }}/release-plan.md
+        run: |
+          set -euo pipefail
+          marker='<!-- zi-release-plan -->'
+          body="${RUNNER_TEMP}/release-plan-comment.md"
+          {
+            echo "$marker"
+            cat "$RELEASE_PLAN_BODY"
+            echo
+            echo '_Merging this reviewed promotion authorizes publication after every required workflow succeeds on the exact merge SHA._'
+          } > "$body"
+          comment_id="$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"${marker}\"))) | .id" | head -n 1)"
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+              -F body=@"$body" >/dev/null
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              -F body=@"$body" >/dev/null
+          fi

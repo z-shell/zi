@@ -4,10 +4,6 @@ name: ZD Integration
 on:
   push:
     branches: [main, next]
-    paths:
-      - ".github/workflows/zd-integration.yml"
-      - "zi.zsh"
-      - "lib/**"
   pull_request:
     paths:
       - ".github/workflows/zd-integration.yml"
@@ -24,7 +20,7 @@ permissions:
 
 jobs:
   zd-test:
-    uses: z-shell/zd/.github/workflows/test-native.yml@01c3477e48c0c31bb7225986bb1bac4270e151ff # z-shell/zd#121
+    uses: z-shell/zd/.github/workflows/test-native.yml@5d160597c909a23f03b7a07ff9d43793a106f3e8 # z-shell/zd#123
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       zi_ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}

@@ -23,8 +23,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install Zsh and archive tools
-        run: sudo apt-get update && sudo apt-get install -yq zsh zip unzip
+      - name: Install Zsh, jq, and archive tools
+        run: sudo apt-get update && sudo apt-get install -yq zsh jq zip unzip
 
       - name: Check and compile Zsh sources
         shell: bash
@@ -68,9 +68,18 @@ jobs:
         if: ${{ hashFiles('tests/snippet-directory-mirror.zsh') != '' }}
         run: zsh -f tests/snippet-directory-mirror.zsh
 
+      - name: Test release planning
+        run: zsh -f tests/release-plan.zsh
+
+      - name: Test promotion release verification
+        run: zsh -f tests/promotion-release-verification.zsh
+
+      - name: Test idempotent promotion publication
+        run: zsh -f tests/promotion-release-publication.zsh
+
   zd:
     name: ZD integration
-    uses: z-shell/zd/.github/workflows/test-native.yml@01c3477e48c0c31bb7225986bb1bac4270e151ff # z-shell/zd#121
+    uses: z-shell/zd/.github/workflows/test-native.yml@846591255b19558f4c61d9502982dc1ad6a049db # z-shell/zd#123
     with:
       zi_repo: ${{ github.event.pull_request.head.repo.full_name }}
       zi_ref: ${{ github.event.pull_request.head.sha }}

@@ -49,25 +49,16 @@ Repository rules intentionally omit linear-history requirements on both persiste
 
 ## Releases
 
-A promotion to `main` publishes nothing. It updates the Git-consumed stable ref and stops there.
+A same-repository `next` to `main` promotion is the normal publication authorization. Reviewers see the deterministic version and release-note plan on the promotion pull request before deciding whether to merge.
 
-**A signed annotated tag is the sole publication authorization.** Nothing else creates a release: not a merge, not a green pipeline, not the automated proposal.
-
-1. After a promotion reaches `main`, `Release Prepare` opens or updates a proposal issue with the next semantic version computed from Conventional Commits and a draft changelog. It never creates a tag.
-2. A maintainer reviews the proposed version, adjusts it if the computed bump does not describe the change, and pushes a signed annotated tag:
-
-   ```text
-   git switch main && git pull --ff-only
-   git tag -s vX.Y.Z -F <notes-file>
-   git push origin vX.Y.Z
-   ```
-
-3. `scripts/verify-release-tag.zsh` rejects the tag unless every one of the following holds: it matches `vX.Y.Z`, it is annotated rather than lightweight, GitHub reports its signature as verified, its target is the current `origin/main`, and the `Zsh`, `ZD Integration`, `CodeQL` and `Trunk Code Quality` workflows all succeeded on that exact commit.
-4. Only then is a GitHub release published, idempotently, with generated notes.
+1. `Release Plan` computes the next semantic version from Conventional Commits since the latest `vX.Y.Z` tag. A breaking change produces a major bump, `feat` produces a minor bump, and `fix` or `perf` produces a patch bump. A promotion with none of those commits is an explicit no-op.
+2. Merging the reviewed promotion authorizes publication of that displayed plan. The merge still updates the Git-consumed stable `main` ref immediately.
+3. The automatic publisher proves that the exact merge commit came from the reviewed same-repository `next` pull request and is still current `main`. It waits for `Zsh`, `ZD Integration`, `CodeQL`, and `Trunk Code Quality` to succeed on that exact SHA.
+4. The publisher creates an annotated tag and the GitHub release in one idempotent workflow. It fails closed if `main` moves, the promotion identity cannot be proven, validation fails, or the proposed tag already targets another commit.
 
 The repository stores no version file. `ZI[VERSION]` is derived at runtime from `git describe --tags --exact-match`, so the tag is the version and there is nothing to keep in step with it.
 
-Closing a proposal issue without tagging skips that release; the next promotion opens a new proposal.
+The signed manual-tag flow remains available for recovery or exceptional publication. A maintainer may push a signed annotated `vX.Y.Z` tag to the exact current `main`; `scripts/verify-release-tag.zsh` then requires a valid GitHub signature, the exact target, and the same four successful workflows before it creates the release. No personal signing key is stored in Actions.
 
 ## What not to add
 

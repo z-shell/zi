@@ -37,6 +37,9 @@ promotion_set=(
   archive-extraction.zsh
   completion-refresh.zsh
   snippet-directory-mirror.zsh
+  release-plan.zsh
+  promotion-release-verification.zsh
+  promotion-release-publication.zsh
 )
 
 # A test is invoked only by an executable `run:` step. The scanner reads the

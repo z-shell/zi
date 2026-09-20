@@ -53,6 +53,14 @@ sh -c "$(curl -fsSL get.zshell.dev)" --
 
 > Review the [installer source](https://raw.githubusercontent.com/z-shell/src/main/public/sh/install.sh) and its published [SHA-256 checksum](https://raw.githubusercontent.com/z-shell/src/main/public/checksum.txt) before running a remote installation script.
 
+Automated environments can drive the setup engine directly:
+
+```sh
+setup.sh apply --plan DIR --phase checkout|files [--result DIR] [--events DIR]
+```
+
+> [!NOTE] Integrator note: the `--events DIR` option is optional, creates a private new absolute directory, publishes atomic numbered `zi-setup-event-v1` event directories with started and terminal state, and human stdout/stderr must not drive automation. Consumers must treat process completion as authoritative and tolerate a missing terminal event if a cancellation signal interrupts event publication itself; staging cleanup and exit 6 still apply.
+
 ### 2. Add your first plugins
 
 Add Zi commands to `.zshrc`. This example loads an Oh My Zsh snippet, command suggestions, and fast syntax highlighting:

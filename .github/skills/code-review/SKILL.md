@@ -1,14 +1,13 @@
 ---
 description: Review pull requests, diffs, and code changes using repository contracts and checks, or assess review readiness during repository-health evaluations. Produce evidence-based findings without authorizing fixes or external writes.
 metadata:
-  github-path: .github/skills/code-review
-  github-pinned: 23fb0c86e7794a7da49cc161dc4ea8e6c9d00e9a
-  github-ref: 23fb0c86e7794a7da49cc161dc4ea8e6c9d00e9a
-  github-repo: https://github.com/z-shell/.github
-  github-tree-sha: a4e535bccfd3d2d4035e332030d08deda0d91632
+    github-path: .github/skills/code-review
+    github-pinned: e1f8f6c1c9dd61e87f2e5f44ef6285992b8b892d
+    github-ref: e1f8f6c1c9dd61e87f2e5f44ef6285992b8b892d
+    github-repo: https://github.com/z-shell/.github
+    github-tree-sha: a4e535bccfd3d2d4035e332030d08deda0d91632
 name: code-review
 ---
-
 # Code review
 
 Keep reviews read-only. Do not edit files, install dependencies, run autofix,

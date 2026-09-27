@@ -6,7 +6,8 @@ on:
     branches: [main]
     types: [opened, reopened, synchronize, edited]
 
-permissions: {}
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -17,19 +18,22 @@ jobs:
     name: Guard main branch source
     runs-on: ubuntu-latest
     steps:
+      # pull_request_target checks out the base branch, so the guard never
+      # runs code from the pull request it is judging.
+      - name: Check out trusted guard
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/main-branch-guard.zsh
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Zsh
+        uses: z-shell/.github/actions/setup-zsh@f30d6596347581e5a323aafb434a492769b983e2 # main
+
       - name: Verify pull request source branch
         env:
           HEAD_REF: ${{ github.head_ref }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           REPOSITORY: ${{ github.repository }}
-        run: |
-          if [[ "${HEAD_REPOSITORY}" != "${REPOSITORY}" ]]; then
-            echo "::error::Pull requests into main must come from this repository (got '${HEAD_REPOSITORY}')."
-            exit 1
-          fi
-          if [[ "${HEAD_REF}" == "next" || "${HEAD_REF}" == hotfix-* ]]; then
-            echo "Head branch '${HEAD_REF}' is allowed to target main."
-            exit 0
-          fi
-          echo "::error::Pull requests into main must come from 'next' or a 'hotfix-*' branch (got '${HEAD_REF}'). See ADR-0019 (z-shell/.github) for the branching model."
-          exit 1
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: zsh -f scripts/main-branch-guard.zsh

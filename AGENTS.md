@@ -13,6 +13,7 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - Neither `main` nor `next` may require linear history; both promotion and hotfix synchronization preserve merge ancestry.
 - A successful promotion needs no routine back-merge. Merge a `main` hotfix forward into `next` before ordinary development continues.
 - `hotfix-*` branches may target `main` directly.
+- A `dependabot/*` branch opened by `dependabot[bot]` may also target `main`, because Dependabot security updates ignore `target-branch: next`. `scripts/main-branch-guard.zsh` enforces the allowed sources.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
 - A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. Link the issue for the Development sidebar (a closing keyword, or `addCloseIssueReferences` when the link is missing) and close the accumulated issues by hand when `next` is promoted to `main`; do not close them early.
 

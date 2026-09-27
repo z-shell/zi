@@ -13,6 +13,7 @@ on:
       - "contracts/package-manifest-v1.json"
       - "scripts/validate-package-manifest.py"
       - "scripts/release-plan.zsh"
+      - "scripts/main-branch-guard.zsh"
       - "scripts/verify-promotion-release.zsh"
       - "scripts/publish-promotion-release.zsh"
       - "tests/**"
@@ -166,6 +167,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test release tag verification
         run: zsh -f tests/release-tag-verification.zsh
+
+  main-branch-guard:
+    name: Main Branch Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test main branch guard
+        run: zsh -f tests/main-branch-guard.zsh
 
   release-plan:
     name: Release Plan

@@ -1650,7 +1650,11 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     local url=https://$urlpart
   fi
 
-  if (( ${+commands[curl]} )) || find /lib/ -maxdepth 1 -name '*musl*' >/dev/null 2>&1; then
+  # A musl host ships its loader in /lib (ld-musl-*.so.1). Match the file
+  # itself: find exits 0 with no match, and whether curl is installed says
+  # nothing about the C library.
+  local -a musl_libs=( /lib/*musl*(N) )
+  if (( $#musl_libs )); then
     HAS_MUSL='linux-musl'
   fi
 

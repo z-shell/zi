@@ -26,6 +26,7 @@ on:
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
       - "tests/disk-ice-resolution.zsh"
+      - "tests/gh-r-musl-detection.zsh"
       - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
       - "tests/ice-tokenizer.zsh"
@@ -277,6 +278,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test disk ice resolution
         run: zsh -f tests/disk-ice-resolution.zsh
+
+  gh-r-musl-detection:
+    name: gh-r musl detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test gh-r musl detection
+        run: zsh -f tests/gh-r-musl-detection.zsh
 
   parallel-update:
     name: Parallel Update

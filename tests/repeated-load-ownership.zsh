@@ -154,6 +154,19 @@ case $ZI_TEST_CASE in
     check '(( ${+functions[shared_fn]} ))' "a function the still-loaded r created was removed" || return 1
     check '(( ! ${+functions[pa_fn]} ))' "p's function survived unload" || return 1
     ;;
+  shared-twice)
+    # As shared, but r is itself loaded twice, so r's claim on the helper
+    # comes from r's earlier load, not from its newest one.
+    builtin print -r -- 'shared_fn() { :; }' >> "${p}/p.plugin.zsh"
+    zi load "$p" >/dev/null 2>&1
+    unfunction shared_fn
+    zi load "${ZI_TEST_ROOT}/r" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/r" >/dev/null 2>&1
+    zi load "$p" >/dev/null 2>&1
+    zi unload "$p" >/dev/null 2>&1
+    check '(( ${+functions[shared_fn]} ))' "a function the still-loaded r created on its earlier load was removed" || return 1
+    check '(( ! ${+functions[pa_fn]} ))' "p's function survived unload" || return 1
+    ;;
   reload)
     # Load, unload, load again, unload: each cycle is independent.
     zi load "$p" >/dev/null 2>&1
@@ -175,7 +188,7 @@ ZSH
 
 typeset -i failures=0
 typeset scenario
-for scenario in twice changed interleaved interleaved-other-order older binding-taken prior wrapped shared reload; do
+for scenario in twice changed interleaved interleaved-other-order older binding-taken prior wrapped shared shared-twice reload; do
   write_plugin p pa_fn
   write_plugin q qa_fn
   command mkdir -p "${temp_root}/r" "${temp_root}/k" "${temp_root}/w" || fail "create the r, k and w plug-in directories"

@@ -1232,7 +1232,7 @@ ZI[EXTENDED_GLOB]=""
   typeset -a func
   func=( "${(z)ZI[FUNCTIONS__$uspl2]}" )
   # Functions earlier loads of this plugin created (z-shell/zi#113), except
-  # those another plugin loaded since then created as well.
+  # those another registered plugin created as well, on any of its loads.
   () {
     builtin setopt local_options extended_glob
     local owned other_uspl2
@@ -1241,7 +1241,7 @@ ZI[EXTENDED_GLOB]=""
     for other_uspl2 in "${ZI_REGISTERED_PLUGINS[@]}"; do
       [[ $other_uspl2 == "$uspl2" ]] && continue
       .zi-diff-functions-compute "$other_uspl2" 2>/dev/null
-      others_created+=( "${(z)ZI[FUNCTIONS__$other_uspl2]}" )
+      others_created+=( "${(z)ZI[FUNCTIONS__$other_uspl2]}" "${(z)ZI[FUNCTIONS_OWNED__$other_uspl2]}" )
     done
     for owned in "${(z)ZI[FUNCTIONS_OWNED__$uspl2]}"; do
       [[ -z $owned ]] && continue

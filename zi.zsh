@@ -1235,9 +1235,10 @@ builtin setopt no_aliases
 # FUNCTION: .zi-repeat-object-key. [[[
 # Sets REPLY to a comparable identity for record $2 of kind $1 (widget-saved,
 # widget-delete or bindkey): "widget NAME", or "bindkey MAP KEY" with an empty
-# MAP for the default keymap. Fails for a record without such an object.
+# MAP for the default keymap, also when it is named main. Fails for a record
+# without such an object.
 .zi-repeat-object-key() {
-  local kind="$1" entry="$2"
+  local kind="$1" entry="$2" map
   local -a fields
   REPLY=
   case $kind in
@@ -1249,7 +1250,12 @@ builtin setopt no_aliases
     bindkey)
       fields=( "${(z)${(Q)entry}}" )
       [[ ${(Q)fields[4]} == -[AN] ]] && return 1
-      REPLY="bindkey ${${(M)${(Q)fields[4]}:#-M}:+${(Q)fields[5]}} ${fields[1]}" ;;
+      # main is the default keymap: `bindkey -M main KEY` and `bindkey KEY`
+      # change the same binding, so they share one identity.
+      map=
+      [[ ${(Q)fields[4]} == -M ]] && map=${(Q)fields[5]}
+      [[ $map == main ]] && map=
+      REPLY="bindkey $map ${fields[1]}" ;;
     *) return 1 ;;
   esac
   [[ -n $REPLY ]]

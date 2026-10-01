@@ -67,6 +67,8 @@ case $ZI_TEST_CASE in
     # The same plug-in loaded twice, then unloaded once.
     zi load "$p" >/dev/null 2>&1
     zi load "$p" >/dev/null 2>&1
+    check '(( ${+functions[pa_fn]} ))' "the loads did not define the function" || return 1
+    check '[[ ${widgets[zi-repeat-widget]} == user:pa_fn ]]' "the loads did not define the widget: ${widgets[zi-repeat-widget]}" || return 1
     zi unload "$p" >/dev/null 2>&1
     check '(( ! ${+functions[pa_fn]} ))' "the function survived unload" || return 1
     check '[[ -z ${widgets[zi-repeat-widget]} ]]' "the widget survived unload: ${widgets[zi-repeat-widget]}" || return 1
@@ -77,6 +79,7 @@ case $ZI_TEST_CASE in
     zi load "$p" >/dev/null 2>&1
     builtin print -r -- 'pb_fn() { :; }' >> "${p}/p.plugin.zsh"
     zi load "$p" >/dev/null 2>&1
+    check '(( ${+functions[pa_fn]} && ${+functions[pb_fn]} ))' "the loads did not define both functions" || return 1
     zi unload "$p" >/dev/null 2>&1
     check '(( ! ${+functions[pa_fn]} ))' "the first load's function survived unload" || return 1
     check '(( ! ${+functions[pb_fn]} ))' "the second load's function survived unload" || return 1
@@ -125,11 +128,21 @@ case $ZI_TEST_CASE in
     zi unload "$p" >/dev/null 2>&1
     check '[[ "$(bindkey "^X^P")" == "\"^X^P\" end-of-line" ]]' "the binding differs from next: $(bindkey '^X^P')" || return 1
     ;;
+  main-taken)
+    # The same, with the key rebound through `bindkey -M main`: main is the
+    # default keymap, so this is the same takeover.
+    zi load "$p" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/m" >/dev/null 2>&1
+    zi load "$p" >/dev/null 2>&1
+    zi unload "$p" >/dev/null 2>&1
+    check '[[ "$(bindkey "^X^P")" == "\"^X^P\" end-of-line" ]]' "the binding differs from next: $(bindkey '^X^P')" || return 1
+    ;;
   prior)
     # A function the user defined before any load is not the plug-in's.
     pa_fn() { builtin print -r -- user; }
     zi load "$p" >/dev/null 2>&1
     zi load "$p" >/dev/null 2>&1
+    check '[[ ${widgets[zi-repeat-widget]} == user:pa_fn ]]' "the loads did not run the plug-in: ${widgets[zi-repeat-widget]}" || return 1
     zi unload "$p" >/dev/null 2>&1
     check '(( ${+functions[pa_fn]} ))' "a function defined before the first load was removed" || return 1
     ;;
@@ -138,6 +151,7 @@ case $ZI_TEST_CASE in
     # original widget on unload, not its own first replacement.
     zi load "${ZI_TEST_ROOT}/w" >/dev/null 2>&1
     zi load "${ZI_TEST_ROOT}/w" >/dev/null 2>&1
+    check '[[ ${widgets[forward-char]} == user:w_fn ]]' "the loads did not replace the widget: ${widgets[forward-char]}" || return 1
     zi unload "${ZI_TEST_ROOT}/w" >/dev/null 2>&1
     check '[[ ${widgets[forward-char]} == builtin ]]' "the replaced widget was not restored: ${widgets[forward-char]}" || return 1
     check '(( ! ${+functions[w_fn]} ))' "the replacement function survived unload" || return 1
@@ -188,12 +202,13 @@ ZSH
 
 typeset -i failures=0
 typeset scenario
-for scenario in twice changed interleaved interleaved-other-order older binding-taken prior wrapped shared shared-twice reload; do
+for scenario in twice changed interleaved interleaved-other-order older binding-taken main-taken prior wrapped shared shared-twice reload; do
   write_plugin p pa_fn
   write_plugin q qa_fn
-  command mkdir -p "${temp_root}/r" "${temp_root}/k" "${temp_root}/w" || fail "create the r, k and w plug-in directories"
+  command mkdir -p "${temp_root}/r" "${temp_root}/k" "${temp_root}/m" "${temp_root}/w" || fail "create the r, k, m and w plug-in directories"
   builtin print -r -- 'shared_fn() { :; }' > "${temp_root}/r/r.plugin.zsh" || fail "write the r plug-in"
   builtin print -r -- "bindkey '^X^P' end-of-line" > "${temp_root}/k/k.plugin.zsh" || fail "write the k plug-in"
+  builtin print -r -- "bindkey -M main '^X^P' end-of-line" > "${temp_root}/m/m.plugin.zsh" || fail "write the m plug-in"
   builtin print -rl -- 'w_fn() { zle .forward-char; }' 'zle -N forward-char w_fn' > "${temp_root}/w/w.plugin.zsh" || fail "write the w plug-in"
   if ( run_case "$scenario" ); then
     builtin print -r -- "ok - ${scenario}"

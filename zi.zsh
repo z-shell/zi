@@ -1271,6 +1271,7 @@ builtin setopt no_aliases
 # keeps the earlier load's records, and unload must replay each one once
 # (z-shell/zi#583).
 .zi-add-record() {
+  builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
   local key="$1__${ZI[CUR_USPL2]}"
   local -a held
   held=( "${(z)ZI[$key]}" )

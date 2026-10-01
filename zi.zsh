@@ -658,7 +658,7 @@ builtin setopt no_aliases
     fi
     quoted="${(q)quoted}"
     # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-    [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+    [[ -n ${ZI[CUR_USPL2]} ]] && .zi-add-record BINDKEYS "$quoted"
     # Remember for dtrace.
     [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
   else
@@ -675,7 +675,7 @@ builtin setopt no_aliases
       local quoted="${(q)keys} ${(q)widget} ${(q)prev} ${(q)optA} ${(q)mapname} ${(q)optR}"
       quoted="${(q)quoted}"
       # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-add-record BINDKEYS "$quoted"
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
       .zi-add-report "${ZI[CUR_USPL2]}" "Warning: keymap \`main' copied to \`${name}' because of \`${pos[-2]}' substitution"
     # bindkey -N newkeymap [other].
@@ -686,7 +686,7 @@ builtin setopt no_aliases
       local quoted="${(q)keys} ${(q)widget} ${(q)prev} ${(q)optN} ${(q)mapname} ${(q)optR}"
       quoted="${(q)quoted}"
       # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-add-record BINDKEYS "$quoted"
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
     else
       .zi-add-report "${ZI[CUR_USPL2]}" "Warning: last bindkey used non-typical options: ${(kv)opts[*]}"
@@ -786,7 +786,7 @@ builtin setopt no_aliases
       local quoted="$2"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-add-record WIDGETS_DELETE "$quoted"
       # Remember for dtrace.
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
     # These will be saved and restored.
@@ -811,7 +811,7 @@ builtin setopt no_aliases
       local quoted="$2"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-add-record WIDGETS_DELETE "$quoted"
       # Remember for dtrace.
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
     fi
@@ -1195,6 +1195,9 @@ builtin setopt no_aliases
     # load added join the owned set, and the widget and bindkey records stay.
     # When another plugin took one of those widgets or bindings over in
     # between, the records start again as before; that case remains open.
+    # A change made without zi records (by the user, or by a plugin loaded
+    # in light mode), to a function, widget or binding, is not detected:
+    # unload removes or restores it as if it were this plugin's.
     .zi-keep-previous-load-functions "$uspl2"
   else
     ZI[FUNCTIONS_OWNED__$uspl2]=
@@ -1234,9 +1237,9 @@ builtin setopt no_aliases
 } # ]]]
 # FUNCTION: .zi-repeat-object-key. [[[
 # Sets REPLY to a comparable identity for record $2 of kind $1 (widget-saved,
-# widget-delete or bindkey): "widget NAME", or "bindkey MAP KEY" with an empty
-# MAP for the default keymap, also when it is named main. Fails for a record
-# without such an object.
+# widget-delete or bindkey): "widget NAME", or "bindkey MAP KEY". The default
+# keymap, also when it is named main, is given as $main_map: the keymap main
+# is linked to, set by the caller. Fails for a record without such an object.
 .zi-repeat-object-key() {
   local kind="$1" entry="$2" map
   local -a fields
@@ -1250,15 +1253,28 @@ builtin setopt no_aliases
     bindkey)
       fields=( "${(z)${(Q)entry}}" )
       [[ ${(Q)fields[4]} == -[AN] ]] && return 1
-      # main is the default keymap: `bindkey -M main KEY` and `bindkey KEY`
-      # change the same binding, so they share one identity.
+      # main is the default keymap and an alias of another keymap (`bindkey
+      # -v` links it to viins, `bindkey -e` to emacs): `bindkey KEY`,
+      # `bindkey -M main KEY` and `bindkey -M viins KEY` then change the
+      # same binding, so they share one identity (z-shell/zi#583).
       map=
       [[ ${(Q)fields[4]} == -M ]] && map=${(Q)fields[5]}
-      [[ $map == main ]] && map=
+      [[ -z $map || $map == main ]] && map=$main_map
       REPLY="bindkey $map ${fields[1]}" ;;
     *) return 1 ;;
   esac
   [[ -n $REPLY ]]
+} # ]]]
+# FUNCTION: .zi-add-record. [[[
+# Appends the quoted record $2 to the $1 records (BINDKEYS or WIDGETS_DELETE)
+# of the plugin being loaded, unless they already hold it: a repeated load
+# keeps the earlier load's records, and unload must replay each one once
+# (z-shell/zi#583).
+.zi-add-record() {
+  local key="$1__${ZI[CUR_USPL2]}"
+  local -a held
+  held=( "${(z)ZI[$key]}" )
+  (( ${held[(Ie)$2]} )) || ZI[$key]+="$2 "
 } # ]]]
 # FUNCTION: .zi-repeat-objects. [[[
 # Sets reply to the widget and bindkey identities plugin $1 has recorded.
@@ -1281,8 +1297,11 @@ builtin setopt no_aliases
 .zi-repeat-taken-over() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob
-  local uspl2="$1" key other REPLY
-  local -a reply mine shared
+  local uspl2="$1" key other REPLY main_map=main
+  local -a reply mine shared link
+  # The keymap main is linked to now, for .zi-repeat-object-key.
+  link=( ${(z)"$(builtin bindkey -lL main 2>/dev/null)"} )
+  [[ ${link[2]} == -A && ${link[4]} == main ]] && main_map=${(Q)link[3]}
   .zi-repeat-objects "$uspl2"
   mine=( "${reply[@]}" )
   (( ${#mine} )) || return 1

@@ -6,7 +6,10 @@
 # remove everything the plug-in added across its loads and restore what it
 # replaced. When another plug-in took the plug-in's widget or binding over
 # between its loads, the result must stay as it is on next: that case is still
-# open in the issue. Each scenario runs in its own clean shell.
+# open in the issue. A change made between the loads without zi records (by
+# the user, or by a plug-in loaded in light mode), to a function, widget or
+# binding, is a known limit there as well. Each scenario runs in its own clean
+# shell.
 
 builtin emulate -R zsh
 setopt pipe_fail
@@ -137,6 +140,63 @@ case $ZI_TEST_CASE in
     zi unload "$p" >/dev/null 2>&1
     check '[[ "$(bindkey "^X^P")" == "\"^X^P\" end-of-line" ]]' "the binding differs from next: $(bindkey '^X^P')" || return 1
     ;;
+  linked-taken)
+    # The same, with main linked to viins and the key rebound through
+    # `bindkey -M viins`: a binding in the keymap main is linked to is the
+    # binding of main, so this is the same takeover (z-shell/zi#583).
+    bindkey -v
+    zi load "$p" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/tv" >/dev/null 2>&1
+    check '[[ "$(bindkey -M viins "^X^P")" == "\"^X^P\" end-of-line" ]]' "tv did not rebind the key: $(bindkey -M viins '^X^P')" || return 1
+    zi load "$p" >/dev/null 2>&1
+    zi unload "$p" >/dev/null 2>&1
+    check '[[ "$(bindkey -M viins "^X^P")" == "\"^X^P\" end-of-line" ]]' "the viins binding differs from next: $(bindkey -M viins '^X^P')" || return 1
+    check '[[ "$(bindkey "^X^P")" == "\"^X^P\" end-of-line" ]]' "the main binding differs from next: $(bindkey '^X^P')" || return 1
+    ;;
+  linked-taken-emacs)
+    # The same with main linked to emacs and `bindkey -M emacs`.
+    bindkey -e
+    zi load "$p" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/te" >/dev/null 2>&1
+    check '[[ "$(bindkey -M emacs "^X^P")" == "\"^X^P\" end-of-line" ]]' "te did not rebind the key: $(bindkey -M emacs '^X^P')" || return 1
+    zi load "$p" >/dev/null 2>&1
+    zi unload "$p" >/dev/null 2>&1
+    check '[[ "$(bindkey -M emacs "^X^P")" == "\"^X^P\" end-of-line" ]]' "the emacs binding differs from next: $(bindkey -M emacs '^X^P')" || return 1
+    ;;
+  keymap-twice)
+    # A plug-in that creates a keymap, loaded twice: unload deletes it once,
+    # without errors (z-shell/zi#583).
+    typeset out="${ZI_TEST_ROOT}/${ZI_TEST_CASE}.out"
+    zi load "${ZI_TEST_ROOT}/n" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/n" >/dev/null 2>&1
+    check '(( ${${(f)"$(bindkey -l)"}[(Ie)nmap]} ))' "the loads did not create the keymap" || return 1
+    zi unload "${ZI_TEST_ROOT}/n" >"$out" 2>&1
+    check '(( ! ${${(f)"$(bindkey -l)"}[(Ie)nmap]} ))' "the keymap survived unload" || return 1
+    check '[[ "$(<$out)" != *"no such keymap"* ]]' "unload replayed a keymap record twice: $(<$out)" || return 1
+    typeset -a deleted
+    deleted=( ${(M)${(f)"$(<$out)"}:#Deleting keymap*} )
+    check '(( ${#deleted} == 1 ))' "unload did not delete the keymap exactly once: $(<$out)" || return 1
+    ;;
+  hook-twice)
+    # A plug-in that installs a zle hook widget, loaded twice: unload removes
+    # the hook once, without errors.
+    typeset out="${ZI_TEST_ROOT}/${ZI_TEST_CASE}.out"
+    zi load "${ZI_TEST_ROOT}/h" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/h" >/dev/null 2>&1
+    check '[[ ${widgets[zle-line-init]} == user:h_fn ]]' "the loads did not install the hook: ${widgets[zle-line-init]}" || return 1
+    zi unload "${ZI_TEST_ROOT}/h" >"$out" 2>&1
+    check '[[ "$(<$out)" != *"no such widget"* ]]' "unload replayed a hook record twice: $(<$out)" || return 1
+    ;;
+  hook-twice-ksh)
+    # As hook-twice, with ksh_arrays set while the plug-in runs `zle -N`:
+    # the record check must not depend on the plug-in's options.
+    typeset out="${ZI_TEST_ROOT}/${ZI_TEST_CASE}.out"
+    zi load "${ZI_TEST_ROOT}/hk" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/hk" >/dev/null 2>&1
+    check '[[ ${widgets[zle-line-init]} == user:hk_fn ]]' "the loads did not install the hook: ${widgets[zle-line-init]}" || return 1
+    zi unload "${ZI_TEST_ROOT}/hk" >"$out" 2>&1
+    check '[[ "$(<$out)" != *"no such widget"* ]]' "unload replayed a hook record twice: $(<$out)" || return 1
+    ;;
   prior)
     # A function the user defined before any load is not the plug-in's.
     pa_fn() { builtin print -r -- user; }
@@ -202,10 +262,15 @@ ZSH
 
 typeset -i failures=0
 typeset scenario
-for scenario in twice changed interleaved interleaved-other-order older binding-taken main-taken prior wrapped shared shared-twice reload; do
+for scenario in twice changed interleaved interleaved-other-order older binding-taken main-taken linked-taken linked-taken-emacs keymap-twice hook-twice hook-twice-ksh prior wrapped shared shared-twice reload; do
   write_plugin p pa_fn
   write_plugin q qa_fn
-  command mkdir -p "${temp_root}/r" "${temp_root}/k" "${temp_root}/m" "${temp_root}/w" || fail "create the r, k, m and w plug-in directories"
+  command mkdir -p "${temp_root}"/{r,k,m,tv,te,n,h,hk,w} || fail "create the r, k, m, tv, te, n, h, hk and w plug-in directories"
+  builtin print -r -- "bindkey -M viins '^X^P' end-of-line" > "${temp_root}/tv/tv.plugin.zsh" || fail "write the tv plug-in"
+  builtin print -r -- "bindkey -M emacs '^X^P' end-of-line" > "${temp_root}/te/te.plugin.zsh" || fail "write the te plug-in"
+  builtin print -rl -- 'bindkey -N nmap emacs' "bindkey -M nmap '^X^P' end-of-line" > "${temp_root}/n/n.plugin.zsh" || fail "write the n plug-in"
+  builtin print -rl -- 'h_fn() { :; }' 'zle -N zle-line-init h_fn' > "${temp_root}/h/h.plugin.zsh" || fail "write the h plug-in"
+  builtin print -rl -- 'setopt ksh_arrays' 'hk_fn() { :; }' 'zle -N zle-line-init hk_fn' 'unsetopt ksh_arrays' > "${temp_root}/hk/hk.plugin.zsh" || fail "write the hk plug-in"
   builtin print -r -- 'shared_fn() { :; }' > "${temp_root}/r/r.plugin.zsh" || fail "write the r plug-in"
   builtin print -r -- "bindkey '^X^P' end-of-line" > "${temp_root}/k/k.plugin.zsh" || fail "write the k plug-in"
   builtin print -r -- "bindkey -M main '^X^P' end-of-line" > "${temp_root}/m/m.plugin.zsh" || fail "write the m plug-in"

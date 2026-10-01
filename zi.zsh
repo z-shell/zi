@@ -1189,19 +1189,117 @@ builtin setopt no_aliases
   # Full or light load?
   [[ $mode == light ]] && ZI[STATES__$uspl2]=1 || ZI[STATES__$uspl2]=2
   ZI_REPORTS[$uspl2]=             ZI_CUR_BIND_MAP=( empty 1 )
+  if (( ret )) && ! .zi-repeat-taken-over "$uspl2"; then
+    # A repeated load keeps what earlier loads of this plugin created, so one
+    # unload still removes it (z-shell/zi#113): the functions the previous
+    # load added join the owned set, and the widget and bindkey records stay.
+    # When another plugin took one of those widgets or bindings over in
+    # between, the records start again as before; that case remains open.
+    .zi-keep-previous-load-functions "$uspl2"
+  else
+    ZI[FUNCTIONS_OWNED__$uspl2]=
+    ZI[BINDKEYS__$uspl2]=
+    ZI[WIDGETS_SAVED__$uspl2]=   ZI[WIDGETS_DELETE__$uspl2]=
+  fi
   # Functions.
   ZI[FUNCTIONS_BEFORE__$uspl2]=  ZI[FUNCTIONS_AFTER__$uspl2]=
   ZI[FUNCTIONS__$uspl2]=
   # Objects.
-  ZI[ZSTYLES__$uspl2]=           ZI[BINDKEYS__$uspl2]=
+  ZI[ZSTYLES__$uspl2]=
   ZI[ALIASES__$uspl2]=
-  # Widgets.
-  ZI[WIDGETS_SAVED__$uspl2]=     ZI[WIDGETS_DELETE__$uspl2]=
   # Rest (options and (f)path).
   ZI[OPTIONS__$uspl2]=           ZI[PATH__$uspl2]=
   ZI[OPTIONS_BEFORE__$uspl2]=    ZI[OPTIONS_AFTER__$uspl2]=
   ZI[FPATH__$uspl2]=
   return ret
+} # ]]]
+# FUNCTION: .zi-keep-previous-load-functions. [[[
+# Adds the functions the previous load of plugin $1 created to its owned set,
+# before the next load takes a fresh function baseline.
+.zi-keep-previous-load-functions() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  local uspl2="$1" f
+  [[ ${ZI[FUNCTIONS_BEFORE__$uspl2]} == *[^[:space:]]* ]] || return 0
+  local -A created
+  for f in "${(z)ZI[FUNCTIONS_AFTER__$uspl2]}"; do
+    created[$f]=1
+  done
+  for f in "${(z)ZI[FUNCTIONS_BEFORE__$uspl2]}"; do
+    created[$f]=0
+  done
+  for f in "${(@k)created}"; do
+    [[ ${created[$f]} == 1 ]] && ZI[FUNCTIONS_OWNED__$uspl2]+="$f "
+  done
+  return 0
+} # ]]]
+# FUNCTION: .zi-repeat-object-key. [[[
+# Sets REPLY to a comparable identity for record $2 of kind $1 (widget-saved,
+# widget-delete or bindkey): "widget NAME", or "bindkey MAP KEY" with an empty
+# MAP for the default keymap, also when it is named main. Fails for a record
+# without such an object.
+.zi-repeat-object-key() {
+  local kind="$1" entry="$2" map
+  local -a fields
+  REPLY=
+  case $kind in
+    widget-saved)
+      fields=( "${(z)${(Q)entry}}" )
+      REPLY="widget ${(Q)fields[2]}" ;;
+    widget-delete)
+      REPLY="widget ${(Q)entry}" ;;
+    bindkey)
+      fields=( "${(z)${(Q)entry}}" )
+      [[ ${(Q)fields[4]} == -[AN] ]] && return 1
+      # main is the default keymap: `bindkey -M main KEY` and `bindkey KEY`
+      # change the same binding, so they share one identity.
+      map=
+      [[ ${(Q)fields[4]} == -M ]] && map=${(Q)fields[5]}
+      [[ $map == main ]] && map=
+      REPLY="bindkey $map ${fields[1]}" ;;
+    *) return 1 ;;
+  esac
+  [[ -n $REPLY ]]
+} # ]]]
+# FUNCTION: .zi-repeat-objects. [[[
+# Sets reply to the widget and bindkey identities plugin $1 has recorded.
+.zi-repeat-objects() {
+  local uspl2="$1" entry
+  reply=()
+  for entry in "${(z)ZI[WIDGETS_SAVED__$uspl2]}"; do
+    [[ -n $entry ]] && .zi-repeat-object-key widget-saved "$entry" && reply+=( "$REPLY" )
+  done
+  for entry in "${(z)ZI[WIDGETS_DELETE__$uspl2]}"; do
+    [[ -n $entry ]] && .zi-repeat-object-key widget-delete "$entry" && reply+=( "$REPLY" )
+  done
+  for entry in "${(z)ZI[BINDKEYS__$uspl2]}"; do
+    [[ -n $entry ]] && .zi-repeat-object-key bindkey "$entry" && reply+=( "$REPLY" )
+  done
+} # ]]]
+# FUNCTION: .zi-repeat-taken-over. [[[
+# Succeeds when a plugin loaded after the newest load of plugin $1 recorded
+# one of the widgets or bindings $1 recorded, i.e. took it over in between.
+.zi-repeat-taken-over() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob
+  local uspl2="$1" key other REPLY
+  local -a reply mine shared
+  .zi-repeat-objects "$uspl2"
+  mine=( "${reply[@]}" )
+  (( ${#mine} )) || return 1
+  integer last=0
+  for key in ${(k)ZI[(I)TIME_<->_${(b)uspl2//\//---}]}; do
+    [[ $key == (#b)TIME_(<->)_* ]] && (( match[1] > last )) && last=${match[1]}
+  done
+  for key in ${(k)ZI[(I)TIME_<->_*]}; do
+    [[ $key == (#b)TIME_(<->)_(*) ]] || continue
+    (( match[1] > last )) || continue
+    other="${match[2]//---//}"
+    [[ $other == "$uspl2" ]] && continue
+    .zi-repeat-objects "$other"
+    shared=( "${(@)reply:*mine}" )
+    (( ${#shared} )) && return 0
+  done
+  return 1
 } # ]]]
 # FUNCTION: .zi-get-object-path. [[[
 .zi-get-object-path() {

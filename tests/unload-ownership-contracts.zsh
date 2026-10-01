@@ -10,7 +10,8 @@
 # first showed the defect is narrower than that issue's prose: every
 # multi-plug-in path already restores the correct previous owner, and only a
 # repeated load of the *same* plug-in leaked. That case is covered by
-# tests/repeated-load-ownership.zsh, together with its fix.
+# tests/repeated-load-ownership.zsh, together with its fix; a plug-in taken
+# over between two of its own loads is still open there.
 
 builtin emulate -R zsh
 setopt pipe_fail

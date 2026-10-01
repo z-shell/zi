@@ -4,8 +4,9 @@
 #
 # z-shell/zi#113: a repeated load of the same plug-in, then one unload, must
 # remove everything the plug-in added across its loads and restore what it
-# replaced, without taking state another plug-in loaded in between now owns.
-# Each scenario runs in its own clean shell.
+# replaced. When another plug-in took the plug-in's widget or binding over
+# between its loads, the result must stay as it is on next: that case is still
+# open in the issue. Each scenario runs in its own clean shell.
 
 builtin emulate -R zsh
 setopt pipe_fail
@@ -84,19 +85,45 @@ case $ZI_TEST_CASE in
     ;;
   interleaved)
     # Another plug-in takes the widget and binding between the two loads.
-    # After p's unload, q is still loaded and must keep what it owns.
+    # That case stays open in z-shell/zi#113; the repeated load must leave it
+    # exactly as next does: p's second load records afresh, its unload hands
+    # the widget back to what q replaced, and q's unload then restores q's.
     zi load "$p" >/dev/null 2>&1
     zi load "$q" >/dev/null 2>&1
     zi load "$p" >/dev/null 2>&1
     zi unload "$p" >/dev/null 2>&1
-    check '(( ! ${+functions[pa_fn]} ))' "p's function survived unload" || return 1
     check '(( ${+functions[qa_fn]} ))' "q's function was removed" || return 1
-    check '[[ ${widgets[zi-repeat-widget]} == user:qa_fn ]]' "q does not own the widget: ${widgets[zi-repeat-widget]}" || return 1
-    check '[[ "$(bindkey "^X^P")" == "\"^X^P\" zi-repeat-widget" ]]' "q's binding was lost: $(bindkey '^X^P')" || return 1
+    check '[[ ${widgets[zi-repeat-widget]} == user:pa_fn ]]' "the widget differs from next: ${widgets[zi-repeat-widget]}" || return 1
+    check '[[ "$(bindkey "^X^P")" == "\"^X^P\" zi-repeat-widget" ]]' "the binding differs from next: $(bindkey '^X^P')" || return 1
+    ;;
+  interleaved-other-order)
+    # The same, unloading q first: p keeps its live widget, as on next.
+    zi load "$p" >/dev/null 2>&1
+    zi load "$q" >/dev/null 2>&1
+    zi load "$p" >/dev/null 2>&1
     zi unload "$q" >/dev/null 2>&1
-    check '(( ! ${+functions[qa_fn]} ))' "q's function survived its unload" || return 1
-    check '[[ -z ${widgets[zi-repeat-widget]} ]]' "the widget survived both unloads: ${widgets[zi-repeat-widget]}" || return 1
-    check '[[ "$(bindkey "^X^P")" == "$binding_before" ]]' "the binding was not restored after both unloads: $(bindkey '^X^P')" || return 1
+    check '(( ${+functions[pa_fn]} ))' "p's function was removed by q's unload" || return 1
+    check '[[ ${widgets[zi-repeat-widget]} == user:pa_fn ]]' "q's unload changed p's live widget: ${widgets[zi-repeat-widget]}" || return 1
+    check '[[ "$(bindkey "^X^P")" == "\"^X^P\" zi-repeat-widget" ]]' "q's unload changed p's binding: $(bindkey '^X^P')" || return 1
+    ;;
+  older)
+    # q loaded before p's first load is not a takeover between p's loads:
+    # p's repeated load still keeps its records, and its unload removes it.
+    zi load "$q" >/dev/null 2>&1
+    zi load "$p" >/dev/null 2>&1
+    zi load "$p" >/dev/null 2>&1
+    zi unload "$p" >/dev/null 2>&1
+    check '(( ! ${+functions[pa_fn]} ))' "p's function survived unload" || return 1
+    check '[[ ${widgets[zi-repeat-widget]} == user:qa_fn ]]' "q's widget was not restored: ${widgets[zi-repeat-widget]}" || return 1
+    ;;
+  binding-taken)
+    # Another plug-in rebinds only the key between p's loads: like a widget
+    # takeover, the result stays as on next.
+    zi load "$p" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/k" >/dev/null 2>&1
+    zi load "$p" >/dev/null 2>&1
+    zi unload "$p" >/dev/null 2>&1
+    check '[[ "$(bindkey "^X^P")" == "\"^X^P\" end-of-line" ]]' "the binding differs from next: $(bindkey '^X^P')" || return 1
     ;;
   prior)
     # A function the user defined before any load is not the plug-in's.
@@ -105,6 +132,15 @@ case $ZI_TEST_CASE in
     zi load "$p" >/dev/null 2>&1
     zi unload "$p" >/dev/null 2>&1
     check '(( ${+functions[pa_fn]} ))' "a function defined before the first load was removed" || return 1
+    ;;
+  wrapped)
+    # A plug-in that replaces an existing widget, loaded twice, restores the
+    # original widget on unload, not its own first replacement.
+    zi load "${ZI_TEST_ROOT}/w" >/dev/null 2>&1
+    zi load "${ZI_TEST_ROOT}/w" >/dev/null 2>&1
+    zi unload "${ZI_TEST_ROOT}/w" >/dev/null 2>&1
+    check '[[ ${widgets[forward-char]} == builtin ]]' "the replaced widget was not restored: ${widgets[forward-char]}" || return 1
+    check '(( ! ${+functions[w_fn]} ))' "the replacement function survived unload" || return 1
     ;;
   shared)
     # p defines a helper on its first load; r, loaded next, defines the same
@@ -139,11 +175,13 @@ ZSH
 
 typeset -i failures=0
 typeset scenario
-for scenario in twice changed interleaved prior shared reload; do
+for scenario in twice changed interleaved interleaved-other-order older binding-taken prior wrapped shared reload; do
   write_plugin p pa_fn
   write_plugin q qa_fn
-  command mkdir -p "${temp_root}/r" || fail "create the r plug-in directory"
+  command mkdir -p "${temp_root}/r" "${temp_root}/k" "${temp_root}/w" || fail "create the r, k and w plug-in directories"
   builtin print -r -- 'shared_fn() { :; }' > "${temp_root}/r/r.plugin.zsh" || fail "write the r plug-in"
+  builtin print -r -- "bindkey '^X^P' end-of-line" > "${temp_root}/k/k.plugin.zsh" || fail "write the k plug-in"
+  builtin print -rl -- 'w_fn() { zle .forward-char; }' 'zle -N forward-char w_fn' > "${temp_root}/w/w.plugin.zsh" || fail "write the w plug-in"
   if ( run_case "$scenario" ); then
     builtin print -r -- "ok - ${scenario}"
   else

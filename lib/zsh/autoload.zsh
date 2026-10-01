@@ -262,6 +262,8 @@ ZI[EXTENDED_GLOB]=""
   ZI[FUNCTIONS__$REPLY]=""
   ZI[FUNCTIONS_BEFORE__$REPLY]=""
   ZI[FUNCTIONS_AFTER__$REPLY]=""
+  ZI[FUNCTIONS_OWNED__$REPLY]=""
+  ZI[REPEAT__$REPLY]=""
   # Option diffing
   ZI[OPTIONS__$REPLY]=""
   ZI[OPTIONS_BEFORE__$REPLY]=""
@@ -1120,7 +1122,9 @@ ZI[EXTENDED_GLOB]=""
       local comp_wid="${(Q)orig_saved[3]}"
       local orig_saved2="${(Q)orig_saved[4]}" # Saved target function
       local orig_saved3="${(Q)orig_saved[5]}" # Saved previous $widget's contents
-      local found_time_key="${keys[(r)TIME_<->_${uspl2//\//---}]}" to_process_plugin
+      # The plugin's newest load: an earlier load of the same plugin is not
+      # the one whose records are held when it was loaded more than once.
+      local found_time_key="${keys[(R)TIME_<->_${uspl2//\//---}]}" to_process_plugin
       integer found_time_idx=0 idx=0
       to_process_plugin=""
       [[ "$found_time_key" = (#b)TIME_(<->)_* ]] && found_time_idx="${match[1]}"
@@ -1137,8 +1141,9 @@ ZI[EXTENDED_GLOB]=""
           integer found_idx2="${entry_splitted2[(I)*\ $orig_saved1\ *]}"
           if (( found_idx || found_idx2 ))
           then
-            # Skip multiple loads of the same plugin
-            # TODO: #113 Fully handle multiple plugin loads
+            # Skip later loads of the same plugin: a repeated load keeps the
+            # first load's records (z-shell/zi#113), so the chain continues
+            # with the next other plugin.
             if [[ "$oth_uspl2" != "$uspl2" ]]; then
               to_process_plugin="$oth_uspl2"
               break # Only the first one is needed
@@ -1229,6 +1234,21 @@ ZI[EXTENDED_GLOB]=""
   .zi-diff-functions-compute "$uspl2"
   typeset -a func
   func=( "${(z)ZI[FUNCTIONS__$uspl2]}" )
+  # Functions earlier loads of this plugin created (z-shell/zi#113), except
+  # those another plugin loaded since then created as well.
+  () {
+    builtin setopt local_options extended_glob
+    local owned other_uspl2
+    for owned in "${(z)ZI[FUNCTIONS_OWNED__$uspl2]}"; do
+      [[ -z $owned ]] && continue
+      for other_uspl2 in "${ZI_REGISTERED_PLUGINS[@]}"; do
+        [[ $other_uspl2 == "$uspl2" ]] && continue
+        .zi-diff-functions-compute "$other_uspl2" 2>/dev/null
+        (( ${${(z)ZI[FUNCTIONS__$other_uspl2]}[(Ie)$owned]} )) && continue 2
+      done
+      (( ${func[(Ie)$owned]} )) || func+=( "$owned" )
+    done
+  }
   local f
   for f in "${(on)func[@]}"; do
     [[ -z "$f" ]] && continue

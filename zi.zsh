@@ -658,7 +658,7 @@ builtin setopt no_aliases
     fi
     quoted="${(q)quoted}"
     # Remember the bindkey, only when load is in progress (it can be dstart that leads execution here).
-    [[ -n ${ZI[CUR_USPL2]} ]] && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
+    [[ -n ${ZI[CUR_USPL2]} ]] && .zi-repeat-should-record bindkey "$string" "${opts[-M]}" && ZI[BINDKEYS__${ZI[CUR_USPL2]}]+="$quoted "
     # Remember for dtrace.
     [[ ${ZI[DTRACE]} = 1 ]] && ZI[BINDKEYS___dtrace/_dtrace]+="$quoted "
   else
@@ -786,7 +786,7 @@ builtin setopt no_aliases
       local quoted="$2"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-repeat-should-record widget "$2" && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
       # Remember for dtrace.
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
     # These will be saved and restored.
@@ -802,7 +802,7 @@ builtin setopt no_aliases
       local quoted="$1 $widname $completion_widget $targetfun $saved_widcontents"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_SAVED__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-repeat-should-record widget "$2" && ZI[WIDGETS_SAVED__${ZI[CUR_USPL2]}]+="$quoted "
       # Remember for dtrace.
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_SAVED___dtrace/_dtrace]+="$quoted "
     # These will be deleted.
@@ -811,7 +811,7 @@ builtin setopt no_aliases
       local quoted="$2"
       quoted="${(q)quoted}"
       # Remember only when load is in progress (it can be dstart that leads execution here).
-      [[ -n ${ZI[CUR_USPL2]} ]] && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
+      [[ -n ${ZI[CUR_USPL2]} ]] && .zi-repeat-should-record widget "$2" && ZI[WIDGETS_DELETE__${ZI[CUR_USPL2]}]+="$quoted "
       # Remember for dtrace.
       [[ ${ZI[DTRACE]} = 1 ]] && ZI[WIDGETS_DELETE___dtrace/_dtrace]+="$quoted "
     fi
@@ -1189,19 +1189,250 @@ builtin setopt no_aliases
   # Full or light load?
   [[ $mode == light ]] && ZI[STATES__$uspl2]=1 || ZI[STATES__$uspl2]=2
   ZI_REPORTS[$uspl2]=             ZI_CUR_BIND_MAP=( empty 1 )
+  if (( ret )); then
+    # A repeated load keeps what earlier loads of this plugin created, so one
+    # unload still removes it (z-shell/zi#113): the functions the previous
+    # load added join the owned set, and the widget and bindkey records stay.
+    ZI[REPEAT__$uspl2]=1
+    .zi-keep-previous-load-functions "$uspl2"
+  else
+    ZI[REPEAT__$uspl2]=          ZI[FUNCTIONS_OWNED__$uspl2]=
+    ZI[BINDKEYS__$uspl2]=
+    ZI[WIDGETS_SAVED__$uspl2]=   ZI[WIDGETS_DELETE__$uspl2]=
+  fi
   # Functions.
   ZI[FUNCTIONS_BEFORE__$uspl2]=  ZI[FUNCTIONS_AFTER__$uspl2]=
   ZI[FUNCTIONS__$uspl2]=
   # Objects.
-  ZI[ZSTYLES__$uspl2]=           ZI[BINDKEYS__$uspl2]=
+  ZI[ZSTYLES__$uspl2]=
   ZI[ALIASES__$uspl2]=
-  # Widgets.
-  ZI[WIDGETS_SAVED__$uspl2]=     ZI[WIDGETS_DELETE__$uspl2]=
   # Rest (options and (f)path).
   ZI[OPTIONS__$uspl2]=           ZI[PATH__$uspl2]=
   ZI[OPTIONS_BEFORE__$uspl2]=    ZI[OPTIONS_AFTER__$uspl2]=
   ZI[FPATH__$uspl2]=
   return ret
+} # ]]]
+# FUNCTION: .zi-keep-previous-load-functions. [[[
+# Adds the functions the previous load of plugin $1 created to its owned set,
+# before the next load takes a fresh function baseline.
+.zi-keep-previous-load-functions() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  local uspl2="$1" f
+  [[ ${ZI[FUNCTIONS_BEFORE__$uspl2]} == *[^[:space:]]* ]] || return 0
+  local -A created
+  for f in "${(z)ZI[FUNCTIONS_AFTER__$uspl2]}"; do
+    created[$f]=1
+  done
+  for f in "${(z)ZI[FUNCTIONS_BEFORE__$uspl2]}"; do
+    created[$f]=0
+  done
+  for f in "${(@k)created}"; do
+    [[ ${created[$f]} == 1 ]] && ZI[FUNCTIONS_OWNED__$uspl2]+="$f "
+  done
+  return 0
+} # ]]]
+# FUNCTION: .zi-repeat-record-matches. [[[
+# Succeeds when record $3 of kind $2 (widget-saved, widget-delete or bindkey)
+# describes object $4: a widget name, or a quoted key with keymap $5 (empty
+# for the default map).
+.zi-repeat-record-matches() {
+  local kind="$2" entry="$3" name="$4" map="$5"
+  local -a fields
+  case $kind in
+    widget-saved)
+      fields=( "${(z)${(Q)entry}}" )
+      [[ ${(Q)fields[2]} == "$name" ]] ;;
+    widget-delete)
+      [[ ${(Q)entry} == "$name" ]] ;;
+    bindkey)
+      fields=( "${(z)${(Q)entry}}" )
+      [[ ${fields[1]} == "$name" ]] || return 1
+      if [[ -n $map ]]; then
+        [[ ${(Q)fields[4]} == -M && ${(Q)fields[5]} == "$map" ]]
+      else
+        [[ ${(Q)fields[4]} != -M ]]
+      fi ;;
+    *) return 1 ;;
+  esac
+} # ]]]
+# FUNCTION: .zi-repeat-owns. [[[
+# On a repeated load of plugin $1, succeeds when an earlier load of it
+# recorded object $3 (a widget name for kind "widget", a quoted key for kind
+# "bindkey", with keymap $4) and no plugin loaded since then recorded the
+# same object, so the earlier record still describes what to restore.
+.zi-repeat-owns() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob
+  local uspl2="$1" kind="$2" name="$3" map="$4" entry key other
+  local -a kinds
+  if [[ $kind == widget ]]; then
+    kinds=( widget-saved widget-delete )
+  else
+    kinds=( bindkey )
+  fi
+  .zi-repeat-recorded "$uspl2" "$kind" "$name" "$map" || return 1
+  # The newest load of this plugin that has finished.
+  integer last=0 idx
+  for key in ${(k)ZI[(I)TIME_<->_${(b)uspl2//\//---}]}; do
+    [[ $key == (#b)TIME_(<->)_* ]] && (( match[1] > last )) && last=${match[1]}
+  done
+  for key in ${(k)ZI[(I)TIME_<->_*]}; do
+    [[ $key == (#b)TIME_(<->)_(*) ]] || continue
+    idx=${match[1]} other="${match[2]//---//}"
+    (( idx > last )) && [[ $other != "$uspl2" ]] || continue
+    for kind in "${kinds[@]}"; do
+      case $kind in
+        widget-saved) local field=WIDGETS_SAVED ;;
+        widget-delete) local field=WIDGETS_DELETE ;;
+        *) local field=BINDKEYS ;;
+      esac
+      for entry in "${(z)ZI[${field}__$other]}"; do
+        .zi-repeat-record-matches "$other" "$kind" "$entry" "$name" "$map" && return 1
+      done
+    done
+  done
+  return 0
+} # ]]]
+# FUNCTION: .zi-repeat-recorded. [[[
+# Succeeds when plugin $1 holds a record of object $3 (kind $2, keymap $4).
+.zi-repeat-recorded() {
+  local uspl2="$1" kind="$2" name="$3" map="$4" entry
+  if [[ $kind == widget ]]; then
+    for entry in "${(z)ZI[WIDGETS_SAVED__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" widget-saved "$entry" "$name" && return 0
+    done
+    for entry in "${(z)ZI[WIDGETS_DELETE__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" widget-delete "$entry" "$name" && return 0
+    done
+  else
+    for entry in "${(z)ZI[BINDKEYS__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" bindkey "$entry" "$name" "$map" && return 0
+    done
+  fi
+  return 1
+} # ]]]
+# FUNCTION: .zi-repeat-forget. [[[
+# Drops plugin $1's records of object $3 (kind $2, keymap $4), used when
+# another plugin took the object over between two loads of $1.
+.zi-repeat-forget() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  local uspl2="$1" kind="$2" name="$3" map="$4" entry kept
+  if [[ $kind == widget ]]; then
+    for entry in "${(z)ZI[WIDGETS_SAVED__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" widget-saved "$entry" "$name" || kept+="$entry "
+    done
+    ZI[WIDGETS_SAVED__$uspl2]="$kept"
+    kept=
+    for entry in "${(z)ZI[WIDGETS_DELETE__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" widget-delete "$entry" "$name" || kept+="$entry "
+    done
+    ZI[WIDGETS_DELETE__$uspl2]="$kept"
+  else
+    for entry in "${(z)ZI[BINDKEYS__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" bindkey "$entry" "$name" "$map" || kept+="$entry "
+    done
+    ZI[BINDKEYS__$uspl2]="$kept"
+  fi
+} # ]]]
+# FUNCTION: .zi-repeat-should-record. [[[
+# Called before a new widget or bindkey record for the load in progress.
+# Succeeds when the record should be added. On a repeated load, an object
+# this plugin still owns keeps its first record, so unload restores what
+# preceded the first load. For an object another plugin took over in between,
+# this plugin's earlier instance leaves the ownership chain: the plugin that
+# took it over inherits what the earlier instance replaced, and this load
+# records afresh on top of it.
+.zi-repeat-should-record() {
+  local uspl2="${ZI[CUR_USPL2]}"
+  [[ -n $uspl2 && ${ZI[REPEAT__$uspl2]} == 1 ]] || return 0
+  .zi-repeat-recorded "$uspl2" "$@" || return 0
+  .zi-repeat-owns "$uspl2" "$@" && return 1
+  .zi-repeat-relink "$uspl2" "$@"
+  .zi-repeat-forget "$uspl2" "$@"
+  return 0
+} # ]]]
+# FUNCTION: .zi-repeat-relink. [[[
+# Plugin $1 held object $3 (kind $2, keymap $4) from an earlier load, and the
+# first plugin loaded after that load took it over, recording $1's version as
+# the one to restore. Point that record at what $1's earlier load replaced
+# instead, since $1's earlier instance is about to leave the chain.
+.zi-repeat-relink() {
+  builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
+  builtin setopt extended_glob
+  local uspl2="$1" kind="$2" name="$3" map="$4" entry key other taker
+  local -a fields
+  # What the earlier load of $1 replaced.
+  integer created=0 found=0
+  local prev
+  if [[ $kind == widget ]]; then
+    for entry in "${(z)ZI[WIDGETS_SAVED__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" widget-saved "$entry" "$name" || continue
+      fields=( "${(z)${(Q)entry}}" )
+      prev="${(Q)fields[5]}" found=1
+      break
+    done
+    if (( ! found )); then
+      for entry in "${(z)ZI[WIDGETS_DELETE__$uspl2]}"; do
+        .zi-repeat-record-matches "$uspl2" widget-delete "$entry" "$name" && { created=1 found=1; break; }
+      done
+    fi
+  else
+    for entry in "${(z)ZI[BINDKEYS__$uspl2]}"; do
+      .zi-repeat-record-matches "$uspl2" bindkey "$entry" "$name" "$map" || continue
+      fields=( "${(z)${(Q)entry}}" )
+      prev="${(Q)fields[3]}" found=1
+      break
+    done
+  fi
+  (( found )) || return 0
+  # The first plugin loaded after $1's newest finished load that recorded the object.
+  integer last=0 idx best=0
+  for key in ${(k)ZI[(I)TIME_<->_${(b)uspl2//\//---}]}; do
+    [[ $key == (#b)TIME_(<->)_* ]] && (( match[1] > last )) && last=${match[1]}
+  done
+  for key in ${(k)ZI[(I)TIME_<->_*]}; do
+    [[ $key == (#b)TIME_(<->)_(*) ]] || continue
+    idx=${match[1]} other="${match[2]//---//}"
+    (( idx > last )) && [[ $other != "$uspl2" ]] && (( ! best || idx < best )) || continue
+    if [[ $kind == widget ]]; then
+      for entry in "${(z)ZI[WIDGETS_SAVED__$other]}"; do
+        .zi-repeat-record-matches "$other" widget-saved "$entry" "$name" && { best=$idx taker=$other; break; }
+      done
+    else
+      for entry in "${(z)ZI[BINDKEYS__$other]}"; do
+        .zi-repeat-record-matches "$other" bindkey "$entry" "$name" "$map" && { best=$idx taker=$other; break; }
+      done
+    fi
+  done
+  [[ -n $taker ]] || return 0
+  local kept
+  if [[ $kind == widget ]]; then
+    for entry in "${(z)ZI[WIDGETS_SAVED__$taker]}"; do
+      if .zi-repeat-record-matches "$taker" widget-saved "$entry" "$name"; then
+        if (( created )); then
+          # The object did not exist before $1's earlier load: for the taker it
+          # is now a widget it created.
+          ZI[WIDGETS_DELETE__$taker]+="${(q)name} "
+          continue
+        fi
+        fields=( "${(z)${(Q)entry}}" )
+        fields[5]="${(q)prev}"
+        entry="${(q)${(j: :)fields}}"
+      fi
+      kept+="$entry "
+    done
+    ZI[WIDGETS_SAVED__$taker]="$kept"
+  else
+    for entry in "${(z)ZI[BINDKEYS__$taker]}"; do
+      if .zi-repeat-record-matches "$taker" bindkey "$entry" "$name" "$map"; then
+        fields=( "${(z)${(Q)entry}}" )
+        fields[3]="${(q)prev}"
+        entry="${(q)${(j: :)fields}}"
+      fi
+      kept+="$entry "
+    done
+    ZI[BINDKEYS__$taker]="$kept"
+  fi
 } # ]]]
 # FUNCTION: .zi-get-object-path. [[[
 .zi-get-object-path() {

@@ -26,6 +26,7 @@ on:
       - "tests/archive-extraction.zsh"
       - "tests/completion-refresh.zsh"
       - "tests/disk-ice-resolution.zsh"
+      - "tests/gh-r-musl-detection.zsh"
       - "tests/home-preparation.zsh"
       - "tests/hook-ownership.zsh"
       - "tests/ice-tokenizer.zsh"
@@ -45,6 +46,7 @@ on:
       - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
       - "tests/release-tag-verification.zsh"
+      - "tests/repeated-load-ownership.zsh"
       - "tests/scheduler-idle.zsh"
       - "tests/fixtures/plugin-standard-callbacks/**"
       - "tests/self-update-reload.zsh"
@@ -112,6 +114,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test unload ownership contracts
         run: zsh -f tests/unload-ownership-contracts.zsh
+
+  repeated-load-ownership:
+    name: Repeated Load Ownership
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test ownership across repeated loads of one plugin
+        run: zsh -f tests/repeated-load-ownership.zsh
 
   unload-hook-dispatch:
     name: Unload Hook Dispatch
@@ -277,6 +290,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test disk ice resolution
         run: zsh -f tests/disk-ice-resolution.zsh
+
+  gh-r-musl-detection:
+    name: gh-r musl detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test gh-r musl detection
+        run: zsh -f tests/gh-r-musl-detection.zsh
 
   parallel-update:
     name: Parallel Update

@@ -1626,6 +1626,15 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 }
 # ]]]
 
+# FUNCTION: .zi-has-musl-loader [[[
+# Succeeds when DIR ($1) holds a musl dynamic loader (ld-musl-<arch>.so.1).
+.zi-has-musl-loader() {
+  builtin emulate -LR zsh
+  local -a loaders=( $1/ld-musl-*(N) )
+  (( $#loaders ))
+}
+# ]]]
+
 # FUNCTION: .zi-get-latest-gh-r-url-part [[[
 # Gets version string of latest release of given Github package.
 # Connects to Github releases page.
@@ -1650,9 +1659,11 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
     local url=https://$urlpart
   fi
 
-  if (( ${+commands[curl]} )) || find /lib/ -maxdepth 1 -name '*musl*' >/dev/null 2>&1; then
-    HAS_MUSL='linux-musl'
-  fi
+  # A musl host ships its dynamic loader in /lib as ld-musl-<arch>.so.1.
+  # Match that file: find exits 0 with no match, a broader *musl* also
+  # matches a musl toolchain directory on a glibc host, and whether curl
+  # is installed says nothing about the C library.
+  .zi-has-musl-loader /lib && HAS_MUSL='linux-musl'
 
   local -A matchstr
   matchstr=(

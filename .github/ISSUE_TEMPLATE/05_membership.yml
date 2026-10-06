@@ -1,0 +1,95 @@
+name: "👥 Community Membership Request"
+description: Request member privileges
+labels: ["type:membership", "area:meta"]
+title: "team: "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for participating!
+  - type: input
+    attributes:
+      label: Username
+      description: GitHub username for the membership request.
+      placeholder: ex. @username
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Email
+      description: Public email
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: checkboxes
+    id: email-fwd
+    attributes:
+      label: Assign @zshell.dev email forwarder
+      description: Email with GitHub username and @zshell.dev domain to be used when participating (ex. username@zshell.dev).
+      options:
+        - label: Assign email
+          required: false
+  - type: input
+    attributes:
+      label: Sponsors
+      description: GitHub usernames of sponsors if any.
+      placeholder: "@sponsor1, @sponsor2"
+    validations:
+      required: false
+  - type: dropdown
+    id: property
+    attributes:
+      label: "Property you are interested or would like to moderate."
+      options:
+        - General
+        - Annexes
+        - Plugins
+        - Packages
+        - Community
+        - Social media
+        - Documentation
+        - Technical writing
+        - Internationalization
+        - Other - described below
+  - type: textarea
+    attributes:
+      label: According to the selection above, please describe your role from your point of view.
+      description: >
+        Please try to describe in detail as much as possible, your role in the organization, daily routines,
+        what achievements you would set yourself, and what steps you would take. Any example is valid
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Organization support
+      description: >
+        Please try to describe in detail as much as possible, your role in the organization, daily routines,
+        what achievents you would set yourself and what steps you would take. Any example is valid
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional
+      description: Optional textarea to provide any additional information.
+    validations:
+      required: false
+  - type: checkboxes
+    id: contributing
+    attributes:
+      label: Governance & Steering committee.
+      description: >
+        By submitting this issue, you confirm to agree with [Organizational Governance and Policies for a Technical Steering Committee (TSC)](https://github.com/z-shell/.github/blob/main/governance/README.md)
+      options:
+        - label: "I am familiar with and agree with the governance & technical steering committee."
+          required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: >
+        By submitting this issue, you agree to follow and will cultivate the [Code of Conduct](https://github.com/z-shell/.github/main/governance/organization/CODE-OF-CONDUCT.md)
+      options:
+        - label: "I agree to sustain healthy interactions and will follow this project's Code of Conduct"
+          required: true

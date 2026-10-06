@@ -1,0 +1,70 @@
+name: "Delivery initiative"
+description: >-
+  Coordinate a cross-repository outcome through native sub-issues.
+title: "[initiative]: "
+labels:
+  - "type:maintenance"
+  - "area:meta"
+  - "status:triage"
+  - "meta:initiative"
+  - "meta:org-tracked"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form only for one coordinated outcome with at least two
+        independently deliverable issues in different repositories. After
+        creating the parent, create or connect each deliverable as a native
+        sub-issue. Follow the [sub-issues runbook](https://github.com/z-shell/.github/blob/main/runbooks/sub-issues.md).
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: >-
+        State the coordinated result and who benefits when it is complete.
+      placeholder: One observable outcome, not a topic or task list.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: >-
+        Explain why the outcome matters and why coordination is needed now.
+    validations:
+      required: true
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Expected deliverables
+      description: >-
+        Name the independently deliverable results and their owning
+        repositories. Connect their issues as native sub-issues after creating
+        this parent.
+      placeholder: |
+        - z-shell/<repo>: <deliverable>
+        - z-shell/<repo>: <deliverable>
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and risks
+      description: >-
+        Identify known blockers or execution order. Use native issue
+        dependencies after the related issues exist.
+      placeholder: None known.
+    validations:
+      required: true
+  - type: textarea
+    id: completion
+    attributes:
+      label: Completion criteria
+      description: >-
+        State how maintainers will verify the coordinated outcome before
+        closing this parent.
+      placeholder: |
+        - [ ] Observable outcome verified
+        - [ ] Required deliverables complete or explicitly descoped
+    validations:
+      required: true

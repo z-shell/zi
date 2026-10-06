@@ -262,6 +262,7 @@ ZI[EXTENDED_GLOB]=""
   ZI[FUNCTIONS__$REPLY]=""
   ZI[FUNCTIONS_BEFORE__$REPLY]=""
   ZI[FUNCTIONS_AFTER__$REPLY]=""
+  ZI[FUNCTIONS_OWNED__$REPLY]=""
   # Option diffing
   ZI[OPTIONS__$REPLY]=""
   ZI[OPTIONS_BEFORE__$REPLY]=""
@@ -1137,8 +1138,9 @@ ZI[EXTENDED_GLOB]=""
           integer found_idx2="${entry_splitted2[(I)*\ $orig_saved1\ *]}"
           if (( found_idx || found_idx2 ))
           then
-            # Skip multiple loads of the same plugin
-            # TODO: #113 Fully handle multiple plugin loads
+            # Skip later loads of the same plugin. A repeated load keeps the
+            # first load's records unless another plugin took them over in
+            # between, which is still open in z-shell/zi#113.
             if [[ "$oth_uspl2" != "$uspl2" ]]; then
               to_process_plugin="$oth_uspl2"
               break # Only the first one is needed
@@ -1229,6 +1231,24 @@ ZI[EXTENDED_GLOB]=""
   .zi-diff-functions-compute "$uspl2"
   typeset -a func
   func=( "${(z)ZI[FUNCTIONS__$uspl2]}" )
+  # Functions earlier loads of this plugin created (z-shell/zi#113), except
+  # those another registered plugin created as well, on any of its loads.
+  () {
+    builtin setopt local_options extended_glob
+    local owned other_uspl2
+    local -a others_created
+    [[ -n ${ZI[FUNCTIONS_OWNED__$uspl2]} ]] || return 0
+    for other_uspl2 in "${ZI_REGISTERED_PLUGINS[@]}"; do
+      [[ $other_uspl2 == "$uspl2" ]] && continue
+      .zi-diff-functions-compute "$other_uspl2" 2>/dev/null
+      others_created+=( "${(z)ZI[FUNCTIONS__$other_uspl2]}" "${(z)ZI[FUNCTIONS_OWNED__$other_uspl2]}" )
+    done
+    for owned in "${(z)ZI[FUNCTIONS_OWNED__$uspl2]}"; do
+      [[ -z $owned ]] && continue
+      (( ${others_created[(Ie)$owned]} )) && continue
+      (( ${func[(Ie)$owned]} )) || func+=( "$owned" )
+    done
+  }
   local f
   for f in "${(on)func[@]}"; do
     [[ -z "$f" ]] && continue

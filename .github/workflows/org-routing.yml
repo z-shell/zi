@@ -1,0 +1,20 @@
+---
+name: Org Routing
+
+# ADR-0031: verify generated routing and approved organization skills.
+on:
+  pull_request:
+    branches: [main, next]
+  push:
+    branches: [main, next]
+
+permissions:
+  contents: read
+
+# The reusable workflow owns concurrency; a duplicate caller group can deadlock.
+jobs:
+  org-routing:
+    name: Org Routing
+    permissions:
+      contents: read
+    uses: z-shell/.github/.github/workflows/org-routing.yml@a9e78eb617a60f92716abd831d4cf414f332a585 # main

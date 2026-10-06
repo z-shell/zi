@@ -69,4 +69,4 @@ The signed manual-tag flow remains available for recovery or exceptional publica
 
 Before starting significant work, [open an issue](https://github.com/z-shell/zi/issues/new/choose) to discuss the change.
 
-See also the [community contributing guidelines](https://github.com/z-shell/community/blob/main/docs/CONTRIBUTING_GUIDELINES.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+See also the [organization contributing guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/z-shell/.github/blob/main/.github/CODE_OF_CONDUCT.md).

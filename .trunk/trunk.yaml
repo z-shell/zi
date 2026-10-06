@@ -20,6 +20,14 @@ lint:
     - linters: [prettier]
       paths:
         - tests/fixtures/package-manifests/**
+    # Vendored organization issue forms must stay byte-identical to
+    # z-shell/.github .github/ISSUE_TEMPLATE, where the organization's
+    # community health audit compares them.
+    - linters: [prettier]
+      paths:
+        - .github/ISSUE_TEMPLATE/05_membership.yml
+        - .github/ISSUE_TEMPLATE/06_agent_handoff.yml
+        - .github/ISSUE_TEMPLATE/07_delivery_initiative.yml
   definitions:
     # This repository is consumed as a submodule, so `.git` is a file whose
     # gitdir is relative to the superproject. Trunk's sandbox copy breaks that

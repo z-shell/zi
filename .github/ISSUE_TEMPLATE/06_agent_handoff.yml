@@ -1,0 +1,85 @@
+name: "🧠 Agent handoff"
+description: Record cross-agent progress, blockers, and next steps for active or deferred work.
+title: "[handoff]: "
+labels: ["type:handoff", "area:meta"]
+assignees: ["ss-o"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this only for work that needs shared context between maintainers or LLM agents.
+        If the work is a bug, feature, or documentation request, prefer the specific template and add the handoff details there.
+  - type: input
+    id: repository
+    attributes:
+      label: Repository
+      description: Owning repository for this work.
+      placeholder: z-shell/<repo>
+    validations:
+      required: true
+  - type: input
+    id: branch-pr
+    attributes:
+      label: Branch or pull request
+      description: Branch name, pull request URL, or both.
+      placeholder: feature-example, https://github.com/z-shell/<repo>/pull/123
+    validations:
+      required: false
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - Planned
+        - In progress
+        - Blocked
+        - Ready for review
+        - Complete
+    validations:
+      required: true
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Current state
+      description: What is true now? Include completed work and important decisions.
+      placeholder: |
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Commands, checks, CI runs, or review performed. Say "Not run" if nothing was run.
+      placeholder: |
+        - automation/ci/trunk-safe-check.sh -- check --no-fix: passed
+        - CI: pending
+    validations:
+      required: true
+  - type: textarea
+    id: blockers
+    attributes:
+      label: Blockers
+      description: Anything preventing completion. Write "None" if unblocked.
+      placeholder: None
+    validations:
+      required: true
+  - type: textarea
+    id: next-steps
+    attributes:
+      label: Next steps
+      description: Exact next actions for a fresh maintainer or agent.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: Related issues, pull requests, tracker items, CI runs, or wiki pages.
+      placeholder: |
+        - ...
+    validations:
+      required: false

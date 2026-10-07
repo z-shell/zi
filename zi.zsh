@@ -1993,9 +1993,9 @@ builtin setopt no_aliases
       [[ -n ${reply[1-correct]} ]] && ___pdir_path="${reply[1-correct]:h}"
     fi
     [[ -z ${path[(er)$___pdir_path]} ]] && {
-      [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
+      [[ $___mode != light(|-b) ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
       path=( "${___pdir_path%/}" ${path[@]} )
-      [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
+      [[ $___mode != light(|-b) ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
       .zi-add-report "${ZI[CUR_USPL2]}" "$ZI[col-info2]$___pdir_path$ZI[col-rst] added to \$PATH"
     }
     [[ -n ${reply[1-correct]} && ! -x ${reply[1-correct]} ]] && command chmod a+x ${reply[@]}

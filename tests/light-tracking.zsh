@@ -110,6 +110,20 @@ expect 'zi light after a trackbinds ice' \
 expect 'zi light with bindmap but no -b' \
   "zi ice bindmap'^X^D -> ^X^E'; zi light $dir" \
   '1 none none demo_fn undefined-key'
+# A light load leaves nothing for zi unload to revert; light -b reverts only
+# the binding.
+expect 'zi unload after zi light' \
+  "zi light $dir; zi unload $dir" \
+  '0 none none demo_fn undefined-key'
+expect 'zi unload after zi light -b' \
+  "zi light -b $dir; zi unload $dir" \
+  '0 none none undefined-key undefined-key'
+# -b tracks bindkeys only, also for as''command'': no PATH snapshot is taken.
+# The command is not sourced, so the row defines demo_fn itself once the
+# snapshot is confirmed absent.
+expect 'zi light -b with as command' \
+  "zi ice as'command' pick'demo.plugin.zsh'; zi light -b $dir; [[ -z \${ZI[PATH_BEFORE__%\$ZI_TEST_ROOT/demo]} ]] && demo_fn() { :; }" \
+  '<-> none none undefined-key undefined-key'
 
 (( failures == 0 )) || fail "${failures} load form(s) track the wrong state"
 builtin print -r -- "ok - zi light loads without tracking, -b tracks bindkeys only, zi load tracks fully"

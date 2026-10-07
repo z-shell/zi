@@ -22,16 +22,16 @@ If the diff is not empty, stop. Identify the omitted commit with `git log --onel
 
 The `Promotion gate` check directly depends on every constituent below and fails if any constituent fails, is cancelled, or is skipped.
 
-| Validation | Stable job name | Result |
-| --- | --- | --- |
-| Zsh syntax and compile | `Zsh syntax and compile` | Pending |
-| ZD ZUnit integration | `ZD integration` | Pending |
-| Trunk | `Trunk` | Pending |
-| CodeQL | `CodeQL` | Pending |
-| Exact-candidate clean install and startup | `Clean install and startup` | Pending |
+| Validation                                   | Stable job name                                | Result  |
+| -------------------------------------------- | ---------------------------------------------- | ------- |
+| Zsh syntax and compile                       | `Zsh syntax and compile`                       | Pending |
+| ZD ZUnit integration                         | `ZD integration`                               | Pending |
+| Trunk                                        | `Trunk`                                        | Pending |
+| CodeQL                                       | `CodeQL`                                       | Pending |
+| Exact-candidate clean install and startup    | `Clean install and startup`                    | Pending |
 | Real objects install, update, unload, delete | `Real objects install, update, unload, delete` | Pending |
-| Aggregate | `Promotion gate` | Pending |
-| Semantic version and notes | `Release plan` | Pending |
+| Aggregate                                    | `Promotion gate`                               | Pending |
+| Semantic version and notes                   | `Release plan`                                 | Pending |
 
 - [ ] The candidate SHA has not changed since every required check completed.
 - [ ] The `Guard main branch source`, `Promotion gate`, and `Release plan` required contexts pass.

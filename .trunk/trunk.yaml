@@ -8,6 +8,12 @@ plugins:
       uri: https://github.com/trunk-io/plugins
 lint:
   ignore:
+    # The vendored organization code-review skill is installed at a pinned
+    # revision, and org-routing.py check compares its resource files byte for
+    # byte; formatting them would break the pin.
+    - linters: [prettier, markdownlint]
+      paths:
+        - .github/skills/code-review/**
     # Delivered copies of organization skills must stay byte-identical to
     # their canonical source (runbooks/org-review.md), so the proseWrap
     # setting from .prettierrc must not reflow them.

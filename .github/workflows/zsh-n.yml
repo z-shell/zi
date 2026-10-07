@@ -42,6 +42,7 @@ on:
       - "tests/plugin-autoload-fpath-scope.zsh"
       - "tests/plugin-autoload-ice.zsh"
       - "tests/nested-load-state.zsh"
+      - "tests/light-tracking.zsh"
       - "tests/pack-service-first-install.zsh"
       - "tests/plugin-autoload-ownership.zsh"
       - "tests/plugin-standard-callbacks.zsh"
@@ -354,6 +355,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test nested load state
         run: zsh -f tests/nested-load-state.zsh
+
+  light-tracking:
+    name: Light Tracking
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh
+        run: sudo apt update && sudo apt-get install -yq zsh
+      - name: Test light tracking
+        run: zsh -f tests/light-tracking.zsh
 
   plugin-autoload-ownership:
     name: Plugin Autoload Ownership

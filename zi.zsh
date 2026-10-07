@@ -3204,7 +3204,10 @@ zi() {
               ICE[cloneonly]=""
             }
 
-            (( ___is_snippet )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${ICE[light-mode]+light}:-${OPTS[(I)-b]:+light-b}}"
+            # A classic `load'/`light' plugin carries ___is_snippet=-1, so only a
+            # positive value selects the snippet options. `-b' (bindkey-only
+            # tracking) belongs to `light'; a classic `load' keeps full tracking.
+            (( ___is_snippet > 0 )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${ICE[light-mode]+light}:-${${(M)cmd:#light}:+${OPTS[(I)-b]:+light-b}}}"
 
             .zi-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
             integer ___last_retval=$?

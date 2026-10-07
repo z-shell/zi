@@ -4,16 +4,16 @@ Deterministic, network-free measurements of the paths a user pays for on every s
 
 ## Cases
 
-| Case | Measured region |
-| --- | --- |
-| `source-fresh-home` | `source zi.zsh` in a home no sample has used before (directories are created, nothing is cached) |
+| Case                 | Measured region                                                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `source-fresh-home`  | `source zi.zsh` in a home no sample has used before (directories are created, nothing is cached)                        |
 | `source-reused-home` | `source zi.zsh` in the variant's home kept from the previous sample (prepared directories and completion state persist) |
-| `light-load-10` | `zi light` of ten fixture plugins |
-| `load-10` | `zi load` (tracked) of ten fixture plugins |
-| `turbo-10` | ten `wait'0'` tasks queued, then `@zi-scheduler burst` |
-| `ice-200` | 200 `zi ice` calls carrying 13 ices each |
-| `manifest-21` | the 21 vendored package manifests through `.zi-read-package-manifest` |
-| `unload-10` | `zi unload` of ten tracked plugins |
+| `light-load-10`      | `zi light` of ten fixture plugins                                                                                       |
+| `load-10`            | `zi load` (tracked) of ten fixture plugins                                                                              |
+| `turbo-10`           | ten `wait'0'` tasks queued, then `@zi-scheduler burst`                                                                  |
+| `ice-200`            | 200 `zi ice` calls carrying 13 ices each                                                                                |
+| `manifest-21`        | the 21 vendored package manifests through `.zi-read-package-manifest`                                                   |
+| `unload-10`          | `zi unload` of ten tracked plugins                                                                                      |
 
 Each sample starts a fresh `zsh -f` with an isolated home and reports floating-point `SECONDS` elapsed milliseconds of the measured region only; the timer needs no module, so the source cases include the `zsh/datetime` load that `zi.zsh` performs. All variants of one invocation are measured together: within a round they run in a rotating order, and alternate rotation cycles run reversed, so every variant takes every position equally often and runner drift is not correlated with a variant; cases rotate the same way across rounds. Zi does not compile itself on source, so the two source cases differ by persisted home state, not by bytecode. Every run also records health data that costs nothing extra: function and parameter counts after source and after loading, `.zwc` presence, `zsh -n` and `zcompile` durations, and the line counts of the hot files.
 

@@ -97,6 +97,19 @@ expect 'zi light -b after a light-mode ice' \
   '<-> none tracked undefined-key demo_fn'
 expect 'zi load'           "zi load $dir"           '2 tracked tracked demo_fn undefined-key'
 expect 'zi load -b'        "zi load -b $dir"        '2 tracked tracked demo_fn undefined-key'
+# Ices given with `zi ice' before a classic command select the mode as they do
+# when passed to the for-syntax.
+expect 'zi load after a light-mode ice' \
+  "zi ice light-mode; zi load $dir" \
+  '1 none none demo_fn undefined-key'
+expect 'zi light after a trackbinds ice' \
+  "zi ice trackbinds; zi light $dir" \
+  '1 none tracked demo_fn undefined-key'
+# Without -b or trackbinds a light load does not track bindkeys, so bindmap''
+# has nothing to remap.
+expect 'zi light with bindmap but no -b' \
+  "zi ice bindmap'^X^D -> ^X^E'; zi light $dir" \
+  '1 none none demo_fn undefined-key'
 
 (( failures == 0 )) || fail "${failures} load form(s) track the wrong state"
 builtin print -r -- "ok - zi light loads without tracking, -b tracks bindkeys only, zi load tracks fully"

@@ -113,7 +113,29 @@ pass 'the @ prefix still marks an ID'
 typeset -a expected_nval
 expected_nval=( ${(s:|:)ZI[nval-ice-list]//\\/} svn )
 assert_equal "${(j: :)${(@ok)ZI_NVAL_ICES}}" "${(j: :)${(@o)expected_nval}}" 'no-value set matches ZI[nval-ice-list] plus svn'
+# Independent of how the set is built: every built-in ice name is in the set
+# exactly when it matches the list used as a pattern, as before #554.
+typeset n
+integer want
+for n in ${(s:|:)ZI[ice-list]//\\/}; do
+  want=0
+  [[ $n = (${~ZI[nval-ice-list]}|svn) ]] && want=1
+  assert_equal "${+ZI_NVAL_ICES[$n]}" "$want" "set membership of $n"
+done
 pass 'the no-value set mirrors ZI[nval-ice-list]'
+
+# The set is rebuilt when zi.zsh is sourced again, as a self-update reload does.
+ZI_NVAL_ICES[bogus]=1
+unset 'ZI_NVAL_ICES[sh]'
+builtin source "$project_root/zi.zsh" >/dev/null
+assert_equal "${(j: :)${(@ok)ZI_NVAL_ICES}}" "${(j: :)${(@o)expected_nval}}" 'no-value set after a second source'
+pass 'sourcing zi.zsh again rebuilds the no-value set'
+
+# The lookup uses the name without the `--` prefix, and the remainder test
+# ignores a `:` or `=` separator with nothing after it.
+tokenize 'double-dash no-value ice with text' 0 --lucidx/y lucid
+tokenize 'no-value ices with an empty separator' 2 'lucid:' 'sh='
+pass 'the prefix and an empty separator are handled as before'
 
 # The negated shell ices are escaped in the list; the set holds them as typed.
 tokenize '!sh-prefixed ID' 1 lucid '!shfoo/plugin'

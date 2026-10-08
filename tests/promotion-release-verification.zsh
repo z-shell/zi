@@ -37,7 +37,10 @@ if [[ $* == *'/commits/'*'/pulls'* ]]; then
     exit 0
   fi
   source=${FAKE_PR_SOURCE:-next}
-  print -r -- "[{\"number\":600,\"merged_at\":\"2026-09-20T00:00:00Z\",\"merge_commit_sha\":\"${FAKE_TARGET}\",\"base\":{\"ref\":\"main\"},\"head\":{\"ref\":\"${source}\",\"sha\":\"${FAKE_HEAD}\",\"repo\":{\"full_name\":\"z-shell/zi\"}}}]"
+  merged_at='"2026-09-20T00:00:00Z"' base=main
+  [[ ${FAKE_PR_MODE:-valid} == unmerged ]] && merged_at=null
+  [[ ${FAKE_PR_MODE:-valid} == other-base ]] && base=next
+  print -r -- "[{\"number\":600,\"merged_at\":${merged_at},\"merge_commit_sha\":\"${FAKE_TARGET}\",\"base\":{\"ref\":\"${base}\"},\"head\":{\"ref\":\"${source}\",\"sha\":\"${FAKE_HEAD}\",\"repo\":{\"full_name\":\"z-shell/zi\"}}}]"
   exit 0
 fi
 
@@ -95,6 +98,8 @@ grep -q '^ready=true$' "$tmp/output" && { print -u2 -- 'non-promotion became rea
 # A commit no merged pull request into main explains still fails.
 expect_fail success next missing
 expect_fail success feature missing
+expect_fail success feature unmerged
+expect_fail success feature other-base
 expect_fail failure next valid
 run_verifier missing >/dev/null
 grep -q '^ready=false$' "$tmp/output"

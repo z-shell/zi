@@ -39,10 +39,10 @@ promotion=$(jq -c --arg repository "$repository" --arg target "$target" \
     .head.repo.full_name == $repository
   )] | first // empty' <<<"$pulls_json") || fail 'could not inspect promotion pull request'
 if [[ -z $promotion ]]; then
-  # A hotfix or Dependabot security pull request merged into main is a
-  # sanctioned path (scripts/main-branch-guard.zsh) and has nothing to
-  # publish: report it and succeed without ever setting ready (#599). A
-  # commit that no merged pull request into main explains still fails.
+  # Any other pull request merged into main (the hotfix and Dependabot
+  # sources scripts/main-branch-guard.zsh admits) has nothing to publish:
+  # report it and succeed without ever setting ready (#599). A commit that
+  # no merged pull request into main explains still fails.
   other=$(jq -r --arg target "$target" \
     '[.[] | select(
       .merged_at != null and

@@ -5,8 +5,8 @@ on:
   push:
     tags: ["v*.*.*"]
   # Only main can publish; other branches would only create skipped runs
-  # (#599). Each of the four completions on main runs the job once, and
-  # only the run that sees all four succeeded publishes.
+  # (#599). Completions on main queue in the per-SHA group below, and only
+  # a run that sees all four workflows succeeded publishes.
   workflow_run:
     workflows: [Zsh, ZD Integration, CodeQL, Trunk Code Quality]
     types: [completed]

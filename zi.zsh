@@ -3020,6 +3020,7 @@ zi() {
     cdreplay      "-h|--help|-q|--quiet"
     module        "-h|--help|-B|--build|-I|--info|-r|--reset"
     times         "-h|--help|-m|--moments|-s|-S|--seconds|-a|--all"
+    load          "-h|--help"
     light         "-h|--help|-b|--bindkeys"
     report        "-h|--help|-a|--all"
     snippet       "-h|--help|-f|--force|--command|-x"

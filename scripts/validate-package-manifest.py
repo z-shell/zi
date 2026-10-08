@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import re
 import sys
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -55,9 +55,13 @@ def parse_number(text: str) -> int | float:
     integer, so it becomes an int. Deciding from the parsed float would round
     a small fraction such as 1.0000000000000001 into an integer. Above the
     float range the value stays a float (infinity), as before, so an
-    exponent cannot make the validator build a huge int.
+    exponent cannot make the validator build a huge int. An exponent too
+    large for Decimal itself is read as a float too, as before.
     """
-    exact = Decimal(text)
+    try:
+        exact = Decimal(text)
+    except InvalidOperation:
+        return float(text)
     if exact == exact.to_integral_value() and exact.adjusted() <= 308:
         return int(exact)
     return float(text)

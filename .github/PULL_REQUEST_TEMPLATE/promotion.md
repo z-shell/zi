@@ -24,7 +24,7 @@ The `Promotion gate` check directly depends on every constituent below and fails
 
 | Validation                                   | Stable job name                                | Result  |
 | -------------------------------------------- | ---------------------------------------------- | ------- |
-| Zsh syntax and compile                       | `Zsh syntax and compile`                       | Pending |
+| Zsh syntax, compile and full platform matrix | `Full Zsh validation / Zsh Gate`               | Pending |
 | ZD ZUnit integration                         | `ZD integration`                               | Pending |
 | Trunk                                        | `Trunk`                                        | Pending |
 | CodeQL                                       | `CodeQL`                                       | Pending |
@@ -36,7 +36,7 @@ The `Promotion gate` check directly depends on every constituent below and fails
 - [ ] The candidate SHA has not changed since every required check completed.
 - [ ] The `Guard main branch source`, `Promotion gate`, and `Release plan` required contexts pass.
 - [ ] The complete file and commit compare contains only reviewed work.
-- [ ] PR conversations, review summaries, and all review threads have been read; actionable findings are addressed and required code-owner approvals exist.
+- [ ] PR conversations, review summaries, and all review threads have been read; actionable findings are addressed, the current head has its organization-required review of record, and approvals required by the live rulesets exist.
 
 ## Readiness review
 

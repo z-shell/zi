@@ -38,7 +38,7 @@ prepare_unzip() {
     print -r -- 'if [ "$1" = "-Z1" ]; then exec bsdtar -tf "$2"; fi'
     print -r -- 'exec bsdtar -xf "$2"'
   } >| "${shim_dir}/unzip" || fail "write unzip shim"
-  command chmod +x -- "${shim_dir}/unzip" || fail "make unzip shim executable"
+  command chmod -- +x "${shim_dir}/unzip" || fail "make unzip shim executable"
   path=( "$shim_dir" "${path[@]}" )
   rehash
 }
@@ -114,7 +114,7 @@ pass "extract every nested archive"
     print -r -- 'case "$2" in two.tar|*/two.tar) [ "$1" = "-xf" ] && exit 42;; esac'
     print -r -- "exec ${(q)real_tar} \"\$@\""
   } >| "$shim_dir/tar" || fail "write tar shim"
-  command chmod +x -- "$shim_dir/tar" || fail "make tar shim executable"
+  command chmod -- +x "$shim_dir/tar" || fail "make tar shim executable"
 
   load_zi "$fixture_root"
   path=( "$shim_dir" "${path[@]}" )

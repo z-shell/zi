@@ -52,7 +52,7 @@ pick_with_curl() {
     command ln -sf -- "${commands[$tool]:?$tool not found}" "$bin/$tool" || return 1
   done
   if (( $1 )); then
-    print -r -- '#!/bin/sh' > "$bin/curl" && command chmod +x -- "$bin/curl" || return 1
+    print -r -- '#!/bin/sh' > "$bin/curl" && command chmod -- +x "$bin/curl" || return 1
   fi
   (
     [[ $2 == musl ]] && .zi-has-musl-loader() { return 0; }

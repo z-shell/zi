@@ -87,7 +87,8 @@ git merge-base --is-ancestor origin/next origin/main
 git show-ref --verify refs/remotes/origin/next
 ```
 
-- [ ] The resulting commit message has no bot, AI-agent, or automation `Co-authored-by` trailer.
+For merge messages, see the [tool-attribution preference](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution).
+
 - [ ] `delete_branch_on_merge` is still `false` and remote `next` still exists.
 - [ ] The `main` ruleset allows only merge commits and does not require linear history.
 - [ ] The `next` ruleset does not require linear history.

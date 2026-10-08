@@ -157,6 +157,21 @@ resolve "$forged" fd || return 1
   builtin print -u2 -r -- "the escaped sentinel was not preserved as written in plugin-info"
   return 1
 }
+# Outside a multibyte locale a code point is reduced to one byte, so U+0100
+# also decodes to NUL there. Any escape whose character would hold a NUL byte
+# is kept as written.
+local wrapped="${bs}u0100--object--${bs}u0100"
+( local LC_ALL=C
+  local -A wi wd wb; local -a wn
+  .zi-read-package-manifest '{"zsh-data":{"plugin-info":{"user":"u","x":"'$wrapped'"},
+    "zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}' default wi wn wd &&
+  [[ ${wd[as]} == D && ${wi[x]} == $wrapped ]] &&
+  .zi-read-package-manifest '{"zsh-data":{"plugin-info":{"user":"u","x":"'$wrapped'"},
+    "zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}' bgn wi wn wb &&
+  [[ ${wb[as]} == B ]] ) || {
+  builtin print -u2 -r -- "an escape that decodes to NUL in the C locale forged the sentinel"
+  return 1
+}
 # The same text as a profile name stays a profile name.
 ( local -A pi pp; local -a pn
   .zi-read-package-manifest '{"zsh-data":{"plugin-info":{"user":"u"},"zi-ices":{"default":{"as":"D"},

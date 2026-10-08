@@ -9,15 +9,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-unescape-json-string [[[
 # Translates the escapes of a JSON string body into the characters they denote
 # and returns the result in $REPLY. Handles the eight two-character escapes and
-# \uXXXX in the basic multilingual plane; a surrogate escape, \u0000 or an
-# unrecognized escape is left exactly as written, as is a malformed \u.
-# \u0000 stays escaped because .zi-parse-json marks nested objects with a
+# \uXXXX in the basic multilingual plane; a surrogate escape, an escape whose
+# character would hold a NUL byte, or an unrecognized escape is left exactly as
+# written, as is a malformed \u. The NUL case is \u0000 and, outside a multibyte
+# locale, where ${(#)...} keeps only the low byte, every multiple of 256: it
+# stays escaped because .zi-parse-json marks nested objects with a
 # NUL-delimited sentinel, which decoded text must never be able to spell (#530).
 .zi-unescape-json-string() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent
 
-  local ___rest=$1 ___out= ___esc ___tail
+  local ___rest=$1 ___out= ___esc ___tail ___char
   local -a match mbegin mend
   local -A ___map=( \" \" \\ \\ / / b $'\b' f $'\f' n $'\n' r $'\r' t $'\t' )
   integer ___code
@@ -25,11 +27,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   while [[ $___rest = (#b)([^\\]#)\\(?)(*) ]]; do
     ___out+=$match[1] ___esc=$match[2] ___tail=$match[3]
     if [[ $___esc == u && $___tail == (#b)([0-9a-fA-F](#c4))(*) ]] {
-      ___code=16#$match[1]
-      if (( ___code == 0 || ( ___code >= 16#D800 && ___code <= 16#DFFF ) )) {
+      ___code=16#$match[1] ___char=
+      (( ___code >= 16#D800 && ___code <= 16#DFFF )) || ___char=${(#)___code}
+      if [[ -z $___char || $___char == *$'\0'* ]] {
         ___out+="\\u$match[1]"
       } else {
-        ___out+=${(#)___code}
+        ___out+=$___char
       }
       ___rest=$match[2]
     } elif (( ${+___map[$___esc]} )) {

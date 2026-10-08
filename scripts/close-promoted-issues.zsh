@@ -8,7 +8,8 @@
 # the line, or is followed by another closing clause. `Refs #N`, `Closes #N
 # after ...`, and references inside comments or code are reported, never
 # closed (z-shell/.github#523). A body edited after the merge is not trusted
-# either, since GitHub reads closing keywords only at merge.
+# either, since GitHub reads closing keywords only at merge. Issues linked only
+# in the Development sidebar are listed for a manual check.
 
 emulate -L zsh
 setopt err_return no_unset pipe_fail
@@ -38,9 +39,19 @@ if (( $#parents != 3 )); then
   return 0
 fi
 
-pulls_json=$(gh api -H 'Accept: application/vnd.github+json' \
-  "repos/${repository}/commits/${target}/pulls") ||
-  fail 'could not read pull requests for the promotion commit'
+# GitHub can take a moment to associate a fresh merge commit with its pull
+# request, so an empty answer is retried a bounded number of times. Any
+# non-empty answer, such as a hotfix pull request, is final.
+integer attempt=1 attempts=${PROMOTION_LOOKUP_ATTEMPTS:-6}
+while true; do
+  pulls_json=$(gh api -H 'Accept: application/vnd.github+json' \
+    "repos/${repository}/commits/${target}/pulls") ||
+    fail 'could not read pull requests for the promotion commit'
+  [[ $(jq -r 'length' <<<"$pulls_json") == 0 ]] && (( attempt < attempts )) || break
+  print -r -- "No pull request is associated with ${target} yet (attempt ${attempt} of ${attempts}); retrying."
+  sleep ${PROMOTION_LOOKUP_DELAY:-10}
+  (( attempt += 1 ))
+done
 
 promotion=$(jq -c --arg repository "$repository" --arg target "$target" \
   '[.[] | select(
@@ -91,7 +102,7 @@ commits=( ${(f)"$(git rev-list --reverse --first-parent "${parents[2]}..${parent
 
 typeset -A closed_by
 typeset -a skipped
-typeset commit pr_json pr pr_number edited references line kind rest
+typeset commit pr_json pr pr_number details edited references line kind rest ref
 for commit in $commits; do
   pr_json=$(gh api -H 'Accept: application/vnd.github+json' \
     "repos/${repository}/commits/${commit}/pulls") ||
@@ -106,15 +117,28 @@ for commit in $commits; do
   [[ -n $pr ]] || continue
   pr_number=$(jq -r '.number' <<<"$pr")
 
-  edited=$(gh api graphql -F number="$pr_number" -f owner="${repository%%/*}" \
+  # The edit time guards against bodies changed after merge. The linked
+  # issues include those set only in the Development sidebar, which the body
+  # does not show; they are listed for a manual check, never closed.
+  details=$(gh api graphql -F number="$pr_number" -f owner="${repository%%/*}" \
     -f name="${repository#*/}" -f query='
       query($owner: String!, $name: String!, $number: Int!) {
         repository(owner: $owner, name: $name) {
-          pullRequest(number: $number) { lastEditedAt mergedAt }
+          pullRequest(number: $number) {
+            lastEditedAt mergedAt
+            closingIssuesReferences(first: 50) {
+              nodes { number repository { nameWithOwner } }
+            }
+          }
         }
       }' --jq '.data.repository.pullRequest
-        | (.lastEditedAt // "") > .mergedAt') ||
-    fail "could not read the edit history of #${pr_number}"
+        | {edited: ((.lastEditedAt // "") > .mergedAt),
+           linked: [.closingIssuesReferences.nodes[]
+             | "\(.repository.nameWithOwner)#\(.number)"]}') ||
+    fail "could not read the details of #${pr_number}"
+  edited=$(jq -r '.edited' <<<"$details")
+  typeset -A mentioned
+  mentioned=()
 
   references=$(jq -r --arg repository "$repository" \
     ".body | ${references_jq}" <<<"$pr") ||
@@ -122,6 +146,14 @@ for commit in $commits; do
   for line in ${(f)references}; do
     kind=${line%%$'\t'*}
     rest=${line#*$'\t'}
+    if [[ $kind == close ]]; then
+      mentioned[${repository}#${rest}]=1
+    else
+      ref=${rest%%$'\t'*}
+      [[ $ref == \#* ]] && ref=${repository}${ref}
+      [[ $ref == https://* ]] && ref=${${ref#https://github.com/}/\/issues\//\#}
+      mentioned[$ref]=1
+    fi
     if [[ $kind == close && $edited == true ]]; then
       skipped+=( "#${rest} in #${pr_number}: body edited after merge" )
     elif [[ $kind == close ]]; then
@@ -129,6 +161,10 @@ for commit in $commits; do
     else
       skipped+=( "${rest%%$'\t'*} in #${pr_number}: \"${rest#*$'\t'}\"" )
     fi
+  done
+  for ref in ${(f)"$(jq -r '.linked[]' <<<"$details")"}; do
+    (( ${+mentioned[$ref]} )) && continue
+    skipped+=( "${ref#${repository}} in #${pr_number}: linked in the Development sidebar only" )
   done
 done
 
@@ -168,7 +204,7 @@ done
 
 if (( $#skipped )); then
   report ''
-  report 'Closing-style references left open (qualified, another repository, not a closing clause, or edited after merge); check them by hand:'
+  report 'Closing-style references left open (qualified, another repository, not a closing clause, edited after merge, or linked only in the sidebar); check them by hand:'
   report ''
   for line in $skipped; do
     report "- ${line}"

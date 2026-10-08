@@ -3020,6 +3020,7 @@ zi() {
     cdreplay      "-h|--help|-q|--quiet"
     module        "-h|--help|-B|--build|-I|--info|-r|--reset"
     times         "-h|--help|-m|--moments|-s|-S|--seconds|-a|--all"
+    load          "-h|--help"
     light         "-h|--help|-b|--bindkeys"
     report        "-h|--help|-a|--all"
     snippet       "-h|--help|-f|--force|--command|-x"
@@ -3029,7 +3030,10 @@ zi() {
   if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|uncompile|snippet|load|light|report|cdreplay|module|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
-      if (( OPTS[opt_-h,--help] )); then
+      # .zi-parse-opts also finds an option inside an argument, such as a
+      # quoted path with ` -h ' in it. For `load', help is a whole argument
+      # only, so such a path still loads (#579).
+      if (( OPTS[opt_-h,--help] )) && { [[ $cmd != load ]] || (( ${#${(M)@:#(-h|--help)}} )) }; then
         +zi-prehelp-usage-message $cmd $___opt_map[$cmd] $@
         return 1
       fi

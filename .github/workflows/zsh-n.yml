@@ -153,6 +153,9 @@ jobs:
       - name: Test light tracking
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/light-tracking.zsh
+      - name: Test load help
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: zsh -f tests/load-help.zsh
       - name: Test plugin autoload ownership
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-ownership.zsh

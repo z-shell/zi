@@ -106,3 +106,24 @@ pass 'a no-value ice that prefixes a valued ice does not shadow it'
 # The @ prefix remains an explicit ID marker and is never an ice.
 tokenize 'explicit @ ID' 1 lucid @sharkdp/hexyl
 pass 'the @ prefix still marks an ID'
+
+# .zi-ice looks a matched name up in ZI_NVAL_ICES instead of matching it
+# against ZI[nval-ice-list] on every word (#554). The set must hold exactly the
+# list's names, unescaped, plus `svn`, or tokenizing drifts from the list.
+typeset -a expected_nval
+expected_nval=( ${(s:|:)ZI[nval-ice-list]//\\/} svn )
+assert_equal "${(j: :)${(@ok)ZI_NVAL_ICES}}" "${(j: :)${(@o)expected_nval}}" 'no-value set matches ZI[nval-ice-list] plus svn'
+pass 'the no-value set mirrors ZI[nval-ice-list]'
+
+# The negated shell ices are escaped in the list; the set holds them as typed.
+tokenize '!sh-prefixed ID' 1 lucid '!shfoo/plugin'
+assert_equal "${+ZI_ICES[!sh]}" 0 '!sh ice is not invented from the ID'
+tokenize 'bare !sh flag' 2 '!sh' lucid
+assert_equal "${+ZI_ICES[!sh]}" 1 'bare !sh is still an ice'
+pass 'negated shell ices follow the no-value rule'
+
+# A valued ice whose value starts with a no-value ice name keeps its value.
+tokenize 'valued ice with a no-value prefix' 2 'atinitsh -c true' 'picknull/x'
+assert_equal "${ZI_ICES[atinit]}" 'sh -c true' 'atinit keeps a value starting with sh'
+assert_equal "${ZI_ICES[pick]}" 'null/x' 'pick keeps a value starting with null'
+pass 'a valued ice keeps a value that starts with a no-value ice name'

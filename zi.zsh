@@ -32,6 +32,20 @@ ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|noco
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|reset"
 
+# The same names as a set, unescaped, for a constant-time lookup in .zi-ice
+# (#554): matching every word against the list as a pattern made `zi ice`
+# about 20% slower. `svn` is a flag too but lives outside ZI[nval-ice-list]
+# because side.zsh orders it last; it is added here. Rebuilt on every source.
+typeset -gAH ZI_NVAL_ICES
+() {
+  builtin emulate -L zsh
+  local name
+  ZI_NVAL_ICES=()
+  for name in ${(s:|:)ZI[nval-ice-list]//\\/} svn; do
+    ZI_NVAL_ICES[$name]=1
+  done
+}
+
 # Subcommands list
 ZI[cmd-list]="-V|--version|version|-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
@@ -2600,9 +2614,9 @@ builtin setopt no_aliases
     # A no-value ice followed by more text is not that ice: `sharkdp/hexyl`
     # must not tokenize as `sh` with the value `arkdp/hexyl`. The word is the
     # plugin or snippet ID, so tokenizing stops here. Valued ices keep their
-    # remainder as before. `svn` is a flag too but lives outside
-    # ZI[nval-ice-list] because side.zsh orders it last; it is named here.
-    [[ ${match[2]} = (${~ZI[nval-ice-list]}|svn) && -n ${match[3]#(:|=)} ]] && break
+    # remainder as before. The set lookup comes first and costs one hash
+    # read, so a valued ice never pays for the remainder test (#554).
+    (( ${+ZI_NVAL_ICES[${match[2]}]} )) && [[ -n ${match[3]#(:|=)} ]] && break
     ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}"
     retval+=1
   done

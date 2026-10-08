@@ -119,10 +119,10 @@ expect 'zi unload after zi light -b' \
   "zi light -b $dir; zi unload $dir" \
   '0 none none undefined-key undefined-key'
 # -b tracks bindkeys only, also for as''command'': no PATH snapshot is taken.
-# The command is not sourced, so the row defines demo_fn itself once the
-# snapshot is confirmed absent.
+# The command is not sourced, so the row checks command setup and the absent
+# snapshot before defining demo_fn itself.
 expect 'zi light -b with as command' \
-  "zi ice as'command' pick'demo.plugin.zsh'; zi light -b $dir; [[ -z \${ZI[PATH_BEFORE__%\$ZI_TEST_ROOT/demo]} ]] && demo_fn() { :; }" \
+  "zi ice as'command' pick'demo.plugin.zsh'; zi light -b $dir; [[ -z \${ZI[PATH_BEFORE__%\$ZI_TEST_ROOT/demo]} && \${path[(Ie)\$ZI_TEST_ROOT/demo]} -gt 0 && -x \$ZI_TEST_ROOT/demo/demo.plugin.zsh ]] && demo_fn() { :; }" \
   '<-> none none undefined-key undefined-key'
 
 (( failures == 0 )) || fail "${failures} load form(s) track the wrong state"

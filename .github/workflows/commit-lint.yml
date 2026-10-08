@@ -8,12 +8,14 @@ on:
       - main
       - next
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# No concurrency group (#597). These jobs gate merges and finish in seconds.
+# A push plus a pull-request edit fire two events for one head SHA, and any
+# group cancels one of them (a running run with cancel-in-progress, a pending
+# one without). The cancelled check runs for required contexts then kept a
+# pull request blocked while the same contexts had passed (#594). Letting a
+# superseded run finish costs seconds; a cancelled run can block a merge.
 
 permissions:
-  pull-requests: read
   contents: read
 
 jobs:

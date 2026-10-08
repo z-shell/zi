@@ -100,6 +100,24 @@ rejects 'wrong schema version' 'expected 1' \
 rejects 'keywords not a string array' 'expected string' \
   '{"name":"p","keywords":[1],"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
 
+# JSON has no NaN or Infinity. Python's parser accepts them by default, so a
+# manifest that Zi's parser and every strict consumer reject must not pass.
+rejects 'NaN value' 'invalid JSON: NaN is not a JSON value' \
+  '{"name":"p","author":NaN,"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'Infinity value' 'invalid JSON: Infinity is not a JSON value' \
+  '{"name":"p","author":[Infinity],"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects '-Infinity value' 'invalid JSON: -Infinity is not a JSON value' \
+  '{"name":"p","author":{"x":-Infinity},"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+
+# JSON Schema counts a number with a zero fraction as an integer, so 1.0 is
+# the schema pin 1. A boolean or a fractional number is still not.
+accepts 'integral float schema pin' '{"name":"p","zsh-data":{"schema":1.0,
+  "plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'boolean schema pin' 'is boolean, expected integer' \
+  '{"name":"p","zsh-data":{"schema":true,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'fractional schema pin' 'is float, expected integer' \
+  '{"name":"p","zsh-data":{"schema":1.5,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+
 # A manifest that is not valid UTF-8 must be reported, not crash the run and
 # abandon every file after it.
 typeset badenc="${temp_root}/badenc.json"

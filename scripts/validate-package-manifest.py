@@ -17,6 +17,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any, NoReturn
 
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "contracts" / "package-manifest-v1.json"
 
@@ -36,6 +37,19 @@ JSON_TYPES: dict[str, type | tuple[type, ...]] = {
     "integer": int, "number": (int, float), "boolean": bool,
 }
 CONTAINERS = ("properties", "$defs")
+
+
+class NonJsonConstant(ValueError):
+    """A NaN, Infinity or -Infinity token, which JSON does not define."""
+
+
+def reject_constant(name: str) -> NoReturn:
+    raise NonJsonConstant(f"{name} is not a JSON value")
+
+
+def load_json(path: Path) -> Any:
+    """Parse strict JSON: Python's parser also takes NaN and Infinity."""
+    return json.loads(path.read_text(encoding="utf-8"), parse_constant=reject_constant)
 
 
 def unsupported_keywords(node: object, where: str = "#") -> list[str]:
@@ -74,7 +88,9 @@ def validate_against(node: dict, value: object, root: dict, where: str) -> list[
         wanted = JSON_TYPES[expected]
         # JSON separates booleans from numbers; Python does not.
         bad_bool = expected in {"integer", "number"} and isinstance(value, bool)
-        if bad_bool or not isinstance(value, wanted):
+        # JSON Schema counts a number with a zero fraction (1.0) as an integer.
+        integral = expected == "integer" and isinstance(value, float) and value.is_integer()
+        if bad_bool or not (integral or isinstance(value, wanted)):
             shown = "boolean" if isinstance(value, bool) else type(value).__name__
             return [f"{where} is {shown}, expected {expected}"]
 
@@ -130,13 +146,13 @@ ANNEX_CAPABILITIES = ("bgn", "dl", "rdl")
 
 def check(path: Path) -> list[str]:
     try:
-        doc = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        doc = load_json(path)
+    except (OSError, UnicodeError, json.JSONDecodeError, NonJsonConstant) as exc:
         return [f"{path}: unreadable or invalid JSON: {exc}"]
 
     try:
-        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        schema = load_json(SCHEMA_PATH)
+    except (OSError, UnicodeError, json.JSONDecodeError, NonJsonConstant) as exc:
         return [f"{SCHEMA_PATH}: contract unreadable: {exc}"]
 
     ignored = unsupported_keywords(schema)

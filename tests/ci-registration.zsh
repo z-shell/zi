@@ -7,9 +7,8 @@
 # reads one specific workflow, so a test mentioned by an unrelated workflow
 # cannot satisfy a requirement that belongs to another:
 #
-#   1. every tests/*.zsh is invoked by zsh-n.yml, except the tests owned by
-#      another workflow, which must be invoked by that workflow;
-#   2. the promotion set below is invoked by promotion-readiness.yml;
+#   1. every tests/*.zsh is invoked by zsh-n.yml;
+#   2. promotion calls that full suite and waits for its result;
 #   3. every tests/*.zsh a workflow invokes exists.
 
 builtin emulate -R zsh
@@ -22,25 +21,6 @@ fail() {
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
 typeset workflow_dir="${project_root}/.github/workflows"
-
-# Tests whose owning workflow is not zsh-n.yml.
-typeset -A owner
-owner=(
-  public-contract-impact.zsh public-contract-impact.yml
-)
-# Tests the promotion workflow must keep running on the exact candidate head.
-typeset -a promotion_set
-promotion_set=(
-  version-reporting.zsh
-  self-update-reload.zsh
-  path-resolution.zsh
-  archive-extraction.zsh
-  completion-refresh.zsh
-  snippet-directory-mirror.zsh
-  release-plan.zsh
-  promotion-release-verification.zsh
-  promotion-release-publication.zsh
-)
 
 # A test is invoked only by an executable `run:` step. The scanner reads the
 # workflow as YAML text: a `run:` key (optionally as a list item) starts a
@@ -86,14 +66,17 @@ tests=( "${project_root}"/tests/*.zsh(N) )
 typeset test_path name
 for test_path in "${tests[@]}"; do
   name=${test_path:t}
-  invokes "${owner[$name]:-zsh-n.yml}" "$name" || missing+=( "${name} (${owner[$name]:-zsh-n.yml})" )
+  invokes zsh-n.yml "$name" || missing+=( "$name" )
 done
 (( $#missing == 0 )) || fail "tests invoked by no workflow: ${(j:, :)missing}"
 
-for name in "${promotion_set[@]}"; do
-  invokes promotion-readiness.yml "$name" || missing+=( "$name" )
-done
-(( $#missing == 0 )) || fail "promotion set missing from promotion-readiness.yml: ${(j:, :)missing}"
+typeset promotion_job
+promotion_job=$(command sed -n '/^  zsh:/,/^  zd:/p' "${workflow_dir}/promotion-readiness.yml")
+[[ $promotion_job == *'    uses: ./.github/workflows/zsh-n.yml'* &&
+   $promotion_job == *'      candidate-ref: ${{ github.event.pull_request.head.sha }}'* ]] ||
+  fail 'promotion must call the full Zsh suite on the exact candidate'
+command grep -Eq '^    needs: \[zsh, ' "${workflow_dir}/promotion-readiness.yml" ||
+  fail 'promotion gate must wait for the Zsh suite'
 
 typeset -a referenced
 referenced=( ${(u)${(M)${=$(command cat -- "${workflow_dir}"/*.yml)}:#tests/[a-z0-9-]##.zsh}} )
@@ -102,4 +85,4 @@ for name in "${referenced[@]}"; do
 done
 (( $#missing == 0 )) || fail "workflows invoke tests that do not exist: ${(j:, :)missing}"
 
-builtin print -r -- "ok - every focused test is registered where it belongs (${#tests} tests, promotion set ${#promotion_set})"
+builtin print -r -- "ok - all ${#tests} focused tests are registered in the suite shared with promotion"

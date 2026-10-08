@@ -15,67 +15,10 @@ permissions:
 
 jobs:
   zsh:
-    name: Zsh syntax and compile
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the candidate
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Install Zsh, jq, and archive tools
-        run: sudo apt-get update && sudo apt-get install -yq zsh jq zip unzip
-
-      - name: Check and compile Zsh sources
-        shell: bash
-        run: |
-          set -euo pipefail
-          checked=0
-          while IFS= read -r -d '' file; do
-            zsh -n "${file}"
-            zsh -fc 'zcompile "$1"' _ "${file}"
-            rm -f "${file}.zwc"
-            checked=$((checked + 1))
-          done < <(
-            find . -type d -name doc -prune -o \
-              -type f \( -name '*.zsh' -o -name '_zi' \) -print0
-          )
-          if ((checked == 0)); then
-            echo "::error::No Zsh sources were found."
-            exit 1
-          fi
-
-      - name: Test version reporting
-        run: zsh tests/version-reporting.zsh
-
-      - name: Test self-update reload when present
-        if: ${{ hashFiles('tests/self-update-reload.zsh') != '' }}
-        run: zsh -f tests/self-update-reload.zsh
-
-      - name: Test path resolution when present
-        if: ${{ hashFiles('tests/path-resolution.zsh') != '' }}
-        run: zsh -f tests/path-resolution.zsh
-
-      - name: Test archive extraction when present
-        if: ${{ hashFiles('tests/archive-extraction.zsh') != '' }}
-        run: zsh tests/archive-extraction.zsh
-
-      - name: Test completion refresh when present
-        if: ${{ hashFiles('tests/completion-refresh.zsh') != '' }}
-        run: zsh tests/completion-refresh.zsh
-
-      - name: Test snippet directory mirror when present
-        if: ${{ hashFiles('tests/snippet-directory-mirror.zsh') != '' }}
-        run: zsh -f tests/snippet-directory-mirror.zsh
-
-      - name: Test release planning
-        run: zsh -f tests/release-plan.zsh
-
-      - name: Test promotion release verification
-        run: zsh -f tests/promotion-release-verification.zsh
-
-      - name: Test idempotent promotion publication
-        run: zsh -f tests/promotion-release-publication.zsh
+    name: Full Zsh validation
+    uses: ./.github/workflows/zsh-n.yml
+    with:
+      candidate-ref: ${{ github.event.pull_request.head.sha }}
 
   zd:
     name: ZD integration
@@ -87,42 +30,21 @@ jobs:
 
   trunk:
     name: Trunk
-    runs-on: ubuntu-latest
     permissions:
-      checks: write
       contents: read
-    steps:
-      - name: Check out the candidate
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Run Trunk
-        uses: trunk-io/trunk-action@e1234e67a86010d61ddac8d8ebf4b783e2ffd2fa # v2.0.0
+    uses: z-shell/.github/.github/workflows/trunk.yml@6fac3d47a61b27db54e50a0519c1e79b2935eda4 # main
+    with:
+      check-mode: all
 
   codeql:
-    name: CodeQL
-    runs-on: ubuntu-latest
+    uses: z-shell/.github/.github/workflows/codeql.yml@6fac3d47a61b27db54e50a0519c1e79b2935eda4 # main
     permissions:
       contents: read
+      actions: read
       packages: read
       security-events: write
-    steps:
-      - name: Check out the candidate
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
-        with:
-          build-mode: none
-          languages: actions
-
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
-        with:
-          category: /language:actions
+    with:
+      checkout-ref: ${{ github.event.pull_request.head.sha }}
 
   clean-install:
     name: Clean install and startup

@@ -49,7 +49,8 @@
 - [ ] Commit messages follow Conventional Commits format
 - [ ] Any `Co-authored-by` trailer credits a real human, never a bot, AI agent, or automation
 - [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
-- [ ] Existing tests pass (`zsh -n zi.zsh` / Trunk checks)
+- [ ] Native syntax/compilation and affected functional regressions pass; exact commands and compatibility limits are recorded
+- [ ] Non-obvious Zsh behavior is checked against the organization scripting standard and relevant official manual sections
 - [ ] Documentation updated if needed
 
 ## Migration plan

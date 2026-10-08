@@ -4,9 +4,13 @@ name: Release
 on:
   push:
     tags: ["v*.*.*"]
+  # Only main can publish; other branches would only create skipped runs
+  # (#599). Each of the four completions on main runs the job once, and
+  # only the run that sees all four succeeded publishes.
   workflow_run:
     workflows: [Zsh, ZD Integration, CodeQL, Trunk Code Quality]
     types: [completed]
+    branches: [main]
 
 permissions: {}
 
@@ -80,6 +84,10 @@ jobs:
           PROMOTION_SHA: ${{ github.event.workflow_run.head_sha }}
         run: zsh -f scripts/verify-promotion-release.zsh
 
+      - name: Record non-promotion commit
+        if: steps.verify.outputs.promotion == 'false'
+        run: echo 'This main commit came from a pull request other than a next-to-main promotion; there is nothing to publish.' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Compute the authorized release plan
         id: plan
         if: steps.verify.outputs.ready == 'true'
@@ -102,6 +110,7 @@ jobs:
           RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
           RELEASE_TAG: ${{ steps.plan.outputs.tag }}
           RELEASE_TARGET: ${{ github.event.workflow_run.head_sha }}
+          PROMOTION_PR: ${{ steps.verify.outputs.promotion_pr }}
         run: |
           zsh -f scripts/publish-promotion-release.zsh >> "$GITHUB_STEP_SUMMARY"
-          echo "Authorized by reviewed promotion #${{ steps.verify.outputs.promotion_pr }}." >> "$GITHUB_STEP_SUMMARY"
+          echo "Authorized by reviewed promotion #${PROMOTION_PR}." >> "$GITHUB_STEP_SUMMARY"

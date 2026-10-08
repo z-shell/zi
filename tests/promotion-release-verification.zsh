@@ -86,8 +86,15 @@ expect_fail() {
   fi
 }
 
-expect_fail success feature valid
+# A pull request from another branch merged into main is a sanctioned
+# non-promotion (#599): it succeeds, says so, and never becomes ready.
+run_verifier success feature valid >/dev/null
+grep -q '^ready=false$' "$tmp/output"
+grep -q '^promotion=false$' "$tmp/output"
+grep -q '^ready=true$' "$tmp/output" && { print -u2 -- 'non-promotion became ready'; exit 1; }
+# A commit no merged pull request into main explains still fails.
 expect_fail success next missing
+expect_fail success feature missing
 expect_fail failure next valid
 run_verifier missing >/dev/null
 grep -q '^ready=false$' "$tmp/output"
@@ -95,12 +102,25 @@ run_verifier pending >/dev/null
 grep -q '^ready=false$' "$tmp/output"
 run_verifier success >/dev/null
 grep -q '^ready=true$' "$tmp/output"
+grep -q '^promotion=true$' "$tmp/output"
 grep -q '^promotion_pr=600$' "$tmp/output"
 
 print moved >> "$tmp/repository/file"
 git -C "$tmp/repository" commit -am 'chore: move main' >/dev/null
 git -C "$tmp/repository" push origin main >/dev/null 2>&1
 expect_fail success next valid
+
+# A squash-merged hotfix is a single-parent commit on main; it is not a
+# promotion and has nothing to publish, so it succeeds before the parent
+# check that a promotion must pass.
+promotion_target=$target
+target=$(git -C "$tmp/repository" rev-parse HEAD)
+run_verifier success hotfix-1 valid >/dev/null
+grep -q '^promotion=false$' "$tmp/output"
+grep -q '^ready=true$' "$tmp/output" && { print -u2 -- 'hotfix became ready'; exit 1; }
+# The same single-parent commit claimed by a next-to-main pull request fails.
+expect_fail success next valid
+target=$promotion_target
 
 GITHUB_REPOSITORY=other/repo PROMOTION_SHA=$target \
   PATH="$tmp/bin:$PATH" zsh -f "$root/scripts/verify-promotion-release.zsh" \

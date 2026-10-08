@@ -26,10 +26,6 @@ git fetch --quiet --force --no-tags origin \
 main=$(git rev-parse refs/remotes/origin/main) || fail 'could not resolve origin/main'
 [[ $target == $main ]] || fail 'promotion SHA is not the current origin/main'
 
-typeset -a parents
-parents=( ${(s: :)"$(git rev-list --parents -n 1 "$target")"} )
-(( $#parents == 3 )) || fail 'promotion commit must have exactly two parents'
-
 pulls_json=$(gh api -H 'Accept: application/vnd.github+json' \
   "repos/${repository}/commits/${target}/pulls") ||
   fail 'could not read pull requests for the promotion commit'
@@ -42,7 +38,28 @@ promotion=$(jq -c --arg repository "$repository" --arg target "$target" \
     .head.ref == "next" and
     .head.repo.full_name == $repository
   )] | first // empty' <<<"$pulls_json") || fail 'could not inspect promotion pull request'
-[[ -n $promotion ]] || fail 'commit is not a merged next-to-main promotion'
+if [[ -z $promotion ]]; then
+  # A hotfix or Dependabot security pull request merged into main is a
+  # sanctioned path (scripts/main-branch-guard.zsh) and has nothing to
+  # publish: report it and succeed without ever setting ready (#599). A
+  # commit that no merged pull request into main explains still fails.
+  other=$(jq -r --arg target "$target" \
+    '[.[] | select(
+      .merged_at != null and
+      .merge_commit_sha == $target and
+      .base.ref == "main"
+    )] | first // empty | "#\(.number) from \(.head.ref)"' <<<"$pulls_json") ||
+    fail 'could not inspect pull requests for the commit'
+  [[ -n $other ]] || fail 'commit is not a merged next-to-main promotion'
+  emit promotion false
+  print -r -- "Not a next-to-main promotion: ${target} was merged by pull request ${other}; there is nothing to publish."
+  return 0
+fi
+emit promotion true
+
+typeset -a parents
+parents=( ${(s: :)"$(git rev-list --parents -n 1 "$target")"} )
+(( $#parents == 3 )) || fail 'promotion commit must have exactly two parents'
 
 promotion_pr=$(jq -r '.number' <<<"$promotion")
 promotion_head=$(jq -r '.head.sha' <<<"$promotion")

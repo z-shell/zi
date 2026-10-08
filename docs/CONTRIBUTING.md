@@ -55,7 +55,7 @@ A same-repository `next` to `main` promotion is the normal publication authoriza
 1. `Release Plan` computes the next semantic version from Conventional Commits since the latest `vX.Y.Z` tag. A breaking change produces a major bump, `feat` produces a minor bump, and `fix` or `perf` produces a patch bump. A promotion with none of those commits is an explicit no-op.
 2. Merging the reviewed promotion authorizes publication of that displayed plan. The merge still updates the Git-consumed stable `main` ref immediately.
 3. The automatic publisher proves that the exact merge commit came from the reviewed same-repository `next` pull request and is still current `main`. It waits for `Zsh`, `ZD Integration`, `CodeQL`, and `Trunk Code Quality` to succeed on that exact SHA.
-4. The publisher creates an annotated tag and the GitHub release in one idempotent workflow. It fails closed if `main` moves, the promotion identity cannot be proven, validation fails, or the proposed tag already targets another commit.
+4. The publisher creates an annotated tag and the GitHub release in one idempotent workflow. It fails closed if `main` moves, the promotion identity cannot be proven, validation fails, or the proposed tag already targets another commit. A `main` commit merged by another pull request, such as a hotfix or a Dependabot security update, is not a promotion: the publisher reports that there is nothing to publish and succeeds without creating a tag.
 
 The repository stores no version file. `ZI[VERSION]` is derived at runtime from `git describe --tags --exact-match`, so the tag is the version and there is nothing to keep in step with it.
 

@@ -1,6 +1,6 @@
 # Zi benchmarks
 
-Deterministic, network-free measurements of the paths a user pays for on every shell start: sourcing `zi.zsh`, loading plugins, queueing turbo tasks, parsing ices, reading package manifests, and unloading. The suite exists to make a performance change visible in the pull request that causes it (#553); it does not gate merges (ADR-0009: coverage and performance are observed, not gated).
+Deterministic, network-free measurements of the paths a user pays for on every shell start: sourcing `zi.zsh`, loading plugins, queueing turbo tasks, parsing ices, reading package manifests, and unloading. The suite exists to make a performance change visible in the pull request that causes it (#553); it does not gate merges (z-shell/.github ADR-0024: benchmarks are observed, not gated).
 
 ## Cases
 

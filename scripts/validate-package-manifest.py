@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -47,9 +48,28 @@ def reject_constant(name: str) -> NoReturn:
     raise NonJsonConstant(f"{name} is not a JSON value")
 
 
+def parse_number(text: str) -> int | float:
+    """Read a number with a fraction or exponent part from its exact digits.
+
+    JSON Schema counts a number with a zero fraction (1.0, 1E0) as an
+    integer, so it becomes an int. Deciding from the parsed float would round
+    a small fraction such as 1.0000000000000001 into an integer. Above the
+    float range the value stays a float (infinity), as before, so an
+    exponent cannot make the validator build a huge int.
+    """
+    exact = Decimal(text)
+    if exact == exact.to_integral_value() and exact.adjusted() <= 308:
+        return int(exact)
+    return float(text)
+
+
 def load_json(path: Path) -> Any:
     """Parse strict JSON: Python's parser also takes NaN and Infinity."""
-    return json.loads(path.read_text(encoding="utf-8"), parse_constant=reject_constant)
+    return json.loads(
+        path.read_text(encoding="utf-8"),
+        parse_constant=reject_constant,
+        parse_float=parse_number,
+    )
 
 
 def unsupported_keywords(node: object, where: str = "#") -> list[str]:
@@ -88,9 +108,7 @@ def validate_against(node: dict, value: object, root: dict, where: str) -> list[
         wanted = JSON_TYPES[expected]
         # JSON separates booleans from numbers; Python does not.
         bad_bool = expected in {"integer", "number"} and isinstance(value, bool)
-        # JSON Schema counts a number with a zero fraction (1.0) as an integer.
-        integral = expected == "integer" and isinstance(value, float) and value.is_integer()
-        if bad_bool or not (integral or isinstance(value, wanted)):
+        if bad_bool or not isinstance(value, wanted):
             shown = "boolean" if isinstance(value, bool) else type(value).__name__
             return [f"{where} is {shown}, expected {expected}"]
 

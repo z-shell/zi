@@ -117,6 +117,15 @@ rejects 'boolean schema pin' 'is boolean, expected integer' \
   '{"name":"p","zsh-data":{"schema":true,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
 rejects 'fractional schema pin' 'is float, expected integer' \
   '{"name":"p","zsh-data":{"schema":1.5,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+# A fraction too small for a binary float must not round into an integer.
+rejects 'rounded fractional schema pin' 'is float, expected integer' \
+  '{"name":"p","zsh-data":{"schema":1.0000000000000001,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+accepts 'exponent schema pin' '{"name":"p","zsh-data":{"schema":1E0,
+  "plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+# Above the float range a number stays a float, so a large exponent cannot
+# make the validator build an integer with that many digits.
+rejects 'overflowing schema pin' 'is float, expected integer' \
+  '{"name":"p","zsh-data":{"schema":1e400,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
 
 # A manifest that is not valid UTF-8 must be reported, not crash the run and
 # abandon every file after it.

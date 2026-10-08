@@ -19,6 +19,7 @@ next       integration branch; ordinary PRs target here
 3. Use `hotfix-<id>` only for urgent fixes created in this repository, branched from `main`, and targeting `main`. Fork pull requests must target `next`.
 4. Promote `next` to `main` once the integration branch is stable. Use **Create a merge commit**, never squash or rebase, so the reviewed candidate remains a parent of stable `main`.
 5. A successful promotion needs no routine back-merge. After a direct `main` hotfix, merge `main` forward into `next` before ordinary work continues.
+6. Write `Closes #N` in a pull request into `next` only when it fully resolves the issue, ending the sentence or line there. GitHub ignores the keyword on `next`; `Promotion Issue Closure` closes the issue when the promotion reaches `main`. Use `Refs #N` for partial work.
 
 ## Commit message format
 

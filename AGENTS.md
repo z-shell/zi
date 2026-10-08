@@ -31,7 +31,7 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - `hotfix-*` branches may target `main` directly.
 - A `dependabot/*` branch opened by `dependabot[bot]` may also target `main`, because Dependabot security updates ignore `target-branch: next`. `scripts/main-branch-guard.zsh` enforces the allowed sources.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
-- A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. Link the issue for the Development sidebar (a closing keyword, or `addCloseIssueReferences` when the link is missing) and close the accumulated issues by hand when `next` is promoted to `main`; do not close them early.
+- A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. When the promotion reaches `main`, `.github/workflows/promotion-issue-closure.yml` closes each issue a promoted pull request names in an unqualified closing clause (`Closes #N.`, or `Closes #N` ending the line). `Refs #N`, a qualified clause such as `Closes #N after ...`, another repository's issue, and text in comments or code stay open and are listed in the run summary for a manual check. Only the pull request body as it stood at merge is trusted: a body edited after the merge is reported instead of closed, and an issue linked only through the Development sidebar (`addCloseIssueReferences`) is not closed, so put the closing clause in the body. Do not close issues before promotion.
 
 ## Before merging
 

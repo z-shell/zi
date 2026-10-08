@@ -5,8 +5,9 @@ on:
   push:
     tags: ["v*.*.*"]
   # Only main can publish; other branches would only create skipped runs
-  # (#599). Completions on main queue in the per-SHA group below, and only
-  # a run that sees all four workflows succeeded publishes.
+  # (#599). The job's event check also excludes a pull request whose head
+  # branch is named main. Completions on main queue in the per-SHA group
+  # below, and only a run that sees all four workflows succeeded publishes.
   workflow_run:
     workflows: [Zsh, ZD Integration, CodeQL, Trunk Code Quality]
     types: [completed]
@@ -60,7 +61,7 @@ jobs:
 
   automatic:
     name: Publish reviewed promotion
-    if: "${{ github.event_name == 'workflow_run' && github.repository == 'z-shell/zi' && github.event.workflow_run.head_branch == 'main' }}"
+    if: "${{ github.event_name == 'workflow_run' && github.repository == 'z-shell/zi' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' }}"
     runs-on: ubuntu-latest
     permissions:
       actions: read

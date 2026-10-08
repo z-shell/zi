@@ -16,6 +16,7 @@ on:
       - "scripts/main-branch-guard.zsh"
       - "scripts/verify-promotion-release.zsh"
       - "scripts/publish-promotion-release.zsh"
+      - "scripts/close-promoted-issues.zsh"
       - "tests/**"
       - ".github/workflows/*.yml"
       - "tests/annex-unregister.zsh"
@@ -224,6 +225,17 @@ jobs:
         run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test idempotent promotion publication
         run: zsh -f tests/promotion-release-publication.zsh
+
+  promoted-issue-closure:
+    name: Promoted Issue Closure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Zsh and jq
+        run: sudo apt update && sudo apt-get install -yq zsh jq
+      - name: Test promoted issue closure
+        run: zsh -f tests/promoted-issue-closure.zsh
 
   benchmark-harness:
     name: Benchmark Harness

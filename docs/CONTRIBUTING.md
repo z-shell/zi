@@ -56,11 +56,11 @@ Read the [organization Zsh scripting standard](https://github.com/z-shell/.githu
 
 Run native syntax on changed Zsh files, for example `zsh -f -n zi.zsh`, then the affected tests, for example `zsh -f tests/ice-tokenizer.zsh`. Read tests before running them and isolate any inherited installation prefixes such as `ZPFX`. The [Zsh workflow](../.github/workflows/zsh-n.yml) lists every focused test and compiles the selected sources. `zsh -f tests/ci-registration.zsh` checks that no test is omitted and that promotion calls the full suite. A syntax pass alone is not a functional test.
 
-CI currently validates Ubuntu's packaged Zsh. This does not establish a minimum supported Zsh version or compatibility with macOS, BSD or Cygwin. Preserve existing version fallbacks; an explicit support floor needs version and platform qualification before it becomes a requirement. Native-valid code must not be rewritten solely to satisfy a supplemental parser or formatter.
+The focused suite runs on exact Zsh 5.8.1, 5.9 and 5.9.2 builds on Linux and macOS, installed through the organization's pinned setup action. Every matrix leg must pass the Zsh Gate, including during promotion. This is the tested matrix, not a claim about every plugin or untested older versions, BSD or Cygwin. Preserve existing version fallbacks; a support-floor increase is a separate compatibility decision. Native-valid code must not be rewritten solely to satisfy a supplemental parser or formatter.
 
 The required promotion gate runs the full Zsh suite on the exact candidate, plus ZD integration and clean-install/real-object checks. Post-merge release checks are additional evidence: users can consume `main` immediately, before a tag is published. Repository settings must require the appropriate checks; workflow files alone do not enforce merging rules.
 
-Keep long-form user guidance in the canonical wiki. Changes to installation or commands must also check the README and `docs/man/zi.1`, which `zi man` opens directly; an old offline example must not silently contradict the current installer.
+Keep long-form user guidance in the canonical wiki. Changes to installation or commands must also check the README and `docs/man/zi.1`, which `zi man` opens directly. That roff file is the maintained offline source, not a generated README copy. Update it alongside commands; `zsh -f tests/manual.zsh` checks command coverage and renders it with groff. Check semantics against the dispatcher and help, because rendering and inventory checks cannot prove that descriptions are correct.
 
 ## Releases
 

@@ -23,7 +23,7 @@ concurrency:
 permissions:
   contents: read
 
-# One job runs the syntax pass, one runs every focused test in sequence, and
+# One job runs the syntax pass, each matrix leg runs every focused test, and
 # Zsh Gate reports both on every pull request so it can be a required check
 # (#598). One job per file or per test spent 10-22 s installing Zsh to run a
 # check that takes under a second, and queued about 126 jobs per run. Each
@@ -45,8 +45,13 @@ jobs:
         lib/templates/example-script
 
   tests:
-    name: Focused Tests
-    runs-on: ubuntu-latest
+    name: Focused Tests (${{ matrix.os }}, Zsh ${{ matrix.zsh }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        zsh: ["5.8.1", "5.9", "5.9.2"]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Check out code
@@ -54,9 +59,23 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ inputs.candidate-ref || github.sha }}
-      - name: Install Zsh, jq and archive tools
+      - name: Install exact Zsh
+        uses: z-shell/.github/actions/setup-zsh@6fac3d47a61b27db54e50a0519c1e79b2935eda4 # main
+        with:
+          version: ${{ matrix.zsh }}
+      - name: Install test tools and verify runtime
         id: install
-        run: sudo apt-get update && sudo apt-get install -yq zsh jq zip unzip
+        env:
+          EXPECTED_ZSH: ${{ matrix.zsh }}
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            sudo apt-get update
+            sudo apt-get install -yq jq zip unzip groff
+          else
+            brew install jq groff
+          fi
+          zsh -f -c '[[ $ZSH_VERSION == "$EXPECTED_ZSH" ]]'
+          zsh --version
       - name: Test unload ownership contracts
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/unload-ownership-contracts.zsh
@@ -177,6 +196,9 @@ jobs:
       - name: Test source hygiene
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/source-hygiene.zsh
+      - name: Test offline manual
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: zsh -f tests/manual.zsh
       - name: Test substitution nesting
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/subst-nesting.zsh

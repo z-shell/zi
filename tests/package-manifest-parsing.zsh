@@ -124,12 +124,77 @@ local unicode='{"zsh-data":{"plugin-info":{"user":"u"},"zi-ices":{"default":{
   "src":"'$bs'uD834'$bs'uDD1E",
   "pick":"'$bs'u12",
   "ver":"'$bs'uZZZZ",
-  "atclone":"'$bs'uD800'$bs'u0041'$bs'uDFFF"}}}}'
+  "atclone":"'$bs'uD800'$bs'u0041'$bs'uDFFF",
+  "mv":"a'$bs'u0000b"}}}}'
 resolve "$unicode" e || return 1
 check src "${bs}uD834${bs}uDD1E" || return 1
 check pick "${bs}u12" || return 1
 check ver "${bs}uZZZZ" || return 1
 check atclone "${bs}uD800A${bs}uDFFF" || return 1
+# U+0000 is preserved as written, like a surrogate escape: the parser marks
+# nested objects with a NUL-delimited sentinel, which decoded text must never
+# be able to produce (#530).
+check mv "a${bs}u0000b" || return 1
+
+# A value spelling the sentinel must not count as a nested object, or it shifts
+# which profile body is selected, and can abort the read.
+local sentinel="${bs}u0000--object--${bs}u0000"
+local forged='{"zsh-data":{"plugin-info":{"user":"u","plugin":"p","x":"'$sentinel'"},
+  "zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}'
+local -A fd
+resolve "$forged" fd || return 1
+[[ ${fd[as]} == D ]] || {
+  builtin print -u2 -r -- "a forged sentinel shifted the default profile: as='${fd[as]}'"
+  return 1
+}
+# A subshell, so an aborted read is reported here instead of ending the test.
+( local -A fb; resolve "$forged" fb bgn && [[ ${fb[as]} == B ]] ) || {
+  builtin print -u2 -r -- "a forged sentinel broke the bgn profile"
+  return 1
+}
+( local -A si sp; local -a sn
+  .zi-read-package-manifest "$forged" default si sn sp && [[ ${si[x]} == $sentinel ]] ) || {
+  builtin print -u2 -r -- "the escaped sentinel was not preserved as written in plugin-info"
+  return 1
+}
+# Outside a multibyte locale a code point is reduced to one byte, so U+0100
+# also decodes to NUL there. Any escape whose character would hold a NUL byte
+# is kept as written.
+local wrapped="${bs}u0100--object--${bs}u0100"
+( local LC_ALL=C
+  local -A wi wd wb; local -a wn
+  .zi-read-package-manifest '{"zsh-data":{"plugin-info":{"user":"u","x":"'$wrapped'"},
+    "zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}' default wi wn wd &&
+  [[ ${wd[as]} == D && ${wi[x]} == $wrapped ]] &&
+  .zi-read-package-manifest '{"zsh-data":{"plugin-info":{"user":"u","x":"'$wrapped'"},
+    "zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}' bgn wi wn wb &&
+  [[ ${wb[as]} == B ]] ) || {
+  builtin print -u2 -r -- "an escape that decodes to NUL in the C locale forged the sentinel"
+  return 1
+}
+# The same text as a profile name stays a profile name.
+( local -A pi pp; local -a pn
+  .zi-read-package-manifest '{"zsh-data":{"plugin-info":{"user":"u"},"zi-ices":{"default":{"as":"D"},
+    "'$sentinel'":{"as":"X"},"bgn":{"as":"B"}}}}' bgn pi pn pp &&
+  [[ ${pp[as]} == B && ${#pn} == 3 && ${pn[2]} == $sentinel ]] ) || {
+  builtin print -u2 -r -- "a profile named like the sentinel was dropped or shifted the lookup"
+  return 1
+}
+
+# JSON text never holds a raw NUL byte: control characters in strings must be
+# escaped, and NUL is not whitespace. A manifest carrying one is rejected, in a
+# string or outside one, rather than letting it forge the sentinel.
+local nul=$'\0' raw
+for raw (
+  '{"zsh-data":{"plugin-info":{"user":"u","x":"'$nul'--object--'$nul'"},"zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}'
+  '{"zsh-data":{"plugin-info":{"user":"u","x":'$nul'--object--'$nul'},"zi-ices":{"default":{"as":"D"},"bgn":{"as":"B"}}}}'
+) {
+  ( local -A ri rp; local -a rn
+    ! .zi-read-package-manifest "$raw" default ri rn rp && (( ! ${#rp} )) && [[ -z ${(j::)rn} ]] ) || {
+    builtin print -u2 -r -- "a manifest with a raw NUL byte was read"
+    return 1
+  }
+}
 
 # A quoted value containing key-like text must not become the selected object.
 local decoy='{"decoy":{"text":"literal '$bs'"plugin-info'$bs'": text"},

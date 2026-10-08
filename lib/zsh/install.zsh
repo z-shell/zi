@@ -9,13 +9,17 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # FUNCTION: .zi-unescape-json-string [[[
 # Translates the escapes of a JSON string body into the characters they denote
 # and returns the result in $REPLY. Handles the eight two-character escapes and
-# \uXXXX in the basic multilingual plane; a surrogate escape or an unrecognized
-# escape is left exactly as written, as is a malformed \u.
+# \uXXXX in the basic multilingual plane; a surrogate escape, an escape whose
+# character would hold a NUL byte, or an unrecognized escape is left exactly as
+# written, as is a malformed \u. The NUL case is \u0000 and, outside a multibyte
+# locale, where ${(#)...} keeps only the low byte, every multiple of 256: it
+# stays escaped because .zi-parse-json marks nested objects with a
+# NUL-delimited sentinel, which decoded text must never be able to spell (#530).
 .zi-unescape-json-string() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent
 
-  local ___rest=$1 ___out= ___esc ___tail
+  local ___rest=$1 ___out= ___esc ___tail ___char
   local -a match mbegin mend
   local -A ___map=( \" \" \\ \\ / / b $'\b' f $'\f' n $'\n' r $'\r' t $'\t' )
   integer ___code
@@ -23,11 +27,12 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   while [[ $___rest = (#b)([^\\]#)\\(?)(*) ]]; do
     ___out+=$match[1] ___esc=$match[2] ___tail=$match[3]
     if [[ $___esc == u && $___tail == (#b)([0-9a-fA-F](#c4))(*) ]] {
-      ___code=16#$match[1]
-      if (( ___code >= 16#D800 && ___code <= 16#DFFF )) {
+      ___code=16#$match[1] ___char=
+      (( ___code >= 16#D800 && ___code <= 16#DFFF )) || ___char=${(#)___code}
+      if [[ -z $___char || $___char == *$'\0'* ]] {
         ___out+="\\u$match[1]"
       } else {
-        ___out+=${(#)___code}
+        ___out+=$___char
       }
       ___rest=$match[2]
     } elif (( ${+___map[$___esc]} )) {
@@ -45,9 +50,9 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
 # now a maintained fork, not a mirror of it. Known divergences, all deliberate:
 # `___pair_map' omits the `('/`)' pair, which JSON never uses; the key lookup
 # selects the smallest object declaring the key instead of one that opens with
-# it; and string bodies are unescaped as they are captured. Do not swap in the
-# library copy without re-running tests/package-manifest-parsing.zsh, which
-# fails against it.
+# it; string bodies are unescaped as they are captured; and input holding a raw
+# NUL byte is refused. Do not swap in the library copy without re-running
+# tests/package-manifest-parsing.zsh, which fails against it.
 .zi-parse-json() {
   builtin emulate -LR zsh ${=${options[xtrace]:#off}:+-o xtrace}
   builtin setopt extended_glob warn_create_global typeset_silent
@@ -57,6 +62,10 @@ builtin source "${ZI[BIN_DIR]}/lib/zsh/side.zsh" || { builtin print -P "${ZI[col
   integer ___nest=${4:-1} ___idx=0 ___pair_idx ___level=0 ___start ___end ___sidx=1 ___had_quoted_value=0
   local -a match mbegin mend ___pair_order
   (( ${(P)+___varname} )) || typeset -gA "$___varname"
+  # JSON text never holds a raw NUL byte: a control character in a string must
+  # be escaped, and NUL is not whitespace. Refuse such input instead of letting
+  # it spell the object sentinel below (#530).
+  [[ $___input == *$'\0'* ]] && return 1
   ___pair_map=( "{" "}" "[" "]" )
 
   while [[ $___workbuf = (#b)[^"{}[]\\\"'":,]#((["{[]}\"'":,])|[\\](*))(*) ]]; do

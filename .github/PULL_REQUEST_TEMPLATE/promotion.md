@@ -87,7 +87,7 @@ git merge-base --is-ancestor origin/next origin/main
 git show-ref --verify refs/remotes/origin/next
 ```
 
-Follow the [tool-attribution preference](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution) for the resulting commit message. Preserve accurate contributor credit and required third-party notices; missing tool credit does not imply exclusively human authorship. Agents must follow the output rule in organization instructions.
+For merge messages, see the [tool-attribution preference](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution).
 
 - [ ] `delete_branch_on_merge` is still `false` and remote `next` still exists.
 - [ ] The `main` ruleset allows only merge commits and does not require linear history.

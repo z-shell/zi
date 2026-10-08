@@ -44,7 +44,7 @@
 
 ## Checklist
 
-We prefer omitting automatic tool-credit trailers and generated-with footers, as described in the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution). This is a preference; missing tool credit does not imply that work was produced without AI assistance. Credit actual contributors accurately and describe tool use when relevant to review.
+Prefer omitting automatic tool credits; see the [contribution guidance](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution).
 
 - [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
 - [ ] A `next` to `main` promotion uses a merge commit and records both parent SHAs

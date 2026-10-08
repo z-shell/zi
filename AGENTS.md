@@ -46,7 +46,7 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - Write Zsh-first code and avoid Bash-only syntax.
 - Run the existing Zsh syntax, integration, and focused tests for changed paths.
 - Keep user-facing documentation in the canonical wiki when practical.
-- Follow the organization commit policy. A `Co-authored-by` trailer may credit a real human, including the pull-request author; never credit a bot, AI agent, or automation as a co-author.
+- Follow the organization commit policy and [tool-attribution preference](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution). Agents must omit automatic tool credits, AI co-author and session trailers, and session links, and verify outgoing text. Preserve accurate contributor credit and required third-party notices; never fabricate human credit or claim exclusively human authorship without evidence.
 
 ## Code review
 

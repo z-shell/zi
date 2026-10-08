@@ -1,4 +1,7 @@
-.TH "" "" "November 2021" "" ""
+.TH "ZI" "1" "" "Zi" "User Commands"
+.SH "CURRENT DOCUMENTATION"
+This offline reference retains legacy examples. For current installation, paths and supported command behavior, see https://wiki.zshell.dev/ and run \fBzi -h\fR. The quick-start installation below follows the maintained repository README.
+.P
 News
 .P
 \fBTable of Contents\fR \fIgenerated with \fBDocToc\fI \fI\(lahttps://github.com/thlorenz/doctoc\(ra\fI\fR
@@ -307,7 +310,7 @@ Supported is \fBunloading\fR of plugin and ability to list, (un)install and sele
 The system does not use \fB$FPATH\fR, loading multiple plugins doesn't clutter \fB$FPATH\fR with the same number of entries (e.g. \fB10\fR). Code is immune to \fBKSH_ARRAYS\fR. Completion management functionality is provided to allow user to call \fBcompinit\fR only once in \fB.zshrc\fR.
 .SH "ZI WIKI"
 .P
-The information in this README is complemented by the \fBZI wiki\fR \fI\(lahttp://z-shell.github.io/zi/wiki/\(ra\fR. The README is an introductory overview of ZI while the wiki gives a complete and in-depth information with examples. Make sure to read it to get the most out of ZI.
+The \fBZi wiki\fR at https://wiki.zshell.dev/ provides current guides and command documentation.
 .SH "INSTALLATION"
 .SS "Option 1 - Automatic Installation (Recommended)"
 .P
@@ -315,11 +318,11 @@ The easiest way to install ZI is to execute:
 .P
 .RS 2
 .nf
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/z-shell/zi/main/lib/install.sh)"
+sh -c "$(curl -fsSL https://get.zshell.dev)" --
 .fi
 .RE
 .P
-This will install ZI in \fB~/.zi/bin\fR. \fB.zshrc\fR will be updated with three lines of code that will be added to the bottom. The lines will be sourcing \fBzi.zsh\fR and setting up completion for command \fBzi\fR. After installing and reloading the shell compile ZI with \fBzi self-update\fR.
+The installer installs Zi with its default loader profile and adds a managed source entry to \fB.zshrc\fR. Review the installer source and published checksum before executing it. Current paths, installation options and verification steps are documented at https://wiki.zshell.dev/docs/getting_started/installation/; do not infer them from the legacy examples below.
 .SS "Option 2 - Manual Installation"
 .P
 To manually install ZI clone the repo to e.g. \fB~/.zi/bin\fR:

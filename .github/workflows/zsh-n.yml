@@ -7,10 +7,17 @@ on:
       - main
       - next
   pull_request:
+    branches: [next]
+  workflow_call:
+    inputs:
+      candidate-ref:
+        description: Exact candidate commit for promotion validation.
+        required: true
+        type: string
   workflow_dispatch: {}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-zsh-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -27,44 +34,15 @@ permissions:
 jobs:
   syntax:
     name: Syntax and Compile
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: ⚡ Install dependencies
-        run: sudo apt-get update && sudo apt-get install -yq zsh
-      - name: ⚡ zsh -n and zcompile every Zsh source
-        shell: bash
-        run: |
-          set -euo pipefail
-          checked=0
-          failed=0
-          while IFS= read -r -d '' file; do
-            checked=$((checked + 1))
-            if ! zsh -n "${file}"; then
-              echo "::error file=${file#./}::zsh -n failed"
-              failed=$((failed + 1))
-              continue
-            fi
-            if ! zsh -fc 'zcompile "$1"' _ "${file}"; then
-              echo "::error file=${file#./}::zcompile failed"
-              failed=$((failed + 1))
-            fi
-            rm -f "${file}.zwc"
-          done < <(
-            find . -type d \( -name doc -o -name .git \) -prune -o -type f \( \
-              -iname '*.zsh' -o -iname '_zi' -o -path './lib/zcompile' \
-              -o -path './lib/templates/example-script' \) -print0
-          )
-          if ((checked == 0)); then
-            echo "::error::No Zsh sources were found."
-            exit 1
-          fi
-          echo "Checked ${checked} Zsh sources, ${failed} failed."
-          ((failed == 0))
+    uses: z-shell/.github/.github/workflows/zsh-ci.yml@6fac3d47a61b27db54e50a0519c1e79b2935eda4 # main
+    with:
+      checkout-ref: ${{ inputs.candidate-ref || github.sha }}
+      require-sources: true
+      run-zcompile: true
+      extra-files: |
+        lib/_zi
+        lib/zcompile
+        lib/templates/example-script
 
   tests:
     name: Focused Tests
@@ -75,6 +53,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.candidate-ref || github.sha }}
       - name: Install Zsh, jq and archive tools
         id: install
         run: sudo apt-get update && sudo apt-get install -yq zsh jq zip unzip
@@ -96,6 +75,9 @@ jobs:
       - name: Test that every focused test is registered here
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/ci-registration.zsh
+      - name: Test public contract detector
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: zsh -f tests/public-contract-impact.zsh
       - name: Test release tag verification
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-tag-verification.zsh

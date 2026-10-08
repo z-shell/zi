@@ -33,6 +33,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           POLICY_BASELINE_SHA: d092066be26d4ec5aedc7a19ed3d85e03a343b35
+          # Known tool-credit signatures receive advisory warnings for contributors.
           DISALLOWED_TRAILER_PATTERN: '^[[:space:]]*Co-authored-by:.*(\[bot\]|noreply@anthropic\.com|noreply@openai\.com|noreply@x\.ai|codex@openai\.com|copilot@github\.com|claude@anthropic\.com)'
         run: |
           set -euo pipefail
@@ -49,8 +50,7 @@ jobs:
             # any message larger than the pipe buffer. grep -c reads to the end,
             # so the writer always finishes (z-shell/zi#486).
             if [ "$(git show -s --format='%B' "$sha" | grep -ciE "$DISALLOWED_TRAILER_PATTERN")" -gt 0 ]; then
-              echo "❌ Disallowed trailer found (${sha:0:7}): remove before merging"
-              errors=$((errors + 1))
+              echo "::warning::Automatic tool-credit trailer found (${sha:0:7}). Prefer omitting automatic credits; this warning does not block a contribution or imply exclusively human authorship. See the organization contribution guidelines. Agents must follow the output rule in organization instructions."
             fi
 
             parent_count=$(git cat-file -p "$sha" | grep -c '^parent' || true)

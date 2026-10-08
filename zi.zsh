@@ -1993,9 +1993,9 @@ builtin setopt no_aliases
       [[ -n ${reply[1-correct]} ]] && ___pdir_path="${reply[1-correct]:h}"
     fi
     [[ -z ${path[(er)$___pdir_path]} ]] && {
-      [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
+      [[ $___mode != light(|-b) ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
       path=( "${___pdir_path%/}" ${path[@]} )
-      [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
+      [[ $___mode != light(|-b) ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
       .zi-add-report "${ZI[CUR_USPL2]}" "$ZI[col-info2]$___pdir_path$ZI[col-rst] added to \$PATH"
     }
     [[ -n ${reply[1-correct]} && ! -x ${reply[1-correct]} ]] && command chmod a+x ${reply[@]}
@@ -3204,7 +3204,11 @@ zi() {
               ICE[cloneonly]=""
             }
 
-            (( ___is_snippet )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${ICE[light-mode]+light}:-${OPTS[(I)-b]:+light-b}}"
+            # A classic `load'/`light' plugin carries ___is_snippet=-1, so only a
+            # positive value selects the snippet options. `-b' (bindkey-only
+            # tracking) belongs to `light' and wins over a `light-mode' ice; a
+            # classic `load' keeps full tracking.
+            (( ___is_snippet > 0 )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${${(M)cmd:#light}:+${OPTS[(I)-b]:+light-b}}:-${ICE[light-mode]+light}}"
 
             .zi-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
             integer ___last_retval=$?

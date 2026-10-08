@@ -150,6 +150,9 @@ jobs:
       - name: Test nested load state
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/nested-load-state.zsh
+      - name: Test light tracking
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: zsh -f tests/light-tracking.zsh
       - name: Test plugin autoload ownership
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-ownership.zsh

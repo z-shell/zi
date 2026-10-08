@@ -20,7 +20,7 @@ permissions:
 # Zsh Gate reports both on every pull request so it can be a required check
 # (#598). One job per file or per test spent 10-22 s installing Zsh to run a
 # check that takes under a second, and queued about 126 jobs per run. Each
-# test step keeps its own result and runs even after an earlier failure; the
+# test step keeps its own result and runs even after an earlier test fails; the
 # tests isolate HOME and XDG state themselves. tests/ci-registration.zsh still
 # requires every tests/*.zsh to be invoked by a step here.
 
@@ -76,126 +76,127 @@ jobs:
         with:
           persist-credentials: false
       - name: Install Zsh, jq and archive tools
+        id: install
         run: sudo apt-get update && sudo apt-get install -yq zsh jq zip unzip
       - name: Test unload ownership contracts
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/unload-ownership-contracts.zsh
       - name: Test ownership across repeated loads of one plugin
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/repeated-load-ownership.zsh
       - name: Test unload hook dispatch
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/unload-hook-dispatch.zsh
       - name: Test the first pack install of a service profile
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/pack-service-first-install.zsh
       - name: Test that every vendored package manifest resolves through the reader
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/package-manifest-fixtures.zsh
       - name: Test that every focused test is registered here
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/ci-registration.zsh
       - name: Test release tag verification
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-tag-verification.zsh
       - name: Test main branch guard
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/main-branch-guard.zsh
       - name: Test release planning
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-plan.zsh
       - name: Test promotion release verification
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promotion-release-verification.zsh
       - name: Test idempotent promotion publication
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promotion-release-publication.zsh
       - name: Test promoted issue closure
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promoted-issue-closure.zsh
       - name: Test the benchmark runner and comparer
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/benchmark-harness.zsh
       - name: Test version reporting
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh tests/version-reporting.zsh
       - name: Test the package manifest contract
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/package-manifest-contract.zsh
       - name: Test package manifest parsing
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/package-manifest-parsing.zsh
       - name: Test path resolution
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/path-resolution.zsh
       - name: Test disk ice resolution
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/disk-ice-resolution.zsh
       - name: Test gh-r musl detection
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/gh-r-musl-detection.zsh
       - name: Test parallel update
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/parallel-update.zsh
       - name: Test plugin autoload fpath scope
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-fpath-scope.zsh
       - name: Test autoload ice forms
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-ice.zsh
       - name: Test load object status
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/load-object-status.zsh
       - name: Test nested load state
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/nested-load-state.zsh
       - name: Test plugin autoload ownership
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-ownership.zsh
       - name: Test plugin standard callbacks
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-standard-callbacks.zsh
       - name: Test self-update reload
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/self-update-reload.zsh
       - name: Test scheduler idle behavior
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/scheduler-idle.zsh
       - name: Test annex unregister
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/annex-unregister.zsh
       - name: Test atinit deferred marker
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/atinit-deferred-marker.zsh
       - name: Test archive extraction
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh tests/archive-extraction.zsh
       - name: Test completion refresh
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh tests/completion-refresh.zsh
       - name: Test home preparation
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/home-preparation.zsh
       - name: Test hook ownership
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/hook-ownership.zsh
       - name: Test ice tokenizer
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/ice-tokenizer.zsh
       - name: Test message formatting
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/message-formatting.zsh
       - name: Test source hygiene
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/source-hygiene.zsh
       - name: Test substitution nesting
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/subst-nesting.zsh
       - name: Test snippet directory mirror
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/snippet-directory-mirror.zsh
       - name: Test snippet update status
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/snippet-update-status.zsh
 
   gate:

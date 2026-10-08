@@ -96,8 +96,8 @@ assert_equal "${ZI_ICES[pick]}" 'bin/*' 'pick keeps a slash in its value'
 assert_equal "${ZI_ICES[mv]}" 'hexyl* hexyl' 'mv keeps a value with a space and a glob'
 pass 'valued ices are untouched'
 
-# `reset` is a no-value ice and a prefix of the valued `reset-prompt`; the
-# alternation must still select the longer name.
+# `reset` is a prefix of `reset-prompt`; the alternation must still select the
+# longer name.
 tokenize 'reset-prompt stays valued' 1 'reset-prompt!'
 assert_equal "${ZI_ICES[reset-prompt]}" '!' 'reset-prompt keeps its value'
 assert_equal "${+ZI_ICES[reset]}" 0 'reset is not selected over reset-prompt'
@@ -107,22 +107,53 @@ pass 'a no-value ice that prefixes a valued ice does not shadow it'
 tokenize 'explicit @ ID' 1 lucid @sharkdp/hexyl
 pass 'the @ prefix still marks an ID'
 
+# Ices in ZI[nval-ice-list] that also take a value keep it, as before #527:
+# make'!', nocompile'!', cloneopts'…', pullopts'…' and reset'…' (#606). The
+# word after them is still read, so ices later on the line are not dropped.
+tokenize 'make with a bang' 2 'make!' lucid
+assert_equal "${ZI_ICES[make]}" '!' 'make keeps !'
+assert_equal "${+ZI_ICES[lucid]}" 1 'lucid after make is recorded'
+tokenize 'make with targets' 2 'makeall install' lucid
+assert_equal "${ZI_ICES[make]}" 'all install' 'make keeps its targets'
+tokenize 'nocompile with a bang' 2 'nocompile!' lucid
+assert_equal "${ZI_ICES[nocompile]}" '!' 'nocompile keeps !'
+tokenize 'cloneopts with options' 2 'cloneopts--depth 1' lucid
+assert_equal "${ZI_ICES[cloneopts]}" '--depth 1' 'cloneopts keeps its options'
+tokenize 'pullopts with options' 2 'pullopts--rebase' lucid
+assert_equal "${ZI_ICES[pullopts]}" '--rebase' 'pullopts keeps its options'
+tokenize 'reset with a command' 2 'resetgit reset --hard' lucid
+assert_equal "${ZI_ICES[reset]}" 'git reset --hard' 'reset keeps its command'
+pass 'valued uses of ices in ZI[nval-ice-list] keep their values'
+
+# The bare forms still record an empty value, and a plugin ID after a valued
+# use still stops tokenizing.
+tokenize 'bare valued names' 5 make nocompile cloneopts pullopts reset
+assert_equal "${+ZI_ICES[make]}${+ZI_ICES[nocompile]}${+ZI_ICES[cloneopts]}${+ZI_ICES[pullopts]}${+ZI_ICES[reset]}" 11111 'bare valued names recorded'
+assert_equal "${ZI_ICES[make]}${ZI_ICES[reset]}" '' 'bare valued names have empty values'
+tokenize 'valued use then an ID' 3 'make!' lucid 'pickbin/x' sharkdp/hexyl
+assert_equal "${ZI_ICES[pick]}" 'bin/x' 'pick after make keeps its value'
+assert_equal "${+ZI_ICES[sh]}" 0 'sh ice is not invented from the ID after make'
+pass 'bare valued names and a following ID behave as before'
+
 # .zi-ice looks a matched name up in ZI_NVAL_ICES instead of matching it
-# against ZI[nval-ice-list] on every word (#554). The set must hold exactly the
-# list's names, unescaped, plus `svn`, or tokenizing drifts from the list.
-typeset -a expected_nval
-expected_nval=( ${(s:|:)ZI[nval-ice-list]//\\/} svn )
-assert_equal "${(j: :)${(@ok)ZI_NVAL_ICES}}" "${(j: :)${(@o)expected_nval}}" 'no-value set matches ZI[nval-ice-list] plus svn'
-# Independent of how the set is built: every built-in ice name is in the set
-# exactly when it matches the list used as a pattern, as before #554.
+# against a list on every word (#554). The set holds the ices that never take
+# a value: the names of ZI[nval-ice-list], unescaped, plus `svn`, without the
+# ones whose value matters (#606). ZI[nval-ice-list] lists ices for which an
+# empty value means something, and other readers (side.zsh, autoload.zsh, the
+# F-Sy-H chroma) still need those names there.
+typeset -a expected_nval valued_nval
+expected_nval=(
+  blockf silent lucid trackbinds cloneonly nocd run-atpull nocompletions
+  sh '!sh' bash '!bash' ksh '!ksh' csh '!csh' aliases countdown light-mode
+  is-snippet git verbose debug null binary svn
+)
+valued_nval=( cloneopts pullopts make nocompile reset )
+assert_equal "${(j: :)${(@ok)ZI_NVAL_ICES}}" "${(j: :)${(@o)expected_nval}}" 'no-value set holds the flag-only ices'
 typeset n
-integer want
-for n in ${(s:|:)ZI[ice-list]//\\/}; do
-  want=0
-  [[ $n = (${~ZI[nval-ice-list]}|svn) ]] && want=1
-  assert_equal "${+ZI_NVAL_ICES[$n]}" "$want" "set membership of $n"
+for n in $valued_nval; do
+  [[ $n = (${~ZI[nval-ice-list]}) ]] || fail "$n left ZI[nval-ice-list]"
 done
-pass 'the no-value set mirrors ZI[nval-ice-list]'
+pass 'the no-value set holds exactly the flag-only ices'
 
 # The set is rebuilt when zi.zsh is sourced again, as a self-update reload does.
 ZI_NVAL_ICES[bogus]=1

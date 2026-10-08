@@ -32,16 +32,23 @@ ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|noco
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|reset"
 
-# The same names as a set, unescaped, for a constant-time lookup in .zi-ice
-# (#554): matching every word against the list as a pattern made `zi ice`
-# about 20% slower. `svn` is a flag too but lives outside ZI[nval-ice-list]
-# because side.zsh orders it last; it is added here. Rebuilt on every source.
+# The ices that never take a value, as a set for a constant-time lookup in
+# .zi-ice (#554): matching every word against a list as a pattern made `zi ice`
+# about 20% slower. A word that starts with one of these names and has more
+# text after it is a plugin or snippet ID, not that ice (#527).
+# ZI[nval-ice-list] lists the ices for which even an empty value means
+# something, so it also holds ices that take a value; those are left out here,
+# or their values would be read as IDs (#606): make'!', nocompile'!',
+# cloneopts'…', pullopts'…' and reset'…'. `svn` is a flag too but lives outside
+# ZI[nval-ice-list] because side.zsh orders it last; it is added here. Rebuilt
+# on every source.
 typeset -gAH ZI_NVAL_ICES
 () {
   builtin emulate -L zsh
   local name
   ZI_NVAL_ICES=()
   for name in ${(s:|:)ZI[nval-ice-list]//\\/} svn; do
+    [[ $name = (cloneopts|pullopts|make|nocompile|reset) ]] && continue
     ZI_NVAL_ICES[$name]=1
   done
 }

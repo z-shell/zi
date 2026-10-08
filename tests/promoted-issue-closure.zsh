@@ -46,7 +46,12 @@ pr() {
       body: $body}]'
 }
 if [[ $1 == api && $2 == graphql ]]; then
-  [[ " $* " == *" number=${FAKE_EDITED:-none} "* ]] && print true || print false
+  number=${${(M)@:#number=*}#number=}
+  edited=false
+  [[ $number == ${FAKE_EDITED:-none} ]] && edited=true
+  linked=FAKE_LINKED_${number}
+  jq -cn --argjson edited $edited --arg linked "${(P)linked:-}" \
+    '{edited: $edited, linked: ($linked | split(" ") | map(select(. != "")))}'
   exit 0
 fi
 if [[ $1 == issue && $2 == close ]]; then
@@ -56,7 +61,17 @@ if [[ $1 == issue && $2 == close ]]; then
 fi
 case $* in
   (*"/commits/${FAKE_TARGET}/pulls"*)
-    [[ ${FAKE_PROMOTION:-valid} == valid ]] && pr 700 main "$FAKE_TARGET" '' || print -r -- '[]' ;;
+    case ${FAKE_PROMOTION:-valid} in
+      (valid) pr 700 main "$FAKE_TARGET" '' ;;
+      (late:*)
+        print x >> "$FAKE_LOG.lookups"
+        if (( ${#${(f)"$(<$FAKE_LOG.lookups)"}} > ${FAKE_PROMOTION#late:} )); then
+          pr 700 main "$FAKE_TARGET" ''
+        else
+          print -r -- '[]'
+        fi ;;
+      (*) print -r -- '[]' ;;
+    esac ;;
   (*"/commits/${FAKE_PICK1}/pulls"*)
     pr 701 next "$FAKE_PICK1" $'Closes #11. Refs #12\nAlso closes #17.' ;;
   (*"/commits/${FAKE_PICK2}/pulls"*)
@@ -81,6 +96,7 @@ chmod +x "$tmp/bin/gh"
 run_closer() {
   local sha=$1; shift
   : > "$tmp/log"
+  rm -f -- "$tmp/log.lookups"
   : > "$tmp/summary"
   (
     cd "$tmp/repository"
@@ -89,6 +105,9 @@ run_closer() {
       GITHUB_STEP_SUMMARY="$tmp/summary" \
       PROMOTION_SHA=$sha \
       FAKE_LOG="$tmp/log" \
+      FAKE_LINKED_701='z-shell/zi#11 z-shell/zi#30 other/repo#4' \
+      FAKE_LINKED_702='z-shell/zi#13 z-shell/zi#20' \
+      PROMOTION_LOOKUP_DELAY=0 \
       FAKE_TARGET=$target \
       FAKE_HEAD=$head \
       FAKE_PICK1=${picks[1]} \
@@ -126,6 +145,11 @@ check '#23 in #702: "fixes #23 after review"' "$tmp/summary"
 check '#22 in #702: "closes #22; only on Linux"' "$tmp/summary"
 check '#12 in #702: "Fixes #12.5 too"' "$tmp/summary"
 refute '#24' "$tmp/summary"
+check '#30 in #701: linked in the Development sidebar only' "$tmp/summary"
+check 'other/repo#4 in #701: linked in the Development sidebar only' "$tmp/summary"
+refute '#11 in #701: linked' "$tmp/summary"
+refute '#13 in #702: linked' "$tmp/summary"
+refute '#20 in #702: linked' "$tmp/summary"
 
 # A body edited after the merge is reported, not trusted.
 run_closer "$target" FAKE_EDITED=701
@@ -154,5 +178,15 @@ check 'is not a merged next-to-main promotion' "$tmp/output"
 # Other repositories and malformed input are refused.
 REPOSITORY=other/repo run_closer "$target" && { print -u2 -- 'expected repository mismatch to fail'; exit 1; }
 run_closer not-a-sha && { print -u2 -- 'expected an invalid SHA to fail'; exit 1; }
+
+# A promotion GitHub has not yet associated with its pull request is retried.
+run_closer "$target" FAKE_PROMOTION=late:2
+check 'attempt 2 of 6' "$tmp/output"
+refute 'attempt 3 of 6' "$tmp/output"
+check '11 --repo' "$tmp/log"
+run_closer "$target" FAKE_PROMOTION=late:9 PROMOTION_LOOKUP_ATTEMPTS=3
+check 'attempt 2 of 3' "$tmp/output"
+check 'is not a merged next-to-main promotion' "$tmp/output"
+[[ ! -s $tmp/log && $(wc -l < "$tmp/log.lookups") -eq 3 ]]
 
 print 'promoted issue closure tests passed'

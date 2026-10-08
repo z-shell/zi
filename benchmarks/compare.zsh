@@ -60,12 +60,14 @@ case_sets=( "$(jq -c '.cases | keys' "$baseline")" "$(jq -c '.cases | keys' "$ca
 # The control is the baseline measured again, so it must come from the same
 # source revision and the same settings; the control rows reuse the
 # baseline-versus-candidate comparability and would otherwise show another
-# revision, or an incompatible run, as the noise floor.
+# revision, or an incompatible run, as the noise floor. The variant list is
+# part of the settings: run.zsh schedules every sample's position from it, so
+# it is compared as recorded, order included.
 if [[ -n $control ]]; then
   typeset baseline_identity control_identity
-  baseline_identity=$(jq -c '[.source_revision, .environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$baseline")
-  control_identity=$(jq -c '[.source_revision, .environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups]' "$control")
-  [[ $baseline_identity == "$control_identity" ]] || die "the control is not a second run of the baseline (source revision, Zsh version, architecture, samples, warmups): ${baseline_identity} versus ${control_identity}"
+  baseline_identity=$(jq -c '[.source_revision, .environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups, .workload.variants]' "$baseline")
+  control_identity=$(jq -c '[.source_revision, .environment.zsh_version, .environment.architecture, .workload.samples, .workload.warmups, .workload.variants]' "$control")
+  [[ $baseline_identity == "$control_identity" ]] || die "the control is not a second run of the baseline (source revision, Zsh version, architecture, samples, warmups, variants): ${baseline_identity} versus ${control_identity}"
 fi
 
 # jq does the arithmetic so the report is one deterministic document.
@@ -78,7 +80,8 @@ jq -n --slurpfile b "$baseline" --slurpfile c "$candidate" "${control_args[@]}" 
   ($B.environment.zsh_version == $C.environment.zsh_version
    and $B.environment.architecture == $C.environment.architecture
    and $B.workload.samples == $C.workload.samples
-   and $B.workload.warmups == $C.workload.warmups) as $comparable |
+   and $B.workload.warmups == $C.workload.warmups
+   and $B.workload.variants == $C.workload.variants) as $comparable |
   # Flags are meaningful only between comparable reports; otherwise every
   # flag is null and the summary says why.
   def row(base; cand):
@@ -117,7 +120,7 @@ if [[ -n $markdown ]]; then
   {
     print -r -- "## Zi benchmark: candidate versus baseline"
     print
-    print -r -- "Baseline \`$(jq -r .baseline.source_revision "$output" | cut -c1-7)\` ($(jq -r .baseline.label "$output")) versus candidate \`$(jq -r .candidate.source_revision "$output" | cut -c1-7)\` ($(jq -r .candidate.label "$output")); $(jq -r .baseline.workload.samples "$output") samples after $(jq -r .baseline.workload.warmups "$output") warmups; $(jq -r .candidate.environment.zsh_version "$output") on $(jq -r .candidate.environment.cpu "$output"). Comparable: $(jq -r .comparable "$output"). Flags mark a median regression over $(jq -r .thresholds.median_percent "$output")% or a p95 regression over $(jq -r .thresholds.p95_percent "$output")%; they never fail the job.$( [[ $(jq -r .comparable "$output") == true ]] || print -n " The reports are not comparable (Zsh version, architecture, sample or warmup counts differ), so no case is flagged." )"
+    print -r -- "Baseline \`$(jq -r .baseline.source_revision "$output" | cut -c1-7)\` ($(jq -r .baseline.label "$output")) versus candidate \`$(jq -r .candidate.source_revision "$output" | cut -c1-7)\` ($(jq -r .candidate.label "$output")); $(jq -r .baseline.workload.samples "$output") samples after $(jq -r .baseline.workload.warmups "$output") warmups; $(jq -r .candidate.environment.zsh_version "$output") on $(jq -r .candidate.environment.cpu "$output"). Comparable: $(jq -r .comparable "$output"). Flags mark a median regression over $(jq -r .thresholds.median_percent "$output")% or a p95 regression over $(jq -r .thresholds.p95_percent "$output")%; they never fail the job.$( [[ $(jq -r .comparable "$output") == true ]] || print -n " The reports are not comparable (Zsh version, architecture, sample or warmup counts, or variant lists differ; variant lists \`$(jq -r '.baseline.workload.variants // [] | join(", ")' "$output")\` versus \`$(jq -r '.candidate.workload.variants // [] | join(", ")' "$output")\`), so no case is flagged." )"
     print
     print -r -- "| Case | Baseline median / p95 ms | Candidate median / p95 ms | Median delta | p95 delta | A/A control median delta |"
     print -r -- "| --- | --- | --- | --- | --- | --- |"

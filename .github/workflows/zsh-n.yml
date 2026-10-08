@@ -7,57 +7,6 @@ on:
       - main
       - next
   pull_request:
-    paths:
-      - "zi.zsh"
-      - "lib/**"
-      - "contracts/package-manifest-v1.json"
-      - "scripts/validate-package-manifest.py"
-      - "scripts/release-plan.zsh"
-      - "scripts/main-branch-guard.zsh"
-      - "scripts/verify-promotion-release.zsh"
-      - "scripts/publish-promotion-release.zsh"
-      - "scripts/close-promoted-issues.zsh"
-      - "tests/**"
-      - ".github/workflows/*.yml"
-      - "tests/annex-unregister.zsh"
-      - "tests/atinit-deferred-marker.zsh"
-      - "tests/benchmark-harness.zsh"
-      - "benchmarks/**"
-      - "tests/ci-registration.zsh"
-      - "tests/archive-extraction.zsh"
-      - "tests/completion-refresh.zsh"
-      - "tests/disk-ice-resolution.zsh"
-      - "tests/gh-r-musl-detection.zsh"
-      - "tests/home-preparation.zsh"
-      - "tests/hook-ownership.zsh"
-      - "tests/ice-tokenizer.zsh"
-      - "tests/load-object-status.zsh"
-      - "tests/message-formatting.zsh"
-      - "tests/package-manifest-contract.zsh"
-      - "tests/package-manifest-fixtures.zsh"
-      - "tests/fixtures/package-manifests/**"
-      - "scripts/refresh-package-manifests.zsh"
-      - "tests/package-manifest-parsing.zsh"
-      - "tests/path-resolution.zsh"
-      - "tests/parallel-update.zsh"
-      - "tests/plugin-autoload-fpath-scope.zsh"
-      - "tests/plugin-autoload-ice.zsh"
-      - "tests/nested-load-state.zsh"
-      - "tests/pack-service-first-install.zsh"
-      - "tests/plugin-autoload-ownership.zsh"
-      - "tests/plugin-standard-callbacks.zsh"
-      - "tests/release-tag-verification.zsh"
-      - "tests/repeated-load-ownership.zsh"
-      - "tests/scheduler-idle.zsh"
-      - "tests/fixtures/plugin-standard-callbacks/**"
-      - "tests/self-update-reload.zsh"
-      - "tests/snippet-directory-mirror.zsh"
-      - "tests/snippet-update-status.zsh"
-      - "tests/source-hygiene.zsh"
-      - "tests/subst-nesting.zsh"
-      - "tests/unload-hook-dispatch.zsh"
-      - "tests/unload-ownership-contracts.zsh"
-      - "tests/version-reporting.zsh"
   workflow_dispatch: {}
 
 concurrency:
@@ -67,469 +16,208 @@ concurrency:
 permissions:
   contents: read
 
+# One job runs the syntax pass, one runs every focused test in sequence, and
+# Zsh Gate reports both on every pull request so it can be a required check
+# (#598). One job per file or per test spent 10-22 s installing Zsh to run a
+# check that takes under a second, and queued about 126 jobs per run. Each
+# test step keeps its own result and runs even after an earlier test fails; the
+# tests isolate HOME and XDG state themselves. tests/ci-registration.zsh still
+# requires every tests/*.zsh to be invoked by a step here.
+
 jobs:
-  zsh-matrix:
+  syntax:
+    name: Syntax and Compile
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    timeout-minutes: 10
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: "Set matrix output"
-        id: set-matrix
+        with:
+          persist-credentials: false
+      - name: ⚡ Install dependencies
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+      - name: ⚡ zsh -n and zcompile every Zsh source
+        shell: bash
         run: |
-          MATRIX="$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -iname '_zi' -o -path './lib/zcompile' -o -path './lib/templates/example-script' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
-          echo "MATRIX=${MATRIX}" >&2
-          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          checked=0
+          failed=0
+          while IFS= read -r -d '' file; do
+            checked=$((checked + 1))
+            if ! zsh -n "${file}"; then
+              echo "::error file=${file#./}::zsh -n failed"
+              failed=$((failed + 1))
+              continue
+            fi
+            if ! zsh -fc 'zcompile "$1"' _ "${file}"; then
+              echo "::error file=${file#./}::zcompile failed"
+              failed=$((failed + 1))
+            fi
+            rm -f "${file}.zwc"
+          done < <(
+            find . -type d \( -name doc -o -name .git \) -prune -o -type f \( \
+              -iname '*.zsh' -o -iname '_zi' -o -path './lib/zcompile' \
+              -o -path './lib/templates/example-script' \) -print0
+          )
+          if ((checked == 0)); then
+            echo "::error::No Zsh sources were found."
+            exit 1
+          fi
+          echo "Checked ${checked} Zsh sources, ${failed} failed."
+          ((failed == 0))
 
-  zsh-n:
+  tests:
+    name: Focused Tests
     runs-on: ubuntu-latest
-    needs: zsh-matrix
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.zsh-matrix.outputs.matrix) }}
-    steps:
-      - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: "⚡ Install dependencies"
-        run: sudo apt update && sudo apt-get install -yq zsh
-      - name: "⚡ zsh -n: ${{ matrix.file }}"
-        env:
-          ZSH_FILE: ${{ matrix.file }}
-        run: |
-          zsh -n "${ZSH_FILE}"
-      - name: "⚡ zcompile ${{ matrix.file }}"
-        env:
-          ZSH_FILE: ${{ matrix.file }}
-        run: |
-          zsh -fc "zcompile ${ZSH_FILE}"; rc=$?
-          ls -al "${ZSH_FILE}.zwc"; exit "$rc"
-
-  unload-ownership-contracts:
-    name: Unload Ownership Contracts
-    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
+        with:
+          persist-credentials: false
+      - name: Install Zsh, jq and archive tools
+        id: install
+        run: sudo apt-get update && sudo apt-get install -yq zsh jq zip unzip
       - name: Test unload ownership contracts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/unload-ownership-contracts.zsh
-
-  repeated-load-ownership:
-    name: Repeated Load Ownership
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test ownership across repeated loads of one plugin
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/repeated-load-ownership.zsh
-
-  unload-hook-dispatch:
-    name: Unload Hook Dispatch
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test unload hook dispatch
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/unload-hook-dispatch.zsh
-
-  pack-service-first-install:
-    name: Pack Service First Install
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test the first pack install of a service profile
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/pack-service-first-install.zsh
-
-  package-manifest-fixtures:
-    name: Package Manifest Fixtures
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh and jq
-        run: sudo apt update && sudo apt-get install -yq zsh jq
       - name: Test that every vendored package manifest resolves through the reader
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/package-manifest-fixtures.zsh
-
-  ci-registration:
-    name: CI Registration
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
-      - name: Test that every focused test is a registered job
+      - name: Test that every focused test is registered here
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/ci-registration.zsh
-
-  release-tag-verification:
-    name: Release Tag Verification
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test release tag verification
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-tag-verification.zsh
-
-  main-branch-guard:
-    name: Main Branch Guard
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test main branch guard
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/main-branch-guard.zsh
-
-  release-plan:
-    name: Release Plan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test release planning
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-plan.zsh
-
-  promotion-release-verification:
-    name: Promotion Release Verification
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh and jq
-        run: sudo apt update && sudo apt-get install -yq zsh jq
       - name: Test promotion release verification
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promotion-release-verification.zsh
-
-  promotion-release-publication:
-    name: Promotion Release Publication
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test idempotent promotion publication
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promotion-release-publication.zsh
-
-  promoted-issue-closure:
-    name: Promoted Issue Closure
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh and jq
-        run: sudo apt update && sudo apt-get install -yq zsh jq
       - name: Test promoted issue closure
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promoted-issue-closure.zsh
-
-  benchmark-harness:
-    name: Benchmark Harness
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh and jq
-        run: sudo apt update && sudo apt-get install -yq zsh jq
       - name: Test the benchmark runner and comparer
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/benchmark-harness.zsh
-
-  version-reporting:
-    name: Version reporting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test version reporting
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh tests/version-reporting.zsh
-
-  package-manifest-contract:
-    name: Package manifest contract
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test the package manifest contract
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/package-manifest-contract.zsh
-
-  package-manifest-parsing:
-    name: Package manifest parsing
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test package manifest parsing
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/package-manifest-parsing.zsh
-
-  path-resolution:
-    name: Path resolution
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test path resolution
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/path-resolution.zsh
-
-  disk-ice-resolution:
-    name: Disk Ice Resolution
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test disk ice resolution
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/disk-ice-resolution.zsh
-
-  gh-r-musl-detection:
-    name: gh-r musl detection
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test gh-r musl detection
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/gh-r-musl-detection.zsh
-
-  parallel-update:
-    name: Parallel Update
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test parallel update
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/parallel-update.zsh
-
-  plugin-autoload-fpath-scope:
-    name: Plugin Autoload Fpath Scope
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test plugin autoload fpath scope
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-fpath-scope.zsh
-  plugin-autoload-ice:
-    name: Plugin Autoload Ice
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test autoload ice forms
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-ice.zsh
-  load-object-status:
-    name: Load Object Status
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test load object status
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/load-object-status.zsh
-
-  nested-load-state:
-    name: Nested Load State
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test nested load state
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/nested-load-state.zsh
-
-  plugin-autoload-ownership:
-    name: Plugin Autoload Ownership
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test plugin autoload ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-autoload-ownership.zsh
-
-  plugin-standard-callbacks:
-    name: Plugin Standard Callbacks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test plugin standard callbacks
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/plugin-standard-callbacks.zsh
-
-  self-update-reload:
-    name: Self-update reload
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test self-update reload
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/self-update-reload.zsh
-
-  scheduler-idle:
-    name: Scheduler idle
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test scheduler idle behavior
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/scheduler-idle.zsh
-
-  annex-unregister:
-    name: Annex Unregister
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test annex unregister
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/annex-unregister.zsh
-
-  atinit-deferred-marker:
-    name: Atinit Deferred Marker
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test atinit deferred marker
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/atinit-deferred-marker.zsh
-
-  archive-extraction:
-    name: Archive extraction
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh and archive tools
-        run: sudo apt update && sudo apt-get install -yq zsh zip unzip
       - name: Test archive extraction
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh tests/archive-extraction.zsh
-
-  completion-refresh:
-    name: Completion refresh
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test completion refresh
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh tests/completion-refresh.zsh
-
-  home-preparation:
-    name: Home Preparation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test home preparation
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/home-preparation.zsh
-
-  hook-ownership:
-    name: Hook ownership
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test hook ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/hook-ownership.zsh
-
-  ice-tokenizer:
-    name: Ice tokenizer
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test ice tokenizer
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/ice-tokenizer.zsh
-
-  message-formatting:
-    name: Message formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test message formatting
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/message-formatting.zsh
-
-  source-hygiene:
-    name: Source Hygiene
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test source hygiene
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/source-hygiene.zsh
-
-  subst-nesting:
-    name: Subst Nesting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test substitution nesting
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/subst-nesting.zsh
-
-  snippet-directory-mirror:
-    name: Snippet directory mirror
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install Zsh
-        run: sudo apt update && sudo apt-get install -yq zsh
       - name: Test snippet directory mirror
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/snippet-directory-mirror.zsh
       - name: Test snippet update status
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/snippet-update-status.zsh
+
+  gate:
+    name: Zsh Gate
+    if: ${{ always() }}
+    needs: [syntax, tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require the syntax pass and every focused test
+        env:
+          SYNTAX_RESULT: ${{ needs.syntax.result }}
+          TESTS_RESULT: ${{ needs.tests.result }}
+        run: |
+          failed=0
+          for result_name in SYNTAX_RESULT TESTS_RESULT; do
+            result="${!result_name}"
+            if [[ "${result}" != success ]]; then
+              echo "::error::${result_name} was '${result}', not 'success'."
+              failed=1
+            fi
+          done
+          exit "${failed}"

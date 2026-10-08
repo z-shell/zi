@@ -5,7 +5,8 @@
 # `zi load -h' and `zi load --help' print the options of `load' and return 1,
 # as `zi light -h' does, instead of taking `-h' as a plug-in ID and trying to
 # clone it (#579). `load' lists only -h and --help: -b is documented for
-# `light' alone.
+# `light' alone. Help is a whole argument: `zi load -b' of a local plug-in
+# whose path contains ` -h ' or ` --help ' still loads it.
 
 builtin emulate -R zsh
 setopt pipe_fail extended_glob
@@ -107,6 +108,26 @@ expect_help() {
   (( failures == failed_before )) && builtin print -r -- "ok - $label"
 }
 
+# expect_load <label> <plug-in directory name>: `zi load -b' of a local
+# plug-in whose path contains a help-like word loads it. Help is a whole
+# argument, never text inside one.
+expect_load() {
+  typeset label=$1 dir="${temp_root}/$2" actual
+  typeset -i failed_before=failures
+  command mkdir -p "$dir" || fail "create ${dir}"
+  builtin print -r -- 'demo_loaded() { :; }' > "${dir}/demo.plugin.zsh" ||
+    fail "write the plug-in in ${dir}"
+  command rm -f -- "${temp_root}/downloads"
+  actual="$(probe "zi load -b \"\$ZI_TEST_ROOT/${2}\"; builtin print -r -- \"rc=\$? loaded=\${+functions[demo_loaded]}\"")" ||
+    { not_ok "$label: zi.zsh did not source"; return; }
+  [[ $actual == *$'\n'"rc=0 loaded=1"* ]] ||
+    not_ok "$label: the plug-in was not loaded; got [${(j: | :)${(@f)actual}}]"
+  [[ $actual != *"Available options for"* ]] || not_ok "$label: printed the usage"
+  [[ ! -e ${temp_root}/downloads ]] ||
+    not_ok "$label: tried a download: $(<${temp_root}/downloads)"
+  (( failures == failed_before )) && builtin print -r -- "ok - $label"
+}
+
 # Positive control: the recorders see a download that does happen.
 command rm -f -- "${temp_root}/downloads"
 probe 'zi load example-owner/example-plugin' >/dev/null
@@ -115,7 +136,10 @@ probe 'zi load example-owner/example-plugin' >/dev/null
 
 expect_help 'zi load -h'     'zi load -h'     load  '-h' '-b -f -x'
 expect_help 'zi load --help' 'zi load --help' load  '-h' '-b -f -x'
+expect_help 'zi load -b -h'  'zi load -b -h'  load  '-h' '-b -f -x'
 expect_help 'zi light -h'    'zi light -h'    light '-h -b' ''
+expect_load 'zi load -b with -h inside the path'     'plugin -h dir'
+expect_load 'zi load -b with --help inside the path' 'plugin --help dir'
 
-(( failures == 0 )) || fail "${failures} help check(s) failed"
-builtin print -r -- "ok - zi load -h prints the load options and downloads nothing"
+(( failures == 0 )) || fail "${failures} check(s) failed"
+builtin print -r -- "ok - zi load -h prints the load options and downloads nothing; help inside an argument does not"

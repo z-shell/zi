@@ -3,11 +3,12 @@
 # keywords only for pull requests into the default branch, so `Closes #N` in a
 # pull request merged into next has no effect until next reaches main.
 #
-# Only the pull request body is read, and only an unqualified closing clause counts: a keyword and a same-repository
-# reference that ends the sentence or the line, or is followed by another
-# closing clause. A body edited after the merge is not trusted: its references
-# are reported instead, since GitHub reads closing keywords only at merge. `Refs #N`, `Closes #N after ...`, and references inside
-# comments or code are reported, never closed (z-shell/.github#523).
+# Only the pull request body is read, and only an unqualified closing clause
+# counts: a keyword and a same-repository reference that ends the sentence or
+# the line, or is followed by another closing clause. `Refs #N`, `Closes #N
+# after ...`, and references inside comments or code are reported, never
+# closed (z-shell/.github#523). A body edited after the merge is not trusted
+# either, since GitHub reads closing keywords only at merge.
 
 emulate -L zsh
 setopt err_return no_unset pipe_fail
@@ -135,7 +136,7 @@ report "## Issues delivered by promotion #${promotion_pr}"
 report ''
 
 integer failures=0
-typeset issue issue_json state verb
+typeset issue issue_json state
 for issue in ${(on)${(k)closed_by}}; do
   if ! issue_json=$(gh api "repos/${repository}/issues/${issue}"); then
     report "- #${issue}: could not be read (from #${closed_by[$issue]})"

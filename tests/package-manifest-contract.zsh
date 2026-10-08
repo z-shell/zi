@@ -100,6 +100,37 @@ rejects 'wrong schema version' 'expected 1' \
 rejects 'keywords not a string array' 'expected string' \
   '{"name":"p","keywords":[1],"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
 
+# JSON has no NaN or Infinity. Python's parser accepts them by default, so a
+# manifest that Zi's parser and every strict consumer reject must not pass.
+rejects 'NaN value' 'invalid JSON: NaN is not a JSON value' \
+  '{"name":"p","author":NaN,"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'Infinity value' 'invalid JSON: Infinity is not a JSON value' \
+  '{"name":"p","author":[Infinity],"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects '-Infinity value' 'invalid JSON: -Infinity is not a JSON value' \
+  '{"name":"p","author":{"x":-Infinity},"zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+
+# JSON Schema counts a number with a zero fraction as an integer, so 1.0 is
+# the schema pin 1. A boolean or a fractional number is still not.
+accepts 'integral float schema pin' '{"name":"p","zsh-data":{"schema":1.0,
+  "plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'boolean schema pin' 'is boolean, expected integer' \
+  '{"name":"p","zsh-data":{"schema":true,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+rejects 'fractional schema pin' 'is float, expected integer' \
+  '{"name":"p","zsh-data":{"schema":1.5,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+# A fraction too small for a binary float must not round into an integer.
+rejects 'rounded fractional schema pin' 'is float, expected integer' \
+  '{"name":"p","zsh-data":{"schema":1.0000000000000001,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+accepts 'exponent schema pin' '{"name":"p","zsh-data":{"schema":1E0,
+  "plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+# Above the float range a number stays a float, so a large exponent cannot
+# make the validator build an integer with that many digits.
+rejects 'overflowing schema pin' 'is float, expected integer' \
+  '{"name":"p","zsh-data":{"schema":1e400,"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+# An exponent beyond what Decimal can hold is still a JSON number; it must be
+# read as before (a float), not crash the run.
+accepts 'huge exponent in metadata' '{"name":"p","author":[1e9999999999999999999,1e-9999999999999999999,0e9999999999999999999],
+  "zsh-data":{"plugin-info":{"user":"u","plugin":"r"},"zi-ices":{"default":{"git":""}}}}'
+
 # A manifest that is not valid UTF-8 must be reported, not crash the run and
 # abandon every file after it.
 typeset badenc="${temp_root}/badenc.json"
@@ -130,6 +161,22 @@ typeset faked_out
 faked_out="$(command python3 "${faked}/scripts/${validator:t}" "${temp_root}/ok2.json" 2>&1 || true)"
 [[ $faked_out == *'does not implement'* ]] ||
   fail "an unimplemented contract keyword did not stop the run: ${faked_out}"
+
+# The contract is read with the same number handling as a manifest, so a
+# number Decimal cannot hold must not crash its load either.
+typeset huge="${temp_root}/huge-contract"
+command mkdir -p "${huge}/contracts" "${huge}/scripts"
+command cp "$validator" "${huge}/scripts/"
+command python3 -c '
+import json, sys
+text = json.dumps(json.load(open(sys.argv[1])))
+marked = text.replace("\"$defs\": {", "\"$defs\": {\"extreme\": 1e9999999999999999999, ", 1)
+assert marked != text
+open(sys.argv[2], "w").write(marked)' "$schema" "${huge}/contracts/package-manifest-v1.json" ||
+  fail "could not build the contract with an extreme exponent"
+typeset huge_out
+huge_out="$(command python3 "${huge}/scripts/${validator:t}" "${temp_root}/ok2.json" 2>&1)" ||
+  fail "a contract holding an extreme exponent did not load: ${huge_out}"
 
 # Drift check. The contract is only worth having if it still describes the
 # parser, so derive both sides from source and compare rather than restating

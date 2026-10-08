@@ -10,7 +10,7 @@ Organization policy is owned by [`z-shell/.github` `AGENTS.md`](https://github.c
 Before acting, select every surface below whose tasks and file patterns both match the work, and read each one. If your runtime does not load a listed file automatically, open it explicitly.
 
 - `AGENTS.md` (this file): tasks `all`; files `**`
-- `.github/skills/code-review/SKILL.md`: tasks `code-review`, `review-readiness`, `organization-review`, `project-health`, `repository-health`, `repository-health-audit`, `repository-health-check`; files `**`; organization skill vendored at approved revision `5593b7d28430`
+- `.github/skills/code-review/SKILL.md`: tasks `code-review`, `review-readiness`, `organization-review`, `project-health`, `repository-health`, `repository-health-audit`, `repository-health-check`; files `**`; organization skill vendored at approved revision `ede9ed985dd2`
 
 Organization-wide surfaces are routed by the [organization manifest](https://github.com/z-shell/.github/blob/main/.github/instruction-surfaces.json). This block is delivered and verified under [decision 0031](https://github.com/z-shell/.github/blob/main/decisions/0031-per-repository-instruction-routing-delivery.md).
 
@@ -31,13 +31,13 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - `hotfix-*` branches may target `main` directly.
 - A `dependabot/*` branch opened by `dependabot[bot]` may also target `main`, because Dependabot security updates ignore `target-branch: next`. `scripts/main-branch-guard.zsh` enforces the allowed sources.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
-- A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. Link the issue for the Development sidebar (a closing keyword, or `addCloseIssueReferences` when the link is missing) and close the accumulated issues by hand when `next` is promoted to `main`; do not close them early.
+- A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. When the promotion reaches `main`, `.github/workflows/promotion-issue-closure.yml` closes each issue a promoted pull request names in an unqualified closing clause (`Closes #N.`, or `Closes #N` ending the line). `Refs #N`, a qualified clause such as `Closes #N after ...`, another repository's issue, and text in comments or code stay open and are listed in the run summary for a manual check. Only the pull request body as it stood at merge is trusted: a body edited after the merge is reported instead of closed, and an issue linked only through the Development sidebar (`addCloseIssueReferences`) is listed in the summary rather than closed, so put the closing clause in the body. Do not close issues before promotion.
 
 ## Before merging
 
 - Commit or push authorization does not authorize a merge or enabling auto-merge.
 - Before an authorized merge, read all PR conversation comments, review summaries (including findings without inline comments), and review threads with complete pagination. Check unresolved and outdated threads against the current head; outdated does not mean addressed. Record fixes or evidence-backed dispositions through the authorized review workflow before resolving threads.
-- Green CI and a `COMMENTED` review are not approval. Require the applicable code-owner approval and investigate every actionable finding before merging.
+- Green CI and a `COMMENTED` review are not approval. Follow the [organization review-of-record procedure](https://github.com/z-shell/.github/blob/main/runbooks/pull-requests.md#3-review), including its explicitly maintainer-elected fallback for class 3. Require every approval mandated by the applicable live rulesets and investigate every actionable finding. CODEOWNERS routes review; its presence alone does not prove enforced approval, and a fallback does not bypass a required code-owner approval or constitute independent approval.
 - Recheck the exact head SHA, required checks, approvals, and unresolved threads immediately before merging. New commits invalidate the prior merge assessment. Use `--match-head-commit <reviewed-head-sha>` for a GitHub CLI merge.
 - Do not use `--admin` or another ruleset bypass in the normal merge workflow. If protection blocks the merge, stop and report the unmet requirement; a bypass requires separate explicit authorization for that exact exception.
 
@@ -46,7 +46,7 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - Write Zsh-first code and avoid Bash-only syntax.
 - Run the existing Zsh syntax, integration, and focused tests for changed paths.
 - Keep user-facing documentation in the canonical wiki when practical.
-- Follow the organization commit policy. A `Co-authored-by` trailer may credit a real human, including the pull-request author; never credit a bot, AI agent, or automation as a co-author.
+- Follow the organization commit policy and [tool-attribution preference](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution). Agents must omit automatic tool credits, AI co-author and session trailers, and session links, and verify outgoing text. Preserve accurate contributor credit and required third-party notices; never fabricate human credit or claim exclusively human authorship without evidence.
 
 ## Code review
 

@@ -9,6 +9,8 @@ typeset project_root="${0:A:h:h}"
 typeset fixture_root="$project_root/tests/fixtures/plugin-standard-callbacks"
 typeset temp_root
 temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-plugin-callback-test.XXXXXXXX")" || exit 1
+# macOS TMPDIR commonly ends in a slash; compare with the normalized PWD.
+temp_root=${temp_root:a}
 trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
 
 fail() {

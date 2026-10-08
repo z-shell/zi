@@ -8,154 +8,18 @@ on:
       - main
       - next
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# No concurrency group (#597). These jobs gate merges and finish in seconds.
+# A push plus a pull-request edit fire two events for one head SHA, and any
+# group cancels one of them (a running run with cancel-in-progress, a pending
+# one without). The cancelled check runs for required contexts then kept a
+# pull request blocked while the same contexts had passed (#594). Letting a
+# superseded run finish costs seconds; a cancelled run can block a merge.
 
 permissions:
-  pull-requests: read
   contents: read
 
 jobs:
-  commit-lint:
-    name: Validate Commits
-    runs-on: ubuntu-latest
-    steps:
-      - name: "⤵️ Check out code from GitHub"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: "📝 Lint commit messages"
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          POLICY_BASELINE_SHA: d092066be26d4ec5aedc7a19ed3d85e03a343b35
-          DISALLOWED_TRAILER_PATTERN: '^[[:space:]]*Co-authored-by:.*(\[bot\]|noreply@anthropic\.com|noreply@openai\.com|noreply@x\.ai|codex@openai\.com|copilot@github\.com|claude@anthropic\.com)'
-        run: |
-          set -euo pipefail
-
-          CONVENTIONAL_PATTERN='^(feat|fix|perf|refactor|docs|test|build|ci|style|chore|revert)(\([^)]+\))?!?: .{1,72}$'
-
-          errors=0
-          checked=0
-
-          while IFS= read -r sha; do
-            # grep -c, not grep -q. Under pipefail, grep -q exits on its first
-            # match while git is still writing, git takes SIGPIPE and returns
-            # 141, and the pipeline result turns a real match into a miss for
-            # any message larger than the pipe buffer. grep -c reads to the end,
-            # so the writer always finishes (z-shell/zi#486).
-            if [ "$(git show -s --format='%B' "$sha" | grep -ciE "$DISALLOWED_TRAILER_PATTERN")" -gt 0 ]; then
-              echo "❌ Disallowed trailer found (${sha:0:7}): remove before merging"
-              errors=$((errors + 1))
-            fi
-
-            parent_count=$(git cat-file -p "$sha" | grep -c '^parent' || true)
-            [ "$parent_count" -gt 1 ] && continue
-
-            # The repository adopted enforced Conventional Commits at this
-            # baseline. Preserve older history instead of requiring a rewrite
-            # when the persistent next branch is promoted.
-            if git merge-base --is-ancestor "$sha" "$POLICY_BASELINE_SHA"; then
-              continue
-            fi
-
-            subject=$(git show -s --format='%s' "$sha")
-            checked=$((checked + 1))
-
-            if ! echo "$subject" | grep -qE "$CONVENTIONAL_PATTERN"; then
-              echo "❌ Invalid commit message (${sha:0:7}): expected type(scope): description ≤72 chars"
-              errors=$((errors + 1))
-            fi
-          done < <(git log --format='%H' "${BASE_SHA}..${HEAD_SHA}")
-
-          if [ "$errors" -gt 0 ]; then
-            echo "::error::$errors commit(s) failed validation — run: git rebase -i ${BASE_SHA}"
-            exit 1
-          fi
-
-          echo "✅ $checked commit(s) validated"
-
-  pr-title:
-    name: Validate PR Title
-    runs-on: ubuntu-latest
-    steps:
-      - name: "📋 Check PR title follows Conventional Commits"
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          PATTERN='^(feat|fix|perf|refactor|docs|test|build|ci|style|chore|revert)(\([^)]+\))?!?: .{1,72}$'
-          if ! echo "$PR_TITLE" | grep -qE "$PATTERN"; then
-            echo "::error::PR title must follow Conventional Commits: type(scope): description"
-            exit 1
-          fi
-          echo "✅ PR title valid"
-
-  branch-naming:
-    name: Validate Branch Name
-    runs-on: ubuntu-latest
-    steps:
-      - name: "🌿 Check branch naming convention"
-        env:
-          BRANCH: ${{ github.head_ref }}
-        run: |
-          # decisions/0022: a shape check, not an identifier check.
-          # Traceability moved to Validate Issue Link.
-          PATTERN='^((feature|bug|hotfix)-[1-9][0-9]*(-[a-z0-9]+)*|(feat|fix|perf|refactor|docs|test|build|ci|style|chore|revert|feature|bug|hotfix)/[a-z0-9]+(-[a-z0-9]+)*)$'
-          if echo "$BRANCH" | grep -qE '^(dependabot|renovate|copilot|codex)/' || \
-             [ "$BRANCH" = "next" ]; then
-            echo "✅ OK"
-            exit 0
-          fi
-          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
-            echo "::error::Branch name must be feature-<id>, bug-<id>, or hotfix-<id> with an optional lowercase slug, or <type>/<slug> over the Conventional Commits types (z-shell/.github decisions/0022)"
-            exit 1
-          fi
-          echo "✅ Branch name valid"
-
-  issue-link:
-    name: Validate Issue Link
-    runs-on: ubuntu-latest
-    steps:
-      - name: "🔗 Check the pull request is traceable to an issue"
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
-          BRANCH: ${{ github.head_ref }}
-          EXEMPT_LABEL: meta:no-issue
-        run: |
-          set -euo pipefail
-
-          # z-shell/.github decisions/0022 moves traceability off the branch
-          # name and onto the pull request. Three outcomes pass, and the job
-          # says which applied, so an exemption is visible in review rather
-          # than silent. Everything comes from the pull_request event payload,
-          # so the job needs no token.
-
-          if printf '%s\n' "$BRANCH" | grep -qE '^(dependabot|renovate|copilot|codex)/'; then
-            echo "✅ Exempt: $BRANCH is an automation branch"
-            exit 0
-          fi
-
-          if [ "$BRANCH" = "next" ]; then
-            echo "✅ Exempt: next is the persistent integration branch"
-            exit 0
-          fi
-
-          if printf '%s\n' "$PR_LABELS" | tr ',' '\n' | grep -qxF "$EXEMPT_LABEL"; then
-            echo "✅ Exempt: labelled $EXEMPT_LABEL"
-            exit 0
-          fi
-
-          # A bare #123, the cross-repository owner/repo#123 shorthand, or a
-          # full issue or pull-request URL.
-          ISSUE_REFERENCE_PATTERN='(^|[^A-Za-z0-9_])#[1-9][0-9]*([^0-9]|$)|[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[1-9][0-9]*|https://github\.com/[^/ ]+/[^/ ]+/(issues|pull)/[1-9][0-9]*'
-
-          if printf '%s\n' "${PR_BODY:-}" | grep -qE "$ISSUE_REFERENCE_PATTERN"; then
-            echo "✅ The pull request references an issue"
-            exit 0
-          fi
-
-          echo "::error::No issue reference found. Link the owning issue in the pull-request body (Closes #123, or a plain #123 for work an issue tracks but this does not close). If this pull request genuinely has no owning issue, a maintainer applies the ${EXEMPT_LABEL} label (z-shell/.github decisions/0022)."
-          exit 1
+  policy:
+    uses: z-shell/.github/.github/workflows/commit-lint.yml@6fac3d47a61b27db54e50a0519c1e79b2935eda4 # main
+    permissions:
+      contents: read

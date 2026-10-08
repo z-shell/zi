@@ -114,7 +114,7 @@ run_case() (
       typeset -gx XDG_CACHE_HOME="$case_root/existing cache"
       typeset -gx XDG_CONFIG_HOME="$case_root/existing config"
       command mkdir -p -- "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME"
-      command chmod 755 -- "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME"
+      command chmod -- 755 "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME"
       expected_home="$XDG_DATA_HOME/zi"
       expected_cache="$XDG_CACHE_HOME/zi"
       expected_config="$XDG_CONFIG_HOME/zi"
@@ -147,7 +147,7 @@ run_case() (
       ;;
     legacy-only)
       command mkdir -p -- "$HOME/.zi/plugins"
-      command chmod 755 -- "$HOME/.zi"
+      command chmod -- 755 "$HOME/.zi"
       expected_home="$HOME/.zi"
       expected_cache="$HOME/.cache/zi"
       expected_config="$HOME/.config/zi"

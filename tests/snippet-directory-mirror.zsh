@@ -97,7 +97,7 @@ builtin print -r -- utility >| "$source_repo/modules/utility/init.zsh"
   builtin print -r -- 'printf "%s\n" https--github.com--sorin-ionescu--prezto--trunk--modules--archive'
 } >| "$shim_dir/tree" || fail "write tree shim"
 
-command chmod +x -- "$shim_dir/git" "$shim_dir/mv" "$shim_dir/svn" "$shim_dir/tree" || \
+command chmod -- +x "$shim_dir/git" "$shim_dir/mv" "$shim_dir/svn" "$shim_dir/tree" || \
   fail "make command shims executable"
 
 typeset -gx HOME="$temp_root/home"

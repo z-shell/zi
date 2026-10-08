@@ -32,6 +32,27 @@ ZI[nval-ice-list]="blockf|silent|lucid|trackbinds|cloneonly|nocd|run-atpull|noco
 ksh|\!ksh|csh|\!csh|aliases|countdown|light-mode|is-snippet|git|verbose|cloneopts|pullopts|debug|null|binary|make|\
 nocompile|reset"
 
+# The ices that never take a value, as a set for a constant-time lookup in
+# .zi-ice (#554): matching every word against a list as a pattern made `zi ice`
+# about 20% slower. A word that starts with one of these names and has more
+# text after it is a plugin or snippet ID, not that ice (#527).
+# ZI[nval-ice-list] lists the ices for which even an empty value means
+# something, so it also holds ices that take a value; those are left out here,
+# or their values would be read as IDs (#606): make'!', nocompile'!',
+# cloneopts'…', pullopts'…' and reset'…'. `svn` is a flag too but lives outside
+# ZI[nval-ice-list] because side.zsh orders it last; it is added here. Rebuilt
+# on every source.
+typeset -gAH ZI_NVAL_ICES
+() {
+  builtin emulate -L zsh
+  local name
+  ZI_NVAL_ICES=()
+  for name in ${(s:|:)ZI[nval-ice-list]//\\/} svn; do
+    [[ $name = (cloneopts|pullopts|make|nocompile|reset) ]] && continue
+    ZI_NVAL_ICES[$name]=1
+  done
+}
+
 # Subcommands list
 ZI[cmd-list]="-V|--version|version|-h|--help|help|subcmds|icemods|analytics|man|self-update|times|zstatus|load|light|unload|\
 snippet|ls|ice|update|status|report|delete|loaded|list|cd|create|edit|glance|stress|changes|recently|clist|completions|\
@@ -1993,9 +2014,9 @@ builtin setopt no_aliases
       [[ -n ${reply[1-correct]} ]] && ___pdir_path="${reply[1-correct]:h}"
     fi
     [[ -z ${path[(er)$___pdir_path]} ]] && {
-      [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
+      [[ $___mode != light(|-b) ]] && .zi-diff-env "${ZI[CUR_USPL2]}" begin
       path=( "${___pdir_path%/}" ${path[@]} )
-      [[ $___mode != light ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
+      [[ $___mode != light(|-b) ]] && .zi-diff-env "${ZI[CUR_USPL2]}" end
       .zi-add-report "${ZI[CUR_USPL2]}" "$ZI[col-info2]$___pdir_path$ZI[col-rst] added to \$PATH"
     }
     [[ -n ${reply[1-correct]} && ! -x ${reply[1-correct]} ]] && command chmod a+x ${reply[@]}
@@ -2600,9 +2621,9 @@ builtin setopt no_aliases
     # A no-value ice followed by more text is not that ice: `sharkdp/hexyl`
     # must not tokenize as `sh` with the value `arkdp/hexyl`. The word is the
     # plugin or snippet ID, so tokenizing stops here. Valued ices keep their
-    # remainder as before. `svn` is a flag too but lives outside
-    # ZI[nval-ice-list] because side.zsh orders it last; it is named here.
-    [[ ${match[2]} = (${~ZI[nval-ice-list]}|svn) && -n ${match[3]#(:|=)} ]] && break
+    # remainder as before. The set lookup comes first and costs one hash
+    # read, so a valued ice never pays for the remainder test (#554).
+    (( ${+ZI_NVAL_ICES[${match[2]}]} )) && [[ -n ${match[3]#(:|=)} ]] && break
     ZI_ICES[${match[2]}]+="${ZI_ICES[${match[2]}]:+;}${match[3]#(:|=)}"
     retval+=1
   done
@@ -2999,6 +3020,7 @@ zi() {
     cdreplay      "-h|--help|-q|--quiet"
     module        "-h|--help|-B|--build|-I|--info|-r|--reset"
     times         "-h|--help|-m|--moments|-s|-S|--seconds|-a|--all"
+    load          "-h|--help"
     light         "-h|--help|-b|--bindkeys"
     report        "-h|--help|-a|--all"
     snippet       "-h|--help|-f|--force|--command|-x"
@@ -3008,7 +3030,10 @@ zi() {
   if [[ $cmd == (times|unload|env-whitelist|update|self-update|compile|uncompile|snippet|load|light|report|cdreplay|module|cdclear|delete) ]]; then
     if (( $@[(I)-*] || OPTS[opt_-h,--help] )); then
       .zi-parse-opts "$cmd" "$@"
-      if (( OPTS[opt_-h,--help] )); then
+      # .zi-parse-opts also finds an option inside an argument, such as a
+      # quoted path with ` -h ' in it. For `load', help is a whole argument
+      # only, so such a path still loads (#579).
+      if (( OPTS[opt_-h,--help] )) && { [[ $cmd != load ]] || (( ${#${(M)@:#(-h|--help)}} )) }; then
         +zi-prehelp-usage-message $cmd $___opt_map[$cmd] $@
         return 1
       fi
@@ -3204,7 +3229,11 @@ zi() {
               ICE[cloneonly]=""
             }
 
-            (( ___is_snippet )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${ICE[light-mode]+light}:-${OPTS[(I)-b]:+light-b}}"
+            # A classic `load'/`light' plugin carries ___is_snippet=-1, so only a
+            # positive value selects the snippet options. `-b' (bindkey-only
+            # tracking) belongs to `light' and wins over a `light-mode' ice; a
+            # classic `load' keeps full tracking.
+            (( ___is_snippet > 0 )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${${(M)cmd:#light}:+${OPTS[(I)-b]:+light-b}}:-${ICE[light-mode]+light}}"
 
             .zi-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
             integer ___last_retval=$?

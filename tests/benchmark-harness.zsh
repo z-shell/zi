@@ -101,6 +101,17 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --ca
 jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == null' "$temp_root/other-cmp.json" >/dev/null ||
   fail "incomparable reports must not flag"
 grep -q "not comparable" "$temp_root/other.md" || fail "Markdown must say why nothing is flagged"
+grep -q 'variant lists `' "$temp_root/other.md" && fail "Markdown must not name equal variant lists as a difference"
+
+# The variant list sets each sample's position and contention schedule, so a
+# candidate measured with another list, even the same labels in another
+# order, is not comparable either, and the Markdown names both lists (#560).
+jq '.workload.variants = ["b", "a"] | .cases["ice-200"].median *= 1.3 | .cases["ice-200"].p95 *= 1.3' "$temp_root/a.json" > "$temp_root/reordered.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/reordered.json" \
+  --output "$temp_root/reordered-cmp.json" --markdown "$temp_root/reordered.md" >/dev/null || fail "a comparison across variant lists must still exit 0"
+jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == null' "$temp_root/reordered-cmp.json" >/dev/null ||
+  fail "reports measured with different variant lists must not flag"
+grep -q 'variant lists `a, b` versus `b, a`' "$temp_root/reordered.md" || fail "Markdown must name both variant lists"
 
 # Reports with different case sets are rejected up front, not deep inside jq.
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/b.json" \
@@ -126,6 +137,11 @@ jq '.source_revision = "0000000000000000000000000000000000000000"' "$temp_root/a
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
   --control "$temp_root/ctl-rev.json" --output "$temp_root/ctl-rev-cmp.json" >/dev/null 2>"$temp_root/ctl-rev.err" && fail "a control from another revision must be rejected"
 grep -q "control is not a second run of the baseline" "$temp_root/ctl-rev.err" || fail "the other-revision control must be named"
+jq '.workload.variants += ["c"]' "$temp_root/a.json" > "$temp_root/ctl-variants.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
+  --control "$temp_root/ctl-variants.json" --output "$temp_root/ctl-variants-cmp.json" >/dev/null 2>"$temp_root/ctl-variants.err" && fail "a control measured with another variant list must be rejected"
+grep -q "control is not a second run of the baseline (.*variants)" "$temp_root/ctl-variants.err" || fail "the other-variant-list control must be named"
+[[ ! -e $temp_root/ctl-variants-cmp.json ]] || fail "a control with another variant list must not produce a comparison"
 
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"
@@ -182,10 +198,14 @@ jq -e '.cases["ice-200"].count == 2' "$temp_root/unsup/old.json" >/dev/null || f
 jq -e '.cases["manifest-21"].count == 2 and .cases["ice-200"].count == 2' "$temp_root/unsup/new.json" >/dev/null || fail "the checkout with the reader must still measure manifest-21"
 
 # Baseline without the API, candidate with it: unsupported, never failed.
-zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/old.json" --candidate "$temp_root/unsup/new.json" \
-  --control "$temp_root/unsup/old.json" --output "$temp_root/unsup-cmp.json" --markdown "$temp_root/unsup.md" >/dev/null || fail "a baseline without the API must not fail the comparison"
-jq -e '.unsupported == ["manifest-21"] and .failed == [] and .flagged == [] and .cases["manifest-21"].unsupported.candidate == null and .cases["ice-200"].flag != null' "$temp_root/unsup-cmp.json" >/dev/null ||
-  fail "a baseline without the API must be listed as unsupported and nothing else"
+# Pin the supported case's timings: independent tiny-count samples can flag
+# noise. A deterministic regression must still flag beside an unsupported API.
+jq '.cases["ice-200"].median = 100 | .cases["ice-200"].p95 = 100' "$temp_root/unsup/old.json" > "$temp_root/unsup/base-fixed.json" || fail "pin baseline timing"
+jq '.cases["ice-200"].median = 130 | .cases["ice-200"].p95 = 130' "$temp_root/unsup/new.json" > "$temp_root/unsup/candidate-fixed.json" || fail "pin candidate timing"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/base-fixed.json" --candidate "$temp_root/unsup/candidate-fixed.json" \
+  --control "$temp_root/unsup/base-fixed.json" --output "$temp_root/unsup-cmp.json" --markdown "$temp_root/unsup.md" >/dev/null || fail "a baseline without the API must not fail the comparison"
+jq -e '.unsupported == ["manifest-21"] and .failed == [] and .flagged == ["ice-200"] and .cases["manifest-21"].unsupported.candidate == null and .cases["ice-200"].flag == true' "$temp_root/unsup-cmp.json" >/dev/null ||
+  fail "the missing API must be unsupported while the supported regression is flagged"
 grep -q '^| manifest-21 | unsupported | not compared | .*zi-read-package-manifest.* | | unsupported |$' "$temp_root/unsup.md" || fail "the unsupported case must be rendered with its reason and control state"
 table_rows_ok "$temp_root/unsup.md" || fail "an unsupported row must not misalign the Markdown table"
 

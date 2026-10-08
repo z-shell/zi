@@ -16,7 +16,9 @@ from __future__ import annotations
 import json
 import re
 import sys
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
+from typing import Any, NoReturn
 
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "contracts" / "package-manifest-v1.json"
 
@@ -36,6 +38,42 @@ JSON_TYPES: dict[str, type | tuple[type, ...]] = {
     "integer": int, "number": (int, float), "boolean": bool,
 }
 CONTAINERS = ("properties", "$defs")
+
+
+class NonJsonConstant(ValueError):
+    """A NaN, Infinity or -Infinity token, which JSON does not define."""
+
+
+def reject_constant(name: str) -> NoReturn:
+    raise NonJsonConstant(f"{name} is not a JSON value")
+
+
+def parse_number(text: str) -> int | float:
+    """Read a number with a fraction or exponent part from its exact digits.
+
+    JSON Schema counts a number with a zero fraction (1.0, 1E0) as an
+    integer, so it becomes an int. Deciding from the parsed float would round
+    a small fraction such as 1.0000000000000001 into an integer. Above the
+    float range the value stays a float (infinity), as before, so an
+    exponent cannot make the validator build a huge int. An exponent too
+    large for Decimal itself is read as a float too, as before.
+    """
+    try:
+        exact = Decimal(text)
+    except InvalidOperation:
+        return float(text)
+    if exact == exact.to_integral_value() and exact.adjusted() <= 308:
+        return int(exact)
+    return float(text)
+
+
+def load_json(path: Path) -> Any:
+    """Parse strict JSON: Python's parser also takes NaN and Infinity."""
+    return json.loads(
+        path.read_text(encoding="utf-8"),
+        parse_constant=reject_constant,
+        parse_float=parse_number,
+    )
 
 
 def unsupported_keywords(node: object, where: str = "#") -> list[str]:
@@ -130,13 +168,13 @@ ANNEX_CAPABILITIES = ("bgn", "dl", "rdl")
 
 def check(path: Path) -> list[str]:
     try:
-        doc = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        doc = load_json(path)
+    except (OSError, UnicodeError, json.JSONDecodeError, NonJsonConstant) as exc:
         return [f"{path}: unreadable or invalid JSON: {exc}"]
 
     try:
-        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        schema = load_json(SCHEMA_PATH)
+    except (OSError, UnicodeError, json.JSONDecodeError, NonJsonConstant) as exc:
         return [f"{SCHEMA_PATH}: contract unreadable: {exc}"]
 
     ignored = unsupported_keywords(schema)

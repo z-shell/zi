@@ -101,6 +101,7 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --ca
 jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == null' "$temp_root/other-cmp.json" >/dev/null ||
   fail "incomparable reports must not flag"
 grep -q "not comparable" "$temp_root/other.md" || fail "Markdown must say why nothing is flagged"
+grep -q 'variant lists `' "$temp_root/other.md" && fail "Markdown must not name equal variant lists as a difference"
 
 # The variant list sets each sample's position and contention schedule, so a
 # candidate measured with another list, even the same labels in another

@@ -2,7 +2,7 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
-# Every focused test under tests/ is registered by hand as a workflow job. A
+# Every focused test under tests/ is registered by hand as a workflow step. A
 # test nobody registered never runs and nothing notices (#549). Each check
 # reads one specific workflow, so a test mentioned by an unrelated workflow
 # cannot satisfy a requirement that belongs to another:

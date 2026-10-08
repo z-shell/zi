@@ -45,6 +45,10 @@ pr() {
              sha: $head_sha, repo: {full_name: "z-shell/zi"}},
       body: $body}]'
 }
+if [[ $1 == api && $2 == graphql ]]; then
+  [[ " $* " == *" number=${FAKE_EDITED:-none} "* ]] && print true || print false
+  exit 0
+fi
 if [[ $1 == issue && $2 == close ]]; then
   [[ $3 == ${FAKE_FAIL_CLOSE:-none} ]] && exit 1
   print -r -- "$3 ${(j: :)@[4,-1]}" >> "$FAKE_LOG"
@@ -56,7 +60,7 @@ case $* in
   (*"/commits/${FAKE_PICK1}/pulls"*)
     pr 701 next "$FAKE_PICK1" $'Closes #11. Refs #12\nAlso closes #17.' ;;
   (*"/commits/${FAKE_PICK2}/pulls"*)
-    pr 702 next "$FAKE_PICK2" $'Fixes #13 after review\nCloses z-shell/.github#5.\n<!-- Closes #14 -->\n`closes #18`\nResolves #15, closes #16 and fixes z-shell/zi#11\nFixes https://github.com/z-shell/zi/issues/20' ;;
+    pr 702 next "$FAKE_PICK2" $'Fixes #13 after review\nCloses z-shell/.github#5.\n<!-- Closes #14 -->\n`closes #18`\nResolves #15, closes #16 and fixes z-shell/zi#11\nFixes https://github.com/z-shell/zi/issues/20\nFixes #16 and fixes #23 after review\ncloses #22; only on Linux\nFixes #12.5 too\n```\nCloses #24' ;;
   (*"/commits/${FAKE_PICK3}/pulls"*)
     pr 703 main "$FAKE_PICK3" 'Closes #19.' ;;
   (*"/commits/"*"/pulls"*)
@@ -113,11 +117,21 @@ check '- #16: already closed (from #702)' "$tmp/summary"
 check '- #17: is a pull request, not closed (from #701)' "$tmp/summary"
 check '#13 in #702: "Fixes #13 after review"' "$tmp/summary"
 check 'z-shell/.github#5 in #702' "$tmp/summary"
-refute '#12' "$tmp/summary"
+refute 'Refs #12' "$tmp/summary"
 refute '#14' "$tmp/summary"
 refute '#18' "$tmp/summary"
 refute '#19' "$tmp/summary"
 check 'https://github.com/z-shell/zi/issues/20 in #702' "$tmp/summary"
+check '#23 in #702: "fixes #23 after review"' "$tmp/summary"
+check '#22 in #702: "closes #22; only on Linux"' "$tmp/summary"
+check '#12 in #702: "Fixes #12.5 too"' "$tmp/summary"
+refute '#24' "$tmp/summary"
+
+# A body edited after the merge is reported, not trusted.
+run_closer "$target" FAKE_EDITED=701
+check '15 --repo' "$tmp/log"
+check '- #11: closed (from #702)' "$tmp/summary"
+check '#11 in #701: body edited after merge' "$tmp/summary"
 
 # A dry run reports without closing.
 run_closer "$target" DRY_RUN=1

@@ -4,8 +4,9 @@
 # pull request merged into next has no effect until next reaches main.
 #
 # Only the pull request body is read, and only an unqualified closing clause counts: a keyword and a same-repository
-# reference that ends the sentence, the line, or is followed by another
-# closing clause. `Refs #N`, `Closes #N after ...`, and references inside
+# reference that ends the sentence or the line, or is followed by another
+# closing clause. A body edited after the merge is not trusted: its references
+# are reported instead, since GitHub reads closing keywords only at merge. `Refs #N`, `Closes #N after ...`, and references inside
 # comments or code are reported, never closed (z-shell/.github#523).
 
 emulate -L zsh
@@ -62,22 +63,24 @@ promotion_pr=$(jq -r '.number' <<<"$promotion")
 references_jq='
 def keyword: "(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)";
 def clean:
-  gsub("<!--[\\s\\S]*?-->"; "")
-  | gsub("```[\\s\\S]*?```"; "")
-  | gsub("~~~[\\s\\S]*?~~~"; "")
+  gsub("<!--[\\s\\S]*?(?:-->|\\z)"; "")
+  | gsub("```[\\s\\S]*?(?:```|\\z)"; "")
+  | gsub("~~~[\\s\\S]*?(?:~~~|\\z)"; "")
   | gsub("`[^`\\n]*`"; "");
 ($repository | gsub("\\."; "\\.")) as $repo
 | (. // "" | clean) as $body
 | [ $body | scan("(?i)(?:\\A|[^\\w/-])" + keyword + ":?[ \\t]+(?:" + $repo
-      + ")?#([0-9]+)(?![\\w-])(?=[ \\t]*(?:\\r?\\n|\\z|[.;)]|,[ \\t]*(?:and[ \\t]+)?"
+      + ")?#([0-9]+)(?![\\w-]|\\.\\w)(?=[ \\t]*(?:\\r?\\n|\\z|[.)]|,[ \\t]*(?:and[ \\t]+)?"
       + keyword + "\\b|[ \\t]+and[ \\t]+" + keyword + "\\b))")
     | .[0] | tonumber ] | unique as $closes
 | ($closes[] | "close\t\(.)"),
   ( $body
-    | scan("(?i)(?:\\A|[^\\w/-])(" + keyword + ":?[ \\t]+((?:[\\w.-]+/[\\w.-]+)?#([0-9]+)|https?://github\\.com/[\\w.-]+/[\\w.-]+/issues/([0-9]+))[^\\n]{0,48})")
-    | select((.[1] | test("^#|^" + $repo + "#"; "i") | not)
-        or ((.[2] // .[3] | tonumber) as $n | $closes | index($n) | not))
-    | "skip\t\(.[1])\t\(.[0] | gsub("[\\t\\r]"; " "))")
+    | match("(?i)(?:\\A|[^\\w/-])(" + keyword + ":?[ \\t]+((?:[\\w.-]+/[\\w.-]+)?#([0-9]+)|https?://github\\.com/[\\w.-]+/[\\w.-]+/issues/([0-9]+)))"; "g")
+    | .captures as [$clause, $ref, $short, $url]
+    | select(($ref.string | test("^#|^" + $repo + "#"; "i") | not)
+        or (($short.string // $url.string | tonumber) as $n | $closes | index($n) | not))
+    | "skip\t\($ref.string)\t\($body[$clause.offset:$clause.offset + 60]
+        | split("\n")[0] | gsub("[\\t\\r]"; " "))")
 '
 
 # Oldest first, so an issue is credited to the first pull request that closed it.
@@ -87,7 +90,7 @@ commits=( ${(f)"$(git rev-list --reverse --first-parent "${parents[2]}..${parent
 
 typeset -A closed_by
 typeset -a skipped
-typeset commit pr_json pr pr_number line kind rest
+typeset commit pr_json pr pr_number edited references line kind rest
 for commit in $commits; do
   pr_json=$(gh api -H 'Accept: application/vnd.github+json' \
     "repos/${repository}/commits/${commit}/pulls") ||
@@ -102,11 +105,25 @@ for commit in $commits; do
   [[ -n $pr ]] || continue
   pr_number=$(jq -r '.number' <<<"$pr")
 
-  for line in ${(f)"$(jq -r --arg repository "$repository" \
-      ".body | ${references_jq}" <<<"$pr")"}; do
+  edited=$(gh api graphql -F number="$pr_number" -f owner="${repository%%/*}" \
+    -f name="${repository#*/}" -f query='
+      query($owner: String!, $name: String!, $number: Int!) {
+        repository(owner: $owner, name: $name) {
+          pullRequest(number: $number) { lastEditedAt mergedAt }
+        }
+      }' --jq '.data.repository.pullRequest
+        | (.lastEditedAt // "") > .mergedAt') ||
+    fail "could not read the edit history of #${pr_number}"
+
+  references=$(jq -r --arg repository "$repository" \
+    ".body | ${references_jq}" <<<"$pr") ||
+    fail "could not parse the body of #${pr_number}"
+  for line in ${(f)references}; do
     kind=${line%%$'\t'*}
     rest=${line#*$'\t'}
-    if [[ $kind == close ]]; then
+    if [[ $kind == close && $edited == true ]]; then
+      skipped+=( "#${rest} in #${pr_number}: body edited after merge" )
+    elif [[ $kind == close ]]; then
       [[ -n ${closed_by[$rest]:-} ]] || closed_by[$rest]=$pr_number
     else
       skipped+=( "${rest%%$'\t'*} in #${pr_number}: \"${rest#*$'\t'}\"" )
@@ -150,7 +167,7 @@ done
 
 if (( $#skipped )); then
   report ''
-  report 'Closing-style references left open (qualified, another repository, or not a closing clause); check them by hand:'
+  report 'Closing-style references left open (qualified, another repository, not a closing clause, or edited after merge); check them by hand:'
   report ''
   for line in $skipped; do
     report "- ${line}"

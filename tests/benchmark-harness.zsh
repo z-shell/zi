@@ -198,10 +198,14 @@ jq -e '.cases["ice-200"].count == 2' "$temp_root/unsup/old.json" >/dev/null || f
 jq -e '.cases["manifest-21"].count == 2 and .cases["ice-200"].count == 2' "$temp_root/unsup/new.json" >/dev/null || fail "the checkout with the reader must still measure manifest-21"
 
 # Baseline without the API, candidate with it: unsupported, never failed.
-zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/old.json" --candidate "$temp_root/unsup/new.json" \
-  --control "$temp_root/unsup/old.json" --output "$temp_root/unsup-cmp.json" --markdown "$temp_root/unsup.md" >/dev/null || fail "a baseline without the API must not fail the comparison"
-jq -e '.unsupported == ["manifest-21"] and .failed == [] and .flagged == [] and .cases["manifest-21"].unsupported.candidate == null and .cases["ice-200"].flag != null' "$temp_root/unsup-cmp.json" >/dev/null ||
-  fail "a baseline without the API must be listed as unsupported and nothing else"
+# Pin the supported case's timings: independent tiny-count samples can flag
+# noise. A deterministic regression must still flag beside an unsupported API.
+jq '.cases["ice-200"].median = 100 | .cases["ice-200"].p95 = 100' "$temp_root/unsup/old.json" > "$temp_root/unsup/base-fixed.json" || fail "pin baseline timing"
+jq '.cases["ice-200"].median = 130 | .cases["ice-200"].p95 = 130' "$temp_root/unsup/new.json" > "$temp_root/unsup/candidate-fixed.json" || fail "pin candidate timing"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unsup/base-fixed.json" --candidate "$temp_root/unsup/candidate-fixed.json" \
+  --control "$temp_root/unsup/base-fixed.json" --output "$temp_root/unsup-cmp.json" --markdown "$temp_root/unsup.md" >/dev/null || fail "a baseline without the API must not fail the comparison"
+jq -e '.unsupported == ["manifest-21"] and .failed == [] and .flagged == ["ice-200"] and .cases["manifest-21"].unsupported.candidate == null and .cases["ice-200"].flag == true' "$temp_root/unsup-cmp.json" >/dev/null ||
+  fail "the missing API must be unsupported while the supported regression is flagged"
 grep -q '^| manifest-21 | unsupported | not compared | .*zi-read-package-manifest.* | | unsupported |$' "$temp_root/unsup.md" || fail "the unsupported case must be rendered with its reason and control state"
 table_rows_ok "$temp_root/unsup.md" || fail "an unsupported row must not misalign the Markdown table"
 

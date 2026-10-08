@@ -16,7 +16,6 @@ on:
 # superseded run finish costs seconds; a cancelled run can block a merge.
 
 permissions:
-  pull-requests: read
   contents: read
 
 jobs:

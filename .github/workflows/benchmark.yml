@@ -4,7 +4,7 @@ name: Benchmark
 # Non-blocking performance evidence (#553): every pull request into next is
 # measured against its base, and the promotion pull request into main is
 # measured against main. A regression above the thresholds is flagged in the
-# job summary and the artifact; it never fails the job (ADR-0009: observed,
+# job summary and the artifact; it never fails the job (ADR-0024: observed,
 # not gated). Hosted runners vary, so compare only within one run, where the
 # A/A control row shows the noise floor.
 

@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
@@ -19,6 +18,9 @@ jobs:
   plan:
     name: Release plan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Update promotion pull request posts the plan comment.
     steps:
       - name: Check out the candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

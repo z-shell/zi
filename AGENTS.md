@@ -12,6 +12,16 @@ Before acting, select every surface below whose tasks and file patterns both mat
 - `AGENTS.md` (this file): tasks `all`; files `**`
 - `.github/skills/code-review/SKILL.md`: tasks `code-review`, `review-readiness`, `organization-review`, `project-health`, `repository-health`, `repository-health-audit`, `repository-health-check`; files `**`; organization skill vendored at approved revision `ede9ed985dd2`
 
+## Reporting issues
+
+File an issue as [Filing a new issue](https://github.com/z-shell/.github/blob/main/runbooks/triage.md#filing-a-new-issue) describes: one `###` heading per field of the effective issue form, in form order. In the version or environment field, give the output of `zi version`.
+
+After the form's fields, add these headings, writing `Not applicable` and the reason when one does not apply:
+
+- `### Zi diagnostics`: The output of `zi analytics` and `zi zstatus`.
+- `### Ices and annexes`: Every `zi` command involved, with all of its ice modifiers, and the annexes loaded.
+- `### When it fails`: At load, at unload, only with turbo (`wait`) loading, or during install, update or `zi self-update`; for the last three, the paths and URLs involved.
+
 Organization-wide surfaces are routed by the [organization manifest](https://github.com/z-shell/.github/blob/main/.github/instruction-surfaces.json). This block is delivered and verified under [decision 0031](https://github.com/z-shell/.github/blob/main/decisions/0031-per-repository-instruction-routing-delivery.md).
 
 <!-- END org-routing -->

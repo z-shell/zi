@@ -22,6 +22,8 @@ After the form's fields, add these headings, writing `Not applicable` and the re
 - `### Ices and annexes`: Every `zi` command involved, with all of its ice modifiers, and the annexes loaded.
 - `### When it fails`: At load, at unload, only with turbo (`wait`) loading, or during install, update or `zi self-update`; for the last three, the paths and URLs involved.
 
+These facts come from this repository's [project profile](https://github.com/z-shell/.github/blob/main/knowledge/domains/governance/data/project-profiles.json) under [decision 0040](https://github.com/z-shell/.github/blob/main/decisions/0040-central-project-profiles-for-issue-intake.md); change them there, not here.
+
 Organization-wide surfaces are routed by the [organization manifest](https://github.com/z-shell/.github/blob/main/.github/instruction-surfaces.json). This block is delivered and verified under [decision 0031](https://github.com/z-shell/.github/blob/main/decisions/0031-per-repository-instruction-routing-delivery.md).
 
 <!-- END org-routing -->

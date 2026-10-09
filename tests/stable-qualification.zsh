@@ -13,6 +13,14 @@ fail() { print -u2 -r -- "stable qualification: $*"; exit 1; }
 sed -n '/      - name: Require every stable qualification/,$p' "$workflow" |
   sed '1,/        run: |/d; s/^          //' > "$tmp/gate.bash"
 [[ -s $tmp/gate.bash ]] || fail 'aggregate command is missing'
+# The pinned ZD workflow inherits the caller name and uses workflow-ref.
+# Resolve our push group and reject that shared group before jobs can collide.
+typeset push_group
+push_group=$(sed -n 's/^  group: //p' "$workflow")
+push_group=${push_group//'${{ github.workflow }}'/'Promotion Readiness'}
+push_group=${push_group//'${{ github.event.pull_request.number || github.ref }}'/'refs/heads/main'}
+[[ $push_group != 'Promotion Readiness-refs/heads/main' ]] ||
+  fail 'push concurrency collides with the pinned ZD reusable workflow'
 command bash -n "$tmp/gate.bash"
 typeset -a constituents
 constituents=(ZSH_RESULT ZD_RESULT TRUNK_RESULT CODEQL_RESULT CLEAN_INSTALL_RESULT REAL_OBJECTS_RESULT)

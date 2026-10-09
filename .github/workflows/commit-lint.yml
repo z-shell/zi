@@ -6,7 +6,6 @@ on:
     types: [opened, synchronize, reopened, edited]
     branches:
       - main
-      - next
 
 # No concurrency group (#597). These jobs gate merges and finish in seconds.
 # A push plus a pull-request edit fire two events for one head SHA, and any

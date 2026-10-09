@@ -5,9 +5,8 @@ on:
     tags: ["v*.*.*"]
     branches:
       - main
-      - next
   pull_request:
-    branches: [main, next]
+    branches: [main]
   workflow_call:
     inputs:
       candidate-ref:
@@ -100,18 +99,12 @@ jobs:
       - name: Test release tag verification
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-tag-verification.zsh
-      - name: Test main branch guard
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: zsh -f tests/main-branch-guard.zsh
       - name: Test release planning
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-plan.zsh
       - name: Test stable qualification gate
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/stable-qualification.zsh
-      - name: Test promoted issue closure
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: zsh -f tests/promoted-issue-closure.zsh
       - name: Test the benchmark runner and comparer
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/benchmark-harness.zsh

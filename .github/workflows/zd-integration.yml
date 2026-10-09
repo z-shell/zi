@@ -3,7 +3,7 @@ name: ZD Integration
 
 on:
   push:
-    branches: [main, next]
+    branches: [main]
   pull_request:
     paths:
       - ".github/workflows/zd-integration.yml"

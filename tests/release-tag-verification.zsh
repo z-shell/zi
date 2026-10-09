@@ -22,7 +22,7 @@ git -C "$tmp/repository" tag -a v2.1.0 -m v2.1.0
 git -C "$tmp/repository" tag v2.1.1
 
 print stale >>"$tmp/repository/file"
-git -C "$tmp/repository" commit -am 'test: advance main' >/dev/null
+git -C "$tmp/repository" commit -am 'feat: advance main' >/dev/null
 git -C "$tmp/repository" push origin main >/dev/null 2>&1
 current=$(git -C "$tmp/repository" rev-parse HEAD)
 git -C "$tmp/repository" tag -a v2.2.0 -m v2.2.0
@@ -36,12 +36,18 @@ if [[ $* == *'/git/tags/'* ]]; then
 fi
 conclusion=success
 [[ ${FAKE_WORKFLOW_FAILURE:-false} == true ]] && conclusion=failure
-print -r -- "{\"workflow_runs\":[
+print -r -- "[{\"workflow_runs\":[
 {\"name\":\"Zsh\",\"head_branch\":\"main\",\"head_sha\":\"${FAKE_TAG_TARGET}\",\"status\":\"completed\",\"conclusion\":\"${conclusion}\"},
 {\"name\":\"ZD Integration\",\"head_branch\":\"main\",\"head_sha\":\"${FAKE_TAG_TARGET}\",\"status\":\"completed\",\"conclusion\":\"success\"},
 {\"name\":\"CodeQL\",\"head_branch\":\"main\",\"head_sha\":\"${FAKE_TAG_TARGET}\",\"status\":\"completed\",\"conclusion\":\"success\"},
-{\"name\":\"Trunk Code Quality\",\"head_branch\":\"main\",\"head_sha\":\"${FAKE_TAG_TARGET}\",\"status\":\"completed\",\"conclusion\":\"success\"}
-]}"
+{\"name\":\"Trunk Code Quality\",\"head_branch\":\"main\",\"head_sha\":\"${FAKE_TAG_TARGET}\",\"status\":\"completed\",\"conclusion\":\"success\"},
+{\"name\":\"Promotion Readiness\",\"head_branch\":\"main\",\"head_sha\":\"${FAKE_TAG_TARGET}\",\"status\":\"completed\",\"conclusion\":\"${FAKE_STABLE_RESULT:-success}\"}
+]}]" | jq --arg newer "${FAKE_NEWER_RESULT:-}" --arg event "${FAKE_RUN_EVENT:-push}" '
+  map(.workflow_runs |= map(. + {event: $event, run_number: 1, run_attempt: 1})) |
+  if $newer != "" then
+    . + [{workflow_runs: [.[0].workflow_runs[] | select(.name == "Zsh") |
+      . + {run_number: 2, conclusion: $newer}]}]
+  else . end'
 FAKE_GH
 chmod +x "$tmp/bin/gh"
 
@@ -73,5 +79,16 @@ expect_fail v2.2.0 false "$current"
 expect_fail v2.2.0 true "$target"
 expect_fail v2.2.0 true "$current" true
 run_verifier v2.2.0 true "$current"
+
+# Post-merge startup/lifecycle and compatibility evidence must gate a milestone.
+FAKE_STABLE_RESULT=cancelled expect_fail v2.2.0 true "$current"
+FAKE_STABLE_RESULT=skipped expect_fail v2.2.0 true "$current"
+FAKE_STABLE_RESULT=failure expect_fail v2.2.0 true "$current"
+FAKE_NEWER_RESULT=failure expect_fail v2.2.0 true "$current"
+FAKE_NEWER_RESULT=cancelled expect_fail v2.2.0 true "$current"
+FAKE_RUN_EVENT=pull_request expect_fail v2.2.0 true "$current"
+
+git -C "$tmp/repository" tag -a v2.2.1 -m v2.2.1
+expect_fail v2.2.1 true "$current"
 
 print 'release tag verification tests passed'

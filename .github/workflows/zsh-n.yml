@@ -7,11 +7,11 @@ on:
       - main
       - next
   pull_request:
-    branches: [next]
+    branches: [main, next]
   workflow_call:
     inputs:
       candidate-ref:
-        description: Exact candidate commit for promotion validation.
+        description: Exact candidate commit for stable qualification.
         required: true
         type: string
   workflow_dispatch: {}
@@ -106,12 +106,9 @@ jobs:
       - name: Test release planning
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/release-plan.zsh
-      - name: Test promotion release verification
+      - name: Test stable qualification gate
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: zsh -f tests/promotion-release-verification.zsh
-      - name: Test idempotent promotion publication
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: zsh -f tests/promotion-release-publication.zsh
+        run: zsh -f tests/stable-qualification.zsh
       - name: Test promoted issue closure
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/promoted-issue-closure.zsh

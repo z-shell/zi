@@ -2,12 +2,14 @@
 name: Promotion Readiness
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
     types: [opened, reopened, synchronize, ready_for_review]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -18,15 +20,15 @@ jobs:
     name: Full Zsh validation
     uses: ./.github/workflows/zsh-n.yml
     with:
-      candidate-ref: ${{ github.event.pull_request.head.sha }}
+      candidate-ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
   zd:
     name: ZD integration
     uses: z-shell/zd/.github/workflows/test-native.yml@5d160597c909a23f03b7a07ff9d43793a106f3e8 # z-shell/zd#123
     with:
-      zi_repo: ${{ github.event.pull_request.head.repo.full_name }}
-      zi_ref: ${{ github.event.pull_request.head.sha }}
-      include_compat: ${{ github.head_ref == 'next' }}
+      zi_repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      zi_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      include_compat: true
 
   trunk:
     name: Trunk
@@ -44,7 +46,7 @@ jobs:
       packages: read
       security-events: write
     with:
-      checkout-ref: ${{ github.event.pull_request.head.sha }}
+      checkout-ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
   clean-install:
     name: Clean install and startup
@@ -56,8 +58,8 @@ jobs:
       - name: Install and start the exact candidate
         shell: bash
         env:
-          CANDIDATE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+          CANDIDATE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           checkout="${RUNNER_TEMP}/zi-candidate"
@@ -109,8 +111,8 @@ jobs:
       - name: Drive the exact candidate through real objects
         shell: bash
         env:
-          CANDIDATE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+          CANDIDATE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           checkout="${RUNNER_TEMP}/zi-candidate-smoke"
@@ -133,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - name: Require every promotion validation
+      - name: Require every stable qualification
         env:
           ZSH_RESULT: ${{ needs.zsh.result }}
           ZD_RESULT: ${{ needs.zd.result }}

@@ -4,24 +4,16 @@ name: Release
 on:
   push:
     tags: ["v*.*.*"]
-  # Only main can publish; other branches would only create skipped runs
-  # (#599). The job's event check also excludes a pull request whose head
-  # branch is named main. Completions on main queue in the per-SHA group
-  # below, and only a run that sees all four workflows succeeded publishes.
-  workflow_run:
-    workflows: [Zsh, ZD Integration, CodeQL, Trunk Code Quality]
-    types: [completed]
-    branches: [main]
 
 permissions: {}
 
 concurrency:
-  group: release-${{ github.event.workflow_run.head_sha || github.ref_name }}
+  group: release-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
   manual:
-    name: Verify and publish recovery tag
+    name: Verify and publish signed milestone
     if: github.event_name == 'push' && github.repository == 'z-shell/zi'
     runs-on: ubuntu-latest
     permissions:
@@ -52,66 +44,11 @@ jobs:
             echo "Release $TAG already exists."
             exit 0
           fi
+          RELEASE_NOTES_FILE="${RUNNER_TEMP}/release-notes.md" RELEASE_EXCLUDE_TAG="$TAG" \
+            zsh -f scripts/release-plan.zsh "${TAG}^{}" >> "$GITHUB_STEP_SUMMARY"
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "Zi $TAG" \
-            --generate-notes \
+            --notes-file "${RUNNER_TEMP}/release-notes.md" \
             --latest
-
-  automatic:
-    name: Publish reviewed promotion
-    if: "${{ github.event_name == 'workflow_run' && github.repository == 'z-shell/zi' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' }}"
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: write
-      pull-requests: read
-    steps:
-      - name: Check out the trusted main branch
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: refs/heads/main
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Install Zsh
-        run: sudo apt-get update && sudo apt-get install -yq zsh
-
-      - name: Verify promotion and exact-SHA validation
-        id: verify
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PROMOTION_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: zsh -f scripts/verify-promotion-release.zsh
-
-      - name: Record non-promotion commit
-        if: steps.verify.outputs.promotion == 'false'
-        run: echo 'This main commit came from a pull request other than a next-to-main promotion; there is nothing to publish.' >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Compute the authorized release plan
-        id: plan
-        if: steps.verify.outputs.ready == 'true'
-        env:
-          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
-          RELEASE_TARGET: ${{ github.event.workflow_run.head_sha }}
-        run: |
-          RELEASE_PLAN_OUTPUT="$GITHUB_OUTPUT" \
-            zsh -f scripts/release-plan.zsh \
-              "$RELEASE_TARGET" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Record no-op promotion
-        if: steps.verify.outputs.ready == 'true' && steps.plan.outputs.release != 'true'
-        run: echo 'The reviewed promotion contains no releasable Conventional Commits; no tag or release was created.' >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Create annotated tag and release
-        if: steps.verify.outputs.ready == 'true' && steps.plan.outputs.release == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
-          RELEASE_TAG: ${{ steps.plan.outputs.tag }}
-          RELEASE_TARGET: ${{ github.event.workflow_run.head_sha }}
-          PROMOTION_PR: ${{ steps.verify.outputs.promotion_pr }}
-        run: |
-          zsh -f scripts/publish-promotion-release.zsh >> "$GITHUB_STEP_SUMMARY"
-          echo "Authorized by reviewed promotion #${PROMOTION_PR}." >> "$GITHUB_STEP_SUMMARY"

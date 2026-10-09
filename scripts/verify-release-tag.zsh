@@ -36,20 +36,31 @@ jq -e --arg target "$target" \
      .object.sha == $target' <<<"$tag_json" >/dev/null ||
     fail "GitHub did not verify the signed tag and target"
 
-runs_json=$(gh api --method GET "repos/${repository}/actions/runs" \
+runs_json=$(gh api --method GET --paginate --slurp "repos/${repository}/actions/runs" \
     -f branch=main -f head_sha="$target" -f per_page=100) ||
     fail "could not read workflow runs"
 
-for workflow in Zsh 'ZD Integration' CodeQL 'Trunk Code Quality'; do
+for workflow in Zsh 'ZD Integration' CodeQL 'Trunk Code Quality' 'Promotion Readiness'; do
     jq -e --arg name "$workflow" --arg target "$target" \
-        '.workflow_runs | any(
+        '[.[].workflow_runs[] | select(
             .name == $name and
             .head_branch == "main" and
             .head_sha == $target and
-            .status == "completed" and
-            .conclusion == "success"
-        )' <<<"$runs_json" >/dev/null ||
+            .event == "push"
+        )] | sort_by(.run_number, .run_attempt) | last |
+        .status == "completed" and .conclusion == "success"' <<<"$runs_json" >/dev/null ||
         fail "required workflow did not succeed: $workflow"
 done
+
+# The pushed milestone must match the separately reviewed deterministic plan.
+plan_output=$(mktemp "${TMPDIR:-/tmp}/zi-signed-release-plan.XXXXXXXX") ||
+    fail 'could not create plan output'
+trap 'rm -f -- "$plan_output"' EXIT HUP INT TERM
+RELEASE_EXCLUDE_TAG=$tag RELEASE_PLAN_OUTPUT=$plan_output \
+    zsh -f "${0:A:h}/release-plan.zsh" "$target" >/dev/null ||
+    fail 'could not recompute the signed milestone plan'
+[[ $(sed -n 's/^release=//p' "$plan_output") == true &&
+   $(sed -n 's/^tag=//p' "$plan_output") == $tag ]] ||
+    fail 'signed tag does not match the semantic release plan'
 
 print -- "Release authorization verified for ${tag} at ${target}."

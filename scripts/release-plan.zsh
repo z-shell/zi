@@ -18,6 +18,7 @@ target=$(git rev-parse --verify "${target}^{commit}") ||
 typeset previous_tag=''
 typeset candidate
 for candidate in ${(f)"$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname)"}; do
+  [[ $candidate == ${RELEASE_EXCLUDE_TAG:-} ]] && continue
   if [[ $candidate =~ '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' ]]; then
     previous_tag=$candidate
     break

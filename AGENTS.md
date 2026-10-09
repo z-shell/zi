@@ -22,6 +22,8 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 
 ## Branch model
 
+The protected-main migration is tracked in [zi#628](https://github.com/z-shell/zi/issues/628) and proposed by [ADR-0039](https://github.com/z-shell/.github/blob/main/decisions/0039-zi-main-integration-and-signed-milestones.md). Until maintainer acceptance and the [verified cutover](docs/MAIN_MIGRATION.md), the existing branch contract below remains operative. After cutover, ordinary work branches from current protected `main` and targets `main`; fork contributions use the same qualification and review gates. A merge is immediately consumable but does not authorize a milestone release.
+
 - `next` is the development and integration branch.
 - Ordinary work branches from and targets `next`.
 - Use `feature-<id>`, `bug-<id>`, or `hotfix-<id>` branch names.
@@ -31,7 +33,13 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 - `hotfix-*` branches may target `main` directly.
 - A `dependabot/*` branch opened by `dependabot[bot]` may also target `main`, because Dependabot security updates ignore `target-branch: next`. `scripts/main-branch-guard.zsh` enforces the allowed sources.
 - Keep `delete_branch_on_merge` disabled because `next` is persistent.
-- A pull request merged into `next` leaves its issue open: GitHub closes issues only from the default branch. When the promotion reaches `main`, `.github/workflows/promotion-issue-closure.yml` closes each issue a promoted pull request names in an unqualified closing clause (`Closes #N.`, or `Closes #N` ending the line). `Refs #N`, a qualified clause such as `Closes #N after ...`, another repository's issue, and text in comments or code stay open and are listed in the run summary for a manual check. Only the pull request body as it stood at merge is trusted: a body edited after the merge is reported instead of closed, and an issue linked only through the Development sidebar (`addCloseIssueReferences`) is listed in the summary rather than closed, so put the closing clause in the body. Do not close issues before promotion.
+- A pull request merged into `next` leaves its issue open until delivery to `main`. Retain `promotion-issue-closure.yml` and its reconciliation script until historical issues are accounted for; only merge-time PR bodies are trusted. After cutover, use native `Closes #N` in ordinary `main` PRs when every acceptance criterion is met, and `Refs #N` for partial work.
+
+## Stable qualification and milestones
+
+- Every `main` PR and push runs full stable qualification in `promotion-readiness.yml`, retaining the existing `Promotion gate` context during staged cutover. The full Linux/macOS Zsh 5.8.1/5.9/5.9.2 suite, ZD compatibility, full Trunk, CodeQL, clean startup and real-object lifecycle checks must succeed; a failed, skipped or cancelled constituent fails the gate. Revalidate when the base changes.
+- Milestones use separately reviewed exact-SHA release plans and signed annotated tags. Ordinary merges never publish automatically. `release-plan.yml` is read-only; `release.yml` verifies signature, current `main` target, semantic version and all required exact-SHA post-merge workflows before publishing deterministic notes idempotently. Tag rules restrict authorized creators and protect immutable tags. No signing key is stored in Actions.
+- Keep installation and self-update on `main`. Tagged update channels are a separate product change. Source-guard removal, old `next` events and issue-closure retirement are final cutover steps, not reasons to weaken protection before replacement checks are proven.
 
 ## Before merging
 

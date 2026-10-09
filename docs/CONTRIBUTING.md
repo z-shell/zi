@@ -4,6 +4,8 @@ Thank you for contributing! Please follow the guidelines below to keep the proje
 
 ## Branch model
 
+The [protected-main migration](MAIN_MIGRATION.md) is staged. Until maintainer acceptance of ADR-0039 and verified cutover, follow the existing `next` procedure below. After cutover, branch ordinary work from current `main` (`git switch -c bug-123 origin/main`) and target protected `main`, including fork PRs. Keep one coherent change per topic branch and preserve reviewed history. Use `Closes #N` only when the PR completes the issue and `Refs #N` for partial work; issue closure occurs when the default-branch PR merges.
+
 ```text
 main       production and consumable ref
   |-- hotfix-<id>   urgent fixes that may target main
@@ -58,22 +60,22 @@ Run native syntax on changed Zsh files, for example `zsh -f -n zi.zsh`, then the
 
 The focused suite runs on exact Zsh 5.8.1, 5.9 and 5.9.2 builds on Linux and macOS, installed through the organization's pinned setup action. Every matrix leg must pass the Zsh Gate, including during promotion. This is the tested matrix, not a claim about every plugin or untested older versions, BSD or Cygwin. Preserve existing version fallbacks; a support-floor increase is a separate compatibility decision. Native-valid code must not be rewritten solely to satisfy a supplemental parser or formatter.
 
-The required promotion gate runs the full Zsh suite on the exact candidate, plus ZD integration and clean-install/real-object checks. Post-merge release checks are additional evidence: users can consume `main` immediately, before a tag is published. Repository settings must require the appropriate checks; workflow files alone do not enforce merging rules.
+The stable qualification workflow runs on every `main` PR and push. It runs the full Zsh suite on the exact candidate, ZD including compatibility, full Trunk and CodeQL checks, clean startup and real-object install/update/unload/delete checks. It retains the `Promotion gate` required context during staged cutover and fails on failed, skipped or cancelled constituents. Revalidate against a changed base. Post-merge checks are additional evidence: users can consume `main` immediately, before a tag is published. Repository settings must require the appropriate checks; workflow files alone do not enforce merging rules.
 
 Keep long-form user guidance in the canonical wiki. Changes to installation or commands must also check the README and `docs/man/zi.1`, which `zi man` opens directly. That roff file is the maintained offline source, not a generated README copy. Update it alongside commands; `zsh -f tests/manual.zsh` checks command coverage and renders it with groff. Check semantics against the dispatcher and help, because rendering and inventory checks cannot prove that descriptions are correct.
 
 ## Releases
 
-A same-repository `next` to `main` promotion is the normal publication authorization. Reviewers see the deterministic version and release-note plan on the promotion pull request before deciding whether to merge.
+A milestone is a separately authorized signed annotated tag on an exact current protected `main` SHA. Ordinary merges do not authorize a tag or release, and automatic promotion publication is removed. This transition supersedes ADR-0028 only after maintainer acceptance and verified cutover under ADR-0039.
 
-1. `Release Plan` computes the next semantic version from Conventional Commits since the latest `vX.Y.Z` tag. A breaking change produces a major bump, `feat` produces a minor bump, and `fix` or `perf` produces a patch bump. A promotion with none of those commits is an explicit no-op.
-2. Merging the reviewed promotion authorizes publication of that displayed plan. The merge still updates the Git-consumed stable `main` ref immediately.
-3. The automatic publisher proves that the exact merge commit came from the reviewed same-repository `next` pull request and is still current `main`. It waits for `Zsh`, `ZD Integration`, `CodeQL`, and `Trunk Code Quality` to succeed on that exact SHA.
-4. The publisher creates an annotated tag and the GitHub release in one idempotent workflow. It fails closed if `main` moves, the promotion identity cannot be proven, validation fails, or the proposed tag already targets another commit. A `main` commit merged by another pull request, such as a hotfix or a Dependabot security update, is not a promotion: the publisher reports that there is nothing to publish and succeeds without creating a tag.
+1. Run read-only `Release Plan` for the full current `main` SHA using its `candidate-sha` dispatch input, or run `RELEASE_NOTES_FILE=/path/to/notes.md zsh -f scripts/release-plan.zsh <full-sha>` locally. Review the deterministic notes and proposed tag. PR plans are previews; review the final main SHA before tagging. Breaking changes produce a major bump, `feat` a minor bump, and `fix` or `perf` a patch bump; a no-op plan produces no tag or release.
+2. Separately authorize the displayed version, notes and exact SHA, then push its signed annotated `vX.Y.Z` tag through the protected tag rules. No personal signing key is stored in Actions.
+3. The tag publisher requires GitHub-verified signature and exact current `main` target, plus the latest push runs of `Zsh`, `ZD Integration`, `CodeQL`, `Trunk Code Quality` and `Promotion Readiness` on that exact SHA. A failed, pending, skipped or cancelled latest run blocks publication; an older successful run cannot substitute.
+4. The verifier recomputes the semantic plan while excluding the newly pushed tag and rejects a mismatched version or no-op range. The publisher uses those deterministic notes and treats an existing release idempotently. Existing signed tags and historical promotion ancestry remain intact.
 
 The repository stores no version file. `ZI[VERSION]` is derived at runtime from `git describe --tags --exact-match`, so the tag is the version and there is nothing to keep in step with it.
 
-The signed manual-tag flow remains available for recovery or exceptional publication. A maintainer may push a signed annotated `vX.Y.Z` tag to the exact current `main`; `scripts/verify-release-tag.zsh` then requires a valid GitHub signature, the exact target, and the same four successful workflows before it creates the release. No personal signing key is stored in Actions.
+For recovery, rerun the failed tag workflow after repairing its cause and rechecking the exact target and current validation. Never move or delete an existing milestone tag to conceal a failure. If `main` moves, the verifier blocks a stale tag; decide a new milestone explicitly.
 
 ## What not to add
 

@@ -73,8 +73,8 @@ done
 typeset promotion_job
 promotion_job=$(command sed -n '/^  zsh:/,/^  zd:/p' "${workflow_dir}/promotion-readiness.yml")
 [[ $promotion_job == *'    uses: ./.github/workflows/zsh-n.yml'* &&
-   $promotion_job == *'      candidate-ref: ${{ github.event.pull_request.head.sha }}'* ]] ||
-  fail 'promotion must call the full Zsh suite on the exact candidate'
+   $promotion_job == *'      candidate-ref: ${{ github.event.pull_request.head.sha || github.sha }}'* ]] ||
+  fail 'stable qualification must call the full Zsh suite on the exact candidate'
 command grep -Eq '^    needs: \[zsh, ' "${workflow_dir}/promotion-readiness.yml" ||
   fail 'promotion gate must wait for the Zsh suite'
 

@@ -19,7 +19,7 @@ run_plan() {
   local output=$tmp/output notes=$tmp/notes body=$tmp/body
   (
     cd "$tmp/repository"
-    RELEASE_PLAN_OUTPUT=$output RELEASE_NOTES_FILE=$notes \
+    RELEASE_PLAN_OUTPUT=$output RELEASE_NOTES_FILE=$notes RELEASE_EXCLUDE_TAG=${1:-} \
       zsh -f "$root/scripts/release-plan.zsh" HEAD > "$body"
   )
 }
@@ -67,5 +67,11 @@ if grep -q 'docs: explain releases' "$tmp/notes"; then
   print -u2 -- 'release notes crossed the previous promotion boundary'
   exit 1
 fi
+
+# Publication recomputes the reviewed plan after the signed tag already exists.
+git -C "$tmp/repository" tag -a v2.0.1 -m v2.0.1
+run_plan v2.0.1
+[[ $(value previous_tag) == v2.0.0 && $(value tag) == v2.0.1 ]]
+grep -q 'fix: change after a promotion tag' "$tmp/notes"
 
 print 'release plan tests passed'

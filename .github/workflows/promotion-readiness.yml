@@ -9,7 +9,8 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # The called ZD workflow uses the inherited workflow name and ref.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-caller
   cancel-in-progress: true
 
 permissions:

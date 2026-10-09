@@ -4,9 +4,9 @@ name: Org Routing
 # ADR-0031: verify generated routing and approved organization skills.
 on:
   pull_request:
-    branches: [main, next]
+    branches: [main]
   push:
-    branches: [main, next]
+    branches: [main]
 
 permissions:
   contents: read

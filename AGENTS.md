@@ -22,24 +22,16 @@ Zi is the canonical Zsh plugin manager for the organization. Changes can affect 
 
 ## Branch model
 
-The protected-main migration is tracked in [zi#628](https://github.com/z-shell/zi/issues/628) and proposed by [ADR-0039](https://github.com/z-shell/.github/blob/main/decisions/0039-zi-main-integration-and-signed-milestones.md). Until maintainer acceptance and the [verified cutover](docs/MAIN_MIGRATION.md), the existing branch contract below remains operative. After cutover, ordinary work branches from current protected `main` and targets `main`; fork contributions use the same qualification and review gates. A merge is immediately consumable but does not authorize a milestone release.
-
-- `next` is the development and integration branch.
-- Ordinary work branches from and targets `next`.
-- Use `feature-<id>`, `bug-<id>`, or `hotfix-<id>` branch names.
-- Promote `next` to stable `main` with a merge commit, never squash or rebase.
-- Neither `main` nor `next` may require linear history; both promotion and hotfix synchronization preserve merge ancestry.
-- A successful promotion needs no routine back-merge. Merge a `main` hotfix forward into `next` before ordinary development continues.
-- `hotfix-*` branches may target `main` directly.
-- A `dependabot/*` branch opened by `dependabot[bot]` may also target `main`, because Dependabot security updates ignore `target-branch: next`. `scripts/main-branch-guard.zsh` enforces the allowed sources.
-- Keep `delete_branch_on_merge` disabled because `next` is persistent.
-- A pull request merged into `next` leaves its issue open until delivery to `main`. Retain `promotion-issue-closure.yml` and its reconciliation script until historical issues are accounted for; only merge-time PR bodies are trusted. After cutover, use native `Closes #N` in ordinary `main` PRs when every acceptance criterion is met, and `Refs #N` for partial work.
+- Ordinary work branches from current protected `main` and targets `main`, including fork contributions. Use the organization branch-type contract and preserve reviewed history.
+- Every merge is immediately consumable. Keep incomplete behavior in its topic branch and require full stable qualification, signatures, resolved threads and applicable review of record before merge; revalidate when the base changes.
+- Use native `Closes #N` only when the PR meets every acceptance criterion; use `Refs #N` for partial work. Code integration does not authorize a milestone release.
+- Preserve historical promotion ancestry and immutable signed tags. Do not force-push or reset stable history. See the verified migration record in `docs/MAIN_MIGRATION.md`.
 
 ## Stable qualification and milestones
 
-- Every `main` PR and push runs full stable qualification in `promotion-readiness.yml`, retaining the existing `Promotion gate` context during staged cutover. The full Linux/macOS Zsh 5.8.1/5.9/5.9.2 suite, ZD compatibility, full Trunk, CodeQL, clean startup and real-object lifecycle checks must succeed; a failed, skipped or cancelled constituent fails the gate. Revalidate when the base changes.
+- Every `main` PR and push runs full stable qualification in `promotion-readiness.yml`, retaining the existing `Promotion gate` context for check-name compatibility. The full Linux/macOS Zsh 5.8.1/5.9/5.9.2 suite, ZD compatibility, full Trunk, CodeQL, clean startup and real-object lifecycle checks must succeed; a failed, skipped or cancelled constituent fails the gate. Revalidate when the base changes.
 - Milestones use separately reviewed exact-SHA release plans and signed annotated tags. Ordinary merges never publish automatically. `release-plan.yml` is read-only; `release.yml` verifies signature, current `main` target, semantic version and all required exact-SHA post-merge workflows before publishing deterministic notes idempotently. Tag rules restrict authorized creators and protect immutable tags. No signing key is stored in Actions.
-- Keep installation and self-update on `main`. Tagged update channels are a separate product change. Source-guard removal, old `next` events and issue-closure retirement are final cutover steps, not reasons to weaken protection before replacement checks are proven.
+- Keep installation and self-update on `main`. Tagged update channels are a separate product change. Never weaken qualification to speed delivery.
 
 ## Before merging
 

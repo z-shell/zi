@@ -4,24 +4,9 @@ Thank you for contributing! Please follow the guidelines below to keep the proje
 
 ## Branch model
 
-The [protected-main migration](MAIN_MIGRATION.md) is staged. Until maintainer acceptance of ADR-0039 and verified cutover, follow the existing `next` procedure below. After cutover, branch ordinary work from current `main` (`git switch -c bug-123 origin/main`) and target protected `main`, including fork PRs. Keep one coherent change per topic branch and preserve reviewed history. Use `Closes #N` only when the PR completes the issue and `Refs #N` for partial work; issue closure occurs when the default-branch PR merges.
+Branch ordinary work from current `main` (`git switch -c bug-123 origin/main`) and target protected `main`, including fork contributions. Keep one coherent change per topic branch, pass full stable qualification before merge and preserve reviewed history. Every merge is immediately consumable; milestone publication is a separately authorized signed tag.
 
-```text
-main       production and consumable ref
-  |-- hotfix-<id>   urgent fixes that may target main
-  ^
-next       integration branch; ordinary PRs target here
-  ^
-  |-- feature-<id>  new features
-  `-- bug-<id>      bug fixes
-```
-
-1. Branch ordinary work from `next`: `git switch -c bug-123 next`.
-2. Target `next` from `feature-<id>` and `bug-<id>` branches.
-3. Use `hotfix-<id>` only for urgent fixes created in this repository, branched from `main`, and targeting `main`. Fork pull requests must target `next`.
-4. Promote `next` to `main` once the integration branch is stable. Use **Create a merge commit**, never squash or rebase, so the reviewed candidate remains a parent of stable `main`.
-5. A successful promotion needs no routine back-merge. After a direct `main` hotfix, merge `main` forward into `next` before ordinary work continues.
-6. Write `Closes #N` in a pull request into `next` only when it fully resolves the issue, ending the sentence or line there. GitHub ignores the keyword on `next`; `Promotion Issue Closure` closes the issue when the promotion reaches `main`. Use `Refs #N` for partial work.
+Use `Closes #N` only when the PR completes every acceptance criterion and `Refs #N` for partial work. Native issue closure occurs when the default-branch PR merges. Historical promotions and tags remain intact; there is no routine back-merge or persistent integration queue. See the [migration record](MAIN_MIGRATION.md).
 
 ## Commit message format
 
@@ -46,9 +31,9 @@ BREAKING CHANGE: description of what breaks
 - Breaking changes: use `!` suffix (`feat!:`) and add `BREAKING CHANGE:` footer
 - **No AI co-author trailers** — do not add `Co-authored-by: Copilot` or similar
 
-To clean up commits before opening a PR, rebase against the intended target: `next` for ordinary work and `main` for hotfixes.
+To clean up commits before opening a PR, rebase against current `main` and revalidate the resulting candidate.
 
-Repository rules intentionally omit linear-history requirements on both persistent branches so promotion and hotfix synchronization can preserve their merge commits.
+Preserve historical promotion ancestry; do not rewrite stable history to impose linear history.
 
 ## Zsh implementation and verification
 
@@ -60,13 +45,13 @@ Run native syntax on changed Zsh files, for example `zsh -f -n zi.zsh`, then the
 
 The focused suite runs on exact Zsh 5.8.1, 5.9 and 5.9.2 builds on Linux and macOS, installed through the organization's pinned setup action. Every matrix leg must pass the Zsh Gate, including during promotion. This is the tested matrix, not a claim about every plugin or untested older versions, BSD or Cygwin. Preserve existing version fallbacks; a support-floor increase is a separate compatibility decision. Native-valid code must not be rewritten solely to satisfy a supplemental parser or formatter.
 
-The stable qualification workflow runs on every `main` PR and push. It runs the full Zsh suite on the exact candidate, ZD including compatibility, full Trunk and CodeQL checks, clean startup and real-object install/update/unload/delete checks. It retains the `Promotion gate` required context during staged cutover and fails on failed, skipped or cancelled constituents. Revalidate against a changed base. Post-merge checks are additional evidence: users can consume `main` immediately, before a tag is published. Repository settings must require the appropriate checks; workflow files alone do not enforce merging rules.
+The stable qualification workflow runs on every `main` PR and push. It runs the full Zsh suite on the exact candidate, ZD including compatibility, full Trunk and CodeQL checks, clean startup and real-object install/update/unload/delete checks. It retains the `Promotion gate` required context for check-name compatibility and fails on failed, skipped or cancelled constituents. Revalidate against a changed base. Post-merge checks are additional evidence: users can consume `main` immediately, before a tag is published. Repository settings must require the appropriate checks; workflow files alone do not enforce merging rules.
 
 Keep long-form user guidance in the canonical wiki. Changes to installation or commands must also check the README and `docs/man/zi.1`, which `zi man` opens directly. That roff file is the maintained offline source, not a generated README copy. Update it alongside commands; `zsh -f tests/manual.zsh` checks command coverage and renders it with groff. Check semantics against the dispatcher and help, because rendering and inventory checks cannot prove that descriptions are correct.
 
 ## Releases
 
-A milestone is a separately authorized signed annotated tag on an exact current protected `main` SHA. Ordinary merges do not authorize a tag or release, and automatic promotion publication is removed. This transition supersedes ADR-0028 only after maintainer acceptance and verified cutover under ADR-0039.
+A milestone is a separately authorized signed annotated tag on an exact current protected `main` SHA. Ordinary merges do not authorize a tag or release, and automatic promotion publication is removed. ADR-0039 supersedes the historical promotion publication contract after its recorded acceptance and verified cutover.
 
 1. Run read-only `Release Plan` for the full current `main` SHA using its `candidate-sha` dispatch input, or run `RELEASE_NOTES_FILE=/path/to/notes.md zsh -f scripts/release-plan.zsh <full-sha>` locally. Review the deterministic notes and proposed tag. PR plans are previews; review the final main SHA before tagging. Breaking changes produce a major bump, `feat` a minor bump, and `fix` or `perf` a patch bump; a no-op plan produces no tag or release.
 2. Separately authorize the displayed version, notes and exact SHA, then push its signed annotated `vX.Y.Z` tag through the protected tag rules. No personal signing key is stored in Actions.

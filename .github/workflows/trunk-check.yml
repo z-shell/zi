@@ -2,7 +2,7 @@
 name: Trunk Code Quality
 on:
   push:
-    branches: [main, next]
+    branches: [main]
     tags: ["v*.*.*"]
   pull_request:
     types: [opened, reopened, synchronize]

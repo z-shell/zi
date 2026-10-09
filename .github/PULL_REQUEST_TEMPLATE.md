@@ -1,13 +1,8 @@
 <!--
   Thanks for contributing to zi! Please read the checklist below.
 
-  Branch model:
-    - Ordinary work: create feature-<id> or bug-<id> from next and target next
-    - Urgent production fixes: use a same-repository hotfix-<id> from main to main
-    - Promote next to main only after integration checks pass, using a merge
-      commit rather than squash or rebase
-    - For next-to-main promotions, use:
-      ?template=promotion.md
+  Branch ordinary work from current main and target protected main.
+  Every merge is consumable; milestone publication is separately authorized.
 
   Commit messages must follow Conventional Commits:
     type(scope): short description   (≤72 chars, imperative mood)
@@ -46,8 +41,8 @@
 
 Prefer omitting automatic tool credits; see the [contribution guidance](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md#tool-attribution).
 
-- [ ] Ordinary work targets `next`; only same-repository hotfixes target `main`
-- [ ] A `next` to `main` promotion uses a merge commit and records both parent SHAs
+- [ ] Work branches from current `main` and targets protected `main`
+- [ ] Full stable qualification passes on the current candidate; release authority is separate
 - [ ] Commit messages follow Conventional Commits format
 - [ ] I have read the [contribution guidelines](https://github.com/z-shell/.github/blob/main/.github/CONTRIBUTING.md)
 - [ ] Native syntax/compilation and affected functional regressions pass; exact commands and compatibility limits are recorded

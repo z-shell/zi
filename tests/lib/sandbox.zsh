@@ -35,23 +35,27 @@
   export XDG_CONFIG_HOME=${base}/config XDG_CACHE_HOME=${base}/cache
   export XDG_DATA_HOME=${base}/data XDG_STATE_HOME=${base}/state
   export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
+  # Git also takes configuration, identity and a repository from the
+  # environment, for example inside a hook; drop all of it.
+  builtin unset -m 'GIT_CONFIG_KEY_*' 'GIT_CONFIG_VALUE_*' 'GIT_AUTHOR_*' 'GIT_COMMITTER_*'
+  builtin unset GIT_CONFIG_COUNT GIT_CONFIG_PARAMETERS GIT_CONFIG \
+    GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY
   builtin unset ZPFX GOPATH GOBIN GOMODCACHE CARGO_HOME RUSTUP_HOME
   builtin typeset +x FPATH
 } "$@" || builtin exit 1
 
-typeset -ga zi_sandbox_cleanup_hooks
-
-# Runs any hooks a test registered, then removes $temp_root, including
-# read-only directories a test or a Go module download left behind.
+# Removes $temp_root, including read-only directories a test or a Go module
+# download left behind.
 zi_sandbox_cleanup() {
   builtin emulate -L zsh
-  local hook
-  for hook in "${zi_sandbox_cleanup_hooks[@]}"; do
-    "${hook}"
-  done
   [[ -n ${temp_root} && -d ${temp_root} ]] || return 0
   command chmod -R u+rwX -- "${temp_root}" 2>/dev/null
   command rm -rf -- "${temp_root}"
 }
 
-trap zi_sandbox_cleanup EXIT HUP INT TERM
+# A signal ends the test after cleanup; it must not go on against a removed
+# HOME and TMPDIR.
+trap zi_sandbox_cleanup EXIT
+trap 'zi_sandbox_cleanup; builtin exit 129' HUP
+trap 'zi_sandbox_cleanup; builtin exit 130' INT
+trap 'zi_sandbox_cleanup; builtin exit 143' TERM

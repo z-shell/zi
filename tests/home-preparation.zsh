@@ -12,7 +12,6 @@ fail() {
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
 source "${0:A:h}/lib/sandbox.zsh" home-prep-test
-# The failure case makes a directory read-only; restore it so cleanup can work.
 
 command mkdir -p \
   "${temp_root}/home" \

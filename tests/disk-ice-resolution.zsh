@@ -159,6 +159,23 @@ load_ices absent-id && die "absent ID: reported success"
   assert_equal "${ICE[atload]}" SNIPPET_ATLOAD "sh_glob plain snippet atload"
 }
 
+# 11. A `nosvn' ice on an object saved with `svn' rewrites the saved mode to 0.
+#    .zi-compute-ice runs under `emulate -LR zsh', where posix_builtins is off,
+#    so the write must not go through `command' (z-shell/zi#635).
+() {
+  local dir="$(plugin_dir user/svn-dropped)"
+  write_ices "$dir" 'mode=1'
+  ICE=( nosvn '' )
+  typeset -gA svn_ice
+  typeset -g svn_dir svn_file svn_snippet
+  { .zi-compute-ice user/svn-dropped "" svn_ice svn_dir svn_file svn_snippet } \
+    >| "${TMPDIR:-/tmp}/zi-disk-ice-out.$$" 2>&1
+  captured="$(<"${TMPDIR:-/tmp}/zi-disk-ice-out.$$")"
+  command rm -f -- "${TMPDIR:-/tmp}/zi-disk-ice-out.$$"
+  assert_equal "$captured" "" "nosvn: reports nothing"
+  assert_equal "$(<"$dir/mode")" 0 "nosvn: saved mode"
+}
+
 builtin exit 0
 ZSH
 pass "disk-ice resolution honours the object type and both root layouts"

@@ -7,9 +7,7 @@ setopt err_exit pipe_fail
 
 typeset project_root="${0:A:h:h}"
 typeset git_bin="${commands[git]}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-self-update-test.XXXXXXXX")"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" self-update-test
 
 typeset -gx HOME="${temp_root}/home"
 typeset -gx ZDOTDIR="${temp_root}/zdotdir"

@@ -9,6 +9,7 @@
 
 builtin emulate -R zsh
 setopt extended_glob pipe_fail
+source "${0:A:h}/lib/sandbox.zsh" source-hygiene
 
 fail() {
   builtin print -u2 -r -- "not ok - $1"
@@ -129,3 +130,33 @@ for command_name in "${labels[@]}"; do
 done
 (( ${#unknown} == 0 )) || fail "lib/_zi completes arguments for words Zi does not accept: ${(j:, :)unknown}"
 builtin print -r -- "ok - every lib/_zi argument completion is for a command in ZI[cmd-list] (${#labels} labels)"
+
+# Every test runs in the shared sandbox, which keeps the caller's HOME, XDG
+# directories, TMPDIR, Git configuration, ZPFX and Go paths away from it (#658).
+# sandbox-isolation.zsh is the exception: it runs the sandbox under decoys. The
+# source line must come before the test first touches its temporary root, makes
+# a temporary directory or loads Zi, so nothing runs outside the sandbox. This
+# is a line check, not a parse: a source line in dead code still passes, and a
+# comment-free line that only names zi.zsh before it fails.
+typeset test_file
+typeset -a test_files unsandboxed
+typeset -i source_at first_use n
+test_files=( tests/*.zsh(N) )
+(( ${#test_files} > 1 )) || fail "locate the tests"
+for test_file in "${test_files[@]}"; do
+  [[ ${test_file:t} == sandbox-isolation.zsh ]] && continue
+  lines=( "${(@f)$(<$test_file)}" )
+  source_at=0 first_use=0
+  for (( n = 1; n <= ${#lines}; n++ )); do
+    if (( ! source_at )) && [[ ${lines[n]} == 'source "${0:A:h}/lib/sandbox.zsh" '[a-z0-9-]## ]]; then
+      source_at=n
+    elif (( ! first_use )) && [[ ${lines[n]} != [[:space:]]#'#'* &&
+      ${lines[n]} == *(temp_root|mktemp|zi.zsh)* ]]; then
+      first_use=n
+    fi
+  done
+  (( source_at && ( ! first_use || source_at < first_use ) )) || unsandboxed+=( "${test_file:t}" )
+done
+(( ${#unsandboxed} == 0 )) ||
+  fail "tests that do not source tests/lib/sandbox.zsh before using a temporary root or Zi: ${(j:, :)unsandboxed}"
+builtin print -r -- "ok - every test sources tests/lib/sandbox.zsh before it does any work (${#test_files} files)"

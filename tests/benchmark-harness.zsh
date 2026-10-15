@@ -20,9 +20,7 @@ fail() {
 
 (( $+commands[jq] )) || fail "missing test dependency: jq"
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-benchmark-harness.XXXXXXXX")" || fail "create temporary directory"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" benchmark-harness
 
 zsh "${project_root}/benchmarks/run.zsh" --variant a="$project_root" --variant b="$project_root" \
   --output-dir "$temp_root/run" --warmups 1 --samples 2 >/dev/null || fail "runner failed on the checkout"

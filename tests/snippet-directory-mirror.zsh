@@ -8,9 +8,7 @@ setopt pipe_fail
 typeset project_root="${0:A:h:h}"
 typeset real_git="${commands[git]}"
 typeset real_mv="${commands[mv]}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-mirror-test.XXXXXXXX")" || exit 1
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" mirror-test
 
 fail() {
   builtin emulate -L zsh

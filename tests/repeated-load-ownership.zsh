@@ -20,10 +20,7 @@ fail() {
 }
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-repeated-load-test.XXXXXXXX")" ||
-  fail "create temporary directory"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" repeated-load-test
 
 # write_plugin DIR FUNCTION: a plug-in that defines FUNCTION, makes it the
 # zi-repeat-widget widget and binds ^X^P to that widget.

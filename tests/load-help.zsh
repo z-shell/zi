@@ -17,10 +17,7 @@ fail() {
 }
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-load-help-test.XXXXXXXX")" ||
-  fail "create temporary directory"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" load-help-test
 
 command mkdir -p \
   "${temp_root}/home" \

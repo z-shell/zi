@@ -6,9 +6,7 @@ builtin emulate -LR zsh
 builtin setopt pipe_fail extended_glob
 
 typeset project_root=${0:A:h:h}
-typeset temp_root
-temp_root=$(command mktemp -d "${TMPDIR:-/tmp}/zi-message-formatting.XXXXXXXX")
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" message-formatting
 
 typeset -gx HOME=$temp_root/home
 typeset -gx ZDOTDIR=$temp_root/zdotdir

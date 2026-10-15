@@ -42,10 +42,7 @@ for name in "${fixtures[@]}"; do
 done
 (( $#listed == $#fixtures )) || fail "inventory mismatch: ${#listed} listed, ${#fixtures} snapshots"
 
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-manifest-fixtures.XXXXXXXX")" ||
-  fail "create temporary directory"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" manifest-fixtures
 # Here-documents and here-strings are temporary files under TMPPREFIX, not
 # TMPDIR, and env -i drops it: keep both shells in the directory created above
 # so the test needs no writable /tmp (#639).

@@ -8,8 +8,7 @@ builtin emulate -R zsh
 setopt pipe_fail
 
 typeset project_root=${0:A:h:h}
-typeset temp_root=$(command mktemp -d "${TMPDIR:-/tmp}/zi-gh-r-musl.XXXXXXXX") || exit 1
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" gh-r-musl
 export HOME=$temp_root/home ZDOTDIR=$temp_root/home TMPDIR=$temp_root/tmp
 command mkdir -p -- "$HOME" "$TMPDIR" || exit 1
 typeset -gA ZI=( HOME_DIR $temp_root/data CACHE_DIR $temp_root/cache CONFIG_DIR $temp_root/config )

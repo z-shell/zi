@@ -7,9 +7,7 @@ setopt err_exit no_unset pipe_fail
 
 typeset project_root="${0:A:h:h}"
 typeset fixture_root="${project_root}/tests/fixtures/public-contract"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-contract-test.XXXXXXXX")"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" contract-test
 
 fail() {
   print -u2 "not ok - $1"

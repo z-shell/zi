@@ -6,9 +6,7 @@ builtin emulate -LR zsh
 setopt err_exit pipe_fail
 
 typeset project_root="${0:A:h:h}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-path-resolution.XXXXXXXX")"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" path-resolution
 
 zmodload zsh/stat
 

@@ -91,4 +91,24 @@ typeset -a leftover=( "$TMPDIR"/zi-snippet-hook.*(N) )
   print -u2 -r -- "not ok - hook status files were left behind: $leftover"
   exit 1
 }
+# A first load whose copy fails reports it, like a failed update: the source is
+# missing, so nothing is installed or sourced (#637).
+zi snippet "$HOME/missing-snippet.zsh" >/dev/null 2>&1
+integer load_rc=$?
+(( load_rc == 4 )) || {
+  print -u2 -r -- "not ok - failed snippet load returned $load_rc instead of 4"
+  exit 1
+}
+zi ice cloneonly
+zi snippet "$HOME/missing-cloneonly.zsh" >/dev/null 2>&1
+load_rc=$?
+(( load_rc == 4 )) || {
+  print -u2 -r -- "not ok - failed cloneonly snippet load returned $load_rc instead of 4"
+  exit 1
+}
+print -r -- 'typeset -g SNIPPET_TEST_LATER=1' > "$HOME/later.zsh"
+zi snippet "$HOME/later.zsh" >/dev/null 2>&1 || {
+  print -u2 -r -- 'not ok - a snippet load after a failed one returned failure'
+  exit 1
+}
 print -r -- 'ok - snippet updates return success and preserve failure after later successful hooks'

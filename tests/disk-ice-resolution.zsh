@@ -254,6 +254,18 @@ check "plugin package" e2e-plugin plugin PLUGIN_ATLOAD
 install_snippet user/e2e-name SLASHED_ATLOAD
 check "slash-bearing ID" user/e2e-name snippet SLASHED_ATLOAD
 
+# A pending `zi ice' applies to the next `zi for' as an in-line ice would: a
+# pending is-snippet classifies the object (#638), and it melts after that
+# command, so the following object is a plugin again.
+loaded_type= loaded_id=
+zi ice is-snippet
+zi for pending-ice-file >/dev/null 2>&1
+[[ $loaded_type == snippet && $loaded_id == pending-ice-file ]] ||
+  die "pending is-snippet: loaded ${(qqq)loaded_id} as ${(qqq)loaded_type}, expected a snippet"
+loaded_type= loaded_id=
+zi for after-pending-ice >/dev/null 2>&1
+[[ $loaded_type == plugin ]] || die "a pending ice outlived its command: ${(qqq)loaded_type}"
+
 builtin exit 0
 ZSH
 pass "a pack load resolves its disk-ices from the root that holds them"

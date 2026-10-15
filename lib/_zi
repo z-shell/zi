@@ -17,6 +17,7 @@ commands=(
   man:"Manpage"
   load:"Load plugin"
   light:"Light load plugin"
+  ice:"Set modifiers for the next load operation"
   delete:"Delete plugin"
   unload:"Unload plugin"
   snippet:"Source (or add to PATH with --command) local or remote file (-f: force - do not use cache)"

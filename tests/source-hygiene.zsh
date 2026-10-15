@@ -78,3 +78,36 @@ if (( ${#mismatches} )); then
 fi
 
 builtin print -r -- "ok - every function is defined once and every FUNCTION header matches (${#seen_in} functions)"
+
+# Every command Zi accepts is offered by its completion: `ice' was missing from
+# lib/_zi with nothing to notice it (#645). Both lists are read as text; neither
+# file is sourced.
+typeset inventory="" command_name
+typeset -i reading=0
+typeset -A completed
+for line in "${(@f)$(<zi.zsh)}"; do
+  if [[ $line == 'ZI[cmd-list]="'* ]]; then
+    reading=1
+    line=${line#'ZI[cmd-list]="'}
+  fi
+  (( reading )) || continue
+  inventory+="${line%\\}"
+  [[ $line == *'"' ]] && break
+done
+[[ $inventory == *'"' && $inventory == *'|'* ]] || fail "locate the command inventory"
+inventory=${inventory%'"'}
+reading=0
+for line in "${(@f)$(<lib/_zi)}"; do
+  [[ $line == 'commands=(' ]] && { reading=1; continue }
+  (( reading )) || continue
+  [[ $line == ')' ]] && break
+  [[ $line == (#b)[[:space:]]#([^:[:space:]]##):* ]] && completed[$match[1]]=1
+done
+(( ${#completed} )) || fail "locate the completion command list"
+typeset -a uncompleted
+for command_name in ${(s:|:)inventory}; do
+  [[ $command_name == -* ]] && continue
+  (( ${+completed[$command_name]} )) || uncompleted+=( "$command_name" )
+done
+(( ${#uncompleted} == 0 )) || fail "lib/_zi does not complete: ${(j:, :)uncompleted}"
+builtin print -r -- "ok - lib/_zi completes every command in ZI[cmd-list] (${#completed} entries)"

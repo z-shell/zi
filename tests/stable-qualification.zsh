@@ -5,8 +5,8 @@ setopt err_exit no_unset pipe_fail
 
 root=${0:A:h:h}
 workflow=$root/.github/workflows/promotion-readiness.yml
-tmp=$(mktemp -d "${TMPDIR:-/tmp}/zi-stable-gate.XXXXXXXX")
-trap 'rm -rf -- "$tmp"' EXIT HUP INT TERM
+source "${0:A:h}/lib/sandbox.zsh" stable-gate
+tmp=$temp_root
 fail() { print -u2 -r -- "stable qualification: $*"; exit 1; }
 
 # Exercise the actual aggregate command rather than a second implementation.

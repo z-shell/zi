@@ -6,9 +6,7 @@ builtin emulate -LR zsh
 setopt err_exit no_unset pipe_fail
 
 typeset project_root="${0:A:h:h}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-version-test.XXXXXXXX")"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" version-test
 
 fail() {
   print -u2 "not ok - $1"

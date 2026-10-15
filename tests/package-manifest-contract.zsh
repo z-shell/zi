@@ -19,10 +19,7 @@ typeset schema="${project_root}/contracts/package-manifest-v1.json"
 command python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$schema" >/dev/null 2>&1 ||
   fail "contracts/package-manifest-v1.json is not valid JSON"
 
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-package-contract.XXXXXXXX")" ||
-  fail "create temporary directory"
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" package-contract
 
 # accepts <label> <json>  -- the manifest must validate cleanly
 accepts() {

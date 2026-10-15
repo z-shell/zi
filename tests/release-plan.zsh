@@ -4,8 +4,8 @@ emulate -L zsh
 setopt err_exit no_unset pipe_fail
 
 root=${0:A:h:h}
-tmp=$(mktemp -d "${TMPDIR:-/tmp}/zi-release-plan-test.XXXXXX")
-trap 'rm -rf -- "$tmp"' EXIT HUP INT TERM
+source "${0:A:h}/lib/sandbox.zsh" release-plan-test
+tmp=$temp_root
 
 git init "$tmp/repository" >/dev/null
 git -C "$tmp/repository" config user.email release-test@example.invalid

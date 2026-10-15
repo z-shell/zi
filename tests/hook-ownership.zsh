@@ -13,9 +13,7 @@ builtin emulate -R zsh
 setopt pipe_fail
 
 typeset project_root="${0:A:h:h}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-hook-ownership-test.XXXXXXXX")" || exit 1
-trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+source "${0:A:h}/lib/sandbox.zsh" hook-ownership-test
 
 integer failures=0
 

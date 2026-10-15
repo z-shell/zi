@@ -13,6 +13,7 @@
 
 builtin emulate -R zsh
 setopt pipe_fail extended_glob
+source "${0:A:h}/lib/sandbox.zsh" ci-registration
 
 fail() {
   builtin print -u2 -r -- "not ok - $1"

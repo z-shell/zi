@@ -3,6 +3,7 @@
 # rendering errors without sourcing Zi or executing documentation examples.
 builtin emulate -R zsh
 setopt pipe_fail
+source "${0:A:h}/lib/sandbox.zsh" manual
 
 fail() {
   builtin emulate -L zsh

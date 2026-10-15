@@ -11,11 +11,8 @@ fail() {
 }
 
 typeset project_root="${ZI_TEST_CHECKOUT:-${0:A:h:h}}"
-typeset temp_root
-temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-home-prep-test.XXXXXXXX")" ||
-  fail "create temporary directory"
+source "${0:A:h}/lib/sandbox.zsh" home-prep-test
 # The failure case makes a directory read-only; restore it so cleanup can work.
-trap 'command chmod -R u+rwX -- "$temp_root" 2>/dev/null; command rm -rf -- "$temp_root"' EXIT INT TERM
 
 command mkdir -p \
   "${temp_root}/home" \

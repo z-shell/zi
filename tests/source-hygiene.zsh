@@ -9,6 +9,7 @@
 
 builtin emulate -R zsh
 setopt extended_glob pipe_fail
+source "${0:A:h}/lib/sandbox.zsh" source-hygiene
 
 fail() {
   builtin print -u2 -r -- "not ok - $1"
@@ -129,3 +130,16 @@ for command_name in "${labels[@]}"; do
 done
 (( ${#unknown} == 0 )) || fail "lib/_zi completes arguments for words Zi does not accept: ${(j:, :)unknown}"
 builtin print -r -- "ok - every lib/_zi argument completion is for a command in ZI[cmd-list] (${#labels} labels)"
+
+# Every test runs in the shared sandbox, which keeps the caller's HOME, XDG
+# directories, TMPDIR, Git configuration, ZPFX and Go paths away from it (#658).
+# sandbox-isolation.zsh is the exception: it runs the sandbox under decoys.
+typeset test_file
+typeset -a unsandboxed
+for test_file in tests/*.zsh(N); do
+  [[ ${test_file:t} == sandbox-isolation.zsh ]] && continue
+  [[ $(<$test_file) == *$'\nsource "${0:A:h}/lib/sandbox.zsh" '[a-z0-9-]##$'\n'* ]] ||
+    unsandboxed+=( "${test_file:t}" )
+done
+(( ${#unsandboxed} == 0 )) || fail "tests that do not source tests/lib/sandbox.zsh: ${(j:, :)unsandboxed}"
+builtin print -r -- "ok - every test sources tests/lib/sandbox.zsh"

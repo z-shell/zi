@@ -46,6 +46,10 @@ typeset temp_root
 temp_root="$(command mktemp -d "${TMPDIR:-/tmp}/zi-manifest-fixtures.XXXXXXXX")" ||
   fail "create temporary directory"
 trap 'command rm -rf -- "$temp_root"' EXIT INT TERM
+# Here-documents and here-strings are temporary files under TMPPREFIX, not
+# TMPDIR, and env -i drops it: keep both shells in the directory created above
+# so the test needs no writable /tmp (#639).
+TMPPREFIX="$temp_root/zsh"
 
 # A clean environment: an exported absolute XDG_* value would make zi.zsh
 # read or write state outside the temporary directory.
@@ -57,6 +61,7 @@ env -i \
   XDG_CACHE_HOME="$temp_root/cache" \
   XDG_CONFIG_HOME="$temp_root/config" \
   TMPDIR="$temp_root" \
+  TMPPREFIX="$temp_root/zsh" \
   ZI_TEST_CHECKOUT="$project_root" \
   FIXTURE_DIR="$fixture_dir" \
   zsh -f <<'ZSH' || fail "a vendored manifest does not resolve through .zi-read-package-manifest"

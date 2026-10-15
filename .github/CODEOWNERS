@@ -21,13 +21,11 @@
 # ── CI / Workflows ───────────────────────────────────────────────────────────
 # Workflow changes reviewed by primary maintainer; no TSC sign-off required.
 /.github/workflows/                 @ss-o
-/.github/dependabot.yml             @ss-o
 
 # ── Documentation & templates ────────────────────────────────────────────────
 /docs/                              @ss-o
 /.github/ISSUE_TEMPLATE/            @ss-o
 /.github/PULL_REQUEST_TEMPLATE.md   @ss-o
-/.github/copilot-instructions.md    @ss-o
 
 # ── Governance (must be last — highest specificity) ───────────────────────────
 # CODEOWNERS itself requires TSC approval to change.

@@ -268,7 +268,7 @@
     # there's the no* ice, but not if it's only in the static ice (unless there's on such ice "anyway").
     (( 1 == ${+ICE[$___key]} && 0 == ${+ICE[no$___key]} && 1 == ${+___sice[no$___key]} )) && continue
     if [[ "$___key" = "svn" ]]; then
-      command builtin print -r -- "0" >! "$___zi_path/mode"
+      builtin print -r -- "0" >! "$___zi_path/mode"
       ___mdata[mode]=0
     else
       command rm -f -- "$___zi_path/$___key"

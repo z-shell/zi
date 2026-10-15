@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": 1,
-  "evidence_reviewed": "2026-09-18",
+  "evidence_reviewed": "2026-10-15",
   "renames": [],
   "surfaces": [
     {
@@ -139,13 +139,7 @@
         "prezto-compatibility",
         "compatibility-aliases"
       ],
-      "evidence": "https://github.com/z-shell/docs/blob/e0d630ea0ea6117ab80bb7bedc0a6346ee1b50f5/code/zsdoc/asciidoc/zi.zsh.adoc"
-    },
-    {
-      "repository": "z-shell/src",
-      "path": "public/sh/install.sh",
-      "surfaces": ["installer-git-output"],
-      "evidence": "https://github.com/z-shell/src/blob/d5ec91f46a306117b9ff3dcdaf0b7b6de96fae7b/public/sh/install.sh"
+      "evidence": "https://github.com/z-shell/docs/blob/1070778f26a19d4ac60d9d5be7ad450bb77c13e5/code/zsdoc/asciidoc/zi.zsh.adoc"
     },
     {
       "repository": "z-shell/src",

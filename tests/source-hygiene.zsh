@@ -82,7 +82,7 @@ builtin print -r -- "ok - every function is defined once and every FUNCTION head
 # Every command Zi accepts is offered by its completion: `ice' was missing from
 # lib/_zi with nothing to notice it (#645). Both lists are read as text; neither
 # file is sourced.
-typeset inventory="" command_name
+typeset inventory="" command_name line
 typeset -i reading=0
 typeset -A completed
 for line in "${(@f)$(<zi.zsh)}"; do
@@ -100,7 +100,7 @@ reading=0
 for line in "${(@f)$(<lib/_zi)}"; do
   [[ $line == 'commands=(' ]] && { reading=1; continue }
   (( reading )) || continue
-  [[ $line == ')' ]] && break
+  [[ $line == [[:space:]]#')'* ]] && break
   [[ $line == (#b)[[:space:]]#([^:[:space:]]##):* ]] && completed[$match[1]]=1
 done
 (( ${#completed} )) || fail "locate the completion command list"

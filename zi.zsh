@@ -3085,7 +3085,10 @@ zi() {
     ZI[annex-exposed-processed-IDs]=
     if (( $# )) {
       local -a ___ices
-      ___ices=( "${(kv)ZI_ICES[@]}" )
+      # zi() moved a pending `zi ice' into ICE on entry; the classic syntax
+      # moves it back into ZI_ICES and leaves ICE empty. Take both, the
+      # command's own ices last, so `zi ice ...; zi for ...' keeps them (#638).
+      ___ices=( "${(kv)ICE[@]}" "${(kv)ZI_ICES[@]}" )
       ZI_ICES=()
       while (( $# )) {
         .zi-ice "$@"

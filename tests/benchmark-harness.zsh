@@ -113,6 +113,23 @@ jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == nul
   fail "reports measured with different variant lists must not flag"
 grep -q 'variant lists `a, b` versus `b, a`' "$temp_root/reordered.md" || fail "Markdown must name both variant lists"
 
+# A report from another host is not comparable either, whatever the delta:
+# hardware is not a code regression. The runner image and the CPU each
+# identify the host, and the Markdown names whichever differs (#574).
+jq '.environment.runner_image = "ubuntu24 20260101.1" | .cases["ice-200"].median *= 1.3 | .cases["ice-200"].p95 *= 1.3' "$temp_root/a.json" > "$temp_root/other-image.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/other-image.json" \
+  --output "$temp_root/other-image-cmp.json" --markdown "$temp_root/other-image.md" >/dev/null || fail "a comparison across runner images must still exit 0"
+jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == null' "$temp_root/other-image-cmp.json" >/dev/null ||
+  fail "reports from different runner images must not flag"
+grep -q 'runner image `[^`]*` versus `ubuntu24 20260101.1`' "$temp_root/other-image.md" || fail "Markdown must name both runner images"
+grep -q '; CPU `' "$temp_root/other-image.md" && fail "Markdown must not name equal CPUs as a difference"
+jq '.environment.cpu = "Other CPU @ 1.00GHz" | .cases["ice-200"].median *= 1.3 | .cases["ice-200"].p95 *= 1.3' "$temp_root/a.json" > "$temp_root/other-cpu.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/other-cpu.json" \
+  --output "$temp_root/other-cpu-cmp.json" --markdown "$temp_root/other-cpu.md" >/dev/null || fail "a comparison across CPUs must still exit 0"
+jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == null' "$temp_root/other-cpu-cmp.json" >/dev/null ||
+  fail "reports from different CPUs must not flag"
+grep -q 'CPU `[^`]*` versus `Other CPU @ 1.00GHz`' "$temp_root/other-cpu.md" || fail "Markdown must name both CPUs"
+
 # Reports with different case sets are rejected up front, not deep inside jq.
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/b.json" \
   --output "$temp_root/mismatch.json" >/dev/null 2>"$temp_root/mismatch.err" && fail "different case sets must be rejected"
@@ -142,6 +159,11 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --ca
   --control "$temp_root/ctl-variants.json" --output "$temp_root/ctl-variants-cmp.json" >/dev/null 2>"$temp_root/ctl-variants.err" && fail "a control measured with another variant list must be rejected"
 grep -q "control is not a second run of the baseline (.*variants)" "$temp_root/ctl-variants.err" || fail "the other-variant-list control must be named"
 [[ ! -e $temp_root/ctl-variants-cmp.json ]] || fail "a control with another variant list must not produce a comparison"
+jq '.environment.cpu = "Other CPU @ 1.00GHz"' "$temp_root/a.json" > "$temp_root/ctl-cpu.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
+  --control "$temp_root/ctl-cpu.json" --output "$temp_root/ctl-cpu-cmp.json" >/dev/null 2>"$temp_root/ctl-cpu.err" && fail "a control from another host must be rejected"
+grep -q "control is not a second run of the baseline (.*CPU, runner image" "$temp_root/ctl-cpu.err" || fail "the other-host control must be named"
+[[ ! -e $temp_root/ctl-cpu-cmp.json ]] || fail "a control from another host must not produce a comparison"
 
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"

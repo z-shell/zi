@@ -111,3 +111,21 @@ for command_name in ${(s:|:)inventory}; do
 done
 (( ${#uncompleted} == 0 )) || fail "lib/_zi does not complete: ${(j:, :)uncompleted}"
 builtin print -r -- "ok - lib/_zi completes every command in ZI[cmd-list] (${#completed} entries)"
+
+# The reverse: every word lib/_zi completes arguments for is a command Zi
+# accepts. Labels for removed or never-shipped names are dead branches (#652).
+typeset -a accepted labels unknown
+accepted=( ${(s:|:)inventory} )
+reading=0
+for line in "${(@f)$(<lib/_zi)}"; do
+  [[ $line == [[:space:]]#'case $words[2] in' ]] && { reading=1; continue }
+  (( reading )) || continue
+  [[ $line == [[:space:]]#esac ]] && break
+  [[ $line == (#b)[[:space:]]##([a-z][a-z|-]#)')' ]] && labels+=( ${(s:|:)match[1]} )
+done
+(( ${#labels} )) || fail "locate the argument completion labels"
+for command_name in "${labels[@]}"; do
+  (( ${accepted[(Ie)$command_name]} )) || unknown+=( "$command_name" )
+done
+(( ${#unknown} == 0 )) || fail "lib/_zi completes arguments for words Zi does not accept: ${(j:, :)unknown}"
+builtin print -r -- "ok - every lib/_zi argument completion is for a command in ZI[cmd-list] (${#labels} labels)"

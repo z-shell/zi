@@ -109,7 +109,7 @@ case $state in
           'directories:-- Directory --:_directories' \
           && ret=0
         ;;
-      run|fpath|add-fpath)
+      run|add-fpath)
         typeset -a plugins
         plugins=( "${ZI[PLUGINS_DIR]}"/*(N:t) )
         plugins=( "${plugins[@]//---//}" )
@@ -171,9 +171,6 @@ case $state in
         _wanted plugins expl "-- Plugin --" \
           compadd "$@" -a - plugins \
           && ret=0
-        ;;
-      all-reports)
-        _message "Hit enter to get all reports (for all loaded plugins)" && ret=0
         ;;
       loaded|list)
         _message "Hit enter or give part of plugin name" && ret=0
@@ -283,9 +280,6 @@ case $state in
       dclear)
         _message "Hit enter to clear report of what was going on in session" && ret=0
         ;;
-      compile-all)
-        _message 'Hit enter to compile all downloaded plugins' && ret=0
-        ;;
       uncompile)
         typeset -a plugins
         plugins=( "${ZI[PLUGINS_DIR]}"/*(N) )
@@ -305,9 +299,6 @@ case $state in
         _wanted show_plugins expl "-- Plugin --" \
           compadd "$@" -a - show_plugins \
           && ret=0
-        ;;
-      uncompile-all)
-        _message 'Hit enter remove compiled versions of all downloaded plugins' && ret=0
         ;;
       compiled)
         _message 'Hit enter to get list of compiled plugins' && ret=0

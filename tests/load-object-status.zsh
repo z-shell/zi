@@ -131,4 +131,41 @@ zi light @fixture || { print -u2 'blank global ices reported a bad ice-list'; re
 hook_status=2
 ZSH
 
+# Classic `zi snippet -f' and `--command' must reach .zi-load-snippet as its own
+# options, one word each, not as the internal OPTS key names joined into one
+# string that it then takes for the snippet URL (#637). Stubbed: no download.
+env \
+  HOME="${temp_root}/home" \
+  XDG_CACHE_HOME="${temp_root}/cache" \
+  XDG_CONFIG_HOME="${temp_root}/config" \
+  XDG_DATA_HOME="${temp_root}/data" \
+  ZDOTDIR="${temp_root}/zdotdir" \
+  ZI_TEST_CHECKOUT="$project_root" \
+  zsh -f <<'ZSH' || fail "classic snippet and light options do not reach their loaders as options"
+builtin emulate -R zsh
+setopt pipe_fail
+
+builtin source "${ZI_TEST_CHECKOUT}/zi.zsh" || return 1
+.zi-prepare-home || return 1
+
+typeset -ga seen
+.zi-load-snippet() { seen=( "$@" ); return 0; }
+.zi-load()         { seen=( "$@" ); return 0; }
+
+expect() {  # expect <label> <expected words...>
+  local label=$1; shift
+  [[ ${(j:|:)seen} == ${(j:|:)@} ]] || {
+    builtin print -u2 -r -- "${label}: got (${(j:, :)${(qq)seen}}), expected (${(j:, :)${(qq)@}})"
+    return 1
+  }
+}
+
+zi snippet -f some-file.zsh         || return 1; expect "snippet -f"        -f some-file.zsh        || return 1
+zi snippet --force some-file.zsh    || return 1; expect "snippet --force"   -f some-file.zsh        || return 1
+zi snippet --command some-file.zsh  || return 1; expect "snippet --command" --command some-file.zsh || return 1
+zi snippet some-file.zsh            || return 1; expect "snippet"           some-file.zsh           || return 1
+zi light -b user/plugin             || return 1; expect "light -b"          user/plugin '' light-b  || return 1
+zi light user/plugin                || return 1; expect "light"             user/plugin '' light    || return 1
+ZSH
+
 builtin print -r -- "ok - .zi-load-object reports its own load status and leaves aggregation to the caller"

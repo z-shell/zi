@@ -129,6 +129,14 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --ca
 jq -e '.comparable == false and .flagged == [] and .cases["ice-200"].flag == null' "$temp_root/other-cpu-cmp.json" >/dev/null ||
   fail "reports from different CPUs must not flag"
 grep -q 'CPU `[^`]*` versus `Other CPU @ 1.00GHz`' "$temp_root/other-cpu.md" || fail "Markdown must name both CPUs"
+# A report that predates these fields, or a local run with no runner image,
+# is named as such rather than as `null' or an empty code span.
+jq 'del(.environment.cpu) | .environment.runner_image = ""' "$temp_root/a.json" > "$temp_root/unrecorded.json"
+jq '.environment.runner_image = "ubuntu24 20260101.1"' "$temp_root/a.json" > "$temp_root/hosted.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/unrecorded.json" --candidate "$temp_root/hosted.json" \
+  --output "$temp_root/unrecorded-cmp.json" --markdown "$temp_root/unrecorded.md" >/dev/null || fail "a comparison with unrecorded host fields must still exit 0"
+grep -q 'CPU `unrecorded` versus `' "$temp_root/unrecorded.md" || fail "Markdown must name a missing CPU as unrecorded"
+grep -q 'runner image `none` versus `ubuntu24 20260101.1`' "$temp_root/unrecorded.md" || fail "Markdown must name an empty runner image as none"
 
 # Reports with different case sets are rejected up front, not deep inside jq.
 zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/b.json" \
@@ -164,6 +172,11 @@ zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --ca
   --control "$temp_root/ctl-cpu.json" --output "$temp_root/ctl-cpu-cmp.json" >/dev/null 2>"$temp_root/ctl-cpu.err" && fail "a control from another host must be rejected"
 grep -q "control is not a second run of the baseline (.*CPU, runner image" "$temp_root/ctl-cpu.err" || fail "the other-host control must be named"
 [[ ! -e $temp_root/ctl-cpu-cmp.json ]] || fail "a control from another host must not produce a comparison"
+jq '.environment.runner_image = "ubuntu24 20260101.1"' "$temp_root/a.json" > "$temp_root/ctl-image.json"
+zsh "${project_root}/benchmarks/compare.zsh" --baseline "$temp_root/a.json" --candidate "$temp_root/a.json" \
+  --control "$temp_root/ctl-image.json" --output "$temp_root/ctl-image-cmp.json" >/dev/null 2>"$temp_root/ctl-image.err" && fail "a control from another runner image must be rejected"
+grep -q "control is not a second run of the baseline (.*runner image" "$temp_root/ctl-image.err" || fail "the other-runner-image control must be named"
+[[ ! -e $temp_root/ctl-image-cmp.json ]] || fail "a control from another runner image must not produce a comparison"
 
 # Functional failure on either side invalidates the case and exits 1.
 jq '.cases["unload-10"] = {"failure": "exit 4: synthetic"}' "$temp_root/a.json" > "$temp_root/broken.json"

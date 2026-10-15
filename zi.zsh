@@ -1708,6 +1708,9 @@ builtin setopt no_aliases
     .zi-download-snippet "$save_url" "$url" "$id_as" "$local_dir" "$dirname" "$filename"
     retval=$?
   }
+  # 4 is a failed download or copy: report it (#637). Other non-zero values are
+  # the download's pull-active state and keep returning 0 without sourcing.
+  (( retval == 4 )) && return 4
   (( ${+ICE[cloneonly]} || retval )) && return 0
   ZI_SNIPPETS[$id_as]="$id_as <${${ICE[svn]+svn}:-single file}>"
   # Same re-entrancy as .zi-load: a plug-in body may load a snippet, and a

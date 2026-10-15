@@ -157,8 +157,7 @@
         "hook-registration",
         "compatibility-functions",
         "prezto-compatibility",
-        "compatibility-aliases",
-        "installer-git-output"
+        "compatibility-aliases"
       ],
       "evidence": "https://github.com/z-shell/zd/blob/35b837d562008c0677f21c39c99e932507aba8bf/tests/helpers.zsh"
     },
@@ -245,6 +244,18 @@
       "path": "docs/README.md",
       "surfaces": ["compatibility-functions"],
       "evidence": "https://github.com/z-shell/subversion/blob/201a0b2061bc73e5942660653245fa3f6fe5d66d/docs/README.md"
+    },
+    {
+      "repository": "z-shell/z-a-submods",
+      "path": "functions/.za-submods-atclone-handler",
+      "surfaces": ["installer-git-output"],
+      "evidence": "https://github.com/z-shell/z-a-submods/blob/5093bc25ed0af27f71ad46c163972ef629752a83/functions/.za-submods-atclone-handler"
+    },
+    {
+      "repository": "z-shell/zi-setup",
+      "path": "internal/engine/bundled/public/zsh/init.zsh",
+      "surfaces": ["installer-git-output"],
+      "evidence": "https://github.com/z-shell/zi-setup/blob/f71c1654dd95d067fa123380446f40fca5710e49/internal/engine/bundled/public/zsh/init.zsh"
     }
   ]
 }

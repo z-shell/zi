@@ -3232,8 +3232,16 @@ zi() {
             # A classic `load'/`light' plugin carries ___is_snippet=-1, so only a
             # positive value selects the snippet options. `-b' (bindkey-only
             # tracking) belongs to `light' and wins over a `light-mode' ice; a
-            # classic `load' keeps full tracking.
-            (( ___is_snippet > 0 )) && local ___opt="${(k)OPTS[*]}" || local ___opt="${${${(M)cmd:#light}:+${OPTS[(I)-b]:+light-b}}:-${ICE[light-mode]+light}}"
+            # classic `load' keeps full tracking. A snippet gets its loader's own
+            # options, one word each: the OPTS keys are internal names
+            # (`opt_-f,--force'), and joined they were taken for the URL (#637).
+            local -a ___opt
+            if (( ___is_snippet > 0 )); then
+              ___opt=( ${${:-${OPTS[opt_-f,--force]}${OPTS[-f]}${OPTS[--force]}}:+-f}
+                ${${:-${OPTS[opt_-x,--command]}${OPTS[--command]}}:+--command} )
+            else
+              ___opt=( ${${${(M)cmd:#light}:+${OPTS[(I)-b]:+light-b}}:-${ICE[light-mode]+light}} )
+            fi
 
             .zi-load-object ${${${(M)___is_snippet:#1}:+snippet}:-plugin} $___id $___opt
             integer ___last_retval=$?

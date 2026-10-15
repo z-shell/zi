@@ -5,8 +5,6 @@ on:
     tags: ["v*.*.*"]
     branches:
       - main
-  pull_request:
-    branches: [main]
   workflow_call:
     inputs:
       candidate-ref:
@@ -23,8 +21,9 @@ permissions:
   contents: read
 
 # One job runs the syntax pass, each matrix leg runs every focused test, and
-# Zsh Gate reports both on every pull request so it can be a required check
-# (#598). One job per file or per test spent 10-22 s installing Zsh to run a
+# Zsh Gate reports both (#598). Pull requests reach this workflow only through
+# Promotion Readiness, whose Promotion gate requires it (#656); the push run on
+# main stays because scripts/verify-release-tag.zsh requires it. One job per file or per test spent 10-22 s installing Zsh to run a
 # check that takes under a second, and queued about 126 jobs per run. Each
 # test step keeps its own result and runs even after an earlier test fails; the
 # tests isolate HOME and XDG state themselves. tests/ci-registration.zsh still

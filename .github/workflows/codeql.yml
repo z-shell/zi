@@ -4,10 +4,12 @@ name: CodeQL
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   schedule:
     - cron: "28 15 * * 5"
+
+# No pull_request trigger (#656): Promotion Readiness runs this check on every
+# pull request into main through Promotion gate. The push run on main stays;
+# scripts/verify-release-tag.zsh requires it before a milestone is published.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

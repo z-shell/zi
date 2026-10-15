@@ -11,6 +11,10 @@ on:
 # one without). The cancelled check runs for required contexts then kept a
 # pull request blocked while the same contexts had passed (#594). Letting a
 # superseded run finish costs seconds; a cancelled run can block a merge.
+#
+# The policy comparison reruns on every event because the pull request body
+# and labels are its inputs. The detector tests depend only on the base and
+# head commits, so they run only when those can change (#654).
 
 permissions:
   contents: read
@@ -65,7 +69,9 @@ jobs:
         run: zsh "$TRUSTED_ROOT/scripts/public-contract-impact.zsh" --base "$BASE_SHA" --head "$HEAD_SHA" ${POLICY_ARG:+"$POLICY_ARG"}
 
       - name: Test trusted public contract detector
-        if: steps.detector.outputs.has_trusted_tests == 'true'
+        if: >-
+          steps.detector.outputs.has_trusted_tests == 'true' &&
+          contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.action)
         env:
           TRUSTED_ROOT: ${{ steps.detector.outputs.root }}
         run: cd "$TRUSTED_ROOT" && zsh tests/public-contract-impact.zsh
@@ -73,6 +79,7 @@ jobs:
   detector-head-tests:
     name: Public contract detector tests
     needs: contract-impact
+    if: contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.action)
     runs-on: ubuntu-latest
     steps:
       - name: Check out pull request head

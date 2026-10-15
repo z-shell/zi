@@ -135,7 +135,9 @@ builtin print -r -- "ok - every lib/_zi argument completion is for a command in 
 # directories, TMPDIR, Git configuration, ZPFX and Go paths away from it (#658).
 # sandbox-isolation.zsh is the exception: it runs the sandbox under decoys. The
 # source line must come before the test first touches its temporary root, makes
-# a temporary directory or loads Zi, so nothing runs outside the sandbox.
+# a temporary directory or loads Zi, so nothing runs outside the sandbox. This
+# is a line check, not a parse: a source line in dead code still passes, and a
+# comment-free line that only names zi.zsh before it fails.
 typeset test_file
 typeset -a test_files unsandboxed
 typeset -i source_at first_use n

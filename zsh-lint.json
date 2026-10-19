@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "project": {
+    "kind": "tool",
+    "minimum_zsh": "5.8.1",
+    "identifier": "zi"
+  },
+  "sources": [
+    { "root": "zi.zsh", "profile": "sourced-library" },
+    { "root": "lib/zsh", "profile": "sourced-library" },
+    {
+      "root": "lib/zsh/git-process-output.zsh",
+      "profile": "standalone-executable"
+    },
+    { "root": "lib/zsh/rpm2cpio.zsh", "profile": "standalone-executable" },
+    { "root": "lib/zsh/single-line.zsh", "profile": "standalone-executable" },
+    { "root": "lib/_zi", "profile": "autoload-function", "role": "completion" },
+    { "root": "lib/zcompile", "profile": "standalone-executable" },
+    { "root": "lib/templates/example-script", "profile": "autoload-function" },
+    { "root": "scripts", "profile": "standalone-executable" }
+  ]
+}

@@ -1,0 +1,58 @@
+---
+name: Zsh Lint
+
+# Advisory zsh-lint analysis (z-shell/zi#661). Observe mode reports findings
+# without failing; parser errors, invalid configuration and tool failures
+# still fail. It is not part of the Promotion gate, and the native syntax,
+# compilation and focused tests stay in zsh-n.yml.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+      - "scripts/*.zsh"
+      - ".github/workflows/zsh-lint.yml"
+      - "zsh-lint.json"
+  pull_request:
+    branches: [main]
+    paths:
+      - "zi.zsh"
+      - "lib/**"
+      - "scripts/*.zsh"
+      - ".github/workflows/zsh-lint.yml"
+      - "zsh-lint.json"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zsh-lint:
+    name: Configured Zsh Lint
+    permissions:
+      contents: read
+    uses: z-shell/.github/.github/workflows/zsh-lint.yml@main
+    with:
+      # Literal reviewed Zsh paths; each resolves to a source root in
+      # zsh-lint.json. scripts/ also holds Python, so its Zsh files are listed.
+      paths: |
+        zi.zsh
+        lib/zsh
+        lib/_zi
+        lib/zcompile
+        lib/templates/example-script
+        scripts/promotion-smoke.zsh
+        scripts/public-contract-evidence.zsh
+        scripts/public-contract-impact.zsh
+        scripts/refresh-package-manifests.zsh
+        scripts/release-plan.zsh
+        scripts/verify-release-tag.zsh
+      zsh-lint-ref: f6341241c398fd2a784452e75895dafb06186bbc # v1.6.0
+      config: zsh-lint.json
+      mode: observe

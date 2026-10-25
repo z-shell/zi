@@ -53,6 +53,6 @@ jobs:
         scripts/refresh-package-manifests.zsh
         scripts/release-plan.zsh
         scripts/verify-release-tag.zsh
-      zsh-lint-ref: f6341241c398fd2a784452e75895dafb06186bbc # v1.6.0
+      zsh-lint-ref: 136df813e37d0ec48573929489b44c1841af57ee # v1.6.1
       config: zsh-lint.json
       mode: observe

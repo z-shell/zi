@@ -188,14 +188,14 @@ fi
 : ${ZI[PKG_OWNER]:=z-shell}
 
 # Auto-update: weekly update of Zi and its plugins/snippets.
-# Enabled by default; opt out with ZI[AUTO_UPDATE]=0 before sourcing Zi.
-# ZI[AUTO_UPDATE]      Set to 0 to disable weekly auto-update.
+# Disabled by default; opt in with ZI[AUTO_UPDATE]=1 before sourcing Zi.
+# ZI[AUTO_UPDATE]      Set to 1 to enable weekly auto-update.
 # ZI[UPDATE_STAMP]     Path to the last-update timestamp used for due checks.
 # ZI[UPDATE_LOCK]      Path to the advisory lock serializing update workers.
 # ZI[UPDATE_INTERVAL]  Minimum seconds between automatic updates (default: 604800 = 7 days).
 # ZI[UPDATE_RETRY]     Seconds to wait before retrying after a failure (default: 300 = 5m).
 # Implementation: lib/zsh/auto-update.zsh, sourced only when auto-update is enabled.
-: ${ZI[AUTO_UPDATE]:=1}
+: ${ZI[AUTO_UPDATE]:=0}
 : ${ZI[UPDATE_STAMP]:=${ZI[CACHE_DIR]}/.zi-last-update}
 : ${ZI[UPDATE_LOCK]:=${ZI[CACHE_DIR]}/.zi-update.lock}
 : ${ZI[UPDATE_INTERVAL]:=604800}

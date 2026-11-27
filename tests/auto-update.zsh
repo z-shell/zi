@@ -2,7 +2,7 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
-# Auto-update is wired into Zi's source-executed startup path, enabled by
+# Auto-update is wired into Zi's source-executed startup path, disabled by
 # default and lazily sourced only when enabled. `zi-au` checks a timestamp;
 # when an update is due it asks for confirmation in an interactive shell and
 # then updates in the foreground, printing directly to stdout. Non-interactive
@@ -38,15 +38,39 @@ ZI[BIN_DIR]=$project_root
 # User-supplied state paths with a leading ~ must be expanded at source time.
 ZI[UPDATE_STAMP]='~/.zi-au/last-update'
 ZI[UPDATE_LOCK]='~/.zi-au/update.lock'
-# A fresh stamp keeps the startup check from launching an update during source;
-# later checks remove it deliberately.
+
+# The default is off: no library is loaded and no auto-update function exists.
+cat > "$temp_root/au-default-child.zsh" <<CHILD
+#!/usr/bin/env zsh
+builtin emulate -R zsh
+typeset -gAH ZI
+ZI[BIN_DIR]='$project_root'
+builtin source '$project_root/zi.zsh'
+print "AU-VALUE=\${ZI[AUTO_UPDATE]}"
+if (( \${+functions[zi-au]} )); then
+  print 'AU-DEFINED'
+else
+  print 'AU-ABSENT'
+fi
+print 'DEFAULT-DONE'
+CHILD
+typeset default_out
+default_out="$(zsh -f "$temp_root/au-default-child.zsh" 2>&1)"
+[[ $default_out == *AU-VALUE=0* ]] || fail 'auto-update default is not 0'
+[[ $default_out == *AU-ABSENT* ]] || fail 'auto-update lib loaded by default'
+[[ $default_out != *AU-DEFINED* ]] || fail 'zi-au defined by default'
+[[ $default_out == *DEFAULT-DONE* ]] || fail 'default child completed'
+pass 'auto-update is disabled by default and loads no library'
+
+# Explicitly opt in for the behavior checks below. A fresh stamp keeps the
+# startup check from launching an update during source; later checks remove it.
+ZI[AUTO_UPDATE]=1
 command mkdir -p -- "$HOME/.zi-au" || fail 'create state directory'
 command touch -- "$HOME/.zi-au/last-update" || fail 'create fresh stamp'
 builtin source "$project_root/zi.zsh" >/dev/null || fail 'source Zi'
 
-# Auto-update is enabled by default; an explicit ZI[AUTO_UPDATE]=0 opts out.
-[[ ${ZI[AUTO_UPDATE]:-unset} == 1 ]] || fail 'auto-update enabled by default'
-pass 'auto-update enabled by default'
+[[ ${ZI[AUTO_UPDATE]:-unset} == 1 ]] || fail 'explicit auto-update opt-in'
+pass 'explicit auto-update opt-in is preserved'
 
 [[ ${ZI[UPDATE_INTERVAL]:-unset} == 604800 ]] || fail 'weekly interval default'
 [[ ${ZI[UPDATE_RETRY]:-unset} == 300 ]] || fail 'five-minute retry default'
@@ -71,7 +95,7 @@ pass 'sync-only build has no log file machinery'
 (( ${+functions[.zi-au-due]} )) || fail '.zi-au-due is defined at source'
 pass 'auto-update functions are lazily sourced when enabled'
 
-# Opting out avoids loading the library and defining any auto-update function.
+# An explicit disable avoids loading the library and defining any auto-update function.
 cat > "$temp_root/au-disabled-child.zsh" <<CHILD
 #!/usr/bin/env zsh
 builtin emulate -R zsh
@@ -148,6 +172,7 @@ cat > "$temp_root/au-child.zsh" <<CHILD
 #!/usr/bin/env zsh
 builtin emulate -R zsh
 typeset -gAH ZI
+ZI[AUTO_UPDATE]=1
 ZI[UPDATE_STAMP]='${ZI[UPDATE_STAMP]}'
 ZI[UPDATE_LOCK]='${ZI[UPDATE_LOCK]}'
 builtin source '$project_root/zi.zsh'
@@ -213,6 +238,7 @@ cat > "$temp_root/au-guard-child.zsh" <<CHILD
 #!/usr/bin/env zsh
 builtin emulate -R zsh
 typeset -gAH ZI
+ZI[AUTO_UPDATE]=1
 ZI[UPDATE_STAMP]='${ZI[UPDATE_STAMP]}'
 ZI[UPDATE_LOCK]='${ZI[UPDATE_LOCK]}'
 typeset -g ZI_AU_ACTIVE=1

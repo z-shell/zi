@@ -187,10 +187,26 @@ fi
 # Set owner of the Zi's packages. It allows to use the packages from specific user instead of the z-shell organization.
 : ${ZI[PKG_OWNER]:=z-shell}
 
+# Auto-update: weekly update of Zi and its plugins/snippets.
+# Enabled by default; opt out with ZI[AUTO_UPDATE]=0 before sourcing Zi.
+# ZI[AUTO_UPDATE]      Set to 0 to disable weekly auto-update.
+# ZI[UPDATE_STAMP]     Path to the last-update timestamp used for due checks.
+# ZI[UPDATE_LOCK]      Path to the advisory lock serializing update workers.
+# ZI[UPDATE_INTERVAL]  Minimum seconds between automatic updates (default: 604800 = 7 days).
+# ZI[UPDATE_RETRY]     Seconds to wait before retrying after a failure (default: 300 = 5m).
+# Implementation: lib/zsh/auto-update.zsh, sourced only when auto-update is enabled.
+: ${ZI[AUTO_UPDATE]:=1}
+: ${ZI[UPDATE_STAMP]:=${ZI[CACHE_DIR]}/.zi-last-update}
+: ${ZI[UPDATE_LOCK]:=${ZI[CACHE_DIR]}/.zi-update.lock}
+: ${ZI[UPDATE_INTERVAL]:=604800}
+: ${ZI[UPDATE_RETRY]:=300}
+
 ZI[HOME_DIR]=${~ZI[HOME_DIR]}
 ZI[MAN_DIR]=${~ZI[MAN_DIR]}
 ZI[CDPATH_DIR]=${~ZI[CDPATH_DIR]}
 ZI[LOG_DIR]=${~ZI[LOG_DIR]}
+ZI[UPDATE_STAMP]=${~ZI[UPDATE_STAMP]}
+ZI[UPDATE_LOCK]=${~ZI[UPDATE_LOCK]}
 ZI[MAIL_DIR]=${~ZI[MAIL_DIR]}
 ZI[CACHE_DIR]=${~ZI[CACHE_DIR]}
 ZI[THEMES_DIR]=${~ZI[THEMES_DIR]}
@@ -3751,4 +3767,17 @@ fi # ]]]
 @zi-register-hook "extract" hook:\!atclone-post ∞zi-extract-hook
 # atclone-post.
 @zi-register-hook "compile-plugin" hook:atclone-post ∞zi-compile-plugin-hook
+
+# Auto-update: weekly update of Zi and its plugins/snippets.
+# Loaded after hook registration so the worker sees all initialized state. The
+# startup path is a cheap native timestamp check; when due, an interactive shell
+# is asked before updating in the foreground. Non-interactive shells skip.
+if (( ZI[AUTO_UPDATE] )); then
+  if builtin source "${ZI[BIN_DIR]}/lib/zsh/auto-update.zsh" 2>/dev/null; then
+    zi-au
+  else
+    builtin print -u2 -r -- "Zi auto-update: failed to load lib/zsh/auto-update.zsh."
+  fi
+fi
+
 typeset -g REPLY

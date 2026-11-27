@@ -3774,7 +3774,7 @@ fi # ]]]
 # is asked before updating in the foreground. Non-interactive shells skip.
 if (( ZI[AUTO_UPDATE] )); then
   if builtin source "${ZI[BIN_DIR]}/lib/zsh/auto-update.zsh" 2>/dev/null; then
-    zi-au
+    .zi-au
   else
     builtin print -u2 -r -- "Zi auto-update: failed to load lib/zsh/auto-update.zsh."
   fi

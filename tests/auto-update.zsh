@@ -3,7 +3,7 @@
 # vim: ft=zsh sw=2 ts=2 et
 #
 # Auto-update is wired into Zi's source-executed startup path, disabled by
-# default and lazily sourced only when enabled. `zi-au` checks a timestamp;
+# default and lazily sourced only when enabled. `.zi-au` checks a timestamp;
 # when an update is due it asks for confirmation in an interactive shell and
 # then updates in the foreground, printing directly to stdout. Non-interactive
 # shells skip silently.
@@ -47,7 +47,7 @@ typeset -gAH ZI
 ZI[BIN_DIR]='$project_root'
 builtin source '$project_root/zi.zsh'
 print "AU-VALUE=\${ZI[AUTO_UPDATE]}"
-if (( \${+functions[zi-au]} )); then
+if (( \${+functions[.zi-au]} )); then
   print 'AU-DEFINED'
 else
   print 'AU-ABSENT'
@@ -58,7 +58,7 @@ typeset default_out
 default_out="$(zsh -f "$temp_root/au-default-child.zsh" 2>&1)"
 [[ $default_out == *AU-VALUE=0* ]] || fail 'auto-update default is not 0'
 [[ $default_out == *AU-ABSENT* ]] || fail 'auto-update lib loaded by default'
-[[ $default_out != *AU-DEFINED* ]] || fail 'zi-au defined by default'
+[[ $default_out != *AU-DEFINED* ]] || fail '.zi-au defined by default'
 [[ $default_out == *DEFAULT-DONE* ]] || fail 'default child completed'
 pass 'auto-update is disabled by default and loads no library'
 
@@ -87,7 +87,7 @@ pass 'auto-update state paths are configurable and tilde-expanded'
 (( ! ${+functions[.zi-au-output]} )) || fail 'output router should not exist'
 pass 'sync-only build has no log file machinery'
 
-(( ${+functions[zi-au]} )) || fail 'zi-au is defined at source'
+(( ${+functions[.zi-au]} )) || fail '.zi-au is defined at source'
 (( ${+functions[.zi-au-confirm]} )) || fail '.zi-au-confirm is defined at source'
 (( ${+functions[.zi-au-lock-acquire]} )) || fail '.zi-au-lock-acquire is defined at source'
 (( ${+functions[.zi-au-lock-available]} )) || fail '.zi-au-lock-available is defined at source'
@@ -104,7 +104,7 @@ ZI[AUTO_UPDATE]=0
 ZI[UPDATE_STAMP]='${ZI[UPDATE_STAMP]}'
 ZI[UPDATE_LOCK]='${ZI[UPDATE_LOCK]}'
 builtin source '$project_root/zi.zsh'
-if (( \${+functions[zi-au]} )); then
+if (( \${+functions[.zi-au]} )); then
   print 'AU-DEFINED'
 else
   print 'AU-ABSENT'
@@ -114,7 +114,7 @@ CHILD
 typeset disabled_out
 disabled_out="$(zsh -f "$temp_root/au-disabled-child.zsh" 2>&1)"
 [[ $disabled_out == *AU-ABSENT* ]] || fail 'auto-update lib loaded while disabled'
-[[ $disabled_out != *AU-DEFINED* ]] || fail 'zi-au defined while disabled'
+[[ $disabled_out != *AU-DEFINED* ]] || fail '.zi-au defined while disabled'
 [[ $disabled_out == *DISABLED-DONE* ]] || fail 'disabled child completed'
 pass 'ZI[AUTO_UPDATE]=0 skips the auto-update library entirely'
 
@@ -122,10 +122,10 @@ pass 'ZI[AUTO_UPDATE]=0 skips the auto-update library entirely'
 command rm -f -- "${ZI[UPDATE_STAMP]}" || fail 'remove fresh stamp'
 .zi-au-due && pass '.zi-au-due reports due with no stamp' || fail '.zi-au-due reports due with no stamp'
 
-# A fresh stamp -> not due; `zi-au` returns without launching the worker.
+# A fresh stamp -> not due; `.zi-au` returns without launching the worker.
 command touch -- "${ZI[UPDATE_STAMP]}"
 ! .zi-au-due && pass '.zi-au-due reports not due with a fresh stamp' || fail '.zi-au-due reports not due with a fresh stamp'
-zi-au && pass 'zi-au returns success when not due' || fail 'zi-au returns success when not due'
+.zi-au && pass '.zi-au returns success when not due' || fail '.zi-au returns success when not due'
 
 # Retry scheduling uses a portable timestamp and backdates the stamp.
 .zi-au-schedule-retry "${ZI[UPDATE_STAMP]}" 604800 300 && \
@@ -161,7 +161,7 @@ pass 'worker runs synchronously with output on stdout and no log file'
 # Non-interactive shells skip a due update: no prompt, no worker, stamp untouched.
 command rm -f -- "${ZI[UPDATE_STAMP]}"
 typeset nonint_out
-nonint_out="$(zi-au 2>&1)"
+nonint_out="$(.zi-au 2>&1)"
 [[ -z $nonint_out ]] || fail 'non-interactive shell printed a prompt'
 [[ ! -f "${ZI[UPDATE_STAMP]}" ]] || fail 'non-interactive shell changed the stamp'
 pass 'non-interactive shells skip a due update silently'
@@ -220,7 +220,7 @@ no_out="$(zsh -f -i "$temp_root/au-child.zsh" < "$temp_root/au-no.in" 2>&1)"
 [[ $no_out != *"Auto-update started."* ]] || fail 'declining starts a worker'
 [[ -f "${ZI[UPDATE_STAMP]}" ]] || fail 'declining does not record the stamp'
 .zi-au-due && fail 'declining leaves the check due before the next interval'
-pass 'zi-au prompts and skips on no, deferring to the next due'
+pass '.zi-au prompts and skips on no, deferring to the next due'
 
 # Answering yes runs the update synchronously with visible output.
 command rm -f -- "${ZI[UPDATE_STAMP]}" "${ZI[UPDATE_LOCK]}"
@@ -230,7 +230,7 @@ yes_out="$(zsh -f -i "$temp_root/au-child.zsh" < "$temp_root/au-yes.in" 2>&1)"
 [[ $yes_out == *"Auto-update started."* ]] || fail 'yes does not run the update'
 [[ $yes_out == *"Framework update failed."* ]] || fail 'yes does not show the result'
 [[ -f "${ZI[UPDATE_STAMP]}" ]] || fail 'yes does not record the check'
-pass 'zi-au runs synchronously after yes'
+pass '.zi-au runs synchronously after yes'
 
 # A self-update reload re-sources zi.zsh while the approved update is active;
 # the guard prevents a second prompt and a second worker from that nested source.

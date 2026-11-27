@@ -12,11 +12,11 @@
 # They keep the glob qualifier and the arithmetic valid if the keys are unset.
 # ============================================================================
 
-# FUNCTION: zi-au. [[[
+# FUNCTION: .zi-au. [[[
 # Startup path: cheap checks first, then ask before updating in the foreground.
 # Only interactive shells prompt; non-interactive shells return before reading
 # stdin, so scripts never block or consume input meant for their own commands.
-zi-au() {
+.zi-au() {
   builtin emulate -L zsh
 
   # `zi self-update` re-sources zi.zsh during .zi-au-run; don't prompt again.

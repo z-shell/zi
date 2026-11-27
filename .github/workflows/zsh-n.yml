@@ -159,6 +159,9 @@ jobs:
       - name: Test scheduler idle behavior
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/scheduler-idle.zsh
+      - name: Test auto-update startup wiring
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: zsh -f tests/auto-update.zsh
       - name: Test annex unregister
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zsh -f tests/annex-unregister.zsh

@@ -187,6 +187,17 @@ fi
 # Set owner of the Zi's packages. It allows to use the packages from specific user instead of the z-shell organization.
 : ${ZI[PKG_OWNER]:=z-shell}
 
+# Auto-update: weekly update of Zi and its plugins/snippets.
+# Disabled by default; opt in with ZI[AUTO_UPDATE]=1 before sourcing Zi.
+# ZI[AUTO_UPDATE]      Set to 1 to enable weekly auto-update.
+# ZI[UPDATE_INTERVAL]  Minimum seconds between automatic updates (default: 604800 = 7 days).
+# ZI[UPDATE_RETRY]     Seconds to wait before retrying after a failure (default: 300 = 5m).
+# State files are private and derived from ZI[CACHE_DIR].
+# Implementation: lib/zsh/auto-update.zsh, sourced lazily after hooks when enabled.
+: ${ZI[AUTO_UPDATE]:=0}
+: ${ZI[UPDATE_INTERVAL]:=604800}
+: ${ZI[UPDATE_RETRY]:=300}
+
 ZI[HOME_DIR]=${~ZI[HOME_DIR]}
 ZI[MAN_DIR]=${~ZI[MAN_DIR]}
 ZI[CDPATH_DIR]=${~ZI[CDPATH_DIR]}
@@ -3751,4 +3762,17 @@ fi # ]]]
 @zi-register-hook "extract" hook:\!atclone-post ∞zi-extract-hook
 # atclone-post.
 @zi-register-hook "compile-plugin" hook:atclone-post ∞zi-compile-plugin-hook
+
+# Auto-update startup: load the helpers lazily, after hook registration, so the
+# worker sees all initialized state. .zi-au does a cheap timestamp check and
+# prompts only in interactive shells; the library owns the lock, foreground
+# update passes and retry scheduling. Non-interactive shells skip entirely.
+if (( ZI[AUTO_UPDATE] )); then
+  if builtin source "${ZI[BIN_DIR]}/lib/zsh/auto-update.zsh" 2>/dev/null; then
+    .zi-au
+  else
+    builtin print -u2 -r -- "Zi auto-update: failed to load lib/zsh/auto-update.zsh."
+  fi
+fi
+
 typeset -g REPLY

@@ -40,6 +40,11 @@ typeset au_stamp="${ZI[CACHE_DIR]}/.zi-last-update"
 typeset au_lock="${ZI[CACHE_DIR]}/.zi-update.lock"
 command mkdir -p -- "${au_stamp:h}" || fail 'create auto-update state directory'
 
+reset_au_state() {
+  builtin emulate -L zsh
+  command rm -f -- "$au_stamp" "$au_lock"
+}
+
 # The default is off: no library is loaded and no auto-update function exists.
 cat > "$temp_root/au-default-child.zsh" <<CHILD
 #!/usr/bin/env zsh
@@ -122,7 +127,7 @@ disabled_out="$(zsh -f "$temp_root/au-disabled-child.zsh" 2>&1)"
 pass 'ZI[AUTO_UPDATE]=0 skips the auto-update library entirely'
 
 # No timestamp stamp -> an update is due.
-command rm -f -- "${au_stamp}" || fail 'remove fresh stamp'
+reset_au_state || fail 'remove fresh stamp'
 .zi-au-due "$au_stamp" && pass '.zi-au-due reports due with no stamp' || fail '.zi-au-due reports due with no stamp'
 
 # A fresh stamp -> not due; `.zi-au` returns without launching the worker.
@@ -137,7 +142,7 @@ command touch -- "${au_stamp}"
 ! .zi-au-due "$au_stamp" && pass 'scheduled retry is not yet due' || fail 'scheduled retry is not yet due'
 
 # A retry window longer than the interval must not put the stamp in the future.
-command rm -f -- "${au_stamp}"
+reset_au_state
 .zi-au-schedule-retry "${au_stamp}" 100 500 || fail 'schedule retry with oversized window'
 typeset -a clamp_st
 zstat -A clamp_st +mtime -- "${au_stamp}" || fail 'stat the clamped stamp'
@@ -146,7 +151,7 @@ pass 'oversized retry window is clamped to the interval'
 
 # The worker runs in the foreground and writes to stdout, with no log file.
 # Point origin_url at an invalid path so `zi self-update` fails fast offline.
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 typeset -gx origin_url=/nonexistent/invalid-origin
 typeset run_out
 run_out="$(.zi-au-run "$au_stamp" "$au_lock" 2>&1)"
@@ -172,7 +177,7 @@ typeset au_calls="$temp_root/au-zcalls"
     [[ $1 == self-update ]] && return 1
     return 0
   }
-  command rm -f -- "${au_stamp}" "${au_lock}"
+  reset_au_state
   .zi-au-run "$au_stamp" "$au_lock" >/dev/null 2>&1
 )
 typeset au_call_log
@@ -183,7 +188,7 @@ au_call_log="$(<"$au_calls")"
 pass 'worker skips plugin update when framework update fails'
 
 # Non-interactive shells skip a due update: no prompt, no worker, stamp untouched.
-command rm -f -- "${au_stamp}"
+reset_au_state
 typeset nonint_out
 nonint_out="$(.zi-au 2>&1)"
 [[ -z $nonint_out ]] || fail 'non-interactive shell printed a prompt'
@@ -204,7 +209,7 @@ CHILD
 
 # Timeout/EOF is not an explicit no: leave the stamp untouched so the next
 # interactive shell asks again.
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 : > "$temp_root/au-eof.in"
 typeset eof_out
 eof_out="$(zsh -f -i "$temp_root/au-child.zsh" < "$temp_root/au-eof.in" 2>&1)"
@@ -216,7 +221,7 @@ pass 'timeout/EOF leaves the check due for the next shell'
 
 # A second terminal skips before prompting while another process holds the lock.
 zmodload zsh/system || fail 'zsh/system available for lock contention test'
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 : >>"${au_lock}" || fail 'create update lock'
 integer holder_fd
 zsystem flock -f holder_fd "${au_lock}" || fail 'hold update lock'
@@ -232,7 +237,7 @@ zsystem flock -u "$holder_fd"
 pass 'active update lock prevents a second terminal from prompting'
 
 # Answering no skips the update and defers the next check by a full interval.
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 builtin print -r -- n > "$temp_root/au-no.in"
 typeset no_out
 no_out="$(zsh -f -i "$temp_root/au-child.zsh" < "$temp_root/au-no.in" 2>&1)"
@@ -246,7 +251,7 @@ no_out="$(zsh -f -i "$temp_root/au-child.zsh" < "$temp_root/au-no.in" 2>&1)"
 pass '.zi-au prompts and skips on no, deferring to the next due'
 
 # Answering yes runs the update synchronously with visible output.
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 builtin print -r -- y > "$temp_root/au-yes.in"
 typeset yes_out
 yes_out="$(zsh -f -i "$temp_root/au-child.zsh" < "$temp_root/au-yes.in" 2>&1)"
@@ -267,7 +272,7 @@ typeset -g ZI_AU_ACTIVE=1
 builtin source '$project_root/zi.zsh'
 print 'GUARD-DONE'
 CHILD
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 builtin print -r -- y > "$temp_root/au-guard.in"
 typeset guard_out
 guard_out="$(zsh -f -i "$temp_root/au-guard-child.zsh" < "$temp_root/au-guard.in" 2>&1)"
@@ -279,7 +284,7 @@ guard_out="$(zsh -f -i "$temp_root/au-guard-child.zsh" < "$temp_root/au-guard.in
 pass 'active update guard suppresses nested auto-update'
 
 # The prompt reports elapsed time from the stamp, not remote status.
-command rm -f -- "${au_stamp}" "${au_lock}"
+reset_au_state
 typeset old_ts
 old_ts=$(strftime '%Y%m%d%H%M.%S' $(( EPOCHSECONDS - 691200 )))
 command touch -t "$old_ts" -- "${au_stamp}" || fail 'backdate the stamp'

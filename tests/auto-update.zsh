@@ -150,13 +150,39 @@ run_out="$(.zi-au-run 2>&1)"
 [[ -f "${ZI[UPDATE_LOCK]}" ]] || fail 'worker creates the update lock'
 [[ -f "${ZI[UPDATE_STAMP]}" ]] || fail 'worker records a retry stamp after failure'
 [[ $run_out == *"Auto-update started."* ]] || fail 'worker prints start to stdout'
+[[ $run_out == *"fetching updates"* ]] || fail 'framework update output is suppressed'
 [[ $run_out == *"Framework update failed."* ]] || fail 'worker prints failure to stdout'
-[[ $run_out != *"Plugin update failed."* ]] || fail 'plugins updated after framework failure'
 [[ $run_out == *"Retry scheduled in approximately 300 seconds."* ]] || \
   fail 'worker prints the retry window to stdout'
 [[ ! -e "$temp_root/cache/zi/log/update.log" ]] || fail 'worker created a log file'
 .zi-au-due && fail 'retry stamp is already due right after a failure'
 pass 'worker runs synchronously with output on stdout and no log file'
+
+# Plugins are only checked when the framework update succeeds.
+typeset au_calls="$temp_root/au-zcalls"
+: > "$au_calls" || fail 'create update call log'
+(
+  zi() {
+    builtin print -r -- "$*" >> "$au_calls"
+    [[ $1 == self-update ]] && return 1
+    return 0
+  }
+  command rm -f -- "${ZI[UPDATE_STAMP]}" "${ZI[UPDATE_LOCK]}"
+  .zi-au-run >/dev/null 2>&1
+)
+typeset au_call_log
+au_call_log="$(<"$au_calls")"
+[[ $au_call_log == *self-update* ]] || fail 'framework update was not invoked'
+[[ $au_call_log != *'update --parallel --all'* ]] || \
+  fail 'plugin update ran after framework failure'
+pass 'worker skips plugin update when framework update fails'
+
+# `zi update` pages changelogs from background jobs. The worker must disable
+# job control so those pagers stay in the foreground process group and can read
+# /dev/tty instead of being stopped by SIGTTIN.
+[[ ${functions[.zi-au-run]} == *'unsetopt monitor'* ]] || \
+  fail 'worker does not disable job control for changelog pagers'
+pass 'worker keeps changelog pagers in the foreground process group'
 
 # Non-interactive shells skip a due update: no prompt, no worker, stamp untouched.
 command rm -f -- "${ZI[UPDATE_STAMP]}"

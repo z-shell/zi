@@ -194,7 +194,7 @@ fi
 # ZI[UPDATE_LOCK]      Path to the advisory lock serializing update workers.
 # ZI[UPDATE_INTERVAL]  Minimum seconds between automatic updates (default: 604800 = 7 days).
 # ZI[UPDATE_RETRY]     Seconds to wait before retrying after a failure (default: 300 = 5m).
-# Implementation: lib/zsh/auto-update.zsh, sourced only when auto-update is enabled.
+# Implementation: lib/zsh/auto-update.zsh, sourced lazily after hooks when enabled.
 : ${ZI[AUTO_UPDATE]:=0}
 : ${ZI[UPDATE_STAMP]:=${ZI[CACHE_DIR]}/.zi-last-update}
 : ${ZI[UPDATE_LOCK]:=${ZI[CACHE_DIR]}/.zi-update.lock}
@@ -3768,10 +3768,10 @@ fi # ]]]
 # atclone-post.
 @zi-register-hook "compile-plugin" hook:atclone-post ∞zi-compile-plugin-hook
 
-# Auto-update: weekly update of Zi and its plugins/snippets.
-# Loaded after hook registration so the worker sees all initialized state. The
-# startup path is a cheap native timestamp check; when due, an interactive shell
-# is asked before updating in the foreground. Non-interactive shells skip.
+# Auto-update startup: load the helpers lazily, after hook registration, so the
+# worker sees all initialized state. .zi-au does a cheap timestamp check and
+# prompts only in interactive shells; the library owns the lock, foreground
+# update passes and retry scheduling. Non-interactive shells skip entirely.
 if (( ZI[AUTO_UPDATE] )); then
   if builtin source "${ZI[BIN_DIR]}/lib/zsh/auto-update.zsh" 2>/dev/null; then
     .zi-au

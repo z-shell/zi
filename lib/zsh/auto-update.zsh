@@ -3,19 +3,11 @@
 #
 # Startup auto-update helpers for Zi. Sourced only when auto-update is enabled.
 
-# ============================================================================
-# Auto-update: weekly update of Zi and its plugins/snippets.
-# Configuration lives with the other ZI defaults in zi.zsh; this library is
-# sourced only when ZI[AUTO_UPDATE] is enabled.
-#
-# The `:-604800` (one week) and `:-300` fallbacks below are safety nets only.
-# They keep the glob qualifier and the arithmetic valid if the keys are unset.
-# ============================================================================
-
-# FUNCTION: .zi-au. [[[
-# Startup path: cheap checks first, then ask before updating in the foreground.
-# Only interactive shells prompt; non-interactive shells return before reading
-# stdin, so scripts never block or consume input meant for their own commands.
+# FUNCTION: .zi-au [[[
+# Startup entry point called by zi.zsh after hook registration. Cheap due and
+# lock checks come first, then an interactive shell is asked and the worker
+# runs in the foreground. Non-interactive shells return before reading stdin,
+# so scripts never block or consume input meant for their own commands.
 .zi-au() {
   builtin emulate -L zsh
 
@@ -42,7 +34,9 @@
   .zi-au-run
 } # ]]]
 
-# FUNCTION: .zi-au-confirm. [[[
+# FUNCTION: .zi-au-confirm [[[
+# Ask once using only the elapsed time recorded in the stamp; no remote status
+# is checked before the prompt.
 # Returns 0 for yes, 1 for explicit no, 2 for timeout/EOF.
 .zi-au-confirm() {
   builtin emulate -L zsh
@@ -93,8 +87,9 @@
   return $rc
 } # ]]]
 
-# FUNCTION: .zi-au-duration. [[[
+# FUNCTION: .zi-au-duration [[[
 # Print a coarse human duration using the largest whole unit.
+# $1 - seconds to format; missing or negative values are treated as zero
 .zi-au-duration() {
   builtin emulate -L zsh
 
@@ -118,9 +113,11 @@
   builtin print -r -- "${count} ${unit}"
 } # ]]]
 
-# FUNCTION: .zi-au-lock-acquire. [[[
-# Take the update lock without blocking. The fd is stored in the variable
-# whose NAME is $1 (set via `zsystem flock -f`, so the caller must declare it).
+# FUNCTION: .zi-au-lock-acquire [[[
+# Take the update lock without blocking, so a second terminal never queues or
+# prompts behind a running worker. The fd is stored in the variable whose NAME
+# is $1 (set via `zsystem flock -f`, so the caller must declare it).
+# $1 - name of the caller variable that receives the lock fd
 # Returns 0 when acquired, 1 when another update holds it, 2 on any error.
 .zi-au-lock-acquire() {
   builtin emulate -L zsh
@@ -156,8 +153,9 @@
   esac
 } # ]]]
 
-# FUNCTION: .zi-au-lock-available. [[[
-# Check whether the update lock is free without keeping it.
+# FUNCTION: .zi-au-lock-available [[[
+# Probe the lock before prompting so a held lock produces no question. The fd
+# is released immediately; the worker rechecks and takes the lock itself.
 .zi-au-lock-available() {
   builtin emulate -L zsh
 
@@ -167,8 +165,11 @@
   return 0
 } # ]]]
 
-# FUNCTION: .zi-au-run. [[[
-# Foreground update worker; all output goes to stdout.
+# FUNCTION: .zi-au-run [[[
+# Foreground update worker. Output is printed live to stdout/stderr; there is
+# no log file and no detached worker. zi self-update gates the plugin pass, a
+# failed pass schedules a retry by backdating the stamp, and the lock is
+# released in the always block on success, failure or interruption.
 .zi-au-run() {
   builtin emulate -L zsh
 
@@ -190,8 +191,17 @@
     *) return 1 ;;
   esac
 
+  # Git must not start its own pager or prompt for credentials; Zi's changelog
+  # pager is handled separately by .zi-pager.
   local -x GIT_PAGER=cat PAGER=cat GIT_TERMINAL_PROMPT=0
   local -x GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes"
+
+  # `zi update` runs each changelog pager as a background job. With job control
+  # enabled, less is put in a background process group and stops with SIGTTIN
+  # when it reads /dev/tty, so the update waits until Zi's pager watchdog kills
+  # it. Keep those jobs in this shell's process group; emulate -L restores the
+  # caller's monitor setting when the worker returns.
+  unsetopt monitor
 
   {
     # Recheck after acquiring the lock.
@@ -199,11 +209,13 @@
 
     builtin print -r -- "Auto-update started."
 
-    # Plugins are only updated after the framework updated cleanly.
-    if ! zi self-update --quiet </dev/null; then
+    # Plugins are only updated after the framework updated cleanly. Keep all
+    # output visible; empty stdin prevents git/zi from prompting for input,
+    # while changelog pagers still read /dev/tty.
+    if ! zi self-update </dev/null; then
       builtin print -u2 -r -- "Framework update failed."
       rc=1
-    elif ! zi update --parallel --all --no-pager </dev/null; then
+    elif ! zi update --parallel --all </dev/null; then
       builtin print -u2 -r -- "Plugin update failed."
       rc=1
     fi
@@ -235,7 +247,7 @@
   }
 } # ]]]
 
-# FUNCTION: .zi-au-due. [[[
+# FUNCTION: .zi-au-due [[[
 # Due when the stamp is missing or strictly older than ZI[UPDATE_INTERVAL].
 # Returns 0 when due, 1 otherwise. An empty stamp path disables auto-update.
 # Loads no modules: this runs on every interactive startup.
@@ -252,8 +264,11 @@
   (( ${#stale} > 0 ))
 } # ]]]
 
-# FUNCTION: .zi-au-schedule-retry. [[[
+# FUNCTION: .zi-au-schedule-retry [[[
 # Schedule a retry after failure by backdating the stamp.
+# $1 - stamp path
+# $2 - normal interval in seconds
+# $3 - retry delay in seconds, clamped to the interval
 .zi-au-schedule-retry() {
   builtin emulate -L zsh
   zmodload zsh/datetime 2>/dev/null || return 1

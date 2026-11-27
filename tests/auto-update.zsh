@@ -177,13 +177,6 @@ au_call_log="$(<"$au_calls")"
   fail 'plugin update ran after framework failure'
 pass 'worker skips plugin update when framework update fails'
 
-# `zi update` pages changelogs from background jobs. The worker must disable
-# job control so those pagers stay in the foreground process group and can read
-# /dev/tty instead of being stopped by SIGTTIN.
-[[ ${functions[.zi-au-run]} == *'unsetopt monitor'* ]] || \
-  fail 'worker does not disable job control for changelog pagers'
-pass 'worker keeps changelog pagers in the foreground process group'
-
 # Non-interactive shells skip a due update: no prompt, no worker, stamp untouched.
 command rm -f -- "${ZI[UPDATE_STAMP]}"
 typeset nonint_out

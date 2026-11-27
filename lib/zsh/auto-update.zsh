@@ -196,13 +196,6 @@
   local -x GIT_PAGER=cat PAGER=cat GIT_TERMINAL_PROMPT=0
   local -x GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes"
 
-  # `zi update` runs each changelog pager as a background job. With job control
-  # enabled, less is put in a background process group and stops with SIGTTIN
-  # when it reads /dev/tty, so the update waits until Zi's pager watchdog kills
-  # it. Keep those jobs in this shell's process group; emulate -L restores the
-  # caller's monitor setting when the worker returns.
-  unsetopt monitor
-
   {
     # Recheck after acquiring the lock.
     .zi-au-due || return 0

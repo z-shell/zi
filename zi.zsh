@@ -190,14 +190,11 @@ fi
 # Auto-update: weekly update of Zi and its plugins/snippets.
 # Disabled by default; opt in with ZI[AUTO_UPDATE]=1 before sourcing Zi.
 # ZI[AUTO_UPDATE]      Set to 1 to enable weekly auto-update.
-# ZI[UPDATE_STAMP]     Path to the last-update timestamp used for due checks.
-# ZI[UPDATE_LOCK]      Path to the advisory lock serializing update workers.
 # ZI[UPDATE_INTERVAL]  Minimum seconds between automatic updates (default: 604800 = 7 days).
 # ZI[UPDATE_RETRY]     Seconds to wait before retrying after a failure (default: 300 = 5m).
+# State files are private and derived from ZI[CACHE_DIR].
 # Implementation: lib/zsh/auto-update.zsh, sourced lazily after hooks when enabled.
 : ${ZI[AUTO_UPDATE]:=0}
-: ${ZI[UPDATE_STAMP]:=${ZI[CACHE_DIR]}/.zi-last-update}
-: ${ZI[UPDATE_LOCK]:=${ZI[CACHE_DIR]}/.zi-update.lock}
 : ${ZI[UPDATE_INTERVAL]:=604800}
 : ${ZI[UPDATE_RETRY]:=300}
 
@@ -205,8 +202,6 @@ ZI[HOME_DIR]=${~ZI[HOME_DIR]}
 ZI[MAN_DIR]=${~ZI[MAN_DIR]}
 ZI[CDPATH_DIR]=${~ZI[CDPATH_DIR]}
 ZI[LOG_DIR]=${~ZI[LOG_DIR]}
-ZI[UPDATE_STAMP]=${~ZI[UPDATE_STAMP]}
-ZI[UPDATE_LOCK]=${~ZI[UPDATE_LOCK]}
 ZI[MAIL_DIR]=${~ZI[MAIL_DIR]}
 ZI[CACHE_DIR]=${~ZI[CACHE_DIR]}
 ZI[THEMES_DIR]=${~ZI[THEMES_DIR]}

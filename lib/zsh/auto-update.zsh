@@ -14,14 +14,20 @@
   # `zi self-update` re-sources zi.zsh during .zi-au-run; don't prompt again.
   [[ -z ${ZI_AU_ACTIVE:-} ]] || return 0
   [[ -o interactive ]] || return 0
-  .zi-au-due || return 0
-  .zi-au-lock-available || return 0
 
-  .zi-au-confirm
+  local cache_dir="${ZI[CACHE_DIR]:-}"
+  [[ -n $cache_dir ]] || return 1
+  local stamp="${cache_dir}/.zi-last-update"
+  local lock="${cache_dir}/.zi-update.lock"
+
+  .zi-au-due "$stamp" || return 0
+  .zi-au-lock-available "$lock" || return 0
+
+  .zi-au-confirm "$stamp"
   case $? in
     0) ;;                                   # yes
     1)                                      # explicit no: defer to next due
-      local next stamp="${ZI[UPDATE_STAMP]}"
+      local next
       next=$(.zi-au-duration "${ZI[UPDATE_INTERVAL]:-604800}")
       builtin print -r -- "Update declined; will ask again in ${next}."
       command mkdir -p -- "${stamp:h}" 2>/dev/null
@@ -31,17 +37,18 @@
     *) return 0 ;;                          # timeout/EOF: ask again next shell
   esac
 
-  .zi-au-run
+  .zi-au-run "$stamp" "$lock"
 } # ]]]
 
 # FUNCTION: .zi-au-confirm [[[
 # Ask once using only the elapsed time recorded in the stamp; no remote status
 # is checked before the prompt.
 # Returns 0 for yes, 1 for explicit no, 2 for timeout/EOF.
+# $1 - private stamp path
 .zi-au-confirm() {
   builtin emulate -L zsh
 
-  local stamp="${ZI[UPDATE_STAMP]}" msg ans=''
+  local stamp="$1" msg ans=''
   local -i elapsed=-1 rc read_rc
   local -a st
 
@@ -118,6 +125,7 @@
 # prompts behind a running worker. The fd is stored in the variable whose NAME
 # is $1 (set via `zsystem flock -f`, so the caller must declare it).
 # $1 - name of the caller variable that receives the lock fd
+# $2 - private lock path
 # Returns 0 when acquired, 1 when another update holds it, 2 on any error.
 .zi-au-lock-acquire() {
   builtin emulate -L zsh
@@ -127,7 +135,7 @@
     return 2
   }
 
-  local lock="${ZI[UPDATE_LOCK]}"
+  local lock="$2"
   [[ -n $lock ]] || return 2
 
   # The lock file must exist before flock.
@@ -156,11 +164,12 @@
 # FUNCTION: .zi-au-lock-available [[[
 # Probe the lock before prompting so a held lock produces no question. The fd
 # is released immediately; the worker rechecks and takes the lock itself.
+# $1 - private lock path
 .zi-au-lock-available() {
   builtin emulate -L zsh
 
   local -i fd=0
-  .zi-au-lock-acquire fd || return 1
+  .zi-au-lock-acquire fd "$1" || return 1
   zsystem flock -u "$fd" 2>/dev/null
   return 0
 } # ]]]
@@ -170,6 +179,8 @@
 # no log file and no detached worker. zi self-update gates the plugin pass, a
 # failed pass schedules a retry by backdating the stamp, and the lock is
 # released in the always block on success, failure or interruption.
+# $1 - private stamp path
+# $2 - private lock path
 .zi-au-run() {
   builtin emulate -L zsh
 
@@ -178,13 +189,13 @@
 
   local -i interval=${ZI[UPDATE_INTERVAL]:-604800}
   local -i retry=${ZI[UPDATE_RETRY]:-300}
-  local stamp="${ZI[UPDATE_STAMP]}"
+  local stamp="$1" lock="$2"
   local -i fd=0 rc=0
 
-  [[ -n $stamp ]] || return 1
+  [[ -n $stamp && -n $lock ]] || return 1
   command mkdir -p -- "${stamp:h}" 2>/dev/null || return 1
 
-  .zi-au-lock-acquire fd
+  .zi-au-lock-acquire fd "$lock"
   case $? in
     0) ;;
     1) return 0 ;;                          # someone else is updating
@@ -198,7 +209,7 @@
 
   {
     # Recheck after acquiring the lock.
-    .zi-au-due || return 0
+    .zi-au-due "$stamp" || return 0
 
     builtin print -r -- "Auto-update started."
 
@@ -242,12 +253,13 @@
 
 # FUNCTION: .zi-au-due [[[
 # Due when the stamp is missing or strictly older than ZI[UPDATE_INTERVAL].
-# Returns 0 when due, 1 otherwise. An empty stamp path disables auto-update.
+# Returns 0 when due, 1 otherwise.
 # Loads no modules: this runs on every interactive startup.
+# $1 - private stamp path
 .zi-au-due() {
   builtin emulate -L zsh
 
-  local stamp="${ZI[UPDATE_STAMP]}"
+  local stamp="$1"
   local -i interval=${ZI[UPDATE_INTERVAL]:-604800}
 
   [[ -n $stamp ]] || return 1
